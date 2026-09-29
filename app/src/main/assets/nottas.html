@@ -16,10 +16,10 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .headerTitle{min-width:0}.headerTitle h1{font-size:28px;line-height:1.08;margin:0;font-weight:700;letter-spacing:-.035em}
 .headerActions{display:flex;gap:4px;align-items:center}.iconBtn{width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#1d1d1f;display:grid;place-items:center;padding:0}.iconBtn:active{background:rgba(118,118,128,.12)}.iconBtn svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .statusPill{display:none}.statusDot{width:7px;height:7px;border-radius:50%;background:#34c759}.statusPill.warn .statusDot{background:#ff9f0a}.statusPill.err .statusDot{background:#ff3b30}
-.bottomDock{position:fixed;left:14px;right:20px;bottom:max(18px,env(safe-area-inset-bottom));max-width:726px;margin:0 auto;z-index:30;display:flex;align-items:center;gap:10px;pointer-events:none}.swipeLayer{position:fixed;left:0;right:0;top:220px;bottom:92px;z-index:20;background:transparent;touch-action:none;pointer-events:auto}.searchWrap{position:relative;flex:1;min-width:0;pointer-events:auto}.searchWrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:#8e8e93;stroke-width:2}.search{width:100%;height:50px;border:1px solid #dedee3;background:rgba(245,245,247,.97);color:#1d1d1f;border-radius:16px;padding:0 14px 0 41px;font-size:16px;outline:none;box-shadow:0 5px 20px rgba(0,0,0,.09);backdrop-filter:blur(12px)}.search:focus{background:#fff;border-color:#b9d5ff}
+.bottomDock{position:fixed;left:14px;right:20px;bottom:max(18px,env(safe-area-inset-bottom));max-width:726px;margin:0 auto;z-index:30;display:flex;align-items:center;gap:10px;pointer-events:none}.swipeLayer{display:none}.searchWrap{position:relative;flex:1;min-width:0;pointer-events:auto}.searchWrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:#8e8e93;stroke-width:2}.search{width:100%;height:50px;border:1px solid #dedee3;background:rgba(245,245,247,.97);color:#1d1d1f;border-radius:16px;padding:0 14px 0 41px;font-size:16px;outline:none;box-shadow:0 5px 20px rgba(0,0,0,.09);backdrop-filter:blur(12px)}.search:focus{background:#fff;border-color:#b9d5ff}
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:#e4e4e9;border-radius:13px;padding:3px;margin-bottom:11px}.tab{border:0;background:transparent;color:#5a5a5f;border-radius:10px;padding:10px 12px;font-weight:650}.tab.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .scroller{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:1px 0 9px}.scroller::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid #d5d5da;background:#fff;color:#3a3a3c;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:560}.chip.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.count{font-size:11px;opacity:.7}.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
-.list{display:flex;flex-direction:column;gap:8px}.item{background:#fff;border-radius:16px;padding:12px 12px;display:flex;gap:11px;align-items:flex-start;min-width:0}.item.overdue{box-shadow:inset 3px 0 0 #ff3b30}.check{appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:2px 0 0;flex:0 0 auto;border:1.6px solid #a8a8ad;border-radius:50%;background:#fff;display:grid;place-items:center;transition:background .12s,border-color .12s,transform .08s}.check:active{transform:scale(.92)}.check:checked{background:#007aff;border-color:#007aff}.check:checked::after{content:"";width:8px;height:4px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg)}.content{flex:1;min-width:0}.taskTitle,.noteTitle{font-size:16px;line-height:1.3;overflow-wrap:anywhere}.noteTitle{font-weight:680}.item.done .taskTitle{text-decoration:line-through;color:#8e8e93}.preview{margin-top:4px;color:#6e6e73;font-size:14px;line-height:1.38;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11px;color:#8e8e93}.metaTag{display:inline-flex;align-items:center;gap:4px}.metaTag.high{color:#c62828}.metaTag.low{color:#637083}.metaTag.overdueText{color:#c62828}.rowActions{display:flex;gap:2px}.miniBtn{width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:#8e8e93;display:grid;place-items:center;padding:0}.miniBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.miniBtn:active{background:rgba(118,118,128,.12)}.miniBtn.danger{color:#ff3b30}.miniBtn.restore{color:#007aff}.miniBtn.pin.active{color:#ff9f0a}
+.list{display:flex;flex-direction:column;gap:8px}.item{background:#fff;border-radius:16px;padding:12px 12px;display:flex;gap:11px;align-items:flex-start;min-width:0}.noteSwipeRow{position:relative;border-radius:16px;overflow:hidden;background:#ff3b30}.noteSwipeDelete{position:absolute;right:0;top:0;bottom:0;width:88px;border:0;background:#ff3b30;color:#fff;font-size:14px;font-weight:650;display:grid;place-items:center}.noteItem{position:relative;z-index:1;width:100%;transition:transform .18s ease;will-change:transform}.noteSwipeRow.revealed .noteItem{transform:translateX(-88px)}.item.overdue{box-shadow:inset 3px 0 0 #ff3b30}.check{appearance:none;-webkit-appearance:none;width:22px;height:22px;margin:2px 0 0;flex:0 0 auto;border:1.6px solid #a8a8ad;border-radius:50%;background:#fff;display:grid;place-items:center;transition:background .12s,border-color .12s,transform .08s}.check:active{transform:scale(.92)}.check:checked{background:#007aff;border-color:#007aff}.check:checked::after{content:"";width:8px;height:4px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg)}.content{flex:1;min-width:0}.taskTitle,.noteTitle{font-size:16px;line-height:1.3;overflow-wrap:anywhere}.noteTitle{font-weight:680}.item.done .taskTitle{text-decoration:line-through;color:#8e8e93}.preview{margin-top:4px;color:#6e6e73;font-size:14px;line-height:1.38;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11px;color:#8e8e93}.metaTag{display:inline-flex;align-items:center;gap:4px}.metaTag.high{color:#c62828}.metaTag.low{color:#637083}.metaTag.overdueText{color:#c62828}.rowActions{display:flex;gap:2px}.miniBtn{width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:#8e8e93;display:grid;place-items:center;padding:0}.miniBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.miniBtn:active{background:rgba(118,118,128,.12)}.miniBtn.danger{color:#ff3b30}.miniBtn.restore{color:#007aff}.miniBtn.pin{color:#8e8e93}.miniBtn.pin svg .pinFill{fill:transparent}.miniBtn.pin.active{color:#ff9f0a}.miniBtn.pin.active svg .pinFill{fill:currentColor}
 .empty{background:#fff;border-radius:16px;padding:30px 18px;text-align:center;color:#6e6e73}.emptyTitle{font-weight:650;color:#48484a;margin-bottom:3px}.emptyText{font-size:13px}
 .sectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;margin:4px 3px 7px}
 .fab{position:static;flex:0 0 58px;width:58px;height:58px;border-radius:50%;border:0;background:#1677ff;color:#fff;font-size:32px;font-weight:300;box-shadow:0 8px 24px rgba(0,0,0,.18);display:grid;place-items:center;pointer-events:auto}.fab:active{transform:scale(.96)}
@@ -74,7 +74,6 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   <div id="list" class="list"></div>
 </div>
 
-<div id="swipeLayer" class="swipeLayer" aria-hidden="true"></div>
 
 <div class="bottomDock" id="bottomDock">
   <div class="searchWrap">
@@ -170,7 +169,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   const palette=["#8e8e93","#1677ff","#7c4dff","#00897b","#ef6c00","#c62828","#6d4c41","#ad1457","#2e7d32"];
   const iconTrash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>';
   const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v5h5M5.5 12.5a7 7 0 1 0 2-5"></path></svg>';
-  const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 4 6 0-1 5 3 3v1H7v-1l3-3-1-5ZM12 13v7"></path></svg>';
+  const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
@@ -258,8 +257,12 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   function renderNotes(){
     const list=$("list"),rows=state.notes.filter(visibleNote).slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt)));if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay notas eliminadas.":"Crea una nota con el botón +."}</div></div>`;return}
-    list.innerHTML=rows.map(n=>`<div class="item" data-note="${esc(n.id)}"><div class="content noteOpen"><div class="noteTitle">${esc(n.title||"Sin título")}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span></div></div><div class="rowActions">${trash?`<button class="miniBtn restore restoreNote" type="button" aria-label="Restaurar">${iconRestore}</button>`:`<button class="miniBtn pin ${n.pinned?"active":""} pinNote" type="button" aria-label="${n.pinned?"Desfijar":"Fijar"}">${iconPin}</button><button class="miniBtn danger deleteNote" type="button" aria-label="Mover a Papelera">${iconTrash}</button>`}</div></div>`).join("");
-    list.querySelectorAll("[data-note]").forEach(el=>{const n=state.notes.find(x=>x.id===el.dataset.note);if(!n)return;const open=el.querySelector(".noteOpen");if(open&&!trash)open.addEventListener("click",()=>openNote(n));const pin=el.querySelector(".pinNote");if(pin)pin.addEventListener("click",()=>{n.pinned=!n.pinned;touch(n);scheduleSave();render()});const del=el.querySelector(".deleteNote");if(del)del.addEventListener("click",()=>{n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")});const res=el.querySelector(".restoreNote");if(res)res.addEventListener("click",()=>{n.deletedAt=null;touch(n);scheduleSave();render();showToast("Nota restaurada")})})
+    list.innerHTML=rows.map(n=>trash
+      ? `<div class="item" data-note="${esc(n.id)}"><div class="content"><div class="noteTitle">${esc(n.title||"Sin título")}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span></div></div><div class="rowActions"><button class="miniBtn restore restoreNote" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`
+      : `<div class="noteSwipeRow" data-note-row="${esc(n.id)}"><button class="noteSwipeDelete" type="button">Eliminar</button><div class="item noteItem" data-note="${esc(n.id)}"><div class="content noteOpen"><div class="noteTitle">${esc(n.title||"Sin título")}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span></div></div><div class="rowActions"><button class="miniBtn pin ${n.pinned?"active":""} pinNote" type="button" aria-label="${n.pinned?"Desfijar":"Fijar"}">${iconPin}</button><button class="miniBtn danger deleteNote" type="button" aria-label="Mover a Papelera">${iconTrash}</button></div></div></div>`
+    ).join("");
+    list.querySelectorAll("[data-note]").forEach(el=>{const n=state.notes.find(x=>x.id===el.dataset.note);if(!n)return;const open=el.querySelector(".noteOpen");if(open&&!trash)open.addEventListener("click",()=>openNote(n));const pin=el.querySelector(".pinNote");if(pin)pin.addEventListener("click",e=>{e.stopPropagation();n.pinned=!n.pinned;touch(n);scheduleSave();render()});const del=el.querySelector(".deleteNote");if(del)del.addEventListener("click",e=>{e.stopPropagation();n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")});const res=el.querySelector(".restoreNote");if(res)res.addEventListener("click",()=>{n.deletedAt=null;touch(n);scheduleSave();render();showToast("Nota restaurada")})});
+    list.querySelectorAll("[data-note-row]").forEach(row=>{const n=state.notes.find(x=>x.id===row.dataset.noteRow);const del=row.querySelector(".noteSwipeDelete");if(del&&n)del.addEventListener("click",()=>{n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")})})
   }
 
   function render(){
@@ -294,52 +297,59 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   $("tabTasks").addEventListener("click",()=>setMode("tasks"));
   $("tabNotes").addEventListener("click",()=>setMode("notes"));
 
-  const swipeLayer=$("swipeLayer");
+  const appRoot=document.querySelector(".app");
   let gesture=null;
-  function updateSwipeLayerBounds(){
-    if(!swipeLayer)return;
-    const c=$("categories"),dock=$("bottomDock");
-    const cr=c?c.getBoundingClientRect():null,dr=dock?dock.getBoundingClientRect():null;
-    const top=Math.max(0,(cr?cr.bottom:190)+4);
-    const bottom=Math.max(0,window.innerHeight-(dr?dr.top:window.innerHeight-90)+4);
-    swipeLayer.style.top=top+"px";swipeLayer.style.bottom=bottom+"px";
+  function closeRevealedNotes(except=null){
+    document.querySelectorAll(".noteSwipeRow.revealed").forEach(r=>{if(r!==except)r.classList.remove("revealed")});
   }
-  function forwardTap(x,y){
-    swipeLayer.style.pointerEvents="none";
-    const el=document.elementFromPoint(x,y);
-    swipeLayer.style.pointerEvents="auto";
-    if(el&&typeof el.click==="function")el.click();
-  }
-  swipeLayer.addEventListener("pointerdown",e=>{
+  appRoot.addEventListener("pointerdown",e=>{
     if(trash||document.querySelector(".overlay.show"))return;
-    gesture={id:e.pointerId,sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,axis:null,moved:false};
-    try{swipeLayer.setPointerCapture(e.pointerId)}catch(_){}
-  });
-  swipeLayer.addEventListener("pointermove",e=>{
+    if(e.target.closest("input,textarea,select,.chip,.tab,.iconBtn,.fab,.searchWrap,.miniBtn,.noteSwipeDelete,.navBackBtn"))return;
+    const noteItem=e.target.closest("[data-note]");
+    gesture={id:e.pointerId,sx:e.clientX,sy:e.clientY,axis:null,noteId:noteItem?.dataset.note||null,noteEl:noteItem||null};
+  },{passive:true});
+  appRoot.addEventListener("pointermove",e=>{
     if(!gesture||e.pointerId!==gesture.id)return;
     const dx=e.clientX-gesture.sx,dy=e.clientY-gesture.sy;
-    if(!gesture.axis&&(Math.abs(dx)>7||Math.abs(dy)>7))gesture.axis=Math.abs(dx)>Math.abs(dy)*1.05?"x":"y";
-    if(Math.abs(dx)>5||Math.abs(dy)>5)gesture.moved=true;
-    if(gesture.axis==="y"){const step=gesture.ly-e.clientY;if(step)window.scrollBy(0,step)}
-    gesture.lx=e.clientX;gesture.ly=e.clientY;
-  });
-  function finishGesture(e,cancelled=false){
+    if(!gesture.axis&&(Math.abs(dx)>8||Math.abs(dy)>8))gesture.axis=Math.abs(dx)>Math.abs(dy)*1.15?"x":"y";
+    if(gesture.axis==="x"&&gesture.noteEl&&mode==="notes"){
+      const row=gesture.noteEl.closest(".noteSwipeRow");
+      if(row){
+        const base=row.classList.contains("revealed")?-88:0;
+        const tx=Math.max(-96,Math.min(72,base+dx));
+        gesture.noteEl.style.transition="none";
+        gesture.noteEl.style.transform=`translateX(${tx}px)`;
+      }
+    }
+  },{passive:true});
+  function finishNativeGesture(e,cancelled=false){
     if(!gesture||e.pointerId!==gesture.id)return;
     const g=gesture;gesture=null;
     const dx=e.clientX-g.sx,dy=e.clientY-g.sy;
-    if(cancelled)return;
-    if(g.axis==="x"&&Math.abs(dx)>=42&&Math.abs(dx)>Math.abs(dy)*1.05){
-      suppressClickUntil=Date.now()+400;
-      if(dx<0&&mode==="tasks")setMode("notes");
-      else if(dx>0&&mode==="notes")setMode("tasks");
+    if(g.noteEl){g.noteEl.style.transition="";g.noteEl.style.transform=""}
+    if(cancelled||g.axis!=="x"||Math.abs(dx)<44||Math.abs(dx)<=Math.abs(dy)*1.1)return;
+    suppressClickUntil=Date.now()+350;
+    if(g.noteId&&mode==="notes"){
+      const n=state.notes.find(x=>x.id===g.noteId&&!x.deletedAt);
+      const row=document.querySelector(`[data-note-row="${CSS.escape(g.noteId)}"]`);
+      if(dx>0){
+        closeRevealedNotes();
+        if(n)openNote(n);
+      }else if(row){
+        closeRevealedNotes(row);
+        row.classList.add("revealed");
+      }
       return;
     }
-    if(!g.moved||Math.hypot(dx,dy)<10)forwardTap(e.clientX,e.clientY);
+    if(dx<0&&mode==="tasks")setMode("notes");
+    else if(dx>0&&mode==="notes")setMode("tasks");
   }
-  swipeLayer.addEventListener("pointerup",e=>finishGesture(e,false));
-  swipeLayer.addEventListener("pointercancel",e=>finishGesture(e,true));
-  window.addEventListener("resize",updateSwipeLayerBounds);
-  window.addEventListener("scroll",updateSwipeLayerBounds,{passive:true});
+  appRoot.addEventListener("pointerup",e=>finishNativeGesture(e,false),{passive:true});
+  appRoot.addEventListener("pointercancel",e=>finishNativeGesture(e,true),{passive:true});
+  appRoot.addEventListener("click",e=>{
+    if(Date.now()<suppressClickUntil){e.preventDefault();e.stopPropagation();return}
+    if(!e.target.closest(".noteSwipeRow"))closeRevealedNotes();
+  },true);
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
   document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
   $("fab").addEventListener("click",()=>mode==="tasks"?openTask(null):openNote(null));
