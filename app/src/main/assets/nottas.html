@@ -189,17 +189,12 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,saveTimer=null,saving=false,toastTimer=null;
-  let suppressClickUntil=0,searchPinUntil=0;
+  let suppressClickUntil=0;
 
-  function pinSearchTop(ms=850){
-    searchPinUntil=performance.now()+ms;
-    const tick=()=>{
-      if(document.activeElement?.id!=="search"||performance.now()>searchPinUntil)return;
-      window.scrollTo(0,0);
-      if(document.scrollingElement)document.scrollingElement.scrollTop=0;
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+  function setNativeSearchKeyboardMode(active){
+    try{
+      if(window.NottasNative&&NottasNative.setSearchKeyboardMode)NottasNative.setSearchKeyboardMode(!!active);
+    }catch(_){}
   }
 
   function syncVisualViewport(){
@@ -210,9 +205,6 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     document.documentElement.style.setProperty("--vv-top",top+"px");
     const layoutH=document.documentElement.clientHeight||window.innerHeight;
     document.body.classList.toggle("keyboardOpen",!!vv&&layoutH-h>120);
-    if(document.activeElement?.id==="search"&&performance.now()<searchPinUntil){
-      requestAnimationFrame(()=>{window.scrollTo(0,0);if(document.scrollingElement)document.scrollingElement.scrollTop=0});
-    }
     const active=document.activeElement;
     if(active&&active.closest&&active.closest("#editorOverlay")&&active.matches("input,textarea,select")){
       setTimeout(()=>active.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}),40);
@@ -444,12 +436,14 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     b.setAttribute("aria-label",editorPinned?"Quitar destacado":"Destacar");
   }
   function openTask(t){
+    setNativeSearchKeyboardMode(false);
     editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").value=t?t.text:"";fillSelect($("taskCategory"),t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("deleteTaskBtn").classList.toggle("hidden",!t);
     openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
+    setNativeSearchKeyboardMode(false);
     editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").value=n?n.title:"";$("noteBody").value=n?n.body:"";fillSelect($("noteCategory"),n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("deleteNoteBtn").classList.toggle("hidden",!n);
@@ -493,28 +487,31 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   const searchInput=$("search"),searchClear=$("searchClear");
   function syncSearchClear(){searchClear.classList.toggle("hidden",!searchInput.value)}
+  searchInput.addEventListener("touchstart",()=>setNativeSearchKeyboardMode(true),{passive:true});
+  searchInput.addEventListener("pointerdown",()=>setNativeSearchKeyboardMode(true),{passive:true});
   searchInput.addEventListener("focus",()=>{
+    setNativeSearchKeyboardMode(true);
     syncSearchClear();
-    pinSearchTop(950);
-    setTimeout(()=>pinSearchTop(500),220);
+    requestAnimationFrame(()=>{window.scrollTo(0,0);if(document.scrollingElement)document.scrollingElement.scrollTop=0});
+  });
+  searchInput.addEventListener("blur",()=>{
+    setTimeout(()=>{
+      if(document.activeElement!==searchInput&&document.activeElement!==searchClear)setNativeSearchKeyboardMode(false);
+    },120);
   });
   searchInput.addEventListener("input",e=>{
     query=e.target.value.trim().toLowerCase();
     syncSearchClear();
     render();
-    if(performance.now()<searchPinUntil){
-      window.scrollTo(0,0);
-      if(document.scrollingElement)document.scrollingElement.scrollTop=0;
-    }
   });
   searchClear.addEventListener("click",e=>{
     e.preventDefault();
     searchInput.value="";
     query="";
     render();
+    setNativeSearchKeyboardMode(true);
     searchInput.focus({preventScroll:true});
     syncSearchClear();
-    pinSearchTop(450);
   });
   function setMode(next){
     if(next!=="tasks"&&next!=="notes")return;
