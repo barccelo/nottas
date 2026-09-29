@@ -6,6 +6,15 @@ android {
     namespace = "com.nottas.app"
     compileSdk = 36
 
+    signingConfigs {
+        create("stableDebug") {
+            storeFile = rootProject.file("keystore/nottas-debug.keystore")
+            storePassword = "nottasdebug"
+            keyAlias = "nottasdebug"
+            keyPassword = "nottasdebug"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.nottas.app"
         minSdk = 26
@@ -15,6 +24,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("stableDebug")
+        }
         release {
             isMinifyEnabled = false
         }
