@@ -436,7 +436,23 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
   $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();showToast("Categoría eliminada")});
 
-  $("importBtn").addEventListener("click",()=>{if(window.NottasNative&&NottasNative.requestImport){NottasNative.requestImport();return}$("importFile").click()});$("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());state=normalize(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));activeCategory="all";trash=false;render();await saveNow();showToast("Copia importada")}catch(_){showToast("El archivo no es válido")}finally{e.target.value=""}});
+  window.NottasImportData=async function(input){
+    try{
+      const parsed=typeof input==="string"?JSON.parse(input):input;
+      state=normalize(parsed);
+      activeCategory="all";
+      trash=false;
+      render();
+      await saveNow();
+      showToast("Copia importada");
+      return true;
+    }catch(_){
+      showToast("El archivo no es válido");
+      return false;
+    }
+  };
+  $("importBtn").addEventListener("click",()=>{if(window.NottasNative&&NottasNative.requestImport){NottasNative.requestImport();return}$("importFile").click()});
+  $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
   window.NottasHandleBack=function(){
