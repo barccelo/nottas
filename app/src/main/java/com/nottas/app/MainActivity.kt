@@ -209,13 +209,11 @@ class MainActivity : Activity() {
                 ?: error("Archivo vacío")
             val quoted = org.json.JSONObject.quote(json)
             webView.evaluateJavascript(
-                "try{const parsed=JSON.parse($quoted);localStorage.setItem('miniapp_local_v3',JSON.stringify(parsed));location.reload();true}catch(e){false}",
+                "(async()=>{try{return await window.NottasImportData($quoted)}catch(e){return false}})()",
                 { ok ->
-                    Toast.makeText(
-                        this,
-                        if (ok == "true") "Copia importada" else "El archivo no es válido",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    if (ok != "true") {
+                        Toast.makeText(this, "El archivo no es válido", Toast.LENGTH_SHORT).show()
+                    }
                 }
             )
         } catch (_: Throwable) {
