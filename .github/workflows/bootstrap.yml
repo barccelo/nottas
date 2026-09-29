@@ -1,0 +1,62 @@
+name: Bootstrap and build Nottas
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Expand project source
+        shell: bash
+        run: |
+          if [ -f bootstrap/nottas.part1 ] && [ -f bootstrap/nottas.part2 ]; then
+            rm -rf /tmp/nottas-bootstrap
+            mkdir -p /tmp/nottas-bootstrap
+            cat bootstrap/nottas.part1 bootstrap/nottas.part2 > /tmp/nottas-bootstrap/Nottas-android-v0.1.0.zip
+            unzip -q /tmp/nottas-bootstrap/Nottas-android-v0.1.0.zip -d /tmp/nottas-bootstrap
+            cp -a /tmp/nottas-bootstrap/Nottas/. .
+            rm -rf bootstrap
+            rm -f .github/workflows/bootstrap.yml
+          fi
+
+      - name: Commit expanded source
+        shell: bash
+        run: |
+          if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Expand Nottas Android source"
+            git push
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nottas-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
