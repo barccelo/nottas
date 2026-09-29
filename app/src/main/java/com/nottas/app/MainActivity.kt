@@ -103,16 +103,7 @@ class MainActivity : Activity() {
         root.setOnApplyWindowInsetsListener { view, insets ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())
-                val ime = insets.getInsets(WindowInsets.Type.ime())
-                val imeOffset = (ime.bottom - bars.bottom).coerceAtLeast(0)
                 view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-                if (::webView.isInitialized) {
-                    webView.evaluateJavascript(
-                        "document.documentElement.style.setProperty('--ime-offset','" +
-                            imeOffset + "px')",
-                        null
-                    )
-                }
             } else {
                 @Suppress("DEPRECATION")
                 view.setPadding(
