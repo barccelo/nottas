@@ -120,7 +120,8 @@ class UnlockOverlayService : Service() {
             .setContentTitle("Nottas")
             .setContentText("Listo para aparecer al encender o desbloquear")
             .setContentIntent(pendingIntent)
-            .setOngoing(true)
+            .setOngoing(false)
+            .setSilent(true)
             .setCategory(android.app.Notification.CATEGORY_SERVICE)
             .build()
 
