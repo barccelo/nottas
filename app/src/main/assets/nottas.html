@@ -319,8 +319,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     if(cancelled)return;
     if(g.axis==="x"&&Math.abs(dx)>=42&&Math.abs(dx)>Math.abs(dy)*1.05){
       suppressClickUntil=Date.now()+400;
-      if(dx>0&&mode==="tasks")setMode("notes");
-      else if(dx<0&&mode==="notes")setMode("tasks");
+      if(dx<0&&mode==="tasks")setMode("notes");
+      else if(dx>0&&mode==="notes")setMode("tasks");
       return;
     }
     if(!g.moved||Math.hypot(dx,dy)<10)forwardTap(e.clientX,e.clientY);
@@ -348,6 +348,32 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   $("importBtn").addEventListener("click",()=>{if(window.NottasNative&&NottasNative.requestImport){NottasNative.requestImport();return}$("importFile").click()});$("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());state=normalize(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));activeCategory="all";trash=false;render();await saveNow();showToast("Copia importada")}catch(_){showToast("El archivo no es válido")}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
+
+  window.NottasHandleBack=function(){
+    const active=document.activeElement;
+    if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select")){
+      active.blur();
+      return true;
+    }
+    if($("categoryOverlay").classList.contains("show")){
+      closeCategory();
+      return true;
+    }
+    if($("editorOverlay").classList.contains("show")){
+      closeEditor();
+      return true;
+    }
+    if($("settingsOverlay").classList.contains("show")){
+      closeOverlay("settingsOverlay");
+      return true;
+    }
+    if(trash){
+      trash=false;
+      render();
+      return true;
+    }
+    return false;
+  };
 
   if(window.NottasNative&&NottasNative.isNativeApp&&NottasNative.isNativeApp()){const sec=$("androidSettings"),wake=$("wakeEnabled");sec.classList.remove("hidden");wake.checked=!!NottasNative.isWakeEnabled();wake.addEventListener("change",()=>NottasNative.setWakeEnabled(wake.checked));}
 
