@@ -121,7 +121,6 @@ class UnlockOverlayService : Service() {
             .setContentText("Listo para aparecer al encender o desbloquear")
             .setContentIntent(pendingIntent)
             .setOngoing(false)
-            .setSilent(true)
             .setCategory(android.app.Notification.CATEGORY_SERVICE)
             .build()
 
