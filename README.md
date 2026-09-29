@@ -26,7 +26,7 @@ Primera versión Android independiente de la miniapp local-first de notas y tare
 
 ## Compilación en GitHub
 
-El workflow `.github/workflows/android.yml` genera `app-debug.apk` automáticamente en cada push a `main` y también puede ejecutarse manualmente desde Actions.
+El workflow de GitHub Actions genera `app-debug.apk` automáticamente en cada push a `main` y también puede ejecutarse manualmente desde Actions.
 
 ## Datos
 
