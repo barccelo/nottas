@@ -23,13 +23,23 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".QuickCaptureActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Nottas" />
+
         <service
             android:name=".UnlockOverlayService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps a user-enabled quick-capture overlay ready to show Nottas after screen-on or device unlock." />
+                android:value="Keeps a user-enabled quick-capture screen ready to show Nottas after screen-on or device unlock." />
         </service>
 
         <receiver
