@@ -73,6 +73,7 @@ object NottasWeb {
                         WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
                     }
                 )
+                activity.window.decorView.requestApplyInsets()
             }
         }
 
