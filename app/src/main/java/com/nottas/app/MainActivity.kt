@@ -1,6 +1,5 @@
 package com.nottas.app
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
@@ -24,7 +23,6 @@ class MainActivity : Activity() {
         const val EXTRA_OPEN_IMPORT = "open_import"
         private const val REQ_OVERLAY = 4101
         private const val REQ_FILE = 4102
-        private const val REQ_NOTIFICATIONS = 4103
     }
 
     private lateinit var webView: WebView
@@ -72,13 +70,6 @@ class MainActivity : Activity() {
             )
         }
 
-        if (
-            Build.VERSION.SDK_INT >= 33 &&
-            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
-            android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), REQ_NOTIFICATIONS)
-        }
     }
 
     override fun onResume() {
