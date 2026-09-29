@@ -176,6 +176,15 @@ object NottasWeb {
         }
 
         @JavascriptInterface
+        fun appVersion(): String {
+            return try {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+            } catch (_: Throwable) {
+                ""
+            }
+        }
+
+        @JavascriptInterface
         fun isNativeApp(): Boolean = true
 
         private fun toast(message: String) {
