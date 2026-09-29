@@ -151,6 +151,48 @@ object NottasWeb {
         }
 
         @JavascriptInterface
+        fun internalBackupInfo(): String {
+            return try {
+                val dir = File(context.filesDir, "nottas_backups")
+                val snapshots = dir.listFiles { file ->
+                    file.isFile && file.name.startsWith("snapshot-") && file.name.endsWith(".json")
+                }
+                    ?.sortedByDescending { it.lastModified() }
+                    ?: emptyList()
+
+                JSONObject().apply {
+                    put("count", snapshots.size)
+                    put("latestAt", snapshots.firstOrNull()?.lastModified() ?: 0L)
+                }.toString()
+            } catch (_: Throwable) {
+                """{"count":0,"latestAt":0}"""
+            }
+        }
+
+        @JavascriptInterface
+        fun readPreviousInternalBackup(): String {
+            return try {
+                val dir = File(context.filesDir, "nottas_backups")
+                val snapshot = dir.listFiles { file ->
+                    file.isFile && file.name.startsWith("snapshot-") && file.name.endsWith(".json")
+                }
+                    ?.sortedByDescending { it.lastModified() }
+                    ?.firstOrNull()
+                    ?: return ""
+
+                val text = snapshot.readText()
+                val parsed = JSONObject(text)
+                if (
+                    parsed.has("tasks") &&
+                    parsed.has("notes") &&
+                    parsed.has("categories")
+                ) text else ""
+            } catch (_: Throwable) {
+                ""
+            }
+        }
+
+        @JavascriptInterface
         fun exportJson(json: String) {
             try {
                 val fileName = "NottasData-${System.currentTimeMillis()}.json"
