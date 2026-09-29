@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Nottas</title>
+<style>
+*{box-sizing:border-box}
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1d1d1f;background:#f5f5f7}
+html,body{overscroll-behavior-x:none}body{margin:0;background:#f5f5f7;color:#1d1d1f}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app{max-width:760px;min-height:100vh;margin:0 auto;padding:15px 14px 102px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.headerTitle{min-width:0}.headerTitle h1{font-size:25px;line-height:1.1;margin:0;font-weight:730;letter-spacing:-.02em}
+.headerActions{display:flex;gap:7px;align-items:center}.iconBtn{width:42px;height:42px;border:0;border-radius:12px;background:#e9e9ee;color:#1d1d1f;display:grid;place-items:center;font-size:20px}.iconBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.statusPill{display:flex;align-items:center;gap:6px;border:1px solid #dedee3;background:#fff;border-radius:999px;padding:6px 9px;font-size:11px;color:#6e6e73;white-space:nowrap}.statusDot{width:7px;height:7px;border-radius:50%;background:#34c759}.statusPill.warn .statusDot{background:#ff9f0a}.statusPill.err .statusDot{background:#ff3b30}
+.bottomDock{position:fixed;left:14px;right:20px;bottom:max(18px,env(safe-area-inset-bottom));max-width:726px;margin:0 auto;z-index:30;display:flex;align-items:center;gap:10px;pointer-events:none}.swipeLayer{position:fixed;left:0;right:0;top:220px;bottom:92px;z-index:20;background:transparent;touch-action:none;pointer-events:auto}.searchWrap{position:relative;flex:1;min-width:0;pointer-events:auto}.searchWrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:#8e8e93;stroke-width:2}.search{width:100%;height:50px;border:1px solid #dedee3;background:rgba(245,245,247,.97);color:#1d1d1f;border-radius:16px;padding:0 14px 0 41px;font-size:16px;outline:none;box-shadow:0 5px 20px rgba(0,0,0,.09);backdrop-filter:blur(12px)}.search:focus{background:#fff;border-color:#b9d5ff}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#e4e4e9;border-radius:13px;padding:3px;margin-bottom:11px}.tab{border:0;background:transparent;color:#5a5a5f;border-radius:10px;padding:10px 12px;font-weight:650}.tab.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.scroller{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:1px 0 9px}.scroller::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid #d5d5da;background:#fff;color:#3a3a3c;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:560}.chip.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.count{font-size:11px;opacity:.7}.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.list{display:flex;flex-direction:column;gap:8px}.item{background:#fff;border-radius:16px;padding:12px 12px;display:flex;gap:11px;align-items:flex-start;min-width:0}.item.overdue{box-shadow:inset 3px 0 0 #ff3b30}.check{width:22px;height:22px;margin:2px 0 0;flex:0 0 auto}.content{flex:1;min-width:0}.taskTitle,.noteTitle{font-size:16px;line-height:1.3;overflow-wrap:anywhere}.noteTitle{font-weight:680}.item.done .taskTitle{text-decoration:line-through;color:#8e8e93}.preview{margin-top:4px;color:#6e6e73;font-size:14px;line-height:1.38;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:11px;color:#8e8e93}.metaTag{display:inline-flex;align-items:center;gap:4px}.metaTag.high{color:#c62828}.metaTag.low{color:#637083}.metaTag.overdueText{color:#c62828}.rowActions{display:flex;gap:3px}.miniBtn{width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:#8e8e93;display:grid;place-items:center;font-size:18px}.miniBtn:active{background:#f0f0f4}.miniBtn.danger{color:#c62828}.miniBtn.star.active{color:#d39b00}
+.empty{background:#fff;border-radius:16px;padding:30px 18px;text-align:center;color:#6e6e73}.emptyTitle{font-weight:650;color:#48484a;margin-bottom:3px}.emptyText{font-size:13px}
+.sectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;margin:4px 3px 7px}
+.fab{position:static;flex:0 0 58px;width:58px;height:58px;border-radius:50%;border:0;background:#1677ff;color:#fff;font-size:32px;font-weight:300;box-shadow:0 8px 24px rgba(0,0,0,.18);display:grid;place-items:center;pointer-events:auto}.fab:active{transform:scale(.96)}
+.backbar{display:none;align-items:center;gap:8px;margin-bottom:10px}.backbar.show{display:flex}.backbar button{border:0;background:#e9e9ee;border-radius:10px;padding:8px 11px}.backbar strong{font-size:16px}
+.overlay{position:fixed;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-height,100vh);background:rgba(0,0,0,.24);z-index:50;display:none;align-items:flex-end;justify-content:center}.overlay.show{display:flex}.sheet{width:min(760px,100%);max-height:calc(var(--vv-height,100vh) - 8px);overflow:auto;overscroll-behavior:contain;scroll-padding-bottom:120px;background:#f5f5f7;border-radius:20px 20px 0 0;padding:14px 14px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.16)}.sheetHandle{width:40px;height:5px;border-radius:99px;background:#c7c7cc;margin:0 auto 12px}.sheetHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sheetHeader h2{font-size:20px;margin:0}.closeBtn{border:0;background:#e5e5ea;width:36px;height:36px;border-radius:50%;font-size:20px;color:#48484a}
+.card{background:#fff;border-radius:16px;padding:13px;margin-bottom:10px}.field{margin-bottom:10px}.field:last-child{margin-bottom:0}.label{font-size:12px;color:#6e6e73;margin:0 2px 5px}.textInput,.textarea,.select,.dateInput,.timeInput,.colorInput{width:100%;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;border-radius:12px;padding:11px 12px;font-size:16px;outline:none}.textInput:focus,.textarea:focus,.select:focus,.dateInput:focus,.timeInput:focus{border-color:#1677ff}.textarea{min-height:150px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.btn{border:0;border-radius:12px;min-height:44px;padding:10px 15px;font-weight:620}.btn.primary{background:#1677ff;color:#fff}.btn.secondary{background:#e5e5ea;color:#1d1d1f}.btn.danger{background:#fff0f0;color:#b42318}.btn.full{width:100%}.switchRow{display:flex;align-items:center;justify-content:space-between;gap:12px}.switchRow input{width:22px;height:22px}
+.settingsGroup{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:10px}.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid #ececf0}.settingsRow:last-child{border-bottom:0}.settingsRow .left{min-width:0}.settingsRow .title{font-size:15px}.settingsRow .desc{font-size:12px;color:#8e8e93;margin-top:2px}.settingsRow button{border:0;background:#e9e9ee;border-radius:10px;padding:8px 10px}.categoryManage{display:flex;align-items:center;gap:10px}.categoryManage .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.colorSwatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1d1d1f;color:#fff;border-radius:999px;padding:9px 13px;font-size:12px;z-index:80;opacity:0;pointer-events:none;transition:opacity .18s}.toast.show{opacity:1}
+.hidden{display:none!important}
+@media(max-width:520px){.app{padding-left:12px;padding-right:12px}.bottomDock{left:12px;right:20px}.statusPill .statusText{display:none}.grid2{grid-template-columns:1fr}.headerTitle h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="headerTitle"><h1>Nottas</h1></div>
+    <div class="headerActions">
+      <div id="statusPill" class="statusPill"><span class="statusDot"></span><span id="statusText" class="statusText">Local</span></div>
+      <button id="settingsBtn" class="iconBtn" type="button" aria-label="Ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09a1.7 1.7 0 0 0-.4-1.1 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09a1.7 1.7 0 0 0 1.1-.4 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09a1.7 1.7 0 0 0 .4 1.1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.36.34.7.6 1 .28.28.66.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.1.4c-.28.28-.5.62-.6 1z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="backbar" class="backbar"><button id="backBtn" type="button">← Volver</button><strong id="backTitle">Papelera</strong></div>
+
+  <div id="tabs" class="tabs">
+    <button id="tabTasks" class="tab active" type="button">Tareas</button>
+    <button id="tabNotes" class="tab" type="button">Notas</button>
+  </div>
+
+  <div id="taskFilters" class="scroller">
+    <button class="chip" data-filter="today" type="button">Hoy <span class="count" id="countToday"></span></button>
+    <button class="chip active" data-filter="pending" type="button">Pendientes <span class="count" id="countPending"></span></button>
+    <button class="chip" data-filter="all" type="button">Todas <span class="count" id="countAll"></span></button>
+    <button class="chip" data-filter="done" type="button">Completadas <span class="count" id="countDone"></span></button>
+  </div>
+
+  <div id="noteFilters" class="scroller hidden">
+    <button class="chip active" data-nfilter="all" type="button">Todas <span class="count" id="countNotes"></span></button>
+    <button class="chip" data-nfilter="pinned" type="button">Fijadas <span class="count" id="countPinned"></span></button>
+  </div>
+
+  <div id="categories" class="scroller"></div>
+  <div id="list" class="list"></div>
+</div>
+
+<div id="swipeLayer" class="swipeLayer" aria-hidden="true"></div>
+
+<div class="bottomDock" id="bottomDock">
+  <div class="searchWrap">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+    <input id="search" class="search" type="text" placeholder="Buscar" autocomplete="off">
+  </div>
+  <button id="fab" class="fab" type="button" aria-label="Crear">+</button>
+</div>
+<div id="toast" class="toast" role="status"></div>
+<input id="importFile" class="hidden" type="file" accept="application/json,.json">
+
+<div id="editorOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHeader"><h2 id="editorTitle">Nueva tarea</h2><button id="editorClose" class="closeBtn" type="button">×</button></div>
+
+    <form id="taskForm" class="hidden">
+      <div class="card">
+        <div class="field"><div class="label">Tarea</div><input id="taskText" class="textInput" type="text" maxlength="180" placeholder="¿Qué tienes pendiente?" autocomplete="off" required></div>
+        <div class="field"><div class="label">Categoría</div><select id="taskCategory" class="select"></select></div>
+        <div class="grid2">
+          <div class="field"><div class="label">Fecha</div><input id="taskDate" class="dateInput" type="date"></div>
+          <div class="field"><div class="label">Hora</div><input id="taskTime" class="timeInput" type="time"></div>
+        </div>
+        <div class="field"><div class="label">Prioridad</div><select id="taskPriority" class="select"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></div>
+      </div>
+      <div class="actions"><button id="deleteTaskBtn" class="btn danger hidden" type="button">Papelera</button><button class="btn primary" type="submit">Guardar</button></div>
+    </form>
+
+    <form id="noteForm" class="hidden">
+      <div class="card">
+        <div class="field"><div class="label">Título</div><input id="noteTitle" class="textInput" type="text" maxlength="120" placeholder="Título" autocomplete="off"></div>
+        <div class="field"><div class="label">Nota</div><textarea id="noteBody" class="textarea" maxlength="12000" placeholder="Escribe tu nota…"></textarea></div>
+        <div class="field"><div class="label">Categoría</div><select id="noteCategory" class="select"></select></div>
+        <div class="switchRow"><span>Fijar nota</span><input id="notePinned" type="checkbox"></div>
+      </div>
+      <div class="actions"><button id="deleteNoteBtn" class="btn danger hidden" type="button">Papelera</button><button class="btn primary" type="submit">Guardar</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="settingsOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHeader"><h2>Ajustes</h2><button id="settingsClose" class="closeBtn" type="button">×</button></div>
+
+    <div class="sectionTitle">Categorías</div>
+    <div id="categoryManage" class="settingsGroup"></div>
+    <button id="addCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría</button>
+
+    <div class="sectionTitle" style="margin-top:16px">Datos</div>
+    <div class="settingsGroup">
+      <div class="settingsRow"><div class="left"><div class="title">Papelera</div><div id="trashCountDesc" class="desc"></div></div><button id="openTrashBtn" type="button">Abrir</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Exportar copia</div><div class="desc">Guarda todas tus notas, tareas y categorías en un archivo JSON.</div></div><button id="exportBtn" type="button">Exportar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Importar copia</div><div class="desc">Reemplaza los datos locales con un JSON válido.</div></div><button id="importBtn" type="button">Importar</button></div>
+    </div>
+
+    <div id="androidSettings" class="hidden">
+      <div class="sectionTitle">Android</div>
+      <div class="settingsGroup">
+        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Abre Nottas automáticamente después de encender o desbloquear la pantalla.</div></div><input id="wakeEnabled" type="checkbox" style="width:22px;height:22px"></div>
+      </div>
+    </div>
+
+    <div class="sectionTitle">Sincronización</div>
+    <div class="settingsGroup">
+      <div class="settingsRow"><div class="left"><div class="title">Web</div><div class="desc">No configurada. La app sigue funcionando completamente offline.</div></div><span style="font-size:12px;color:#8e8e93">Local</span></div>
+      <div class="settingsRow"><div class="left"><div class="title">Copia secundaria</div><div id="backupDesc" class="desc">Guardado automático en este dispositivo.</div></div><span id="backupBadge" style="font-size:12px;color:#8e8e93">Activa</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="categoryOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHeader"><h2 id="categoryEditorTitle">Nueva categoría</h2><button id="categoryClose" class="closeBtn" type="button">×</button></div>
+    <form id="categoryForm">
+      <div class="card">
+        <div class="field"><div class="label">Nombre</div><input id="categoryName" class="textInput" type="text" maxlength="40" placeholder="Nombre" autocomplete="off" required></div>
+        <div class="field"><div class="label">Color</div><input id="categoryColor" class="colorInput" type="color" value="#1677ff" style="height:48px;padding:5px"></div>
+      </div>
+      <div class="actions"><button id="deleteCategoryBtn" class="btn danger hidden" type="button">Eliminar</button><button class="btn primary" type="submit">Guardar</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const API=location.origin;
+  const STORAGE_KEY="miniapp_local_v3";
+  const UI_KEY="miniapp_ui_v4";
+  const $=id=>document.getElementById(id);
+  const palette=["#8e8e93","#1677ff","#7c4dff","#00897b","#ef6c00","#c62828","#6d4c41","#ad1457","#2e7d32"];
+  let state=null;
+  let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,saveTimer=null,saving=false,toastTimer=null;
+  let swipeStartX=null,swipeStartY=null,swipeEligible=false,suppressClickUntil=0;
+
+  function syncVisualViewport(){
+    const vv=window.visualViewport;
+    const h=vv?vv.height:window.innerHeight;
+    const top=vv?vv.offsetTop:0;
+    document.documentElement.style.setProperty("--vv-height",Math.max(260,h)+"px");
+    document.documentElement.style.setProperty("--vv-top",top+"px");
+  }
+  syncVisualViewport();
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",syncVisualViewport);
+    window.visualViewport.addEventListener("scroll",syncVisualViewport);
+  }
+  window.addEventListener("resize",syncVisualViewport);
+
+  function now(){return new Date().toISOString()}
+  function localDateISO(d=new Date()){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
+  function makeId(p){return p+"_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,9)}
+  function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+  function touch(x){x.updatedAt=now();x.rev=(Number(x.rev)||0)+1;x.syncState="pending"}
+  function showToast(t){const e=$("toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),1500)}
+  function setStatus(text,type="ok"){const p=$("statusPill");$("statusText").textContent=text;p.className="statusPill"+(type!=="ok"?" "+type:"")}
+  function storageAvailable(){try{const k="__miniapp_probe__";localStorage.setItem(k,"1");localStorage.removeItem(k);return true}catch(_){return false}}
+
+  function normalize(raw){
+    const stamp=now();const o=raw&&typeof raw==="object"?raw:{};
+    let cats=Array.isArray(o.categories)?o.categories:[];
+    if(!cats.some(c=>c&&c.id==="inbox"))cats.unshift({id:"inbox",name:"Sin categoría",color:"#8e8e93"});
+    o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
+    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>({id:String(t.id||makeId("t")),text:String(t.text??t.title??""),category:String(t.category||"inbox"),done:!!t.done,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}));
+    o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>({id:String(n.id||makeId("n")),title:String(n.title||""),body:String(n.body||""),category:String(n.category||"inbox"),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}));
+    o.schemaVersion=3;o.version=3;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
+  }
+
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory}catch(_){}}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,noteFilter,activeCategory}))}catch(_){}}
+  function load(){
+    if(!storageAvailable()){state=normalize({});render();setStatus("Sin almacenamiento","err");showToast("Este WebView no permite almacenamiento local");return}
+    loadUI();const saved=localStorage.getItem(STORAGE_KEY);if(saved){try{state=normalize(JSON.parse(saved));render();setStatus("Local");return}catch(_){}}
+    state=normalize({});render();setStatus("Local");
+  }
+
+  function scheduleSave(){clearTimeout(saveTimer);setStatus("Guardando…","warn");saveTimer=setTimeout(saveNow,140)}
+  async function saveNow(){
+    if(saving){scheduleSave();return}saving=true;state.updatedAt=now();const payload=JSON.stringify(state);
+    try{localStorage.setItem(STORAGE_KEY,payload);saveUI();$("backupBadge").textContent="Activa";$("backupDesc").textContent="Guardado automático en este dispositivo.";setStatus("Local")}catch(_){setStatus("Error local","err")}finally{saving=false}
+  }
+
+  function activeCategories(){return state.categories.filter(c=>!c.deletedAt)}
+  function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt)||state.categories.find(c=>c.id==="inbox")}
+  function catName(id){const c=cat(id);return c?c.name:"Sin categoría"}
+  function catColor(id){const c=cat(id);return c?c.color:"#8e8e93"}
+  function fillSelect(sel,value){sel.innerHTML="";activeCategories().forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.name;sel.appendChild(o)});sel.value=activeCategories().some(c=>c.id===value)?value:"inbox"}
+  function matchesText(...parts){if(!query)return true;return parts.join(" ").toLowerCase().includes(query)}
+  function isOverdue(t){return !!t.dueDate&&!t.done&&t.dueDate<localDateISO()}
+  function dueLabel(t){if(!t.dueDate)return "";const today=localDateISO();let label=t.dueDate===today?"Hoy":t.dueDate;if(isOverdue(t))label="Vencida · "+t.dueDate;if(t.dueTime)label+=" · "+t.dueTime;return label}
+  function priorityLabel(p){return p==="high"?"Alta":p==="low"?"Baja":""}
+
+  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,catName(t.category),t.dueDate,t.priority)}
+  function visibleNote(n){if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category))}
+  function sortTasks(a,b){if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
+
+  function updateCounts(){
+    const live=state.tasks.filter(t=>!t.deletedAt),notes=state.notes.filter(n=>!n.deletedAt);const today=localDateISO();
+    $("countToday").textContent=live.filter(t=>!t.done&&t.dueDate===today).length||"";$("countPending").textContent=live.filter(t=>!t.done).length||"";$("countAll").textContent=live.length||"";$("countDone").textContent=live.filter(t=>t.done).length||"";$("countNotes").textContent=notes.length||"";$("countPinned").textContent=notes.filter(n=>n.pinned).length||"";
+  }
+
+  function renderCategories(){
+    const box=$("categories");box.innerHTML="";if(trash){box.classList.add("hidden");return}else box.classList.remove("hidden");
+    const total=mode==="tasks"?state.tasks.filter(t=>!t.deletedAt).length:state.notes.filter(n=>!n.deletedAt).length;
+    const all=document.createElement("button");all.type="button";all.className="chip"+(activeCategory==="all"?" active":"");all.innerHTML=`Todas <span class="count">${total||""}</span>`;all.addEventListener("click",()=>{activeCategory="all";saveUI();render()});box.appendChild(all);
+    activeCategories().forEach(c=>{const count=mode==="tasks"?state.tasks.filter(t=>!t.deletedAt&&t.category===c.id).length:state.notes.filter(n=>!n.deletedAt&&n.category===c.id).length;const b=document.createElement("button");b.type="button";b.className="chip"+(activeCategory===c.id?" active":"");b.innerHTML=`<span class="dot" style="background:${esc(c.color)}"></span>${esc(c.name)} <span class="count">${count||""}</span>`;b.addEventListener("click",()=>{activeCategory=c.id;saveUI();render()});box.appendChild(b)});
+  }
+
+  function renderTasks(){
+    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(sortTasks);if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay tareas eliminadas.":taskFilter==="today"?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
+    list.innerHTML=rows.map(t=>{const d=dueLabel(t),p=priorityLabel(t.priority);return `<div class="item ${t.done&&!trash?"done":""} ${isOverdue(t)&&!trash?"overdue":""}" data-task="${esc(t.id)}">${trash?"":`<input class="check" type="checkbox" ${t.done?"checked":""} aria-label="Completar">`}<div class="content taskOpen"><div class="taskTitle">${esc(t.text)}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}</div></div><div class="rowActions">${trash?`<button class="miniBtn restoreTask" type="button" title="Restaurar">↶</button>`:`<button class="miniBtn danger deleteTask" type="button" title="Papelera">×</button>`}</div></div>`}).join("");
+    list.querySelectorAll("[data-task]").forEach(el=>{const t=state.tasks.find(x=>x.id===el.dataset.task);if(!t)return;const ck=el.querySelector(".check");if(ck)ck.addEventListener("change",e=>{t.done=e.target.checked;touch(t);scheduleSave();render()});const open=el.querySelector(".taskOpen");if(open&&!trash)open.addEventListener("click",()=>openTask(t));const del=el.querySelector(".deleteTask");if(del)del.addEventListener("click",()=>{t.deletedAt=now();touch(t);scheduleSave();render();showToast("Tarea enviada a papelera")});const res=el.querySelector(".restoreTask");if(res)res.addEventListener("click",()=>{t.deletedAt=null;touch(t);scheduleSave();render();showToast("Tarea restaurada")})})
+  }
+
+  function renderNotes(){
+    const list=$("list"),rows=state.notes.filter(visibleNote).slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt)));if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay notas eliminadas.":"Crea una nota con el botón +."}</div></div>`;return}
+    list.innerHTML=rows.map(n=>`<div class="item" data-note="${esc(n.id)}"><div class="content noteOpen"><div class="noteTitle">${esc(n.title||"Sin título")}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span></div></div><div class="rowActions">${trash?`<button class="miniBtn restoreNote" type="button" title="Restaurar">↶</button>`:`<button class="miniBtn star ${n.pinned?"active":""} pinNote" type="button" title="${n.pinned?"Desfijar":"Fijar"}">★</button><button class="miniBtn danger deleteNote" type="button" title="Papelera">×</button>`}</div></div>`).join("");
+    list.querySelectorAll("[data-note]").forEach(el=>{const n=state.notes.find(x=>x.id===el.dataset.note);if(!n)return;const open=el.querySelector(".noteOpen");if(open&&!trash)open.addEventListener("click",()=>openNote(n));const pin=el.querySelector(".pinNote");if(pin)pin.addEventListener("click",()=>{n.pinned=!n.pinned;touch(n);scheduleSave();render()});const del=el.querySelector(".deleteNote");if(del)del.addEventListener("click",()=>{n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")});const res=el.querySelector(".restoreNote");if(res)res.addEventListener("click",()=>{n.deletedAt=null;touch(n);scheduleSave();render();showToast("Nota restaurada")})})
+  }
+
+  function render(){
+    if(!state)return;updateCounts();$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();requestAnimationFrame(updateSwipeLayerBounds);
+  }
+
+  function openOverlay(id){syncVisualViewport();$(id).classList.add("show");$(id).setAttribute("aria-hidden","false")}
+  function closeOverlay(id){$(id).classList.remove("show");$(id).setAttribute("aria-hidden","true")}
+  function openTask(t){editingTaskId=t?t.id:null;editingNoteId=null;$("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");$("taskText").value=t?t.text:"";fillSelect($("taskCategory"),t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("deleteTaskBtn").classList.toggle("hidden",!t);openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)}
+  function openNote(n){editingNoteId=n?n.id:null;editingTaskId=null;$("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");$("noteTitle").value=n?n.title:"";$("noteBody").value=n?n.body:"";fillSelect($("noteCategory"),n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("notePinned").checked=n?!!n.pinned:false;$("deleteNoteBtn").classList.toggle("hidden",!n);openOverlay("editorOverlay");setTimeout(()=>$("noteTitle").focus(),80)}
+  function closeEditor(){closeOverlay("editorOverlay");editingTaskId=null;editingNoteId=null}
+
+  function renderCategoryManage(){const box=$("categoryManage");box.innerHTML="";activeCategories().forEach(c=>{const r=document.createElement("div");r.className="settingsRow categoryManage";r.innerHTML=`<span class="colorSwatch" style="background:${esc(c.color)}"></span><span class="name">${esc(c.name)}</span>${c.id==="inbox"?"":`<button type="button">Editar</button>`}`;const b=r.querySelector("button");if(b)b.addEventListener("click",()=>openCategory(c));box.appendChild(r)})}
+  function renderSettingsSummary(){const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;$("trashCountDesc").textContent=trashCount?`${trashCount} elemento${trashCount===1?"":"s"} eliminado${trashCount===1?"":"s"}.`:"No hay elementos eliminados.";renderCategoryManage()}
+  function openCategory(c){editingCategoryId=c?c.id:null;$("categoryEditorTitle").textContent=c?"Editar categoría":"Nueva categoría";$("categoryName").value=c?c.name:"";$("categoryColor").value=c?c.color:palette[(activeCategories().length)%palette.length];$("deleteCategoryBtn").classList.toggle("hidden",!c||c.id==="inbox");openOverlay("categoryOverlay");setTimeout(()=>$("categoryName").focus(),80)}
+  function closeCategory(){editingCategoryId=null;closeOverlay("categoryOverlay")}
+
+  document.addEventListener("focusin",e=>{
+    if(!e.target.matches("input,textarea,select"))return;
+    setTimeout(()=>{
+      syncVisualViewport();
+      const sheet=e.target.closest(".sheet");
+      if(sheet)e.target.scrollIntoView({block:"center",inline:"nearest",behavior:"smooth"});
+    },260);
+  });
+
+  $("search").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
+  function setMode(next){
+    if(next!=="tasks"&&next!=="notes")return;
+    mode=next;trash=false;saveUI();render();
+  }
+  $("tabTasks").addEventListener("click",()=>setMode("tasks"));
+  $("tabNotes").addEventListener("click",()=>setMode("notes"));
+
+  const swipeLayer=$("swipeLayer");
+  let gesture=null;
+  function updateSwipeLayerBounds(){
+    if(!swipeLayer)return;
+    const c=$("categories"),dock=$("bottomDock");
+    const cr=c?c.getBoundingClientRect():null,dr=dock?dock.getBoundingClientRect():null;
+    const top=Math.max(0,(cr?cr.bottom:190)+4);
+    const bottom=Math.max(0,window.innerHeight-(dr?dr.top:window.innerHeight-90)+4);
+    swipeLayer.style.top=top+"px";swipeLayer.style.bottom=bottom+"px";
+  }
+  function forwardTap(x,y){
+    swipeLayer.style.pointerEvents="none";
+    const el=document.elementFromPoint(x,y);
+    swipeLayer.style.pointerEvents="auto";
+    if(el&&typeof el.click==="function")el.click();
+  }
+  swipeLayer.addEventListener("pointerdown",e=>{
+    if(trash||document.querySelector(".overlay.show"))return;
+    gesture={id:e.pointerId,sx:e.clientX,sy:e.clientY,lx:e.clientX,ly:e.clientY,axis:null,moved:false};
+    try{swipeLayer.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  swipeLayer.addEventListener("pointermove",e=>{
+    if(!gesture||e.pointerId!==gesture.id)return;
+    const dx=e.clientX-gesture.sx,dy=e.clientY-gesture.sy;
+    if(!gesture.axis&&(Math.abs(dx)>7||Math.abs(dy)>7))gesture.axis=Math.abs(dx)>Math.abs(dy)*1.05?"x":"y";
+    if(Math.abs(dx)>5||Math.abs(dy)>5)gesture.moved=true;
+    if(gesture.axis==="y"){const step=gesture.ly-e.clientY;if(step)window.scrollBy(0,step)}
+    gesture.lx=e.clientX;gesture.ly=e.clientY;
+  });
+  function finishGesture(e,cancelled=false){
+    if(!gesture||e.pointerId!==gesture.id)return;
+    const g=gesture;gesture=null;
+    const dx=e.clientX-g.sx,dy=e.clientY-g.sy;
+    if(cancelled)return;
+    if(g.axis==="x"&&Math.abs(dx)>=42&&Math.abs(dx)>Math.abs(dy)*1.05){
+      suppressClickUntil=Date.now()+400;
+      if(dx>0&&mode==="tasks")setMode("notes");
+      else if(dx<0&&mode==="notes")setMode("tasks");
+      return;
+    }
+    if(!g.moved||Math.hypot(dx,dy)<10)forwardTap(e.clientX,e.clientY);
+  }
+  swipeLayer.addEventListener("pointerup",e=>finishGesture(e,false));
+  swipeLayer.addEventListener("pointercancel",e=>finishGesture(e,true));
+  window.addEventListener("resize",updateSwipeLayerBounds);
+  window.addEventListener("scroll",updateSwipeLayerBounds,{passive:true});
+  document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
+  document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
+  $("fab").addEventListener("click",()=>mode==="tasks"?openTask(null):openNote(null));
+  $("backBtn").addEventListener("click",()=>{trash=false;render()});
+
+  $("editorClose").addEventListener("click",closeEditor);$("editorOverlay").addEventListener("click",e=>{if(e.target===$("editorOverlay"))closeEditor()});
+  $("taskForm").addEventListener("submit",e=>{e.preventDefault();const text=$("taskText").value.trim();if(!text)return;const c=$("taskCategory").value||"inbox",dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",priority=$("taskPriority").value||"normal";if(editingTaskId){const t=state.tasks.find(x=>x.id===editingTaskId);if(t){t.text=text;t.category=c;t.dueDate=dueDate;t.dueTime=dueTime;t.priority=priority;touch(t)}}else{const stamp=now();state.tasks.push({id:makeId("t"),text,category:c,done:false,dueDate,dueTime,priority,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();showToast("Tarea guardada")});
+  $("deleteTaskBtn").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===editingTaskId);if(!t)return;t.deletedAt=now();touch(t);closeEditor();scheduleSave();render();showToast("Tarea enviada a papelera")});
+  $("noteForm").addEventListener("submit",e=>{e.preventDefault();const title=$("noteTitle").value.trim(),body=$("noteBody").value.trim();if(!title&&!body)return;const c=$("noteCategory").value||"inbox",pinned=$("notePinned").checked;if(editingNoteId){const n=state.notes.find(x=>x.id===editingNoteId);if(n){n.title=title;n.body=body;n.category=c;n.pinned=pinned;touch(n)}}else{const stamp=now();state.notes.push({id:makeId("n"),title,body,category:c,pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();showToast("Nota guardada")});
+  $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);closeEditor();scheduleSave();render();showToast("Nota enviada a papelera")});
+
+  $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
+  $("openTrashBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");trash=true;render()});
+  $("addCategoryBtn").addEventListener("click",()=>openCategory(null));$("categoryClose").addEventListener("click",closeCategory);$("categoryOverlay").addEventListener("click",e=>{if(e.target===$("categoryOverlay"))closeCategory()});
+  $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
+  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();showToast("Categoría eliminada")});
+
+  $("importBtn").addEventListener("click",()=>{if(window.NottasNative&&NottasNative.requestImport){NottasNative.requestImport();return}$("importFile").click()});$("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const parsed=JSON.parse(await file.text());state=normalize(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));activeCategory="all";trash=false;render();await saveNow();showToast("Copia importada")}catch(_){showToast("El archivo no es válido")}finally{e.target.value=""}});
+  $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
+
+  if(window.NottasNative&&NottasNative.isNativeApp&&NottasNative.isNativeApp()){const sec=$("androidSettings"),wake=$("wakeEnabled");sec.classList.remove("hidden");wake.checked=!!NottasNative.isWakeEnabled();wake.addEventListener("change",()=>NottasNative.setWakeEnabled(wake.checked));}
+
+  load();
+})();
+</script>
+</body>
+</html>
+

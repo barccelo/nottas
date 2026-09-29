@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Nottas</string>
+    <string name="overlay_channel_name">Nottas al desbloquear</string>
+    <string name="overlay_channel_description">Mantiene Nottas disponible para aparecer al encender o desbloquear el teléfono.</string>
+</resources>
