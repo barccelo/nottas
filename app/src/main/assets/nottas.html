@@ -141,7 +141,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     <div class="sectionTitle">Sincronización</div>
     <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">Web</div><div class="desc">No configurada. La app sigue funcionando completamente offline.</div></div><span style="font-size:12px;color:#8e8e93">Local</span></div>
-      <div class="settingsRow"><div class="left"><div class="title">Copia secundaria</div><div id="backupDesc" class="desc">Guardado automático en este dispositivo.</div></div><span id="backupBadge" style="font-size:12px;color:#8e8e93">Activa</span></div>
+      <div class="settingsRow"><div class="left"><div class="title">Copia secundaria</div><div id="backupDesc" class="desc">Copia automática local + historial interno.</div></div><span id="backupBadge" style="font-size:12px;color:#8e8e93">Activa</span></div>
     </div>
   </div>
 </div>
@@ -164,6 +164,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 (function(){
   const API=location.origin;
   const STORAGE_KEY="miniapp_local_v3";
+  const BACKUP_KEY="miniapp_local_v3_backup";
+  const BACKUP_PREV_KEY="miniapp_local_v3_backup_prev";
   const UI_KEY="miniapp_ui_v4";
   const $=id=>document.getElementById(id);
   const palette=["#8e8e93","#1677ff","#7c4dff","#00897b","#ef6c00","#c62828","#6d4c41","#ad1457","#2e7d32"];
@@ -211,16 +213,83 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory}catch(_){}}
   function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,noteFilter,activeCategory}))}catch(_){}}
+  function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
+  function nativeBackup(){
+    try{
+      if(window.NottasNative&&NottasNative.readInternalBackup){
+        return parseState(NottasNative.readInternalBackup());
+      }
+    }catch(_){}
+    return null;
+  }
+  function mirrorInternalBackup(payload){
+    try{
+      if(window.NottasNative&&NottasNative.saveInternalBackup)NottasNative.saveInternalBackup(payload);
+    }catch(_){}
+  }
   function load(){
-    if(!storageAvailable()){state=normalize({});render();setStatus("Sin almacenamiento","err");showToast("Este WebView no permite almacenamiento local");return}
-    loadUI();const saved=localStorage.getItem(STORAGE_KEY);if(saved){try{state=normalize(JSON.parse(saved));render();setStatus("Local");return}catch(_){}}
-    state=normalize({});render();setStatus("Local");
+    loadUI();
+    let recovered=false;
+    let loaded=null;
+
+    if(storageAvailable()){
+      loaded=parseState(localStorage.getItem(STORAGE_KEY));
+      if(!loaded){
+        loaded=parseState(localStorage.getItem(BACKUP_KEY));
+        if(loaded)recovered=true;
+      }
+      if(!loaded){
+        loaded=parseState(localStorage.getItem(BACKUP_PREV_KEY));
+        if(loaded)recovered=true;
+      }
+    }
+
+    if(!loaded){
+      loaded=nativeBackup();
+      if(loaded)recovered=true;
+    }
+
+    state=loaded||normalize({});
+
+    try{
+      render();
+      setStatus(recovered?"Recuperada":"Local",recovered?"warn":"ok");
+      const payload=JSON.stringify(state);
+      mirrorInternalBackup(payload);
+      if(recovered&&storageAvailable()){
+        localStorage.setItem(STORAGE_KEY,payload);
+        showToast("Datos recuperados desde una copia automática");
+      }
+    }catch(_){
+      setStatus("Error de interfaz","err");
+      showToast("Tus datos siguen guardados. Falló la interfaz.");
+    }
   }
 
   function scheduleSave(){clearTimeout(saveTimer);setStatus("Guardando…","warn");saveTimer=setTimeout(saveNow,140)}
   async function saveNow(){
-    if(saving){scheduleSave();return}saving=true;state.updatedAt=now();const payload=JSON.stringify(state);
-    try{localStorage.setItem(STORAGE_KEY,payload);saveUI();$("backupBadge").textContent="Activa";$("backupDesc").textContent="Guardado automático en este dispositivo.";setStatus("Local")}catch(_){setStatus("Error local","err")}finally{saving=false}
+    if(saving){scheduleSave();return}
+    saving=true;
+    state.updatedAt=now();
+    const payload=JSON.stringify(state);
+    try{
+      const previous=localStorage.getItem(STORAGE_KEY);
+      if(previous&&previous!==payload){
+        const backup=localStorage.getItem(BACKUP_KEY);
+        if(backup&&backup!==previous)localStorage.setItem(BACKUP_PREV_KEY,backup);
+        localStorage.setItem(BACKUP_KEY,previous);
+      }
+      localStorage.setItem(STORAGE_KEY,payload);
+      mirrorInternalBackup(payload);
+      saveUI();
+      $("backupBadge").textContent="Activa";
+      $("backupDesc").textContent="Copia automática local + historial interno.";
+      setStatus("Local");
+    }catch(_){
+      setStatus("Error local","err");
+    }finally{
+      saving=false;
+    }
   }
 
   function activeCategories(){return state.categories.filter(c=>!c.deletedAt)}
@@ -266,7 +335,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   }
 
   function render(){
-    if(!state)return;updateCounts();$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();requestAnimationFrame(updateSwipeLayerBounds);
+    if(!state)return;updateCounts();$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function openOverlay(id){syncVisualViewport();$(id).classList.add("show");$(id).setAttribute("aria-hidden","false")}
