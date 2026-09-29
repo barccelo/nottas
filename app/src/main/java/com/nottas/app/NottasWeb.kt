@@ -1,6 +1,7 @@
 package com.nottas.app
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,6 +15,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.view.WindowManager
 import android.widget.Toast
 import java.io.File
 import org.json.JSONObject
@@ -58,6 +60,20 @@ object NottasWeb {
         fun setWakeEnabled(enabled: Boolean) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit().putBoolean(PREF_WAKE_ENABLED, enabled).apply()
+        }
+
+        @JavascriptInterface
+        fun setSearchKeyboardMode(active: Boolean) {
+            mainHandler.post {
+                val activity = context as? Activity ?: return@post
+                activity.window.setSoftInputMode(
+                    if (active) {
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+                    } else {
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                    }
+                )
+            }
         }
 
         @JavascriptInterface
