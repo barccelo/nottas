@@ -198,7 +198,11 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   }
 
   window.NottasSetImeOffset=function(px){
-    const value=Math.max(0,Number(px)||0);
+    const nativePx=Math.max(0,Number(px)||0);
+    const dpr=Math.max(1,Number(window.devicePixelRatio)||1);
+    const cssPx=nativePx/dpr;
+    const maxLift=Math.max(0,(window.innerHeight||0)*0.55);
+    const value=Math.min(cssPx,maxLift||cssPx);
     document.documentElement.style.setProperty("--ime-offset",value+"px");
     document.body.classList.toggle("imeVisible",value>0);
   };
