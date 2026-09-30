@@ -17,6 +17,7 @@ import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.view.HapticFeedbackConstants
 import android.view.WindowManager
 import android.widget.Toast
 import java.io.File
@@ -76,6 +77,17 @@ object NottasWeb {
                     }
                 )
                 activity.window.decorView.requestApplyInsets()
+            }
+        }
+
+        @JavascriptInterface
+        fun consumeReminderActions(): String = ReminderActionStore.consume(context)
+
+        @JavascriptInterface
+        fun hapticTick() {
+            mainHandler.post {
+                val activity = context as? Activity ?: return@post
+                activity.window.decorView.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
             }
         }
 
