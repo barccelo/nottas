@@ -424,7 +424,23 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     if(!picker||picker.dataset.ready==="1")return;
     picker.dataset.ready="1";
     const input=picker.querySelector(".categoryPickerInput"),drop=picker.querySelector(".categoryDrop"),add=picker.querySelector(".categoryAdd"),box=picker.querySelector(".categorySuggestions");
-    input.addEventListener("focus",()=>{renderCategorySuggestions(picker,false);box.classList.remove("hidden")});
+    input.addEventListener("focus",()=>{
+      const inbox=cat("inbox");
+      if(picker.dataset.value==="inbox"&&inbox&&input.value.trim().toLowerCase()===inbox.name.trim().toLowerCase()){
+        input.value="";
+      }
+      renderCategorySuggestions(picker,false);
+      box.classList.remove("hidden");
+      syncCategoryPicker(picker,false);
+    });
+    input.addEventListener("blur",()=>{
+      setTimeout(()=>{
+        if(!picker.contains(document.activeElement)&&!input.value.trim()){
+          setCategoryPicker(picker,"inbox");
+          box.classList.add("hidden");
+        }
+      },100);
+    });
     input.addEventListener("input",()=>syncCategoryPicker(picker,true));
     input.addEventListener("keydown",e=>{
       if(e.key==="Enter"){
