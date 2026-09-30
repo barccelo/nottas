@@ -3,6 +3,7 @@ package com.nottas.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -123,6 +124,33 @@ object NottasWeb {
                     NotificationManager.IMPORTANCE_NONE
             } catch (_: Throwable) {
                 false
+            }
+        }
+
+        @JavascriptInterface
+        fun hasExactAlarmAccess(): Boolean {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+            return try {
+                context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
+            } catch (_: Throwable) {
+                false
+            }
+        }
+
+        @JavascriptInterface
+        fun requestExactAlarmAccess() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+            mainHandler.post {
+                try {
+                    val manager = context.getSystemService(AlarmManager::class.java)
+                    if (manager.canScheduleExactAlarms()) return@post
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (_: Throwable) {
+                }
             }
         }
 
