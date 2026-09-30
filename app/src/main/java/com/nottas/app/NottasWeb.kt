@@ -1,9 +1,11 @@
 package com.nottas.app
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -76,6 +78,26 @@ object NottasWeb {
                 activity.window.decorView.requestApplyInsets()
             }
         }
+
+        @JavascriptInterface
+        fun requestNotificationPermission() {
+            if (Build.VERSION.SDK_INT < 33) return
+            mainHandler.post {
+                val activity = context as? Activity ?: return@post
+                if (activity.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 4204)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun hasNotificationPermission(): Boolean {
+            return Build.VERSION.SDK_INT < 33 ||
+                context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        }
+
+        @JavascriptInterface
+        fun syncReminders(json: String): Boolean = ReminderScheduler.sync(context, json)
 
         @JavascriptInterface
         fun closeOverlay() {
