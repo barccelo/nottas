@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="quick_task"
+        android:enabled="true"
+        android:icon="@drawable/ic_nottas"
+        android:shortcutShortLabel="@string/shortcut_task"
+        android:shortcutLongLabel="@string/shortcut_task">
+        <intent
+            android:action="com.nottas.app.QUICK_TASK"
+            android:targetPackage="com.nottas.app"
+            android:targetClass="com.nottas.app.QuickCaptureActivity">
+            <extra
+                android:name="capture_mode"
+                android:value="tasks" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="quick_note"
+        android:enabled="true"
+        android:icon="@drawable/ic_nottas"
+        android:shortcutShortLabel="@string/shortcut_note"
+        android:shortcutLongLabel="@string/shortcut_note">
+        <intent
+            android:action="com.nottas.app.QUICK_NOTE"
+            android:targetPackage="com.nottas.app"
+            android:targetClass="com.nottas.app.QuickCaptureActivity">
+            <extra
+                android:name="capture_mode"
+                android:value="notes" />
+        </intent>
+    </shortcut>
+</shortcuts>
