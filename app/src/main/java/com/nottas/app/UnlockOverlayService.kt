@@ -13,6 +13,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
+import java.util.Calendar
 
 class UnlockOverlayService : Service() {
     companion object {
@@ -70,9 +71,33 @@ class UnlockOverlayService : Service() {
         getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
             .getBoolean(NottasWeb.PREF_WAKE_ENABLED, true)
 
+    private fun workHoursActiveNow(): Boolean {
+        val prefs = getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
+        if (!prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)) return false
+
+        val start = parseMinutes(prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00"), 8 * 60)
+        val end = parseMinutes(prefs.getString(NottasWeb.PREF_WORK_HOURS_END, "17:00"), 17 * 60)
+        val now = Calendar.getInstance().let { it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE) }
+
+        return when {
+            start == end -> true
+            start < end -> now >= start && now < end
+            else -> now >= start || now < end
+        }
+    }
+
+    private fun parseMinutes(value: String?, fallback: Int): Int {
+        val parts = value?.split(":") ?: return fallback
+        if (parts.size != 2) return fallback
+        val hour = parts[0].toIntOrNull() ?: return fallback
+        val minute = parts[1].toIntOrNull() ?: return fallback
+        if (hour !in 0..23 || minute !in 0..59) return fallback
+        return hour * 60 + minute
+    }
+
     private fun launchQuickCaptureIfArmed() {
         if (!armedForWake) return
-        if (!wakeEnabled() || !Settings.canDrawOverlays(this)) return
+        if (!wakeEnabled() || workHoursActiveNow() || !Settings.canDrawOverlays(this)) return
 
         armedForWake = false
 

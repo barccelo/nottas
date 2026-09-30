@@ -3,7 +3,6 @@ package com.nottas.app
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -92,23 +91,10 @@ class MainActivity : Activity() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         val dark = getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
             .getBoolean(NottasWeb.PREF_DARK_MODE, false)
-        val barColor = if (dark) Color.BLACK else Color.rgb(245, 245, 247)
-        @Suppress("DEPRECATION")
-        window.statusBarColor = barColor
-        @Suppress("DEPRECATION")
-        window.navigationBarColor = barColor
-
-        @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility =
-            if (dark) {
-                0
-            } else {
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
-                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            }
+        NottasWeb.applySystemBars(this, dark)
     }
 
-    private fun applySystemBarInsets(root: View) {
+    private fun applySystemBarInsets(root: View) {    private fun applySystemBarInsets(root: View) {
         root.setOnApplyWindowInsetsListener { view, insets ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())

@@ -31,6 +31,38 @@ object NottasWeb {
     const val PREFS = "nottas_settings"
     const val PREF_WAKE_ENABLED = "wake_enabled"
     const val PREF_DARK_MODE = "dark_mode"
+    const val PREF_WORK_HOURS_ENABLED = "work_hours_enabled"
+    const val PREF_WORK_HOURS_START = "work_hours_start"
+    const val PREF_WORK_HOURS_END = "work_hours_end"
+
+    fun applySystemBars(activity: Activity, dark: Boolean) {
+        val barColor = if (dark) 0xFF000000.toInt() else 0xFFF5F5F7.toInt()
+        @Suppress("DEPRECATION")
+        activity.window.statusBarColor = barColor
+        @Suppress("DEPRECATION")
+        activity.window.navigationBarColor = barColor
+        activity.window.decorView.setBackgroundColor(barColor)
+        activity.findViewById<android.view.View>(android.R.id.content)?.setBackgroundColor(barColor)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val lightMask =
+                android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                    android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+            activity.window.insetsController?.setSystemBarsAppearance(
+                if (dark) 0 else lightMask,
+                lightMask
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility =
+                if (dark) {
+                    0
+                } else {
+                    android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                        android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     fun configure(webView: WebView, bridge: NativeBridge) {
@@ -77,24 +109,25 @@ object NottasWeb {
                 .edit().putBoolean(PREF_DARK_MODE, enabled).apply()
             mainHandler.post {
                 val activity = context as? Activity ?: return@post
-                @Suppress("DEPRECATION")
-                activity.window.statusBarColor =
-                    if (enabled) 0xFF000000.toInt() else 0xFFF5F5F7.toInt()
-                @Suppress("DEPRECATION")
-                activity.window.navigationBarColor =
-                    if (enabled) 0xFF000000.toInt() else 0xFFF5F5F7.toInt()
-                @Suppress("DEPRECATION")
-                activity.window.decorView.systemUiVisibility =
-                    if (enabled) {
-                        0
-                    } else {
-                        android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
-                            android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-                    }
+                applySystemBars(activity, enabled)
             }
         }
 
         @JavascriptInterface
+        fun setWorkHours(enabled: Boolean, start: String, end: String) {
+            val timePattern = Regex("""^(?:[01]\\d|2[0-3]):[0-5]\\d$""")
+            val safeStart = if (timePattern.matches(start)) start else "08:00"
+            val safeEnd = if (timePattern.matches(end)) end else "17:00"
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(PREF_WORK_HOURS_ENABLED, enabled)
+                .putString(PREF_WORK_HOURS_START, safeStart)
+                .putString(PREF_WORK_HOURS_END, safeEnd)
+                .apply()
+        }
+
+        @JavascriptInterface
+        fun setSearchKeyboardMode(active: Boolean) {        @JavascriptInterface
         fun setSearchKeyboardMode(active: Boolean) {
             mainHandler.post {
                 val activity = context as? Activity ?: return@post
