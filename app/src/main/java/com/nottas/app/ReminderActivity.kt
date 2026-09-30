@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import kotlin.math.abs
@@ -146,22 +147,43 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val knob = TextView(this).apply {
+        val knob = FrameLayout(this).apply {
+            background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
+            elevation = dp(7).toFloat()
+            isClickable = true
+            clipChildren = false
+            clipToPadding = false
+        }
+        val knobSymbol = TextView(this).apply {
             text = "×"
             textSize = 42f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(99, 99, 102))
-            background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
-            elevation = dp(7).toFloat()
-            isClickable = true
         }
+        knob.addView(
+            knobSymbol,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+        val knobIcon = ImageView(this).apply {
+            setImageResource(R.drawable.ic_snooze_clock)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            visibility = View.GONE
+        }
+        knob.addView(
+            knobIcon,
+            FrameLayout.LayoutParams(dp(34), dp(34), Gravity.CENTER)
+        )
+
         val knobSize = dp(92)
         gestureHost.addView(
             knob,
             FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         )
 
-        bindActionGesture(knob)
+        bindActionGesture(knob, knobSymbol, knobIcon)
 
         val snoozeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -171,7 +193,7 @@ class ReminderActivity : Activity() {
             LinearLayout.LayoutParams.MATCH_PARENT,
             dp(72)
         ).apply {
-            topMargin = dp(2)
+            topMargin = dp(16)
         }
         content.addView(snoozeRow, snoozeParams)
 
@@ -235,7 +257,11 @@ class ReminderActivity : Activity() {
         return root
     }
 
-    private fun bindActionGesture(knob: TextView) {
+    private fun bindActionGesture(
+        knob: FrameLayout,
+        symbol: TextView,
+        snoozeIcon: ImageView
+    ) {
         fun dp(value: Int): Int =
             (value * resources.displayMetrics.density).roundToInt()
 
@@ -244,37 +270,33 @@ class ReminderActivity : Activity() {
         var direction = 0
 
         val lock = dp(8).toFloat()
-        val threshold = dp(52).toFloat()
-        val maxTravel = dp(64).toFloat()
+        val threshold = dp(38).toFloat()
+        val maxTravel = dp(48).toFloat()
 
         fun showDefaultIcon() {
-            knob.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
-            knob.text = "×"
-            knob.setTextColor(Color.rgb(99, 99, 102))
+            snoozeIcon.visibility = View.GONE
+            symbol.visibility = View.VISIBLE
+            symbol.text = "×"
+            symbol.setTextColor(Color.rgb(99, 99, 102))
         }
 
         fun showCompleteIcon() {
-            knob.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
-            knob.text = "✓"
-            knob.setTextColor(Color.rgb(52, 199, 89))
+            snoozeIcon.visibility = View.GONE
+            symbol.visibility = View.VISIBLE
+            symbol.text = "✓"
+            symbol.setTextColor(Color.rgb(52, 199, 89))
         }
 
         fun showSnoozeIcon() {
-            knob.text = ""
-            knob.setTextColor(Color.rgb(0, 122, 255))
-            knob.setCompoundDrawablesWithIntrinsicBounds(
-                R.drawable.ic_snooze_clock,
-                0,
-                0,
-                0
-            )
+            symbol.visibility = View.GONE
+            snoozeIcon.visibility = View.VISIBLE
         }
 
         fun resetPosition(view: View) {
             view.animate()
                 .translationX(0f)
                 .translationY(0f)
-                .setDuration(160)
+                .setDuration(150)
                 .start()
             showDefaultIcon()
         }
@@ -343,7 +365,6 @@ class ReminderActivity : Activity() {
                         4 -> dx >= threshold
                         else -> false
                     }
-
                     val snoozed = direction == 2 && dy >= threshold
 
                     when {
