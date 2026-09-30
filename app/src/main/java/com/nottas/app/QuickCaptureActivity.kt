@@ -1,6 +1,7 @@
 package com.nottas.app
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -8,13 +9,16 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import org.json.JSONObject
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 
 class QuickCaptureActivity : Activity() {
     private lateinit var webView: WebView
     private var backInFlight = false
+    private var pendingSharedText: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +30,13 @@ class QuickCaptureActivity : Activity() {
             webView,
             NottasWeb.NativeBridge(this)
         )
+        pendingSharedText = extractIncomingText(intent)
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                deliverPendingSharedText()
+            }
+        }
 
         val root = FrameLayout(this)
         root.addView(
@@ -116,6 +127,33 @@ class QuickCaptureActivity : Activity() {
     override fun onBackPressed() {
         if (Build.VERSION.SDK_INT >= 33) return
         handleSystemBack()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingSharedText = extractIncomingText(intent)
+        deliverPendingSharedText()
+    }
+
+    private fun extractIncomingText(intent: Intent?): String? {
+        if (intent == null) return null
+        return when (intent.action) {
+            Intent.ACTION_SEND -> intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+            Intent.ACTION_PROCESS_TEXT -> intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
+            else -> null
+        }?.trim()?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun deliverPendingSharedText() {
+        if (!::webView.isInitialized) return
+        val text = pendingSharedText ?: return
+        pendingSharedText = null
+        val quoted = JSONObject.quote(text)
+        webView.evaluateJavascript(
+            "window.NottasOpenSharedText && window.NottasOpenSharedText($quoted)",
+            null
+        )
     }
 
     override fun onDestroy() {
