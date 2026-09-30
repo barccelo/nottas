@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
+import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.window.OnBackInvokedCallback
@@ -47,6 +48,7 @@ class QuickCaptureActivity : Activity() {
     }
 
     private fun configureSystemBars() {
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         @Suppress("DEPRECATION")
         window.statusBarColor = Color.rgb(245, 245, 247)
         @Suppress("DEPRECATION")
@@ -62,7 +64,15 @@ class QuickCaptureActivity : Activity() {
         root.setOnApplyWindowInsetsListener { view, insets ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())
+                val ime = insets.getInsets(WindowInsets.Type.ime())
+                val imeOffset = (ime.bottom - bars.bottom).coerceAtLeast(0)
                 view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+                if (::webView.isInitialized) {
+                    webView.evaluateJavascript(
+                        "window.NottasSetImeOffset && window.NottasSetImeOffset(" + imeOffset + ")",
+                        null
+                    )
+                }
             } else {
                 @Suppress("DEPRECATION")
                 view.setPadding(
