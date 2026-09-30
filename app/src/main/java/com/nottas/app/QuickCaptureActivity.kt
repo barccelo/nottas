@@ -16,9 +16,16 @@ import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 
 class QuickCaptureActivity : Activity() {
+    companion object {
+        const val EXTRA_CAPTURE_MODE = "capture_mode"
+        const val MODE_TASKS = "tasks"
+        const val MODE_NOTES = "notes"
+    }
+
     private lateinit var webView: WebView
     private var backInFlight = false
     private var pendingSharedText: String? = null
+    private var pendingCaptureMode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +38,11 @@ class QuickCaptureActivity : Activity() {
             NottasWeb.NativeBridge(this)
         )
         pendingSharedText = extractIncomingText(intent)
+        pendingCaptureMode = extractCaptureMode(intent)
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                deliverPendingSharedText()
+                deliverPendingEntry()
             }
         }
 
@@ -133,7 +141,16 @@ class QuickCaptureActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingSharedText = extractIncomingText(intent)
-        deliverPendingSharedText()
+        pendingCaptureMode = extractCaptureMode(intent)
+        deliverPendingEntry()
+    }
+
+    private fun extractCaptureMode(intent: Intent?): String? {
+        val mode = intent?.getStringExtra(EXTRA_CAPTURE_MODE)
+        return when (mode) {
+            MODE_TASKS, MODE_NOTES -> mode
+            else -> null
+        }
     }
 
     private fun extractIncomingText(intent: Intent?): String? {
@@ -145,13 +162,26 @@ class QuickCaptureActivity : Activity() {
         }?.trim()?.takeIf { it.isNotEmpty() }
     }
 
-    private fun deliverPendingSharedText() {
+    private fun deliverPendingEntry() {
         if (!::webView.isInitialized) return
-        val text = pendingSharedText ?: return
-        pendingSharedText = null
-        val quoted = JSONObject.quote(text)
+
+        val text = pendingSharedText
+        if (!text.isNullOrBlank()) {
+            pendingSharedText = null
+            pendingCaptureMode = null
+            val quoted = JSONObject.quote(text)
+            webView.evaluateJavascript(
+                "window.NottasOpenSharedText && window.NottasOpenSharedText($quoted)",
+                null
+            )
+            return
+        }
+
+        val mode = pendingCaptureMode ?: return
+        pendingCaptureMode = null
+        val quotedMode = JSONObject.quote(mode)
         webView.evaluateJavascript(
-            "window.NottasOpenSharedText && window.NottasOpenSharedText($quoted)",
+            "window.NottasOpenQuickCapture && window.NottasOpenQuickCapture($quotedMode)",
             null
         )
     }
