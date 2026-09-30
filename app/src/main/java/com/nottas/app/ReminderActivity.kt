@@ -26,6 +26,8 @@ class ReminderActivity : Activity() {
     private var taskId: String = ""
     private var taskText: String = ""
     private var snoozeMinutes = 5
+    private var snoozeMode = false
+    private lateinit var actionHost: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +74,7 @@ class ReminderActivity : Activity() {
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(24), dp(24), dp(24), dp(28))
+            setPadding(dp(28), dp(26), dp(28), dp(28))
         }
         root.addView(
             content,
@@ -87,18 +89,19 @@ class ReminderActivity : Activity() {
             topRow,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(52)
+                dp(54)
             )
         )
 
-        val label = TextView(this).apply {
-            text = "Recordatorio"
-            textSize = 15f
+        val brand = TextView(this).apply {
+            text = "Nottas"
+            textSize = 17f
             setTextColor(Color.rgb(99, 99, 102))
             gravity = Gravity.CENTER_VERTICAL
+            typeface = Typeface.create("sans", Typeface.BOLD)
         }
         topRow.addView(
-            label,
+            brand,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -108,10 +111,11 @@ class ReminderActivity : Activity() {
 
         val close = TextView(this).apply {
             text = "×"
-            textSize = 30f
+            textSize = 28f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(142, 142, 147))
             background = roundedBackground(Color.WHITE, dp(22))
+            elevation = dp(1).toFloat()
             isClickable = true
             setOnClickListener { finishQuietly() }
         }
@@ -120,125 +124,167 @@ class ReminderActivity : Activity() {
             FrameLayout.LayoutParams(dp(44), dp(44), Gravity.END or Gravity.CENTER_VERTICAL)
         )
 
-        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
+        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 0.9f))
+
+        val reminderLabel = TextView(this).apply {
+            text = "RECORDATORIO"
+            textSize = 12f
+            letterSpacing = 0.12f
+            setTextColor(Color.rgb(142, 142, 147))
+            gravity = Gravity.CENTER
+        }
+        content.addView(
+            reminderLabel,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
 
         val title = TextView(this).apply {
             text = taskText
-            textSize = 30f
+            textSize = 31f
             setTextColor(Color.rgb(29, 29, 31))
             gravity = Gravity.CENTER
             typeface = Typeface.create("sans", Typeface.BOLD)
-            maxLines = 5
+            maxLines = 6
+            setLineSpacing(0f, 1.06f)
         }
-
-        val card = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(dp(28), dp(34), dp(28), dp(34))
-            background = roundedBackground(Color.WHITE, dp(28))
-            elevation = dp(10).toFloat()
-            addView(
-                title,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-            )
+        val titleParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            topMargin = dp(16)
         }
-        content.addView(
-            card,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        )
+        content.addView(title, titleParams)
 
-        val status = TextView(this).apply {
-            text = "← Posponer 5 min     Completar →"
-            textSize = 15f
-            setTextColor(Color.rgb(99, 99, 102))
-            gravity = Gravity.CENTER
-        }
-        content.addView(
-            status,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(64)
-            )
-        )
+        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1.25f))
 
-        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
-
-        val instruction = TextView(this).apply {
-            text = "Desliza a la derecha para completar.\nDesliza a la izquierda para posponer; luego sube o baja para ajustar los minutos."
+        val gestureHelp = TextView(this).apply {
+            text = "← Posponer     Completar →"
             textSize = 13f
             setTextColor(Color.rgb(142, 142, 147))
             gravity = Gravity.CENTER
-            setLineSpacing(0f, 1.18f)
         }
         content.addView(
-            instruction,
+            gestureHelp,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
+                dp(34)
             )
         )
 
-        var startX = 0f
-        var startY = 0f
-        var direction = 0
-        val horizontalThreshold = dp(92).toFloat()
-        val directionLock = dp(18).toFloat()
-        val minuteStep = dp(26).toFloat()
+        actionHost = FrameLayout(this).apply {
+            clipChildren = false
+            clipToPadding = false
+        }
+        content.addView(
+            actionHost,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(164)
+            )
+        )
 
-        card.setOnTouchListener { view, event ->
+        buildGestureControl(gestureHelp)
+
+        val footer = TextView(this).apply {
+            text = "Desliza el botón, no la tarjeta."
+            textSize = 12f
+            setTextColor(Color.rgb(174, 174, 178))
+            gravity = Gravity.CENTER
+        }
+        content.addView(
+            footer,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(26)
+            )
+        )
+
+        return root
+    }
+
+    private fun buildGestureControl(help: TextView) {
+        snoozeMode = false
+        snoozeMinutes = 5
+        actionHost.removeAllViews()
+
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).roundToInt()
+
+        val leftTarget = TextView(this).apply {
+            text = "Posponer"
+            textSize = 14f
+            setTextColor(Color.rgb(0, 122, 255))
+            gravity = Gravity.CENTER
+            alpha = 0.42f
+        }
+        actionHost.addView(
+            leftTarget,
+            FrameLayout.LayoutParams(dp(94), dp(46), Gravity.START or Gravity.CENTER_VERTICAL)
+        )
+
+        val rightTarget = TextView(this).apply {
+            text = "Completar"
+            textSize = 14f
+            setTextColor(Color.rgb(52, 199, 89))
+            gravity = Gravity.CENTER
+            alpha = 0.42f
+        }
+        actionHost.addView(
+            rightTarget,
+            FrameLayout.LayoutParams(dp(94), dp(46), Gravity.END or Gravity.CENTER_VERTICAL)
+        )
+
+        val knob = TextView(this).apply {
+            text = "×"
+            textSize = 42f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(99, 99, 102))
+            background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
+            elevation = dp(7).toFloat()
+            isClickable = true
+        }
+        val knobSize = dp(92)
+        actionHost.addView(
+            knob,
+            FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
+        )
+
+        var startX = 0f
+        var direction = 0
+        val lock = dp(10).toFloat()
+        val threshold = dp(94).toFloat()
+        val maxTravel = dp(126).toFloat()
+
+        knob.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = event.rawX
-                    startY = event.rawY
                     direction = 0
-                    snoozeMinutes = 5
                     view.animate().cancel()
                     true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX - startX
-                    val dy = event.rawY - startY
-
-                    if (direction == 0 && abs(dx) >= directionLock) {
+                    if (direction == 0 && abs(dx) >= lock) {
                         direction = if (dx > 0) 1 else -1
+                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     }
 
-                    if (direction == 1) {
-                        val tx = dx.coerceAtLeast(0f).coerceAtMost(dp(160).toFloat())
-                        view.translationX = tx
-                        view.translationY = 0f
-                        status.text =
-                            if (tx >= horizontalThreshold) "Suelta para completar ✓"
-                            else "Completar →"
-                        status.setTextColor(Color.rgb(52, 199, 89))
-                    } else if (direction == -1) {
-                        val tx = dx.coerceAtMost(0f).coerceAtLeast(-dp(160).toFloat())
-                        view.translationX = tx
-                        view.translationY = (dy * 0.08f).coerceIn(
-                            -dp(18).toFloat(),
-                            dp(18).toFloat()
-                        )
+                    val tx = dx.coerceIn(-maxTravel, maxTravel)
+                    view.translationX = tx
 
-                        val nextMinutes =
-                            (5 + (-dy / minuteStep).roundToInt()).coerceIn(1, 120)
-                        if (nextMinutes != snoozeMinutes) {
-                            snoozeMinutes = nextMinutes
-                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                        }
-                        status.text =
-                            if (-tx >= horizontalThreshold) {
-                                "Suelta para posponer $snoozeMinutes min"
-                            } else {
-                                "← Posponer $snoozeMinutes min"
-                            }
-                        status.setTextColor(Color.rgb(0, 122, 255))
+                    if (direction < 0) {
+                        leftTarget.alpha = (0.42f + (abs(tx) / threshold) * 0.58f).coerceIn(0.42f, 1f)
+                        rightTarget.alpha = 0.24f
+                        help.text = if (abs(tx) >= threshold) "Suelta para elegir el tiempo" else "← Posponer"
+                    } else if (direction > 0) {
+                        rightTarget.alpha = (0.42f + (abs(tx) / threshold) * 0.58f).coerceIn(0.42f, 1f)
+                        leftTarget.alpha = 0.24f
+                        help.text = if (tx >= threshold) "Suelta para completar ✓" else "Completar →"
                     }
                     true
                 }
@@ -247,28 +293,22 @@ class ReminderActivity : Activity() {
                     val dx = event.rawX - startX
                     if (
                         event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction == 1 &&
-                        dx >= horizontalThreshold
+                        direction > 0 &&
+                        dx >= threshold
                     ) {
-                        ReminderActionStore.enqueueComplete(this, taskId)
-                        ReminderScheduler.remove(this, taskId)
-                        ReminderScheduler.cancelNotification(this, taskId)
-                        finishQuietly()
+                        completeReminder()
                     } else if (
                         event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction == -1 &&
-                        -dx >= horizontalThreshold
+                        direction < 0 &&
+                        -dx >= threshold
                     ) {
-                        ReminderScheduler.snooze(this, taskId, taskText, snoozeMinutes)
-                        finishQuietly()
+                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                        showSnoozeSelector(help)
                     } else {
-                        view.animate()
-                            .translationX(0f)
-                            .translationY(0f)
-                            .setDuration(180)
-                            .start()
-                        status.text = "← Posponer 5 min     Completar →"
-                        status.setTextColor(Color.rgb(99, 99, 102))
+                        view.animate().translationX(0f).setDuration(180).start()
+                        leftTarget.alpha = 0.42f
+                        rightTarget.alpha = 0.42f
+                        help.text = "← Posponer     Completar →"
                     }
                     true
                 }
@@ -276,8 +316,121 @@ class ReminderActivity : Activity() {
                 else -> false
             }
         }
+    }
 
-        return root
+    private fun showSnoozeSelector(help: TextView) {
+        snoozeMode = true
+        snoozeMinutes = 5
+        actionHost.removeAllViews()
+        help.text = "Elige cuánto tiempo quieres posponer"
+
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).roundToInt()
+
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+        }
+        actionHost.addView(
+            row,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                dp(92),
+                Gravity.CENTER
+            )
+        )
+
+        val minus = TextView(this).apply {
+            text = "−"
+            textSize = 30f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(99, 99, 102))
+            background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
+            isClickable = true
+            setOnClickListener {
+                if (snoozeMinutes > 1) {
+                    snoozeMinutes -= 1
+                    performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    updateSnoozeLabel(row)
+                }
+            }
+        }
+        row.addView(
+            minus,
+            LinearLayout.LayoutParams(dp(58), dp(58))
+        )
+
+        val snooze = TextView(this).apply {
+            tag = "snoozeLabel"
+            text = snoozeText()
+            textSize = 17f
+            gravity = Gravity.CENTER
+            setTextColor(Color.WHITE)
+            typeface = Typeface.create("sans", Typeface.BOLD)
+            background = roundedBackground(Color.rgb(0, 122, 255), dp(28))
+            isClickable = true
+            setOnClickListener { snoozeReminder() }
+        }
+        val snoozeParams = LinearLayout.LayoutParams(0, dp(62), 1f).apply {
+            marginStart = dp(18)
+            marginEnd = dp(18)
+        }
+        row.addView(snooze, snoozeParams)
+
+        val plus = TextView(this).apply {
+            text = "+"
+            textSize = 30f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(99, 99, 102))
+            background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
+            isClickable = true
+            setOnClickListener {
+                if (snoozeMinutes < 120) {
+                    snoozeMinutes += 1
+                    performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    updateSnoozeLabel(row)
+                }
+            }
+        }
+        row.addView(
+            plus,
+            LinearLayout.LayoutParams(dp(58), dp(58))
+        )
+
+        val back = TextView(this).apply {
+            text = "Volver"
+            textSize = 13f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(0, 122, 255))
+            isClickable = true
+            setOnClickListener {
+                help.text = "← Posponer     Completar →"
+                buildGestureControl(help)
+            }
+        }
+        actionHost.addView(
+            back,
+            FrameLayout.LayoutParams(dp(90), dp(40), Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
+        )
+    }
+
+    private fun updateSnoozeLabel(row: LinearLayout) {
+        row.findViewWithTag<TextView>("snoozeLabel")?.text = snoozeText()
+    }
+
+    private fun snoozeText(): String =
+        if (snoozeMinutes == 1) "Posponer 1 min" else "Posponer $snoozeMinutes min"
+
+    private fun completeReminder() {
+        ReminderActionStore.enqueueComplete(this, taskId)
+        ReminderScheduler.remove(this, taskId)
+        ReminderScheduler.cancelNotification(this, taskId)
+        finishQuietly()
+    }
+
+    private fun snoozeReminder() {
+        ReminderScheduler.snooze(this, taskId, taskText, snoozeMinutes)
+        finishQuietly()
     }
 
     private fun roundedBackground(color: Int, radius: Int): GradientDrawable =
@@ -286,12 +439,31 @@ class ReminderActivity : Activity() {
             cornerRadius = radius.toFloat()
         }
 
+    private fun circularBackground(color: Int, strokeColor: Int, strokeWidth: Int): GradientDrawable =
+        GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(color)
+            setStroke(strokeWidth, strokeColor)
+        }
+
     private fun finishQuietly() {
         finish()
         overridePendingTransition(0, 0)
     }
 
     override fun onBackPressed() {
+        if (snoozeMode) {
+            val root = actionHost.parent as? LinearLayout
+            val help = root?.let {
+                val index = it.indexOfChild(actionHost)
+                if (index > 0) it.getChildAt(index - 1) as? TextView else null
+            }
+            if (help != null) {
+                help.text = "← Posponer     Completar →"
+                buildGestureControl(help)
+                return
+            }
+        }
         finishQuietly()
     }
 }
