@@ -115,7 +115,7 @@ object NottasWeb {
 
         @JavascriptInterface
         fun setWorkHours(enabled: Boolean, start: String, end: String) {
-            val timePattern = Regex("""^(?:[01]\\d|2[0-3]):[0-5]\\d$""")
+            val timePattern = Regex("""^(?:[01]\d|2[0-3]):[0-5]\d$""")
             val safeStart = if (timePattern.matches(start)) start else "08:00"
             val safeEnd = if (timePattern.matches(end)) end else "17:00"
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -127,7 +127,6 @@ object NottasWeb {
         }
 
         @JavascriptInterface
-        fun setSearchKeyboardMode(active: Boolean) {        @JavascriptInterface
         fun setSearchKeyboardMode(active: Boolean) {
             mainHandler.post {
                 val activity = context as? Activity ?: return@post

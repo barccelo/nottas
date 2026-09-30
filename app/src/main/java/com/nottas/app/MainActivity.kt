@@ -94,7 +94,7 @@ class MainActivity : Activity() {
         NottasWeb.applySystemBars(this, dark)
     }
 
-    private fun applySystemBarInsets(root: View) {    private fun applySystemBarInsets(root: View) {
+    private fun applySystemBarInsets(root: View) {
         root.setOnApplyWindowInsetsListener { view, insets ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val bars = insets.getInsets(WindowInsets.Type.systemBars())
