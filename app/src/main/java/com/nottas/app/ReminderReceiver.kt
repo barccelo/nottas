@@ -174,7 +174,46 @@ object ReminderScheduler {
                 .putExtra("task_text", text),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
+
+        try {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                    manager.canScheduleExactAlarms() -> {
+                    manager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        at,
+                        pendingIntent
+                    )
+                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+                    manager.setAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        at,
+                        pendingIntent
+                    )
+                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                    manager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        at,
+                        pendingIntent
+                    )
+                }
+                else -> {
+                    manager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        at,
+                        pendingIntent
+                    )
+                }
+            }
+        } catch (_: SecurityException) {
+            manager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                at,
+                pendingIntent
+            )
+        }
     }
 
     private fun cancelAlarm(context: Context, id: String) {
