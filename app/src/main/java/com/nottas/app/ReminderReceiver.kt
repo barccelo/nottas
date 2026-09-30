@@ -294,18 +294,19 @@ class ReminderReceiver : BroadcastReceiver() {
         }
 
         try {
-            val overlayIntent = Intent(context, UnlockOverlayService::class.java)
-                .setAction(UnlockOverlayService.ACTION_SHOW_REMINDER)
-                .putExtra(UnlockOverlayService.EXTRA_REMINDER_ID, id)
-                .putExtra(UnlockOverlayService.EXTRA_REMINDER_TEXT, text)
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(overlayIntent)
-            } else {
-                context.startService(overlayIntent)
+            val reminderIntent = Intent(context, ReminderActivity::class.java).apply {
+                putExtra(ReminderActivity.EXTRA_TASK_ID, id)
+                putExtra(ReminderActivity.EXTRA_TASK_TEXT, text)
+                addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS or
+                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+                )
             }
+            context.startActivity(reminderIntent)
         } catch (_: Throwable) {
-            // The notification remains available if Android blocks the overlay service launch.
+            // The notification remains available if Android blocks the full-screen activity.
         }
     }
 }
