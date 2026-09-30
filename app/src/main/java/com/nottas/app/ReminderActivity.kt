@@ -26,8 +26,7 @@ class ReminderActivity : Activity() {
     private var taskId: String = ""
     private var taskText: String = ""
     private var snoozeMinutes = 5
-    private var snoozeMode = false
-    private lateinit var actionHost: FrameLayout
+    private lateinit var snoozeLabel: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +73,7 @@ class ReminderActivity : Activity() {
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(28), dp(26), dp(28), dp(28))
+            setPadding(dp(28), dp(26), dp(28), dp(26))
         }
         root.addView(
             content,
@@ -84,44 +83,19 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val topRow = FrameLayout(this)
-        content.addView(
-            topRow,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(54)
-            )
-        )
-
         val brand = TextView(this).apply {
             text = "Nottas"
             textSize = 17f
             setTextColor(Color.rgb(99, 99, 102))
-            gravity = Gravity.CENTER_VERTICAL
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
             typeface = Typeface.create("sans", Typeface.BOLD)
         }
-        topRow.addView(
+        content.addView(
             brand,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                Gravity.START
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(54)
             )
-        )
-
-        val close = TextView(this).apply {
-            text = "×"
-            textSize = 28f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(142, 142, 147))
-            background = roundedBackground(Color.WHITE, dp(22))
-            elevation = dp(1).toFloat()
-            isClickable = true
-            setOnClickListener { finishQuietly() }
-        }
-        topRow.addView(
-            close,
-            FrameLayout.LayoutParams(dp(44), dp(44), Gravity.END or Gravity.CENTER_VERTICAL)
         )
 
         content.addView(View(this), LinearLayout.LayoutParams(1, 0, 0.9f))
@@ -158,83 +132,18 @@ class ReminderActivity : Activity() {
         }
         content.addView(title, titleParams)
 
-        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1.25f))
+        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1.18f))
 
-        val gestureHelp = TextView(this).apply {
-            text = "← Posponer     Completar →"
-            textSize = 13f
-            setTextColor(Color.rgb(142, 142, 147))
-            gravity = Gravity.CENTER
-        }
-        content.addView(
-            gestureHelp,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(34)
-            )
-        )
-
-        actionHost = FrameLayout(this).apply {
+        val gestureHost = FrameLayout(this).apply {
             clipChildren = false
             clipToPadding = false
         }
         content.addView(
-            actionHost,
+            gestureHost,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(164)
+                dp(194)
             )
-        )
-
-        buildGestureControl(gestureHelp)
-
-        val footer = TextView(this).apply {
-            text = "Desliza el botón, no la tarjeta."
-            textSize = 12f
-            setTextColor(Color.rgb(174, 174, 178))
-            gravity = Gravity.CENTER
-        }
-        content.addView(
-            footer,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(26)
-            )
-        )
-
-        return root
-    }
-
-    private fun buildGestureControl(help: TextView) {
-        snoozeMode = false
-        snoozeMinutes = 5
-        actionHost.removeAllViews()
-
-        val density = resources.displayMetrics.density
-        fun dp(value: Int): Int = (value * density).roundToInt()
-
-        val leftTarget = TextView(this).apply {
-            text = "Posponer"
-            textSize = 14f
-            setTextColor(Color.rgb(0, 122, 255))
-            gravity = Gravity.CENTER
-            alpha = 0.42f
-        }
-        actionHost.addView(
-            leftTarget,
-            FrameLayout.LayoutParams(dp(94), dp(46), Gravity.START or Gravity.CENTER_VERTICAL)
-        )
-
-        val rightTarget = TextView(this).apply {
-            text = "Completar"
-            textSize = 14f
-            setTextColor(Color.rgb(52, 199, 89))
-            gravity = Gravity.CENTER
-            alpha = 0.42f
-        }
-        actionHost.addView(
-            rightTarget,
-            FrameLayout.LayoutParams(dp(94), dp(46), Gravity.END or Gravity.CENTER_VERTICAL)
         )
 
         val knob = TextView(this).apply {
@@ -247,98 +156,24 @@ class ReminderActivity : Activity() {
             isClickable = true
         }
         val knobSize = dp(92)
-        actionHost.addView(
+        gestureHost.addView(
             knob,
             FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         )
 
-        var startX = 0f
-        var direction = 0
-        val lock = dp(10).toFloat()
-        val threshold = dp(94).toFloat()
-        val maxTravel = dp(126).toFloat()
+        bindVerticalActionGesture(knob, dp)
 
-        knob.setOnTouchListener { view, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    startX = event.rawX
-                    direction = 0
-                    view.animate().cancel()
-                    true
-                }
-
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - startX
-                    if (direction == 0 && abs(dx) >= lock) {
-                        direction = if (dx > 0) 1 else -1
-                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    }
-
-                    val tx = dx.coerceIn(-maxTravel, maxTravel)
-                    view.translationX = tx
-
-                    if (direction < 0) {
-                        leftTarget.alpha = (0.42f + (abs(tx) / threshold) * 0.58f).coerceIn(0.42f, 1f)
-                        rightTarget.alpha = 0.24f
-                        help.text = if (abs(tx) >= threshold) "Suelta para elegir el tiempo" else "← Posponer"
-                    } else if (direction > 0) {
-                        rightTarget.alpha = (0.42f + (abs(tx) / threshold) * 0.58f).coerceIn(0.42f, 1f)
-                        leftTarget.alpha = 0.24f
-                        help.text = if (tx >= threshold) "Suelta para completar ✓" else "Completar →"
-                    }
-                    true
-                }
-
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    val dx = event.rawX - startX
-                    if (
-                        event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction > 0 &&
-                        dx >= threshold
-                    ) {
-                        completeReminder()
-                    } else if (
-                        event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction < 0 &&
-                        -dx >= threshold
-                    ) {
-                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                        showSnoozeSelector(help)
-                    } else {
-                        view.animate().translationX(0f).setDuration(180).start()
-                        leftTarget.alpha = 0.42f
-                        rightTarget.alpha = 0.42f
-                        help.text = "← Posponer     Completar →"
-                    }
-                    true
-                }
-
-                else -> false
-            }
-        }
-    }
-
-    private fun showSnoozeSelector(help: TextView) {
-        snoozeMode = true
-        snoozeMinutes = 5
-        actionHost.removeAllViews()
-        help.text = "Elige cuánto tiempo quieres posponer"
-
-        val density = resources.displayMetrics.density
-        fun dp(value: Int): Int = (value * density).roundToInt()
-
-        val row = LinearLayout(this).apply {
+        val snoozeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
         }
-        actionHost.addView(
-            row,
-            FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                dp(92),
-                Gravity.CENTER
-            )
-        )
+        val snoozeParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(72)
+        ).apply {
+            topMargin = dp(2)
+        }
+        content.addView(snoozeRow, snoozeParams)
 
         val minus = TextView(this).apply {
             text = "−"
@@ -351,31 +186,31 @@ class ReminderActivity : Activity() {
                 if (snoozeMinutes > 1) {
                     snoozeMinutes -= 1
                     performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    updateSnoozeLabel(row)
+                    updateSnoozeLabel()
                 }
             }
         }
-        row.addView(
+        snoozeRow.addView(
             minus,
             LinearLayout.LayoutParams(dp(58), dp(58))
         )
 
-        val snooze = TextView(this).apply {
-            tag = "snoozeLabel"
+        snoozeLabel = TextView(this).apply {
             text = snoozeText()
             textSize = 17f
             gravity = Gravity.CENTER
             setTextColor(Color.WHITE)
             typeface = Typeface.create("sans", Typeface.BOLD)
-            background = roundedBackground(Color.rgb(0, 122, 255), dp(28))
+            background = roundedBackground(Color.rgb(0, 122, 255), dp(30))
             isClickable = true
-            setOnClickListener { snoozeReminder() }
         }
-        val snoozeParams = LinearLayout.LayoutParams(0, dp(62), 1f).apply {
+        val middleParams = LinearLayout.LayoutParams(0, dp(62), 1f).apply {
             marginStart = dp(18)
             marginEnd = dp(18)
         }
-        row.addView(snooze, snoozeParams)
+        snoozeRow.addView(snoozeLabel, middleParams)
+
+        bindSnoozeButtonGesture(snoozeLabel, dp)
 
         val plus = TextView(this).apply {
             text = "+"
@@ -388,34 +223,151 @@ class ReminderActivity : Activity() {
                 if (snoozeMinutes < 120) {
                     snoozeMinutes += 1
                     performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    updateSnoozeLabel(row)
+                    updateSnoozeLabel()
                 }
             }
         }
-        row.addView(
+        snoozeRow.addView(
             plus,
             LinearLayout.LayoutParams(dp(58), dp(58))
         )
 
-        val back = TextView(this).apply {
-            text = "Volver"
-            textSize = 13f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(0, 122, 255))
-            isClickable = true
-            setOnClickListener {
-                help.text = "← Posponer     Completar →"
-                buildGestureControl(help)
-            }
-        }
-        actionHost.addView(
-            back,
-            FrameLayout.LayoutParams(dp(90), dp(40), Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
-        )
+        return root
     }
 
-    private fun updateSnoozeLabel(row: LinearLayout) {
-        row.findViewWithTag<TextView>("snoozeLabel")?.text = snoozeText()
+    private fun bindVerticalActionGesture(
+        knob: TextView,
+        dp: (Int) -> Int
+    ) {
+        var startY = 0f
+        var direction = 0
+        val lock = dp(10).toFloat()
+        val threshold = dp(84).toFloat()
+        val maxTravel = dp(108).toFloat()
+
+        knob.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startY = event.rawY
+                    direction = 0
+                    view.animate().cancel()
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.rawY - startY
+                    if (direction == 0 && abs(dy) >= lock) {
+                        direction = if (dy > 0) 1 else -1
+                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    }
+
+                    val ty = dy.coerceIn(-maxTravel, maxTravel)
+                    view.translationY = ty
+
+                    when {
+                        ty <= -threshold -> {
+                            knob.text = "✓"
+                            knob.setTextColor(Color.rgb(52, 199, 89))
+                        }
+                        ty >= threshold -> {
+                            knob.text = "↓"
+                            knob.setTextColor(Color.rgb(0, 122, 255))
+                        }
+                        else -> {
+                            knob.text = "×"
+                            knob.setTextColor(Color.rgb(99, 99, 102))
+                        }
+                    }
+                    true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val dy = event.rawY - startY
+                    if (
+                        event.actionMasked == MotionEvent.ACTION_UP &&
+                        direction < 0 &&
+                        -dy >= threshold
+                    ) {
+                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                        completeReminder()
+                    } else if (
+                        event.actionMasked == MotionEvent.ACTION_UP &&
+                        direction > 0 &&
+                        dy >= threshold
+                    ) {
+                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                        snoozeReminder()
+                    } else {
+                        knob.text = "×"
+                        knob.setTextColor(Color.rgb(99, 99, 102))
+                        view.animate().translationY(0f).setDuration(180).start()
+                    }
+                    true
+                }
+
+                else -> false
+            }
+        }
+    }
+
+    private fun bindSnoozeButtonGesture(
+        button: TextView,
+        dp: (Int) -> Int
+    ) {
+        var startY = 0f
+        var startMinutes = snoozeMinutes
+        var moved = false
+        var lastMinutes = snoozeMinutes
+        val dragThreshold = dp(7).toFloat()
+        val minuteStep = dp(18).toFloat()
+
+        button.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startY = event.rawY
+                    startMinutes = snoozeMinutes
+                    lastMinutes = snoozeMinutes
+                    moved = false
+                    true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.rawY - startY
+                    if (abs(dy) >= dragThreshold) moved = true
+                    if (moved) {
+                        val delta = (-dy / minuteStep).roundToInt()
+                        val next = (startMinutes + delta).coerceIn(1, 120)
+                        if (next != snoozeMinutes) {
+                            snoozeMinutes = next
+                            updateSnoozeLabel()
+                            if (next != lastMinutes) {
+                                lastMinutes = next
+                                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            }
+                        }
+                    }
+                    true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    if (!moved) {
+                        snoozeReminder()
+                    } else {
+                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                    }
+                    true
+                }
+
+                MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
+        }
+    }
+
+    private fun updateSnoozeLabel() {
+        if (::snoozeLabel.isInitialized) {
+            snoozeLabel.text = snoozeText()
+        }
     }
 
     private fun snoozeText(): String =
@@ -451,19 +403,8 @@ class ReminderActivity : Activity() {
         overridePendingTransition(0, 0)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (snoozeMode) {
-            val root = actionHost.parent as? LinearLayout
-            val help = root?.let {
-                val index = it.indexOfChild(actionHost)
-                if (index > 0) it.getChildAt(index - 1) as? TextView else null
-            }
-            if (help != null) {
-                help.text = "← Posponer     Completar →"
-                buildGestureControl(help)
-                return
-            }
-        }
-        finishQuietly()
+        // A reminder must be completed or snoozed; Back intentionally does nothing.
     }
 }
