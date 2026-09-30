@@ -161,7 +161,7 @@ class ReminderActivity : Activity() {
             FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         )
 
-        bindVerticalActionGesture(knob, dp)
+        bindVerticalActionGesture(knob)
 
         val snoozeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -210,7 +210,7 @@ class ReminderActivity : Activity() {
         }
         snoozeRow.addView(snoozeLabel, middleParams)
 
-        bindSnoozeButtonGesture(snoozeLabel, dp)
+        bindSnoozeButtonGesture(snoozeLabel)
 
         val plus = TextView(this).apply {
             text = "+"
@@ -235,10 +235,9 @@ class ReminderActivity : Activity() {
         return root
     }
 
-    private fun bindVerticalActionGesture(
-        knob: TextView,
-        dp: (Int) -> Int
-    ) {
+    private fun bindVerticalActionGesture(knob: TextView) {
+        fun dp(value: Int): Int =
+            (value * resources.displayMetrics.density).roundToInt()
         var startY = 0f
         var direction = 0
         val lock = dp(10).toFloat()
@@ -310,10 +309,9 @@ class ReminderActivity : Activity() {
         }
     }
 
-    private fun bindSnoozeButtonGesture(
-        button: TextView,
-        dp: (Int) -> Int
-    ) {
+    private fun bindSnoozeButtonGesture(button: TextView) {
+        fun dp(value: Int): Int =
+            (value * resources.displayMetrics.density).roundToInt()
         var startY = 0f
         var startMinutes = snoozeMinutes
         var moved = false
