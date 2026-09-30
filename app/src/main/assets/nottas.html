@@ -880,6 +880,14 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
       b.classList.toggle("active",resolved===quickDueDate);
     });
   }
+  window.NottasOpenQuickCapture=function(requestedMode){
+    quickMode=requestedMode==="notes"?"notes":"tasks";
+    openQuickCapture();
+    quickMode=requestedMode==="notes"?"notes":"tasks";
+    syncQuickMode();
+    return true;
+  };
+
   window.NottasOpenSharedText=function(text){
     const raw=String(text||"").trim();
     if(!raw)return false;
