@@ -881,10 +881,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     });
   }
   window.NottasOpenQuickCapture=function(requestedMode){
-    quickMode=requestedMode==="notes"?"notes":"tasks";
-    openQuickCapture();
-    quickMode=requestedMode==="notes"?"notes":"tasks";
-    syncQuickMode();
+    openQuickCapture(requestedMode==="notes"?"notes":"tasks");
     return true;
   };
 
@@ -900,10 +897,10 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     return true;
   };
 
-  function openQuickCapture(){
+  function openQuickCapture(requestedMode=null){
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
-    quickMode=mode==="notes"?"notes":"tasks";
+    quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
     quickDueDate="";
     $("quickTaskText").value="";
     $("quickNoteText").value="";
