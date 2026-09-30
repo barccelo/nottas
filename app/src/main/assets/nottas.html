@@ -25,7 +25,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .fab{position:static;flex:0 0 58px;width:58px;height:58px;border-radius:50%;border:0;background:#1677ff;color:#fff;font-size:32px;font-weight:300;box-shadow:0 8px 24px rgba(0,0,0,.18);display:grid;place-items:center;pointer-events:auto}.fab:active{transform:scale(.96)}
 .backbar{display:none;min-height:50px;margin-bottom:18px}.backbar.show{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}.navBackBtn{justify-self:start;border:0;background:transparent;color:#007aff;display:flex;align-items:center;gap:1px;padding:8px 6px 8px 0;font-size:16px;font-weight:450;min-height:44px}.navBackBtn:active{opacity:.55}.navBackBtn svg{width:16px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.backbar strong{font-size:17px;font-weight:650;letter-spacing:-.01em}.navSpacer{justify-self:end;width:44px;height:44px}.trashEmptyBtn{justify-self:end;min-width:44px;min-height:44px;border:0;background:transparent;color:#ff3b30;padding:0 2px;font-size:15px;font-weight:560}.trashEmptyBtn.armed{font-weight:700}
 .overlay{position:fixed;left:0;right:0;top:var(--vv-top,0px);height:var(--vv-height,100vh);background:rgba(0,0,0,.24);z-index:50;display:none;align-items:flex-end;justify-content:center}.overlay.show{display:flex}.sheet{width:min(760px,100%);max-height:calc(var(--vv-height,100vh) - 4px);overflow:auto;overscroll-behavior:contain;scroll-padding-top:74px;scroll-padding-bottom:84px;background:#f5f5f7;border-radius:20px 20px 0 0;padding:14px 14px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.16)}.editorSheet{display:flex;flex-direction:column}.sheetHandle{width:40px;height:5px;border-radius:99px;background:#c7c7cc;margin:0 auto 12px;flex:0 0 auto}.sheetHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex:0 0 auto}.sheetHeader h2{font-size:21px;line-height:1.15;margin:0;font-weight:700;letter-spacing:-.025em}.sheetHeaderActions{display:flex;align-items:center;gap:2px}.editorPinBtn{width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#8e8e93;display:grid;place-items:center;padding:0}.editorPinBtn:active{background:rgba(118,118,128,.12)}.editorPinBtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.editorPinBtn svg .pinFill{fill:transparent}.editorPinBtn.active{color:#ff9f0a}.editorPinBtn.active svg .pinFill{fill:currentColor}.closeBtn{border:0;background:rgba(118,118,128,.14);width:34px;height:34px;border-radius:50%;color:#636366;display:grid;place-items:center;padding:0;margin:5px}.closeBtn:active{background:rgba(118,118,128,.22)}.closeBtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}.editorSheet form{min-height:0}.editorSheet .actions{position:sticky;bottom:0;z-index:5;background:linear-gradient(to bottom,rgba(245,245,247,0),#f5f5f7 12px);padding-top:16px;padding-bottom:2px}.keyboardOpen .editorSheet{max-height:var(--vv-height,100vh);border-radius:18px 18px 0 0;padding-top:10px}.keyboardOpen .editorSheet .sheetHandle{display:none}.keyboardOpen .editorSheet .sheetHeader{margin-bottom:8px}.keyboardOpen .editorSheet .card{margin-bottom:4px}.keyboardOpen .editorSheet .field{margin-bottom:8px}.keyboardOpen .editorSheet .textarea{min-height:96px}
-.card{background:#fff;border-radius:16px;padding:13px;margin-bottom:10px}.field{margin-bottom:10px}.field:last-child{margin-bottom:0}.label{font-size:12px;color:#6e6e73;margin:0 2px 5px}.textInput,.textarea,.select,.dateInput,.timeInput,.colorInput{width:100%;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;border-radius:12px;padding:11px 12px;font-size:16px;outline:none}.textInput:focus,.textarea:focus,.select:focus,.dateInput:focus,.timeInput:focus{border-color:#1677ff}.textarea{min-height:150px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.btn{border:0;border-radius:12px;min-height:44px;padding:10px 15px;font-weight:620}.btn.primary{background:#1677ff;color:#fff}.btn.secondary{background:#e5e5ea;color:#1d1d1f}.btn.danger{background:#fff0f0;color:#b42318}.btn.iconDanger{width:44px;padding:0;display:grid;place-items:center}.btn.iconDanger svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.btn.full{width:100%}.switchRow{display:flex;align-items:center;justify-content:space-between;gap:12px}.iosSwitch{position:relative;display:inline-block;width:51px;height:31px;flex:0 0 auto}.iosSwitch input{position:absolute;opacity:0;pointer-events:none}.iosSwitch span{position:absolute;inset:0;border-radius:999px;background:#e5e5ea;transition:background .18s}.iosSwitch span::after{content:"";position:absolute;width:27px;height:27px;left:2px;top:2px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.24);transition:transform .18s}.iosSwitch input:checked+span{background:#34c759}.iosSwitch input:checked+span::after{transform:translateX(20px)}
+.quickSheet{padding-bottom:calc(12px + env(safe-area-inset-bottom))}.quickSheet .sheetHeader{margin-bottom:10px}.quickMode{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:#e5e5ea;border-radius:12px;padding:3px;margin-bottom:10px}.quickMode button{height:40px;border:0;border-radius:10px;background:transparent;color:#636366;font-size:15px;font-weight:620}.quickMode button.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.10)}.quickInput,.quickTextarea{width:100%;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;border-radius:14px;padding:13px 14px;font-size:17px;outline:none}.quickInput:focus,.quickTextarea:focus{border-color:#1677ff}.quickTextarea{min-height:92px;max-height:160px;resize:none}.quickTools{display:flex;gap:7px;align-items:center;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}.quickTools::-webkit-scrollbar{display:none}.quickChip{height:36px;flex:0 0 auto;border:1px solid #d1d1d6;border-radius:999px;background:#fff;color:#48484a;padding:0 13px;font-size:14px;font-weight:560}.quickChip.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f}.quickCategory{margin-top:8px}.quickActions{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}.quickActions .more{margin-right:auto;background:transparent;color:#007aff;padding-left:4px;padding-right:4px}.keyboardOpen .quickSheet{max-height:var(--vv-height,100vh);padding-top:10px}.keyboardOpen .quickSheet .sheetHandle{display:none}.card{background:#fff;border-radius:16px;padding:13px;margin-bottom:10px}.field{margin-bottom:10px}.field:last-child{margin-bottom:0}.label{font-size:12px;color:#6e6e73;margin:0 2px 5px}.textInput,.textarea,.select,.dateInput,.timeInput,.colorInput{width:100%;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;border-radius:12px;padding:11px 12px;font-size:16px;outline:none}.textInput:focus,.textarea:focus,.select:focus,.dateInput:focus,.timeInput:focus{border-color:#1677ff}.textarea{min-height:150px;resize:vertical}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.btn{border:0;border-radius:12px;min-height:44px;padding:10px 15px;font-weight:620}.btn.primary{background:#1677ff;color:#fff}.btn.secondary{background:#e5e5ea;color:#1d1d1f}.btn.danger{background:#fff0f0;color:#b42318}.btn.iconDanger{width:44px;padding:0;display:grid;place-items:center}.btn.iconDanger svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.btn.full{width:100%}.switchRow{display:flex;align-items:center;justify-content:space-between;gap:12px}.iosSwitch{position:relative;display:inline-block;width:51px;height:31px;flex:0 0 auto}.iosSwitch input{position:absolute;opacity:0;pointer-events:none}.iosSwitch span{position:absolute;inset:0;border-radius:999px;background:#e5e5ea;transition:background .18s}.iosSwitch span::after{content:"";position:absolute;width:27px;height:27px;left:2px;top:2px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.24);transition:transform .18s}.iosSwitch input:checked+span{background:#34c759}.iosSwitch input:checked+span::after{transform:translateX(20px)}
 .settingsGroup{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:10px}.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid #ececf0}.settingsRow:last-child{border-bottom:0}.settingsRow .left{min-width:0}.settingsRow .title{font-size:15px}.settingsRow .desc{font-size:12px;color:#8e8e93;margin-top:2px}.settingsRow button{border:0;background:transparent;color:#007aff;border-radius:10px;padding:8px 4px;font-weight:500}.settingsRow button:active{opacity:.55}.settingsChevron{width:9px;height:15px;fill:none;stroke:#c7c7cc;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.categoryManage{display:flex;align-items:center;gap:10px}.categoryManage .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.colorSwatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
 .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1d1d1f;color:#fff;border-radius:999px;padding:9px 13px;font-size:12px;z-index:80;opacity:0;pointer-events:none;transition:opacity .18s}.toast.show{opacity:1}
 .hidden{display:none!important}
@@ -87,6 +87,34 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 </div>
 <div id="toast" class="toast" role="status"></div>
 <input id="importFile" class="hidden" type="file" accept="application/json,.json">
+
+<div id="quickOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet quickSheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHeader">
+      <h2>Captura rápida</h2>
+      <button id="quickClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
+    </div>
+    <div class="quickMode" role="tablist" aria-label="Tipo de captura">
+      <button id="quickTaskMode" class="active" type="button">Tarea</button>
+      <button id="quickNoteMode" type="button">Nota</button>
+    </div>
+    <form id="quickForm">
+      <input id="quickTaskText" class="quickInput" type="text" maxlength="180" placeholder="¿Qué tienes pendiente?" autocomplete="off">
+      <textarea id="quickNoteText" class="quickTextarea hidden" maxlength="12000" placeholder="Escribe una nota…"></textarea>
+      <div id="quickTaskOptions" class="quickTools">
+        <button class="quickChip active" type="button" data-quick-date="">Sin fecha</button>
+        <button class="quickChip" type="button" data-quick-date="today">Hoy</button>
+        <button class="quickChip" type="button" data-quick-date="tomorrow">Mañana</button>
+      </div>
+      <select id="quickCategory" class="select quickCategory" aria-label="Categoría"></select>
+      <div class="quickActions">
+        <button id="quickMore" class="btn more" type="button">Más opciones</button>
+        <button class="btn primary" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div id="editorOverlay" class="overlay" aria-hidden="true">
   <div class="sheet editorSheet">
@@ -188,7 +216,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,saveTimer=null,saving=false,toastTimer=null;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null;
   let suppressClickUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -463,6 +491,78 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   }
   function closeEditor(){closeOverlay("editorOverlay");editingTaskId=null;editingNoteId=null;editorPinned=false;syncEditorPin();setNativeSearchKeyboardMode(true)}
 
+  function syncQuickMode(){
+    const isTask=quickMode==="tasks";
+    $("quickTaskMode").classList.toggle("active",isTask);
+    $("quickNoteMode").classList.toggle("active",!isTask);
+    $("quickTaskText").classList.toggle("hidden",!isTask);
+    $("quickNoteText").classList.toggle("hidden",isTask);
+    $("quickTaskOptions").classList.toggle("hidden",!isTask);
+    setTimeout(()=>{(isTask?$("quickTaskText"):$("quickNoteText")).focus()},40);
+  }
+  function setQuickDate(value){
+    quickDueDate=value==="today"?localDateISO():value==="tomorrow"?(()=>{const d=new Date();d.setDate(d.getDate()+1);return localDateISO(d)})():"";
+    document.querySelectorAll("[data-quick-date]").forEach(b=>{
+      const resolved=b.dataset.quickDate==="today"?localDateISO():b.dataset.quickDate==="tomorrow"?(()=>{const d=new Date();d.setDate(d.getDate()+1);return localDateISO(d)})():"";
+      b.classList.toggle("active",resolved===quickDueDate);
+    });
+  }
+  function openQuickCapture(){
+    leaveSearchKeyboardMode();
+    setNativeSearchKeyboardMode(false);
+    quickMode=mode==="notes"?"notes":"tasks";
+    quickDueDate="";
+    $("quickTaskText").value="";
+    $("quickNoteText").value="";
+    fillSelect($("quickCategory"),activeCategory!=="all"?activeCategory:"inbox");
+    setQuickDate("");
+    syncQuickMode();
+    openOverlay("quickOverlay");
+  }
+  function closeQuickCapture(){
+    closeOverlay("quickOverlay");
+    $("quickTaskText").blur();$("quickNoteText").blur();
+    setNativeSearchKeyboardMode(true);
+  }
+  function splitQuickNote(text){
+    const clean=text.trim();
+    if(!clean)return {title:"",body:""};
+    const lines=clean.split(/\r?\n/);
+    const first=(lines.shift()||"").trim();
+    return {title:first.slice(0,120),body:lines.join("\n").trim()};
+  }
+  function saveQuickCapture(){
+    const category=$("quickCategory").value||"inbox",stamp=now();
+    if(quickMode==="tasks"){
+      const text=$("quickTaskText").value.trim();if(!text)return false;
+      state.tasks.push({id:makeId("t"),text,category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
+    }
+    const raw=$("quickNoteText").value.trim();if(!raw)return false;
+    const parts=splitQuickNote(raw);
+    state.notes.push({id:makeId("n"),title:parts.title,body:parts.body,category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+    closeQuickCapture();scheduleSave();render();showToast("Nota guardada");return true;
+  }
+  function expandQuickCapture(){
+    const category=$("quickCategory").value||"inbox";
+    if(quickMode==="tasks"){
+      const text=$("quickTaskText").value;
+      const due=quickDueDate;
+      closeQuickCapture();
+      openTask(null);
+      $("taskText").value=text;
+      fillSelect($("taskCategory"),category);
+      $("taskDate").value=due;
+    }else{
+      const parts=splitQuickNote($("quickNoteText").value);
+      closeQuickCapture();
+      openNote(null);
+      $("noteTitle").value=parts.title;
+      $("noteBody").value=parts.body;
+      fillSelect($("noteCategory"),category);
+    }
+  }
+
   function renderCategoryManage(){const box=$("categoryManage");box.innerHTML="";activeCategories().forEach(c=>{const r=document.createElement("div");r.className="settingsRow categoryManage";r.innerHTML=`<span class="colorSwatch" style="background:${esc(c.color)}"></span><span class="name">${esc(c.name)}</span>${c.id==="inbox"?"":`<button type="button" aria-label="Editar ${esc(c.name)}"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button>`}`;const b=r.querySelector("button");if(b)b.addEventListener("click",()=>openCategory(c));box.appendChild(r)})}
   function renderSettingsSummary(){
     const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;
@@ -691,7 +791,14 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   },true);
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
   document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
-  $("fab").addEventListener("click",()=>mode==="tasks"?openTask(null):openNote(null));
+  $("fab").addEventListener("click",openQuickCapture);
+  $("quickClose").addEventListener("click",closeQuickCapture);
+  $("quickOverlay").addEventListener("click",e=>{if(e.target===$("quickOverlay"))closeQuickCapture()});
+  $("quickTaskMode").addEventListener("click",()=>{quickMode="tasks";syncQuickMode()});
+  $("quickNoteMode").addEventListener("click",()=>{quickMode="notes";syncQuickMode()});
+  document.querySelectorAll("[data-quick-date]").forEach(b=>b.addEventListener("click",()=>setQuickDate(b.dataset.quickDate||"")));
+  $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
+  $("quickMore").addEventListener("click",expandQuickCapture);
   $("backBtn").addEventListener("click",()=>{trash=false;render()});
   let emptyTrashConfirmUntil=0;
   $("emptyTrashBtn").addEventListener("click",()=>{
@@ -765,6 +872,10 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     const active=document.activeElement;
     if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select")){
       active.blur();
+      return true;
+    }
+    if($("quickOverlay").classList.contains("show")){
+      closeQuickCapture();
       return true;
     }
     if($("categoryOverlay").classList.contains("show")){
