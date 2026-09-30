@@ -9,6 +9,7 @@ import android.provider.Settings
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != Intent.ACTION_BOOT_COMPLETED) return
+        ReminderScheduler.rescheduleAll(context)
         val enabled = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
             .getBoolean(NottasWeb.PREF_WAKE_ENABLED, true)
         if (!enabled || !Settings.canDrawOverlays(context)) return
