@@ -572,7 +572,16 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     }catch(_){}
   }
   function requestReminderPermission(){
-    try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}
+    try{
+      if(!window.NottasNative)return;
+      const hasNotifications=!NottasNative.hasNotificationPermission||NottasNative.hasNotificationPermission();
+      if(!hasNotifications){
+        if(NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission();
+        return;
+      }
+      const hasExact=!NottasNative.hasExactAlarmAccess||NottasNative.hasExactAlarmAccess();
+      if(!hasExact&&NottasNative.requestExactAlarmAccess)NottasNative.requestExactAlarmAccess();
+    }catch(_){}
   }
   function subtaskProgress(t){const total=t.subtasks?.length||0;if(!total)return "";const done=t.subtasks.filter(s=>s.done).length;return done+"/"+total}
   function nextRecurrenceDate(baseDate,rule){
@@ -1229,7 +1238,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitTimePartEdit(part)}});
   });
   $("editorClose").addEventListener("click",closeEditor);$("editorOverlay").addEventListener("click",e=>{if(e.target===$("editorOverlay"))closeEditor()});
-  $("taskForm").addEventListener("submit",e=>{e.preventDefault();const text=$("taskText").value.trim();if(!text)return;const c=getCategoryPickerValue("taskCategory"),dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",priority=$("taskPriority").value||"normal",recurrence=$("taskRecurrence").value||"none",reminder=$("taskTimeButton").dataset.reminderActive==="1"?($("taskReminder").value||"at"):"none",pinned=editorPinned,subtasks=editorSubtasks.map(s=>({id:s.id||makeId("s"),text:String(s.text||"").trim(),done:!!s.done})).filter(s=>s.text);if(reminder!=="none"&&(!dueDate||!dueTime)){showToast("Añade fecha y hora para el recordatorio");return}if(editingTaskId){const t=state.tasks.find(x=>x.id===editingTaskId);if(t){t.text=text;t.category=c;t.dueDate=dueDate;t.dueTime=dueTime;t.priority=priority;t.recurrence=recurrence;t.reminder=reminder;t.subtasks=subtasks;t.pinned=pinned;touch(t)}}else{const stamp=now();state.tasks.push({id:makeId("t"),text,category:c,done:false,pinned,dueDate,dueTime,priority,recurrence,reminder,recurrenceFrom:"",subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();showToast("Tarea guardada")});
+  $("taskForm").addEventListener("submit",e=>{e.preventDefault();const text=$("taskText").value.trim();if(!text)return;const c=getCategoryPickerValue("taskCategory"),dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",priority=$("taskPriority").value||"normal",recurrence=$("taskRecurrence").value||"none",reminder=$("taskTimeButton").dataset.reminderActive==="1"?($("taskReminder").value||"at"):"none",pinned=editorPinned,subtasks=editorSubtasks.map(s=>({id:s.id||makeId("s"),text:String(s.text||"").trim(),done:!!s.done})).filter(s=>s.text);if(reminder!=="none"&&(!dueDate||!dueTime)){showToast("Añade fecha y hora para el recordatorio");return}if(editingTaskId){const t=state.tasks.find(x=>x.id===editingTaskId);if(t){t.text=text;t.category=c;t.dueDate=dueDate;t.dueTime=dueTime;t.priority=priority;t.recurrence=recurrence;t.reminder=reminder;t.subtasks=subtasks;t.pinned=pinned;touch(t)}}else{const stamp=now();state.tasks.push({id:makeId("t"),text,category:c,done:false,pinned,dueDate,dueTime,priority,recurrence,reminder,recurrenceFrom:"",subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();if(reminder!=="none")requestReminderPermission();showToast("Tarea guardada")});
   $("deleteTaskBtn").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===editingTaskId);if(!t)return;t.deletedAt=now();touch(t);closeEditor();scheduleSave();render();showToast("Tarea enviada a papelera")});
   $("noteForm").addEventListener("submit",e=>{e.preventDefault();const title=$("noteTitle").value.trim(),body=$("noteBody").value.trim();if(!title&&!body)return;const c=getCategoryPickerValue("noteCategory"),pinned=editorPinned;if(editingNoteId){const n=state.notes.find(x=>x.id===editingNoteId);if(n){n.title=title;n.body=body;n.category=c;n.pinned=pinned;touch(n)}}else{const stamp=now();state.notes.push({id:makeId("n"),title,body,category:c,pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();showToast("Nota guardada")});
   $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);closeEditor();scheduleSave();render();showToast("Nota enviada a papelera")});
