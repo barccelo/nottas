@@ -30,6 +30,7 @@ object NottasWeb {
     const val ASSET_URL = "file:///android_asset/nottas.html"
     const val PREFS = "nottas_settings"
     const val PREF_WAKE_ENABLED = "wake_enabled"
+    const val PREF_DARK_MODE = "dark_mode"
 
     @SuppressLint("SetJavaScriptEnabled")
     fun configure(webView: WebView, bridge: NativeBridge) {
@@ -44,7 +45,9 @@ object NottasWeb {
             displayZoomControls = false
             setSupportZoom(false)
         }
-        webView.setBackgroundColor(0xFFF5F5F7.toInt())
+        val dark = webView.context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(PREF_DARK_MODE, false)
+        webView.setBackgroundColor(if (dark) 0xFF000000.toInt() else 0xFFF5F5F7.toInt())
         webView.webViewClient = WebViewClient()
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(bridge, "NottasNative")
@@ -66,6 +69,29 @@ object NottasWeb {
         fun setWakeEnabled(enabled: Boolean) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit().putBoolean(PREF_WAKE_ENABLED, enabled).apply()
+        }
+
+        @JavascriptInterface
+        fun setDarkMode(enabled: Boolean) {
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit().putBoolean(PREF_DARK_MODE, enabled).apply()
+            mainHandler.post {
+                val activity = context as? Activity ?: return@post
+                @Suppress("DEPRECATION")
+                activity.window.statusBarColor =
+                    if (enabled) 0xFF000000.toInt() else 0xFFF5F5F7.toInt()
+                @Suppress("DEPRECATION")
+                activity.window.navigationBarColor =
+                    if (enabled) 0xFF000000.toInt() else 0xFFF5F5F7.toInt()
+                @Suppress("DEPRECATION")
+                activity.window.decorView.systemUiVisibility =
+                    if (enabled) {
+                        0
+                    } else {
+                        android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                            android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                    }
+            }
         }
 
         @JavascriptInterface
@@ -328,6 +354,31 @@ object NottasWeb {
                 toast("Copia guardada en Descargas")
             } catch (_: Throwable) {
                 toast("No pude exportar la copia")
+            }
+        }
+
+        @JavascriptInterface
+        fun exportImportTemplate(json: String) {
+            try {
+                val fileName = "Nottas-Plantilla-Importacion-" + System.currentTimeMillis() + ".json"
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val values = android.content.ContentValues().apply {
+                        put(MediaStore.Downloads.DISPLAY_NAME, fileName)
+                        put(MediaStore.Downloads.MIME_TYPE, "application/json")
+                        put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                    }
+                    val uri = context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+                        ?: error("No se pudo crear el archivo")
+                    context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+                        ?: error("No se pudo escribir el archivo")
+                } else {
+                    val dir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                        ?: context.filesDir
+                    File(dir, fileName).writeText(json)
+                }
+                toast("Plantilla guardada en Descargas")
+            } catch (_: Throwable) {
+                toast("No pude crear la plantilla")
             }
         }
 
