@@ -90,15 +90,22 @@ class MainActivity : Activity() {
 
     private fun configureSystemBars() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        val dark = getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
+            .getBoolean(NottasWeb.PREF_DARK_MODE, false)
+        val barColor = if (dark) Color.BLACK else Color.rgb(245, 245, 247)
         @Suppress("DEPRECATION")
-        window.statusBarColor = Color.rgb(245, 245, 247)
+        window.statusBarColor = barColor
         @Suppress("DEPRECATION")
-        window.navigationBarColor = Color.rgb(245, 245, 247)
+        window.navigationBarColor = barColor
 
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            if (dark) {
+                0
+            } else {
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+                    View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            }
     }
 
     private fun applySystemBarInsets(root: View) {
