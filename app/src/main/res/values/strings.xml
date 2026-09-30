@@ -2,4 +2,9 @@
     <string name="app_name">Nottas</string>
     <string name="overlay_channel_name">Nottas al desbloquear</string>
     <string name="overlay_channel_description">Mantiene Nottas disponible para aparecer al encender o desbloquear el teléfono.</string>
+    <string name="quick_tile_label">Captura Nottas</string>
+    <string name="widget_task">Tarea</string>
+    <string name="widget_note">Nota</string>
+    <string name="shortcut_task">Nueva tarea</string>
+    <string name="shortcut_note">Nueva nota</string>
 </resources>
