@@ -61,6 +61,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   <div id="taskFilters" class="scroller">
     <button class="chip" data-filter="today" type="button">Hoy <span class="count" id="countToday"></span></button>
     <button class="chip active" data-filter="pending" type="button">Pendientes <span class="count" id="countPending"></span></button>
+    <button class="chip" data-filter="pinned" type="button">Destacadas <span class="count" id="countPinnedTasks"></span></button>
     <button class="chip" data-filter="all" type="button">Todas <span class="count" id="countAll"></span></button>
     <button class="chip" data-filter="done" type="button">Completadas <span class="count" id="countDone"></span></button>
   </div>
@@ -281,7 +282,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     o.schemaVersion=3;o.version=3;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory}catch(_){}}
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory}catch(_){}}
   function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,noteFilter,activeCategory}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
@@ -482,13 +483,13 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   }
   function priorityLabel(p){return p==="high"?"Alta":p==="low"?"Baja":""}
 
-  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,catName(t.category),t.dueDate,t.priority)}
+  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,catName(t.category),t.dueDate,t.priority)}
   function visibleNote(n){if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category))}
   function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
 
   function updateCounts(){
     const live=state.tasks.filter(t=>!t.deletedAt),notes=state.notes.filter(n=>!n.deletedAt);const today=localDateISO();
-    $("countToday").textContent=live.filter(t=>!t.done&&t.dueDate===today).length||"";$("countPending").textContent=live.filter(t=>!t.done).length||"";$("countAll").textContent=live.length||"";$("countDone").textContent=live.filter(t=>t.done).length||"";$("countNotes").textContent=notes.length||"";$("countPinned").textContent=notes.filter(n=>n.pinned).length||"";
+    $("countToday").textContent=live.filter(t=>!t.done&&t.dueDate===today).length||"";$("countPending").textContent=live.filter(t=>!t.done).length||"";$("countPinnedTasks").textContent=live.filter(t=>t.pinned).length||"";$("countAll").textContent=live.length||"";$("countDone").textContent=live.filter(t=>t.done).length||"";$("countNotes").textContent=notes.length||"";$("countPinned").textContent=notes.filter(n=>n.pinned).length||"";
   }
 
   function renderCategories(){
@@ -608,6 +609,18 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
       b.classList.toggle("active",resolved===quickDueDate);
     });
   }
+  window.NottasOpenSharedText=function(text){
+    const raw=String(text||"").trim();
+    if(!raw)return false;
+    openQuickCapture();
+    quickMode="notes";
+    $("quickTaskText").value=raw.slice(0,180);
+    $("quickNoteText").value=raw;
+    syncQuickMode();
+    setTimeout(()=>$("quickNoteText").focus(),80);
+    return true;
+  };
+
   function openQuickCapture(){
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
