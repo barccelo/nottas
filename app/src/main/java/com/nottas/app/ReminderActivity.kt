@@ -142,7 +142,7 @@ class ReminderActivity : Activity() {
             gestureHost,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(194)
+                dp(220)
             )
         )
 
@@ -161,7 +161,7 @@ class ReminderActivity : Activity() {
             FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         )
 
-        bindVerticalActionGesture(knob)
+        bindActionGesture(knob)
 
         val snoozeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -235,71 +235,127 @@ class ReminderActivity : Activity() {
         return root
     }
 
-    private fun bindVerticalActionGesture(knob: TextView) {
+    private fun bindActionGesture(knob: TextView) {
         fun dp(value: Int): Int =
             (value * resources.displayMetrics.density).roundToInt()
+
+        var startX = 0f
         var startY = 0f
         var direction = 0
-        val lock = dp(10).toFloat()
-        val threshold = dp(84).toFloat()
-        val maxTravel = dp(108).toFloat()
+
+        val lock = dp(8).toFloat()
+        val threshold = dp(52).toFloat()
+        val maxTravel = dp(64).toFloat()
+
+        fun showDefaultIcon() {
+            knob.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+            knob.text = "×"
+            knob.setTextColor(Color.rgb(99, 99, 102))
+        }
+
+        fun showCompleteIcon() {
+            knob.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+            knob.text = "✓"
+            knob.setTextColor(Color.rgb(52, 199, 89))
+        }
+
+        fun showSnoozeIcon() {
+            knob.text = ""
+            knob.setTextColor(Color.rgb(0, 122, 255))
+            knob.setCompoundDrawablesWithIntrinsicBounds(
+                R.drawable.ic_snooze_clock,
+                0,
+                0,
+                0
+            )
+        }
+
+        fun resetPosition(view: View) {
+            view.animate()
+                .translationX(0f)
+                .translationY(0f)
+                .setDuration(160)
+                .start()
+            showDefaultIcon()
+        }
 
         knob.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    startX = event.rawX
                     startY = event.rawY
                     direction = 0
                     view.animate().cancel()
+                    showDefaultIcon()
                     true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - startX
                     val dy = event.rawY - startY
-                    if (direction == 0 && abs(dy) >= lock) {
-                        direction = if (dy > 0) 1 else -1
+                    val ax = abs(dx)
+                    val ay = abs(dy)
+
+                    if (direction == 0 && maxOf(ax, ay) >= lock) {
+                        direction = if (ay >= ax) {
+                            if (dy < 0) 1 else 2
+                        } else {
+                            if (dx < 0) 3 else 4
+                        }
+
+                        if (direction == 2) showSnoozeIcon() else showCompleteIcon()
                         view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     }
 
-                    val ty = dy.coerceIn(-maxTravel, maxTravel)
-                    view.translationY = ty
-
-                    when {
-                        ty <= -threshold -> {
-                            knob.text = "✓"
-                            knob.setTextColor(Color.rgb(52, 199, 89))
+                    when (direction) {
+                        1 -> {
+                            view.translationX = 0f
+                            view.translationY = dy.coerceIn(-maxTravel, 0f)
                         }
-                        ty >= threshold -> {
-                            knob.text = "↓"
-                            knob.setTextColor(Color.rgb(0, 122, 255))
+                        2 -> {
+                            view.translationX = 0f
+                            view.translationY = dy.coerceIn(0f, maxTravel)
                         }
-                        else -> {
-                            knob.text = "×"
-                            knob.setTextColor(Color.rgb(99, 99, 102))
+                        3 -> {
+                            view.translationY = 0f
+                            view.translationX = dx.coerceIn(-maxTravel, 0f)
+                        }
+                        4 -> {
+                            view.translationY = 0f
+                            view.translationX = dx.coerceIn(0f, maxTravel)
                         }
                     }
                     true
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (event.actionMasked != MotionEvent.ACTION_UP) {
+                        resetPosition(view)
+                        return@setOnTouchListener true
+                    }
+
+                    val dx = event.rawX - startX
                     val dy = event.rawY - startY
-                    if (
-                        event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction < 0 &&
-                        -dy >= threshold
-                    ) {
-                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                        completeReminder()
-                    } else if (
-                        event.actionMasked == MotionEvent.ACTION_UP &&
-                        direction > 0 &&
-                        dy >= threshold
-                    ) {
-                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                        snoozeReminder()
-                    } else {
-                        knob.text = "×"
-                        knob.setTextColor(Color.rgb(99, 99, 102))
-                        view.animate().translationY(0f).setDuration(180).start()
+
+                    val completed = when (direction) {
+                        1 -> -dy >= threshold
+                        3 -> -dx >= threshold
+                        4 -> dx >= threshold
+                        else -> false
+                    }
+
+                    val snoozed = direction == 2 && dy >= threshold
+
+                    when {
+                        completed -> {
+                            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                            completeReminder()
+                        }
+                        snoozed -> {
+                            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                            snoozeReminder()
+                        }
+                        else -> resetPosition(view)
                     }
                     true
                 }
