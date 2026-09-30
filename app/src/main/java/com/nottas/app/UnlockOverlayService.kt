@@ -165,7 +165,7 @@ class UnlockOverlayService : Service() {
         )
 
         val label = TextView(this).apply {
-            text = "Recordatorio"
+            this.text = "Recordatorio"
             textSize = 15f
             setTextColor(Color.rgb(99, 99, 102))
             gravity = Gravity.CENTER_VERTICAL
@@ -181,7 +181,7 @@ class UnlockOverlayService : Service() {
         )
 
         val close = TextView(this).apply {
-            text = "×"
+            this.text = "×"
             textSize = 30f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(142, 142, 147))
@@ -201,7 +201,7 @@ class UnlockOverlayService : Service() {
         )
 
         val actionHint = TextView(this).apply {
-            text = "Desliza para actuar"
+            this.text = "Desliza para actuar"
             textSize = 13f
             setTextColor(Color.rgb(142, 142, 147))
             gravity = Gravity.CENTER
@@ -266,7 +266,7 @@ class UnlockOverlayService : Service() {
         )
 
         val instruction = TextView(this).apply {
-            text = "Derecha: completar  ·  Izquierda: posponer\nAl posponer, desliza arriba o abajo para ajustar los minutos."
+            this.text = "Derecha: completar  ·  Izquierda: posponer\nAl posponer, desliza arriba o abajo para ajustar los minutos."
             textSize = 13f
             setTextColor(Color.rgb(142, 142, 147))
             gravity = Gravity.CENTER
