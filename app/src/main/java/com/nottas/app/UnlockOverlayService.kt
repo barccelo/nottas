@@ -15,6 +15,22 @@ import android.os.IBinder
 import android.provider.Settings
 import java.util.Calendar
 
+object WakeOverlayPolicy {
+    fun snoozeUntil(context: Context): Long =
+        context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
+            .getLong(NottasWeb.PREF_WAKE_SNOOZE_UNTIL, 0L)
+
+    fun isSnoozed(context: Context): Boolean =
+        snoozeUntil(context) > System.currentTimeMillis()
+
+    fun allowsNow(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
+        if (!prefs.getBoolean(NottasWeb.PREF_WAKE_ENABLED, true)) return false
+        if (isSnoozed(context)) return false
+        return WorkHoursPolicy.allowsWakeOverlay(context)
+    }
+}
+
 object WorkHoursPolicy {
     fun isWithinConfiguredHours(context: Context): Boolean {
         val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
@@ -123,14 +139,9 @@ class UnlockOverlayService : Service() {
         super.onDestroy()
     }
 
-    private fun wakeEnabled(): Boolean =
-        getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
-            .getBoolean(NottasWeb.PREF_WAKE_ENABLED, true)
-
-
     private fun launchQuickCaptureIfArmed() {
         if (!armedForWake) return
-        if (!wakeEnabled() || !WorkHoursPolicy.allowsWakeOverlay(this) || !Settings.canDrawOverlays(this)) return
+        if (!WakeOverlayPolicy.allowsNow(this) || !Settings.canDrawOverlays(this)) return
 
         armedForWake = false
 
