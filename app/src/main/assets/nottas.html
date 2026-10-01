@@ -190,6 +190,27 @@ html[data-theme="dark"] .taskSubtasksBox .subtaskEditorInput{background:transpar
 html[data-theme="dark"] .taskSubtasksBox .subtaskEditorInput:focus{background:#2c2c2e}
 html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
 @media(max-width:520px){.app{padding-left:16px;padding-right:16px}.bottomDock{left:16px;right:20px}.grid2{grid-template-columns:1fr}.headerTitle h1{font-size:28px}}
+
+/* Full-screen editor geometry + task list refinements */
+#editorOverlay.noteEditorMode,#editorOverlay.taskEditorMode{top:0;height:100%;min-height:100%}
+#editorOverlay.noteEditorMode .editorSheet,#editorOverlay.taskEditorMode .editorSheet{position:relative;height:100%;max-height:100%;transform:none!important;transition:none!important;will-change:auto}
+#editorOverlay.noteEditorMode .noteBottomBar,#editorOverlay.taskEditorMode .noteBottomBar{bottom:0}
+body.imeVisible #editorOverlay.noteEditorMode .noteBottomBar,body.imeVisible #editorOverlay.taskEditorMode .noteBottomBar{bottom:var(--ime-offset,0px)}
+.taskSubtasksBox{margin:6px 0 110px;background:transparent;border:0;border-radius:0;padding:0;width:100%}
+.taskSubtasksBox .taskTreeNode{margin-left:0}
+.taskSubtasksBox .taskTreeChildren{margin-left:28px}
+.taskSubtasksBox .taskTreeRow{grid-template-columns:28px minmax(0,1fr) 32px 32px;align-items:start;gap:2px}
+.taskSubtasksBox .subtaskEditorCheck{margin:10px 0 0 4px}
+.taskSubtasksBox .subtaskEditorInput{min-height:40px;height:auto;max-height:none;line-height:1.35;padding:9px 7px;resize:none;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+.taskSubtasksBox .taskTreeChild,.taskSubtasksBox .subtaskRemove{margin-top:3px}
+.noteActionPanel{--panel-drag-y:0px;transform:translate3d(-50%,var(--panel-drag-y),0);transition:transform .2s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.noteActionPanel.panelDragging{transition:none}
+.noteActionPanelHandle{width:64px;height:28px;margin:-4px auto 6px;background:transparent!important;position:relative;touch-action:none;cursor:grab}
+.noteActionPanelHandle::after{content:"";position:absolute;left:12px;right:12px;top:10px;height:5px;border-radius:99px;background:#c7c7cc}
+.noteActionPanelHandle:active{cursor:grabbing}
+body.imeVisible .noteActionPanel{bottom:var(--ime-offset,0px)}
+html[data-theme="dark"] .noteActionPanelHandle{background:transparent!important}
+html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
 </style>
 </head>
 <body>
@@ -1328,6 +1349,45 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
       });
     });
   }
+  function initActionPanelGestures(){
+    document.querySelectorAll(".noteActionPanel").forEach(panel=>{
+      const handle=panel.querySelector(".noteActionPanelHandle");
+      if(!handle||handle.dataset.dragReady==="1")return;
+      handle.dataset.dragReady="1";
+      handle.setAttribute("role","button");
+      handle.setAttribute("aria-label","Desliza hacia abajo para cerrar");
+      let drag=null;
+      handle.addEventListener("pointerdown",e=>{
+        if(e.pointerType==="mouse"&&e.button!==0)return;
+        drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now()};
+        panel.classList.add("panelDragging");
+        try{handle.setPointerCapture(e.pointerId)}catch(_){}
+      });
+      handle.addEventListener("pointermove",e=>{
+        if(!drag||e.pointerId!==drag.id)return;
+        drag.lastY=e.clientY;
+        const dy=Math.max(0,e.clientY-drag.startY);
+        panel.style.setProperty("--panel-drag-y",Math.min(dy,260)+"px");
+        if(dy>3)e.preventDefault();
+      });
+      const finish=e=>{
+        if(!drag||e.pointerId!==drag.id)return;
+        const g=drag;drag=null;
+        try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+        const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
+        const dy=Math.max(0,endY-g.startY);
+        const velocity=dy/Math.max(1,performance.now()-g.started);
+        panel.classList.remove("panelDragging");
+        if(dy>68||velocity>.55)closeEditorActionPanel(panel);
+        else panel.style.removeProperty("--panel-drag-y");
+      };
+      handle.addEventListener("pointerup",finish);
+      handle.addEventListener("pointercancel",e=>{
+        if(!drag||e.pointerId!==drag.id)return;
+        drag=null;panel.classList.remove("panelDragging");panel.style.removeProperty("--panel-drag-y");
+      });
+    });
+  }
   function syncEditorPin(){
     const b=$("editorPinBtn");
     b.classList.toggle("active",!!editorPinned);
@@ -1464,17 +1524,19 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
   function taskNodesHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><input class="subtaskEditorInput" type="text" maxlength="500" value="${esc(n.text)}" placeholder="${depth?"Elemento interno":"Nuevo elemento"}"><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><textarea class="subtaskEditorInput" rows="1" maxlength="500" placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${esc(n.text)}</textarea><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
+  function autoGrowSubtaskInput(el){if(!el)return;el.style.height="auto";el.style.height=Math.max(40,el.scrollHeight)+"px"}
   function renderEditorSubtasks(){
     const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);box.innerHTML=taskNodesHtml(editorSubtasks);
     box.querySelectorAll("[data-task-path]").forEach(row=>{
       const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
       const check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
       check.addEventListener("change",()=>{setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
-      input.addEventListener("input",()=>{node.text=input.value});
-      input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
+      autoGrowSubtaskInput(input);
+      input.addEventListener("input",()=>{node.text=input.value;autoGrowSubtaskInput(input)});
+      input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
       child.addEventListener("click",()=>{node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
       remove.addEventListener("click",()=>{const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
     });
@@ -1518,12 +1580,28 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
   function applyRichCommand(command,scopeHint=null){const scope=activeRichScope||scopeHint;if(!activeRichBlockId||!scope)return;const box=blockEditorForScope(scope),active=box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(blocksForScope(scope),activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML)}
 
-  function hideTaskPanels(){
-    const p=$("taskMorePanel");if(p){p.classList.add("hidden");p.setAttribute("aria-hidden","true")}
+  function resetEditorActionPanel(panel){
+    if(!panel)return;
+    panel.classList.remove("panelDragging");
+    panel.style.removeProperty("--panel-drag-y");
   }
+  function closeEditorActionPanel(panel){
+    if(!panel)return false;
+    const wasOpen=!panel.classList.contains("hidden");
+    panel.classList.add("hidden");panel.setAttribute("aria-hidden","true");resetEditorActionPanel(panel);
+    return wasOpen;
+  }
+  function closeOpenEditorPanel(){
+    for(const id of ["taskMorePanel","noteInsertPanel","noteMorePanel"]){
+      const panel=$(id);
+      if(panel&&!panel.classList.contains("hidden")){closeEditorActionPanel(panel);return true}
+    }
+    return false;
+  }
+  function hideTaskPanels(){closeEditorActionPanel($("taskMorePanel"))}
   function showTaskPanel(){
     const active=document.activeElement;if(active&&active.blur)active.blur();
-    const p=$("taskMorePanel");if(p){p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
+    const p=$("taskMorePanel");if(p){resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
   }
   function taskDateText(value){
     if(!value)return "";
@@ -1590,11 +1668,23 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
   }
 
   function hideNotePanels(){
-    ["noteInsertPanel","noteMorePanel"].forEach(id=>{const p=$(id);if(p){p.classList.add("hidden");p.setAttribute("aria-hidden","true")}});
+    ["noteInsertPanel","noteMorePanel"].forEach(id=>closeEditorActionPanel($(id)));
   }
   function showNotePanel(id){
     const active=document.activeElement;if(active&&active.blur)active.blur();
-    ["noteInsertPanel","noteMorePanel"].forEach(other=>{const p=$(other);if(!p)return;const on=other===id;p.classList.toggle("hidden",!on);p.setAttribute("aria-hidden",on?"false":"true")});
+    ["noteInsertPanel","noteMorePanel"].forEach(other=>{
+      const p=$(other);if(!p)return;
+      if(other===id){resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
+      else closeEditorActionPanel(p);
+    });
+  }
+  function handleEditorBack(){
+    if(closeOpenEditorPanel())return true;
+    const taskTools=$("taskRichToolbar"),noteTools=$("richToolbar");
+    if(taskTools&&!taskTools.classList.contains("hidden")){taskTools.classList.add("hidden");return true}
+    if(noteTools&&!noteTools.classList.contains("hidden")){noteTools.classList.add("hidden");return true}
+    closeEditor();
+    return true;
   }
   function noteSnapshot(){
     const title=$("noteTitle").value.trim(),blocks=cleanNoteBlocks(editorNoteBlocks),body=noteBlocksText(blocks).trim();
@@ -2037,7 +2127,7 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
   });
 
   $("editorPinBtn").addEventListener("click",()=>{editorPinned=!editorPinned;syncEditorPin()});
-  $("noteBackBtn").addEventListener("click",()=>closeEditor());
+  $("noteBackBtn").addEventListener("click",handleEditorBack);
   $("taskDoneBtn").addEventListener("click",()=>{editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
   $("taskDateBtn").addEventListener("click",openTaskDatePicker);
@@ -2150,8 +2240,7 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
       return true;
     }
     if($("editorOverlay").classList.contains("show")){
-      closeEditor();
-      return true;
+      return handleEditorBack();
     }
     if($("settingsOverlay").classList.contains("show")){
       closeOverlay("settingsOverlay");
@@ -2182,6 +2271,7 @@ html[data-theme="dark"] .taskMetaChip{background:#2c2c2e;color:#d1d1d6}
   }
 
   initSheetGestures();
+  initActionPanelGestures();
   load();
 })();
 </script>
