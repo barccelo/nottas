@@ -255,6 +255,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
 .taskSubtasksBox .subtaskEditorInput[contenteditable]{display:block;min-height:40px;height:auto;max-height:none;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
 #editorOverlay.noteEditorMode .noteBlocksEditor,#editorOverlay.taskEditorMode #taskBlocksEditor{gap:1px}
 #editorOverlay.noteEditorMode .richText,#editorOverlay.taskEditorMode #taskBlocksEditor .richText{min-height:34px;padding-top:4px;padding-bottom:4px}
+.wakeQuickBtn{position:relative}.wakeQuickDot{position:absolute;right:6px;bottom:6px;width:8px;height:8px;border-radius:50%;background:#34c759;border:2px solid #f5f5f7}.wakeQuickBtn[data-state="off"] .wakeQuickDot{background:#8e8e93}.wakeQuickBtn[data-state="snoozed"] .wakeQuickDot,.wakeQuickBtn[data-state="blocked"] .wakeQuickDot{background:#ff9f0a}
+.wakeControlSheet{max-width:520px}.wakeControlStatus{background:#fff;border-radius:16px;padding:14px 15px;margin-bottom:10px}.wakeControlStatusTitle{font-size:16px;font-weight:680}.wakeControlStatusDesc{font-size:12px;color:#8e8e93;margin-top:4px;line-height:1.35}.wakeControlActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.wakeControlAction{height:46px;border:0;border-radius:13px;background:#e5e5ea;color:#1d1d1f;font-size:15px;font-weight:650}.wakeControlAction.active{background:#34c759;color:#fff}.wakeControlAction.off.active{background:#8e8e93;color:#fff}.wakeSnoozeTitle{font-size:12px;color:#8e8e93;margin:4px 2px 7px}.wakeSnoozeGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.wakeSnoozeBtn{height:44px;border:0;border-radius:12px;background:#fff;color:#007aff;font-size:14px;font-weight:650}
+.calendarCreateBtn{width:38px;height:38px;border:0;border-radius:50%;background:#e8f2ff;color:#007aff;font-size:25px;line-height:1;display:grid;place-items:center}.calendarCreateBtn:active{background:#d9eaff}
+.sideTagHash{width:20px;text-align:center;color:#5856d6;font-weight:750;flex:0 0 20px}
+html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] .wakeControlStatus,html[data-theme="dark"] .wakeSnoozeBtn{background:#1c1c1e;color:#f5f5f7}html[data-theme="dark"] .wakeControlAction{background:#2c2c2e;color:#f5f5f7}html[data-theme="dark"] .calendarCreateBtn{background:#16365d}
 </style>
 </head>
 <body>
@@ -268,6 +273,10 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     </div>
     <div class="headerActions">
       <div id="statusPill" class="statusPill"><span class="statusDot"></span><span id="statusText" class="statusText">Local</span></div>
+      <button id="wakeQuickBtn" class="iconBtn wakeQuickBtn hidden" type="button" aria-label="Control de mostrar al desbloquear" data-state="on">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10"></path><path d="M5.64 5.64a9 9 0 1 0 12.72 0"></path></svg>
+        <span class="wakeQuickDot" aria-hidden="true"></span>
+      </button>
       <button id="settingsBtn" class="iconBtn" type="button" aria-label="Ajustes">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09a1.7 1.7 0 0 0-.4-1.1 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09a1.7 1.7 0 0 0 1.1-.4 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09a1.7 1.7 0 0 0 .4 1.1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.36.34.7.6 1 .28.28.66.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.1.4c-.28.28-.5.62-.6 1z"></path></svg>
       </button>
@@ -347,11 +356,40 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       <div class="sidebarSectionTitle">Categorías</div>
       <div id="sidebarCategories"></div>
     </div>
+    <div id="sidebarTagsSection" class="sidebarSection hidden">
+      <div class="sidebarSectionTitle">Etiquetas</div>
+      <div id="sidebarTags"></div>
+    </div>
     <div class="sidebarSection">
       <button id="sidebarTrash" class="sideItem" type="button"><span>Papelera</span><span id="sideTrashCount" class="sideCount"></span></button>
       <button id="sidebarSettings" class="sideItem" type="button"><span>Ajustes</span></button>
     </div>
   </aside>
+</div>
+
+<div id="wakeControlOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet wakeControlSheet">
+    <div class="sheetHandle"></div>
+    <div class="sheetHeader">
+      <h2>Mostrar al desbloquear</h2>
+      <button id="wakeControlClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
+    </div>
+    <div class="wakeControlStatus">
+      <div id="wakeControlStatusTitle" class="wakeControlStatusTitle">Activo</div>
+      <div id="wakeControlStatusDesc" class="wakeControlStatusDesc"></div>
+    </div>
+    <div class="wakeControlActions">
+      <button id="wakeOnBtn" class="wakeControlAction" type="button">On</button>
+      <button id="wakeOffBtn" class="wakeControlAction off" type="button">Off</button>
+    </div>
+    <div class="wakeSnoozeTitle">Snooze temporal</div>
+    <div class="wakeSnoozeGrid">
+      <button class="wakeSnoozeBtn" type="button" data-wake-snooze="15">15 min</button>
+      <button class="wakeSnoozeBtn" type="button" data-wake-snooze="30">30 min</button>
+      <button class="wakeSnoozeBtn" type="button" data-wake-snooze="60">1 hora</button>
+      <button class="wakeSnoozeBtn" type="button" data-wake-snooze="120">2 horas</button>
+    </div>
+  </div>
 </div>
 
 <div id="calendarOverlay" class="overlay calendarOverlay" aria-hidden="true">
@@ -360,6 +398,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     <div class="sheetHeader">
       <h2>Calendario</h2>
       <div class="calendarTopActions">
+        <button id="calendarCreateBtn" class="calendarCreateBtn" type="button" aria-label="Nueva tarea en la fecha seleccionada">+</button>
         <button id="calendarClose" class="closeBtn" type="button" aria-label="Cerrar calendario"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
       </div>
     </div>
