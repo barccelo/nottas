@@ -812,14 +812,14 @@ html[data-theme="dark"] .agendaGroupTitle{background:#000;color:#aeaeb2}
   function calendarDateLabel(value,opts){return dateFromISO(value).toLocaleDateString("es",{...opts})}
   function calendarTaskRows(tasks){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<button class="calendarTaskRow" type="button" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime)+'</span>':"")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span></button>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime)+'</span>':"")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span></div>').join("")+'</div>';
   }
   function bindCalendarTasks(){
     $("calendarBody").querySelectorAll("[data-calendar-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.calendarTask);if(!t)return;
       const check=row.querySelector(".calendarTaskCheck");
       if(check)check.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      row.addEventListener("click",e=>{if(e.target===check)return;closeOverlay("calendarOverlay");openTask(t)});
+      row.addEventListener("click",e=>{if(e.target===check)return;closeOverlay("calendarOverlay");openTask(t)});row.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();closeOverlay("calendarOverlay");openTask(t)}});
     });
   }
   function calendarPeriodText(){
@@ -941,7 +941,7 @@ html[data-theme="dark"] .agendaGroupTitle{background:#000;color:#aeaeb2}
     const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
-    $("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    $("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
