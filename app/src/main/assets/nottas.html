@@ -2147,7 +2147,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     const isNote=!$("noteForm").classList.contains("hidden"),isTask=!$("taskForm").classList.contains("hidden");
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
-    hideTaskPanels();hideNotePanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
+    hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
     clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true)
   }
 
