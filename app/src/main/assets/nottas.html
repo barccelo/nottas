@@ -724,7 +724,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     <div id="androidSettings" class="hidden">
       <div class="sectionTitle">Android</div>
       <div class="settingsGroup">
-        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Abre Nottas automáticamente después de encender o desbloquear la pantalla.</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Permiso general. El horario de trabajo y un snooze temporal pueden bloquearlo.</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
         <div class="settingsRow"><div class="left"><div class="title">Aviso del servicio</div><div id="unlockNotificationDesc" class="desc">Android puede mostrar un aviso permanente mientras el servicio de desbloqueo está activo.</div></div><button id="unlockNotificationBtn" type="button">Configurar</button></div>
       </div>
     </div>
@@ -980,6 +980,10 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     state=loaded||normalize({});
     syncNativeWorkHours();
     if(activeCategory!=="all"&&!state.categories.some(c=>c.id===activeCategory&&!c.deletedAt))activeCategory="all";
+    if(activeTag){
+      const tagExists=[...state.tasks.filter(t=>!t.deletedAt),...state.notes.filter(n=>!n.deletedAt)].some(item=>normalizeTags(item.tags).includes(activeTag));
+      if(!tagExists)activeTag="";
+    }
     consumeNativeReminderActions();
 
     try{
@@ -1429,6 +1433,10 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
 
   function render(){
     if(!state)return;
+    if(activeTag){
+      const tagStillExists=[...state.tasks.filter(t=>!t.deletedAt),...state.notes.filter(n=>!n.deletedAt)].some(item=>normalizeTags(item.tags).includes(activeTag));
+      if(!tagStillExists)activeTag="";
+    }
     updateCounts();
     const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
@@ -2018,7 +2026,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
+    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
@@ -2028,7 +2036,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
-    $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
+    $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
     openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
   }
   function closeEditor(options={}){
@@ -2098,11 +2106,11 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
       const text=$("quickTaskText").value.trim();if(!text)return false;
-      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
-    state.notes.push({id:makeId("n"),title:"",titleHtml:"",body:raw,blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+    state.notes.push({id:makeId("n"),title:"",titleHtml:"",body:raw,blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,tags:activeTag?[activeTag]:[],pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
     closeQuickCapture();scheduleSave();render();showToast("Nota guardada");return true;
   }
   function expandQuickCapture(){
@@ -2559,6 +2567,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
       const parsed=typeof input==="string"?JSON.parse(input):input;
       state=normalize(parsed);
       activeCategory="all";
+      activeTag="";
       trash=false;
       render();
       await saveNow();
