@@ -1762,7 +1762,9 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
   function commitTimePicker(){
     if(!$("hourDirectInput").classList.contains("hidden"))commitTimePartEdit("hour");
     if(!$("minuteDirectInput").classList.contains("hidden"))commitTimePartEdit("minute");
+    const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),oldDuration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:null;
     $("taskTime").value=formatTimeParts(timeDraftHour,timeDraftMinute);
+    if(oldDuration!==null){const nextStart=timeToMinutes($("taskTime").value);$("taskEndTime").value=minutesToTime(Math.min(1439,nextStart+oldDuration))}
     const on=$("timeReminderToggle").checked;
     $("taskReminder").value=on?($("taskReminder").value||"at"):"at";
     $("taskTimeButton").dataset.reminderActive=on?"1":"0";
@@ -1772,6 +1774,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
   }
   function clearTaskTime(){
     $("taskTime").value="";
+    $("taskEndTime").value="";
     $("taskReminder").value="at";
     $("taskTimeButton").dataset.reminderActive="0";
     timeDraftReminder="none";
@@ -2052,7 +2055,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
   function captureTaskEditorState(){
     return {
       text:inlineHtmlToText($("taskText")?.innerHTML||""),textHtml:sanitizeInlineHtml($("taskText")?.innerHTML||""),category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
-      dueDate:$("taskDate")?.value||"",dueTime:$("taskTime")?.value||"",priority:$("taskPriority")?.value||"normal",
+      dueDate:$("taskDate")?.value||"",dueTime:$("taskTime")?.value||"",endTime:$("taskEndTime")?.value||"",priority:$("taskPriority")?.value||"normal",
       recurrence:$("taskRecurrence")?.value||"none",reminder:$("taskReminder")?.value||"at",
       reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,
       blocks:cloneSerializable(editorTaskBlocks||[]),items:cloneSerializable(editorSubtasks||[])
@@ -2076,7 +2079,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
   function applyTaskHistoryState(snap){
     if(!snap)return;taskHistoryApplying=true;
     $("taskText").innerHTML=sanitizeInlineHtml(snap.textHtml||plainToInlineHtml(snap.text||""));setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
-    $("taskDate").value=snap.dueDate||"";$("taskTime").value=snap.dueTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
+    $("taskDate").value=snap.dueDate||"";$("taskTime").value=snap.dueTime||"";$("taskEndTime").value=snap.endTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
     editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
     renderTaskBlocks();renderEditorSubtasks();syncTaskTimeButton();syncTaskEditorMeta();syncEditorPin();taskHistoryApplying=false;
   }
@@ -2127,10 +2130,10 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     input.classList.toggle("done",!!editorTaskDone);
   }
   function syncTaskEditorMeta(){
-    const date=$("taskDate")?.value||"",time=$("taskTime")?.value||"";
+    const date=$("taskDate")?.value||"",time=$("taskTime")?.value||"",end=$("taskEndTime")?.value||"";
     const dateChip=$("taskDateChip"),timeChip=$("taskTimeChip"),wrap=$("taskMetaChips");
     if(dateChip){dateChip.classList.toggle("hidden",!date);$("taskDateChipText").textContent=taskDateText(date)}
-    if(timeChip){timeChip.classList.toggle("hidden",!time);$("taskTimeChipText").textContent=time}
+    if(timeChip){timeChip.classList.toggle("hidden",!time);$("taskTimeChipText").textContent=time?(time+(end?"–"+end:"")):""}
     if(wrap)wrap.classList.toggle("hidden",!date&&!time);
     $("taskDateBtn")?.classList.toggle("active",!!date);$("taskTimeQuickBtn")?.classList.toggle("active",!!time);
     const p=taskTreeProgressValue(editorSubtasks||[]),label=$("taskProgressMini");
@@ -2143,9 +2146,9 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     let items=normalizeTaskItems(editorSubtasks,[]);syncTaskTreeDone(items);
     if(editorTaskDone){items.forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(items)}
     let reminder=$("taskTimeButton").dataset.reminderActive==="1"?($("taskReminder").value||"at"):"none";
-    const dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"";
+    const dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",endTime=normalizeTaskEndTime(dueTime,$("taskEndTime").value||"");
     if(reminder!=="none"&&(!dueDate||!dueTime))reminder="none";
-    return {text,textHtml,body,blocks,category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,dueTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,items,subtasks:legacySubtasksFromItems(items)};
+    return {text,textHtml,body,blocks,category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,dueTime,endTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,items,subtasks:legacySubtasksFromItems(items)};
   }
   function persistOpenTask(showSaved=false){
     if($("taskForm").classList.contains("hidden"))return false;
@@ -2154,14 +2157,14 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     let changed=false,target=existing;
     if(existing){
       const wasDone=!!existing.done;
-      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&existing.dueTime===snap.dueTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
+      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&existing.dueTime===snap.dueTime&&(existing.endTime||"")===snap.endTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
       if(!same){
-        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.dueTime=snap.dueTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
+        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.dueTime=snap.dueTime;existing.endTime=snap.endTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
         if(existing.done&&!wasDone)createNextOccurrence(existing);
       }
     }else{
       const stamp=now(),id=makeId("t");
-      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,dueTime:snap.dueTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
       state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskBtn").classList.remove("hidden");
       if(target.done)createNextOccurrence(target);
     }
@@ -2231,7 +2234,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
+    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
@@ -2311,7 +2314,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
       const text=$("quickTaskText").value.trim();if(!text)return false;
-      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
@@ -2739,6 +2742,8 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     btn.addEventListener("click",()=>applyRichCommand(btn.dataset.richCommand||"",btn.dataset.richScope||null));
   });
   $("taskTimeButton").addEventListener("click",openTimePicker);
+  $("taskEndTime").addEventListener("change",()=>{const start=$("taskTime").value,end=$("taskEndTime").value;if(end&&!normalizeTaskEndTime(start,end)){showToast("La hora de fin debe ser posterior al inicio");$("taskEndTime").value=""}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
+  document.querySelectorAll("[data-duration-minutes]").forEach(b=>b.addEventListener("click",()=>setTaskDuration(Number(b.dataset.durationMinutes)||60)));
   $("timeClose").addEventListener("click",closeTimePicker);
   $("timeOverlay").addEventListener("click",e=>{if(e.target===$("timeOverlay"))closeTimePicker()});
   $("timeDone").addEventListener("click",commitTimePicker);
