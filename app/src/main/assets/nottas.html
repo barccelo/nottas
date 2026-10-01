@@ -501,7 +501,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
 
   function normalizeTaskNode(node,depth=0){
     if(!node||typeof node!=="object"||depth>30)return null;
-    const children=(Array.isArray(node.children)?node.children:[]).map(x=>normalizeTaskNode(x,depth+1)).filter(Boolean);
+    const children=(Array.isArray(node.children)?node.children:[]).map(x=>normalizeTaskNode(x,depth+1)).filter(x=>x&&(x.text.trim()||x.children.length));
     const out={id:String(node.id||makeId("s")),text:String(node.text||"").slice(0,500),done:!!node.done,children};
     if(children.length)out.done=children.every(x=>taskNodeProgress(x)>=1);
     return out;
