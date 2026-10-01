@@ -233,6 +233,19 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
 #editorOverlay.taskEditorMode #taskBottomBar{gap:3px;padding-left:10px;padding-right:10px}
 #editorOverlay.taskEditorMode #taskBottomBar .noteToolBtn{width:40px;height:40px;flex:0 0 40px}
 html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
+
+/* Rich text ribbon: integrated into the editor bottom bar */
+#taskForm:not(.hidden)>.card,#noteForm:not(.hidden)>.card{background:transparent!important;border-radius:0!important;box-shadow:none!important}
+#editorOverlay.taskEditorMode .editorSheet,#editorOverlay.noteEditorMode .editorSheet{border-radius:0!important;box-shadow:none!important}
+.noteBottomBar{overflow:visible}
+.noteBottomBar .inlineRichToolbar{position:absolute!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:100%;transform:none!important;margin:0!important;padding:6px 18px env(safe-area-inset-bottom)!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:blur(18px);background:rgba(245,245,247,.98)!important;display:flex;align-items:center;gap:6px;overflow-x:auto;z-index:3}
+.noteBottomBar .inlineRichToolbar.hidden{display:none!important}
+.noteBottomBar .inlineRichToolbar .formatModeClose{width:44px;height:44px;flex:0 0 44px;border:0;border-radius:50%;background:transparent;color:#1d1d1f;font-size:20px;font-weight:650;text-decoration:underline;text-underline-offset:5px}
+.noteBottomBar .inlineRichToolbar .formatModeClose:active{background:rgba(118,118,128,.12)}
+.noteBottomBar .inlineRichToolbar .formatBtn{width:42px;height:40px;flex:0 0 42px;border:0;border-radius:10px;background:transparent}
+.noteBottomBar .inlineRichToolbar .formatBtn:active{background:rgba(118,118,128,.12)}
+html[data-theme="dark"] .noteBottomBar .inlineRichToolbar{background:rgba(16,16,18,.98)!important}
+html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatBtn{color:#f5f5f7;background:transparent}
 </style>
 </head>
 <body>
@@ -423,12 +436,6 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
         </div>
 
         <div class="taskContentArea">
-          <div id="taskRichToolbar" class="richToolbar hidden" aria-label="Formato de texto de la tarea">
-            <button class="formatBtn" type="button" data-rich-scope="task" data-rich-command="bold" aria-label="Negrita">B</button>
-            <button class="formatBtn italic" type="button" data-rich-scope="task" data-rich-command="italic" aria-label="Cursiva">I</button>
-            <button class="formatBtn underline" type="button" data-rich-scope="task" data-rich-command="underline" aria-label="Subrayado">U</button>
-            <button class="formatBtn strike" type="button" data-rich-scope="task" data-rich-command="strikeThrough" aria-label="Tachado">S</button>
-          </div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
           <button id="addTaskBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
@@ -497,6 +504,13 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
       </div>
 
       <div class="noteBottomBar" id="taskBottomBar">
+        <div id="taskRichToolbar" class="richToolbar inlineRichToolbar hidden" aria-label="Formato de texto de la tarea">
+          <button id="taskFormatClose" class="formatModeClose" type="button" aria-label="Cerrar formato">A</button>
+          <button class="formatBtn" type="button" data-rich-scope="task" data-rich-command="bold" aria-label="Negrita">B</button>
+          <button class="formatBtn italic" type="button" data-rich-scope="task" data-rich-command="italic" aria-label="Cursiva">I</button>
+          <button class="formatBtn underline" type="button" data-rich-scope="task" data-rich-command="underline" aria-label="Subrayado">U</button>
+          <button class="formatBtn strike" type="button" data-rich-scope="task" data-rich-command="strikeThrough" aria-label="Tachado">S</button>
+        </div>
         <button id="taskSubtasksBtn" class="noteToolBtn" type="button" aria-label="Añadir subtarea">
           <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect><path d="m7 12 3 3 7-7"></path></svg>
         </button>
@@ -524,12 +538,6 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
       <div class="card">
         <div class="field"><input id="noteTitle" class="textInput" type="text" maxlength="120" placeholder="Título" autocomplete="off"></div>
         <div class="field">
-          <div id="richToolbar" class="richToolbar hidden" aria-label="Formato de texto">
-            <button class="formatBtn" type="button" data-rich-scope="note" data-rich-command="bold" aria-label="Negrita">B</button>
-            <button class="formatBtn italic" type="button" data-rich-scope="note" data-rich-command="italic" aria-label="Cursiva">I</button>
-            <button class="formatBtn underline" type="button" data-rich-scope="note" data-rich-command="underline" aria-label="Subrayado">U</button>
-            <button class="formatBtn strike" type="button" data-rich-scope="note" data-rich-command="strikeThrough" aria-label="Tachado">S</button>
-          </div>
           <div id="noteBlocksEditor" class="noteBlocksEditor"></div>
           <button id="addNoteBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="noteBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
@@ -538,10 +546,6 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
 
       <div id="noteInsertPanel" class="noteActionPanel hidden" aria-hidden="true">
         <div class="noteActionPanelHandle"></div>
-        <button id="noteInsertText" class="noteActionRow" type="button">
-          <svg viewBox="0 0 24 24"><path d="M5 6h14M8 6v12M16 6v12M6 18h12"></path></svg>
-          <span>Texto</span>
-        </button>
         <button id="noteInsertChecklist" class="noteActionRow" type="button">
           <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect><path d="m7 12 3 3 7-7"></path></svg>
           <span>Casillas de verificación</span>
@@ -574,7 +578,14 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
         </button>
       </div>
 
-      <div class="noteBottomBar">
+      <div class="noteBottomBar" id="noteBottomBar">
+        <div id="richToolbar" class="richToolbar inlineRichToolbar hidden" aria-label="Formato de texto">
+          <button id="noteFormatClose" class="formatModeClose" type="button" aria-label="Cerrar formato">A</button>
+          <button class="formatBtn" type="button" data-rich-scope="note" data-rich-command="bold" aria-label="Negrita">B</button>
+          <button class="formatBtn italic" type="button" data-rich-scope="note" data-rich-command="italic" aria-label="Cursiva">I</button>
+          <button class="formatBtn underline" type="button" data-rich-scope="note" data-rich-command="underline" aria-label="Subrayado">U</button>
+          <button class="formatBtn strike" type="button" data-rich-scope="note" data-rich-command="strikeThrough" aria-label="Tachado">S</button>
+        </div>
         <button id="noteInsertBtn" class="noteToolBtn" type="button" aria-label="Añadir">
           <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
         </button>
@@ -709,7 +720,7 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set();
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
   let suppressClickUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -1652,8 +1663,10 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
       const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),remove=row.querySelector(":scope > .noteBlockRow .noteBlockRemove");
       type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory()});
-      rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope});
-      rich.addEventListener("input",()=>{b.html=rich.innerHTML;if(scope==="task")scheduleTaskHistory()});
+      rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope;rememberRichSelection()});
+      rich.addEventListener("keyup",rememberRichSelection);
+      rich.addEventListener("pointerup",rememberRichSelection);
+      rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory()});
       rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML);rich.innerHTML=b.html});
       rich.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();b.html=sanitizeInlineHtml(rich.innerHTML);const loc=treeArrayForPath(blocks,path);if(!loc)return;const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,nextPath)}});
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
@@ -1667,7 +1680,42 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
   function addNoteBlockOfType(type="paragraph"){const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
   function addNoteBlock(){addNoteBlockOfType("paragraph")}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
-  function applyRichCommand(command,scopeHint=null){const scope=activeRichScope||scopeHint;if(!activeRichBlockId||!scope)return;if(scope==="task")commitTaskHistory();const box=blockEditorForScope(scope),active=box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(blocksForScope(scope),activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML);if(scope==="task")commitTaskHistory()}
+  function rememberRichSelection(){
+    const sel=window.getSelection();if(!sel||!sel.rangeCount)return false;
+    const range=sel.getRangeAt(0),node=range.commonAncestorContainer,el=node.nodeType===1?node:node.parentElement,rich=el?.closest?.(".richText");
+    if(!rich)return false;
+    const scope=rich.closest("#taskBlocksEditor")?"task":rich.closest("#noteBlocksEditor")?"note":null;
+    if(!scope)return false;
+    activeRichBlockId=rich.dataset.richBlock||activeRichBlockId;activeRichScope=scope;savedRichScope=scope;
+    try{savedRichRange=range.cloneRange()}catch(_){savedRichRange=null}
+    return true;
+  }
+  function restoreRichSelection(scope,active){
+    if(!savedRichRange||savedRichScope!==scope||!active)return false;
+    try{
+      if(!savedRichRange.startContainer.isConnected||!savedRichRange.endContainer.isConnected)return false;
+      const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedRichRange);return true;
+    }catch(_){return false}
+  }
+  function setRichToolbar(scope,open){
+    const toolbar=$(scope==="task"?"taskRichToolbar":"richToolbar");if(!toolbar)return;
+    toolbar.classList.toggle("hidden",!open);
+    if(open)rememberRichSelection();
+  }
+  function applyRichCommand(command,scopeHint=null){
+    const scope=scopeHint||activeRichScope;if(!scope)return;
+    const box=blockEditorForScope(scope);
+    let active=activeRichBlockId?box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]'):null;
+    if(!active)active=box?.querySelector(".richText");
+    if(!active)return;
+    if(scope==="task")commitTaskHistory();
+    active.focus({preventScroll:true});restoreRichSelection(scope,active);
+    try{document.execCommand(command,false,null)}catch(_){}
+    const id=active.dataset.richBlock||activeRichBlockId,b=findNoteBlockById(blocksForScope(scope),id);
+    if(b)b.html=sanitizeInlineHtml(active.innerHTML);
+    rememberRichSelection();
+    if(scope==="task")commitTaskHistory();
+  }
 
   function captureTaskEditorState(){
     return {
@@ -1849,7 +1897,7 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
   function openTask(t){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
-    editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
+    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
@@ -1859,7 +1907,7 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
   function openNote(n){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
-    editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
+    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").value=n?n.title:"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
     openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
@@ -1869,7 +1917,7 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
-    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true)
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true)
   }
 
   function syncQuickMode(){
@@ -2267,7 +2315,10 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
   $("taskDateChip").addEventListener("click",openTaskDatePicker);
   $("taskTimeQuickBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");openTimePicker()});
   $("taskTimeChip").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");openTimePicker()});
-  $("taskFormatBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.toggle("hidden")});
+  $("taskFormatBtn").addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});
+  $("taskFormatBtn").addEventListener("click",()=>{hideTaskPanels();setRichToolbar("task",$("taskRichToolbar").classList.contains("hidden"))});
+  $("taskFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
+  $("taskFormatClose").addEventListener("click",()=>setRichToolbar("task",false));
   $("taskMoreBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskPanel()});
   $("taskListToolsBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskListPanel()});
   $("taskCompletedAtEndToggle").addEventListener("change",()=>{state.preferences.completedSubtasksAtEnd=$("taskCompletedAtEndToggle").checked;if(completedSubtasksAtEnd())sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();scheduleSave()});
@@ -2285,15 +2336,17 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
   $("taskDate").addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()});
   $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
   $("noteMoreBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteMorePanel")});
-  $("noteFormatBtn").addEventListener("click",()=>{hideNotePanels();$("richToolbar").classList.toggle("hidden")});
-  $("noteInsertText").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("paragraph")});
+  $("noteFormatBtn").addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});
+  $("noteFormatBtn").addEventListener("click",()=>{hideNotePanels();setRichToolbar("note",$("richToolbar").classList.contains("hidden"))});
+  $("noteFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
+  $("noteFormatClose").addEventListener("click",()=>setRichToolbar("note",false));
   $("noteInsertChecklist").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("checklist")});
   $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
   $("addSubtaskBtn").addEventListener("click",addEditorSubtask);
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
   document.querySelectorAll("[data-rich-command]").forEach(btn=>{
-    btn.addEventListener("pointerdown",e=>e.preventDefault());
+    btn.addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});
     btn.addEventListener("click",()=>applyRichCommand(btn.dataset.richCommand||"",btn.dataset.richScope||null));
   });
   $("taskTimeButton").addEventListener("click",openTimePicker);
