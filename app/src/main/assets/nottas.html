@@ -671,6 +671,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Durante esta franja, Nottas no aparece al desbloquear.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">Inicio</div><div class="desc">Hora habitual de comienzo.</div></div><input id="workHoursStart" class="settingsTimeInput" type="time" value="08:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Fin</div><div class="desc">Hora habitual de cierre.</div></div><input id="workHoursEnd" class="settingsTimeInput" type="time" value="17:00"></div>
+      <div class="settingsRow"><div class="left"><div class="title">Estado actual</div><div id="workHoursNativeStatus" class="desc">Comprobando…</div></div></div>
     </div>
 
     <div class="sectionTitle">Datos</div>
@@ -2070,9 +2071,26 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   }
 
   function renderCategoryManage(){const box=$("categoryManage");box.innerHTML="";activeCategories().forEach(c=>{const r=document.createElement("div");r.className="settingsRow categoryManage";r.innerHTML=`<span class="colorSwatch" style="background:${esc(c.color)}"></span><span class="name">${esc(c.name)}</span>${c.id==="inbox"?"":`<button type="button" aria-label="Editar ${esc(c.name)}"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button>`}`;const b=r.querySelector("button");if(b)b.addEventListener("click",()=>openCategory(c));box.appendChild(r)})}
+  function refreshWorkHoursNativeStatus(){
+    const el=$("workHoursNativeStatus");if(!el)return;
+    const prefs=state&&state.preferences?state.preferences:{};
+    if(!prefs.workHoursEnabled){el.textContent="Desactivado: el overlay puede aparecer en cualquier hora.";return}
+    try{
+      if(window.NottasNative&&NottasNative.workHoursStatus){
+        const status=JSON.parse(NottasNative.workHoursStatus()||"{}");
+        if(status.start===status.end){el.textContent="Inicio y fin son iguales: no hay una franja de bloqueo activa.";return}
+        el.textContent=status.activeNow
+          ?"Ahora estás dentro del horario: overlay de desbloqueo pausado."
+          :"Ahora estás fuera del horario: overlay de desbloqueo habilitado.";
+        return;
+      }
+    }catch(_){}
+    el.textContent="Horario "+(prefs.workHoursStart||"08:00")+"–"+(prefs.workHoursEnd||"17:00")+" guardado.";
+  }
   function syncNativeWorkHours(){
     const prefs=state&&state.preferences?state.preferences:{};
     try{if(window.NottasNative&&NottasNative.setWorkHours)NottasNative.setWorkHours(!!prefs.workHoursEnabled,prefs.workHoursStart||"08:00",prefs.workHoursEnd||"17:00")}catch(_){}
+    refreshWorkHoursNativeStatus();
   }
   function syncWorkHoursSettings(){
     const prefs=state.preferences||{};
@@ -2080,6 +2098,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     $("workHoursEnabled").checked=enabled;$("workHoursStart").value=start;$("workHoursEnd").value=end;
     $("workHoursStart").disabled=!enabled;$("workHoursEnd").disabled=!enabled;
     $("themeDarkToggle").checked=uiTheme==="dark";
+    refreshWorkHoursNativeStatus();
   }
   function renderSettingsSummary(){
     syncWorkHoursSettings();
@@ -2436,7 +2455,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
-  ["workHoursStart","workHoursEnd"].forEach(id=>$(id).addEventListener("change",()=>{state.preferences[id==="workHoursStart"?"workHoursStart":"workHoursEnd"]=$(id).value|| (id==="workHoursStart"?"08:00":"17:00");syncNativeWorkHours();scheduleSave()}));
+  ["workHoursStart","workHoursEnd"].forEach(id=>{
+    const update=()=>{state.preferences[id==="workHoursStart"?"workHoursStart":"workHoursEnd"]=$(id).value|| (id==="workHoursStart"?"08:00":"17:00");syncNativeWorkHours();scheduleSave()};
+    $(id).addEventListener("input",update);
+    $(id).addEventListener("change",update);
+  });
   $("openTrashBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");trash=true;render()});
   $("addCategoryBtn").addEventListener("click",()=>openCategory(null));$("categoryClose").addEventListener("click",closeCategory);$("categoryOverlay").addEventListener("click",e=>{if(e.target===$("categoryOverlay"))closeCategory()});
   $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
