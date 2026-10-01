@@ -11,6 +11,7 @@ import android.content.Intent
 import android.os.Build
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.abs
 
 object ReminderScheduler {
     private const val PREFS = "nottas_reminders"
@@ -105,6 +106,46 @@ object ReminderScheduler {
             saveItems(context, cleaned)
         } catch (_: Throwable) {
         }
+    }
+
+    @Synchronized
+    fun claimDueGroup(context: Context, triggerId: String): JSONArray {
+        val items = readItems(context)
+        val trigger = items.optJSONObject(triggerId) ?: return JSONArray()
+        val triggerAt = trigger.optLong("at", 0L)
+        if (triggerAt <= 0L) return JSONArray()
+
+        val group = JSONArray()
+        val claimedIds = mutableListOf<String>()
+        val keys = items.keys()
+
+        while (keys.hasNext()) {
+            val id = keys.next()
+            val item = items.optJSONObject(id) ?: continue
+            val at = item.optLong("at", 0L)
+            if (abs(at - triggerAt) > 1_000L) continue
+
+            val text = item.optString("text").trim()
+            if (text.isEmpty()) continue
+
+            group.put(
+                JSONObject()
+                    .put("id", id)
+                    .put("text", text)
+                    .put("at", at)
+                    .put("snoozed", item.optBoolean("snoozed", false))
+            )
+            claimedIds.add(id)
+        }
+
+        if (claimedIds.isEmpty()) return JSONArray()
+
+        claimedIds.forEach { id ->
+            cancelAlarm(context, id)
+            items.remove(id)
+        }
+        saveItems(context, items)
+        return group
     }
 
     fun snooze(context: Context, id: String, text: String, minutes: Int) {
@@ -300,42 +341,57 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != ReminderScheduler.ACTION_REMINDER) return
 
-        val id = intent.getStringExtra("task_id") ?: return
-        val text = intent.getStringExtra("task_text") ?: return
-        ReminderScheduler.remove(context, id)
+        val triggerId = intent.getStringExtra("task_id") ?: return
+        val group = ReminderScheduler.claimDueGroup(context, triggerId)
+        if (group.length() == 0) return
 
         try {
             ReminderScheduler.ensureChannel(context)
+            val manager = context.getSystemService(NotificationManager::class.java)
 
-            val openIntent = Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            for (i in 0 until group.length()) {
+                val item = group.optJSONObject(i) ?: continue
+                val id = item.optString("id").trim()
+                val text = item.optString("text").trim()
+                if (id.isEmpty() || text.isEmpty()) continue
+
+                val openIntent = Intent(context, MainActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                val contentIntent = PendingIntent.getActivity(
+                    context,
+                    id.hashCode(),
+                    openIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val notification = Notification.Builder(context, ReminderScheduler.channelId())
+                    .setSmallIcon(R.drawable.ic_nottas)
+                    .setContentTitle(
+                        if (group.length() > 1) {
+                            "Recordatorio " + (i + 1) + " de " + group.length()
+                        } else {
+                            "Recordatorio de Nottas"
+                        }
+                    )
+                    .setContentText(text)
+                    .setStyle(Notification.BigTextStyle().bigText(text))
+                    .setContentIntent(contentIntent)
+                    .setAutoCancel(true)
+                    .setCategory(Notification.CATEGORY_REMINDER)
+                    .build()
+
+                manager.notify(id.hashCode(), notification)
             }
-            val contentIntent = PendingIntent.getActivity(
-                context,
-                id.hashCode(),
-                openIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val notification = Notification.Builder(context, ReminderScheduler.channelId())
-                .setSmallIcon(R.drawable.ic_nottas)
-                .setContentTitle("Recordatorio de Nottas")
-                .setContentText(text)
-                .setStyle(Notification.BigTextStyle().bigText(text))
-                .setContentIntent(contentIntent)
-                .setAutoCancel(true)
-                .setCategory(Notification.CATEGORY_REMINDER)
-                .build()
-
-            context.getSystemService(NotificationManager::class.java)
-                .notify(id.hashCode(), notification)
         } catch (_: Throwable) {
         }
 
         try {
+            val first = group.optJSONObject(0) ?: return
             val reminderIntent = Intent(context, ReminderActivity::class.java).apply {
-                putExtra(ReminderActivity.EXTRA_TASK_ID, id)
-                putExtra(ReminderActivity.EXTRA_TASK_TEXT, text)
+                putExtra(ReminderActivity.EXTRA_TASK_ID, first.optString("id"))
+                putExtra(ReminderActivity.EXTRA_TASK_TEXT, first.optString("text"))
+                putExtra(ReminderActivity.EXTRA_REMINDERS_JSON, group.toString())
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -345,7 +401,7 @@ class ReminderReceiver : BroadcastReceiver() {
             }
             context.startActivity(reminderIntent)
         } catch (_: Throwable) {
-            // The notification remains available if Android blocks the full-screen activity.
+            // The notifications remain available if Android blocks the full-screen activity.
         }
     }
 }
