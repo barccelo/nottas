@@ -30,6 +30,7 @@ object NottasWeb {
     const val ASSET_URL = "file:///android_asset/nottas.html"
     const val PREFS = "nottas_settings"
     const val PREF_WAKE_ENABLED = "wake_enabled"
+    const val PREF_WAKE_SNOOZE_UNTIL = "wake_snooze_until"
     const val PREF_DARK_MODE = "dark_mode"
     const val PREF_WORK_HOURS_ENABLED = "work_hours_enabled"
     const val PREF_WORK_HOURS_START = "work_hours_start"
@@ -100,7 +101,53 @@ object NottasWeb {
         @JavascriptInterface
         fun setWakeEnabled(enabled: Boolean) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .edit().putBoolean(PREF_WAKE_ENABLED, enabled).apply()
+                .edit()
+                .putBoolean(PREF_WAKE_ENABLED, enabled)
+                .apply {
+                    if (enabled) remove(PREF_WAKE_SNOOZE_UNTIL)
+                }
+                .apply()
+        }
+
+        @JavascriptInterface
+        fun snoozeWake(minutes: Int): Long {
+            val safeMinutes = minutes.coerceIn(1, 12 * 60)
+            val until = System.currentTimeMillis() + safeMinutes * 60_000L
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(PREF_WAKE_ENABLED, true)
+                .putLong(PREF_WAKE_SNOOZE_UNTIL, until)
+                .apply()
+            return until
+        }
+
+        @JavascriptInterface
+        fun clearWakeSnooze() {
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit()
+                .remove(PREF_WAKE_SNOOZE_UNTIL)
+                .apply()
+        }
+
+        @JavascriptInterface
+        fun wakeControlStatus(): String {
+            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val enabled = prefs.getBoolean(PREF_WAKE_ENABLED, true)
+            val snoozeUntil = prefs.getLong(PREF_WAKE_SNOOZE_UNTIL, 0L)
+            val snoozed = snoozeUntil > System.currentTimeMillis()
+            val workStatus = try {
+                JSONObject(WorkHoursPolicy.status(context))
+            } catch (_: Throwable) {
+                JSONObject()
+            }
+            return JSONObject()
+                .put("enabled", enabled)
+                .put("snoozed", snoozed)
+                .put("snoozeUntil", snoozeUntil)
+                .put("workHoursEnabled", workStatus.optBoolean("enabled", false))
+                .put("withinHours", workStatus.optBoolean("withinHours", false))
+                .put("allowedNow", enabled && !snoozed && WorkHoursPolicy.allowsWakeOverlay(context))
+                .toString()
         }
 
         @JavascriptInterface
