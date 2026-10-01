@@ -668,7 +668,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
 
     <div class="sectionTitle">Horario de trabajo</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Durante esta franja, Nottas no aparece al desbloquear.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Limita “Mostrar al desbloquear” a esta franja. Fuera del horario, Nottas no aparece automáticamente.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">Inicio</div><div class="desc">Hora habitual de comienzo.</div></div><input id="workHoursStart" class="settingsTimeInput" type="time" value="08:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Fin</div><div class="desc">Hora habitual de cierre.</div></div><input id="workHoursEnd" class="settingsTimeInput" type="time" value="17:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Estado actual</div><div id="workHoursNativeStatus" class="desc">Comprobando…</div></div></div>
@@ -2078,10 +2078,10 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     try{
       if(window.NottasNative&&NottasNative.workHoursStatus){
         const status=JSON.parse(NottasNative.workHoursStatus()||"{}");
-        if(status.start===status.end){el.textContent="Inicio y fin son iguales: no hay una franja de bloqueo activa.";return}
-        el.textContent=status.activeNow
-          ?"Ahora estás dentro del horario: overlay de desbloqueo pausado."
-          :"Ahora estás fuera del horario: overlay de desbloqueo habilitado.";
+        if(status.start===status.end){el.textContent="Inicio y fin son iguales: la ventana está vacía y el overlay automático queda bloqueado.";return}
+        el.textContent=status.allowsWakeOverlay
+          ?"Ahora estás dentro del horario: overlay de desbloqueo habilitado."
+          :"Ahora estás fuera del horario: overlay de desbloqueo bloqueado.";
         return;
       }
     }catch(_){}
