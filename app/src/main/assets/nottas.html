@@ -34,6 +34,55 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .settingsGroup{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:10px}.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border-bottom:1px solid #ececf0}.settingsRow:last-child{border-bottom:0}.settingsRow .left{min-width:0}.settingsRow .title{font-size:15px}.settingsRow .desc{font-size:12px;color:#8e8e93;margin-top:2px}.settingsRow button{border:0;background:transparent;color:#007aff;border-radius:10px;padding:8px 4px;font-weight:500}.settingsRow button:active{opacity:.55}.settingsChevron{width:9px;height:15px;fill:none;stroke:#c7c7cc;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.categoryManage{display:flex;align-items:center;gap:10px}.categoryManage .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.colorSwatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}.settingsTimeInput{width:118px;height:38px;border:1px solid #d1d1d6;border-radius:10px;background:#fff;color:#1d1d1f;padding:4px 8px;font-size:15px;outline:none;-webkit-tap-highlight-color:transparent}.settingsTimeInput:focus,.settingsTimeInput:active{outline:none;box-shadow:none}.settingsTimeInput:disabled{opacity:.42}
 .toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1d1d1f;color:#fff;border-radius:999px;padding:9px 13px;font-size:12px;z-index:80;opacity:0;pointer-events:none;transition:opacity .18s}.toast.show{opacity:1}
 .hidden{display:none!important}
+#editorOverlay.noteEditorMode{background:#f5f5f7;align-items:stretch}
+#editorOverlay.noteEditorMode .editorSheet{width:min(760px,100%);height:var(--vv-height,100vh);max-height:var(--vv-height,100vh);margin:0 auto;border-radius:0;box-shadow:none;padding:calc(8px + env(safe-area-inset-top)) 18px calc(66px + env(safe-area-inset-bottom));overflow:auto;background:#f5f5f7}
+#editorOverlay.noteEditorMode .sheetHandle{display:none}
+#editorOverlay.noteEditorMode .sheetHeader{min-height:52px;margin-bottom:26px;display:grid;grid-template-columns:44px 1fr auto;align-items:center}
+#editorOverlay.noteEditorMode #editorTitle,#editorOverlay.noteEditorMode #editorClose{display:none}
+.noteBackBtn{display:none;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#1d1d1f;padding:0;place-items:center}
+.noteBackBtn:active{background:rgba(118,118,128,.12)}
+.noteBackBtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.noteEditorMode .noteBackBtn{display:grid}
+#editorOverlay.noteEditorMode .sheetHeaderActions{grid-column:3}
+#editorOverlay.noteEditorMode .editorPinBtn{width:44px;height:44px}
+#editorOverlay.noteEditorMode #noteForm{display:flex;flex-direction:column;min-height:calc(var(--vv-height,100vh) - 150px)}
+#editorOverlay.noteEditorMode #noteForm .card{background:transparent;border-radius:0;padding:0;margin:0;box-shadow:none}
+#editorOverlay.noteEditorMode #noteForm .field{margin:0}
+#editorOverlay.noteEditorMode #noteForm .label{display:none}
+#editorOverlay.noteEditorMode #noteTitle{border:0;background:transparent;border-radius:0;padding:5px 2px 12px;font-size:27px;line-height:1.25;font-weight:560;color:#1d1d1f}
+#editorOverlay.noteEditorMode #noteTitle:focus{border:0}
+#editorOverlay.noteEditorMode .richToolbar{position:fixed;left:50%;bottom:calc(62px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(724px,calc(100% - 36px));z-index:71;border-radius:14px;padding:7px;background:rgba(245,245,247,.98);box-shadow:0 6px 24px rgba(0,0,0,.13);backdrop-filter:blur(16px)}
+#editorOverlay.noteEditorMode .noteBlocksEditor{gap:0;padding-bottom:110px}
+#editorOverlay.noteEditorMode .noteBlockNode{margin-left:calc(var(--block-depth) * 18px)}
+#editorOverlay.noteEditorMode .noteBlockType,#editorOverlay.noteEditorMode .noteBlockChild,#editorOverlay.noteEditorMode .noteBlockRemove{display:none}
+#editorOverlay.noteEditorMode .noteBlockRow{display:flex;align-items:flex-start;gap:4px}
+#editorOverlay.noteEditorMode .noteBlockMain{flex:1;min-width:0}
+#editorOverlay.noteEditorMode .richText{min-height:42px;border:0;border-radius:0;background:transparent;padding:7px 2px;font-size:17px;line-height:1.45;color:#1d1d1f}
+#editorOverlay.noteEditorMode .richText:focus{border:0}
+#editorOverlay.noteEditorMode .noteBlock-heading .richText{font-size:22px;font-weight:720}
+#editorOverlay.noteEditorMode .noteBlock-subheading .richText{font-size:18px;font-weight:650}
+#editorOverlay.noteEditorMode .noteBlock-quote .richText{border-left:3px solid #8e8e93;padding-left:10px}
+#editorOverlay.noteEditorMode .noteBlock-paragraph>.noteBlockRow>.blockMarker,#editorOverlay.noteEditorMode .noteBlock-heading>.noteBlockRow>.blockMarker,#editorOverlay.noteEditorMode .noteBlock-subheading>.noteBlockRow>.blockMarker{display:none}
+#editorOverlay.noteEditorMode .addBlockBtn{display:none}
+.noteBottomBar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);height:calc(58px + env(safe-area-inset-bottom));padding:6px 18px env(safe-area-inset-bottom);display:flex;align-items:center;gap:8px;background:rgba(245,245,247,.96);backdrop-filter:blur(18px);z-index:70}
+.noteToolBtn{width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#1d1d1f;display:grid;place-items:center;padding:0;font-size:26px}
+.noteToolBtn:active{background:rgba(118,118,128,.12)}
+.noteToolBtn svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.noteToolBtn.format{font-size:20px;font-weight:650;text-decoration:underline;text-underline-offset:5px}
+.noteBottomSpacer{flex:1}
+.noteActionPanel{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);max-height:min(64vh,520px);overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 34px rgba(0,0,0,.18);z-index:75}
+.noteActionPanelHandle{width:40px;height:5px;border-radius:99px;background:#c7c7cc;margin:0 auto 14px}
+.noteActionRow{width:100%;min-height:52px;border:0;background:transparent;color:#1d1d1f;display:flex;align-items:center;gap:14px;padding:9px 4px;text-align:left;font-size:16px}
+.noteActionRow:active{background:rgba(118,118,128,.09)}
+.noteActionRow svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.noteActionSection{padding:5px 0 10px}
+.noteActionLabel{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;margin:4px 2px 7px}
+.noteActionPanel .categoryPicker,.noteActionPanel .textInput{margin-bottom:10px}
+.noteActionDanger{color:#ff3b30}
+.noteEditedHint{font-size:12px;color:#8e8e93;padding:4px 2px 9px}
+.keyboardOpen #editorOverlay.noteEditorMode .editorSheet{height:var(--vv-height,100vh);max-height:var(--vv-height,100vh);padding-top:calc(6px + env(safe-area-inset-top))}
+.keyboardOpen #editorOverlay.noteEditorMode .sheetHeader{margin-bottom:10px}
+.keyboardOpen #editorOverlay.noteEditorMode .noteBottomBar{bottom:0}
 html[data-theme="dark"],html[data-theme="dark"] body{background:#000;color:#f5f5f7}
 html[data-theme="dark"] .iconBtn{color:#f5f5f7}
 html[data-theme="dark"] .search{background:rgba(28,28,30,.97);border-color:#38383a;color:#f5f5f7}
@@ -79,6 +128,13 @@ html[data-theme="dark"] .richToolbar{background:#1c1c1e}
 html[data-theme="dark"] .formatBtn,html[data-theme="dark"] .noteBlockType,html[data-theme="dark"] .richText{background:#1c1c1e;border-color:#3a3a3c;color:#f5f5f7}
 html[data-theme="dark"] .formatBtn:active{background:#2c2c2e}
 html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
+html[data-theme="dark"] #editorOverlay.noteEditorMode,html[data-theme="dark"] #editorOverlay.noteEditorMode .editorSheet{background:#101012}
+html[data-theme="dark"] #editorOverlay.noteEditorMode #noteTitle,html[data-theme="dark"] #editorOverlay.noteEditorMode .richText,html[data-theme="dark"] .noteToolBtn,html[data-theme="dark"] .noteBackBtn{color:#f5f5f7;background:transparent}
+html[data-theme="dark"] #editorOverlay.noteEditorMode .richToolbar,html[data-theme="dark"] .noteBottomBar{background:rgba(16,16,18,.96)}
+html[data-theme="dark"] .noteActionPanel{background:#1c1c1e}
+html[data-theme="dark"] .noteActionRow{color:#f5f5f7}
+html[data-theme="dark"] .noteActionDanger{color:#ff6961}
+html[data-theme="dark"] .noteActionPanelHandle{background:#636366}
 @media(max-width:520px){.app{padding-left:16px;padding-right:16px}.bottomDock{left:16px;right:20px}.grid2{grid-template-columns:1fr}.headerTitle h1{font-size:28px}}
 </style>
 </head>
@@ -243,6 +299,9 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   <div class="sheet editorSheet">
     <div class="sheetHandle"></div>
     <div class="sheetHeader">
+      <button id="noteBackBtn" class="noteBackBtn" type="button" aria-label="Volver">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+      </button>
       <h2 id="editorTitle">Nueva tarea</h2>
       <div class="sheetHeaderActions">
         <button id="editorPinBtn" class="editorPinBtn" type="button" aria-label="Destacar">
@@ -285,10 +344,9 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
 
     <form id="noteForm" class="hidden">
       <div class="card">
-        <div class="field"><div class="label">Título</div><input id="noteTitle" class="textInput" type="text" maxlength="120" placeholder="Título" autocomplete="off"></div>
+        <div class="field"><input id="noteTitle" class="textInput" type="text" maxlength="120" placeholder="Título" autocomplete="off"></div>
         <div class="field">
-          <div class="label">Contenido</div>
-          <div id="richToolbar" class="richToolbar" aria-label="Formato de texto">
+          <div id="richToolbar" class="richToolbar hidden" aria-label="Formato de texto">
             <button class="formatBtn" type="button" data-rich-scope="note" data-rich-command="bold" aria-label="Negrita">B</button>
             <button class="formatBtn italic" type="button" data-rich-scope="note" data-rich-command="italic" aria-label="Cursiva">I</button>
             <button class="formatBtn underline" type="button" data-rich-scope="note" data-rich-command="underline" aria-label="Subrayado">U</button>
@@ -298,10 +356,56 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
           <button id="addNoteBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="noteBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
-        <div class="field"><div class="label">Categoría</div><div id="noteCategory" class="categoryPicker" data-category-picker><div class="categoryPickerBar"><button class="categoryDrop" type="button" aria-label="Mostrar categorías"><svg viewBox="0 0 14 8" aria-hidden="true"><path d="m1 1 6 6 6-6"></path></svg></button><input class="categoryPickerInput" type="text" maxlength="40" placeholder="Categoría" autocomplete="off" aria-label="Categoría"><button class="categoryAdd hidden" type="button" aria-label="Crear categoría">+</button></div><div class="categorySuggestions hidden"></div></div></div>
-        <div class="field"><div class="label">Tags</div><input id="noteTags" class="textInput" type="text" maxlength="240" placeholder="idea, personal" autocomplete="off"></div>
       </div>
-      <div class="actions"><button id="deleteNoteBtn" class="btn danger iconDanger hidden" type="button" aria-label="Eliminar nota"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg></button><button class="btn primary" type="submit">Guardar</button></div>
+
+      <div id="noteInsertPanel" class="noteActionPanel hidden" aria-hidden="true">
+        <div class="noteActionPanelHandle"></div>
+        <button id="noteInsertText" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><path d="M5 6h14M8 6v12M16 6v12M6 18h12"></path></svg>
+          <span>Texto</span>
+        </button>
+        <button id="noteInsertChecklist" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect><path d="m7 12 3 3 7-7"></path></svg>
+          <span>Casillas de verificación</span>
+        </button>
+      </div>
+
+      <div id="noteMorePanel" class="noteActionPanel hidden" aria-hidden="true">
+        <div class="noteActionPanelHandle"></div>
+        <div id="noteEditedHint" class="noteEditedHint"></div>
+        <div class="noteActionSection">
+          <div class="noteActionLabel">Categoría</div>
+          <div id="noteCategory" class="categoryPicker" data-category-picker>
+            <div class="categoryPickerBar">
+              <button class="categoryDrop" type="button" aria-label="Mostrar categorías"><svg viewBox="0 0 14 8" aria-hidden="true"><path d="m1 1 6 6 6-6"></path></svg></button>
+              <input class="categoryPickerInput" type="text" maxlength="40" placeholder="Categoría" autocomplete="off" aria-label="Categoría">
+              <button class="categoryAdd hidden" type="button" aria-label="Crear categoría">+</button>
+            </div>
+            <div class="categorySuggestions hidden"></div>
+          </div>
+          <div class="noteActionLabel">Etiquetas</div>
+          <input id="noteTags" class="textInput" type="text" maxlength="240" placeholder="idea, personal" autocomplete="off">
+        </div>
+        <button id="noteDuplicateBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg>
+          <span>Crear una copia</span>
+        </button>
+        <button id="deleteNoteBtn" class="noteActionRow noteActionDanger hidden" type="button">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>
+          <span>Borrar</span>
+        </button>
+      </div>
+
+      <div class="noteBottomBar">
+        <button id="noteInsertBtn" class="noteToolBtn" type="button" aria-label="Añadir">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
+        <button id="noteFormatBtn" class="noteToolBtn format" type="button" aria-label="Formato">A</button>
+        <div class="noteBottomSpacer"></div>
+        <button id="noteMoreBtn" class="noteToolBtn" type="button" aria-label="Más opciones">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
+        </button>
+      </div>
     </form>
   </div>
 </div>
@@ -1307,27 +1411,67 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   }
   function renderNoteBlocks(focusPath=null){renderContentBlocks("note",focusPath)}
   function renderTaskBlocks(focusPath=null){renderContentBlocks("task",focusPath)}
-  function addNoteBlock(){editorNoteBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
+  function addNoteBlockOfType(type="paragraph"){const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
+  function addNoteBlock(){addNoteBlockOfType("paragraph")}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
   function applyRichCommand(command,scopeHint=null){const scope=activeRichScope||scopeHint;if(!activeRichBlockId||!scope)return;const box=blockEditorForScope(scope),active=box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(blocksForScope(scope),activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML)}
 
+  function hideNotePanels(){
+    ["noteInsertPanel","noteMorePanel"].forEach(id=>{const p=$(id);if(p){p.classList.add("hidden");p.setAttribute("aria-hidden","true")}});
+  }
+  function showNotePanel(id){
+    const active=document.activeElement;if(active&&active.blur)active.blur();
+    ["noteInsertPanel","noteMorePanel"].forEach(other=>{const p=$(other);if(!p)return;const on=other===id;p.classList.toggle("hidden",!on);p.setAttribute("aria-hidden",on?"false":"true")});
+  }
+  function noteSnapshot(){
+    const title=$("noteTitle").value.trim(),blocks=cleanNoteBlocks(editorNoteBlocks),body=noteBlocksText(blocks).trim();
+    $("noteBody").value=body;
+    return {title,blocks,body,category:getCategoryPickerValue("noteCategory"),tags:normalizeTags($("noteTags").value),pinned:editorPinned};
+  }
+  function persistOpenNote(showSaved=false){
+    if($("noteForm").classList.contains("hidden"))return false;
+    const snap=noteSnapshot(),existing=editingNoteId?state.notes.find(x=>x.id===editingNoteId):null;
+    if(!existing&&!snap.title&&!snap.body)return false;
+    let changed=false;
+    if(existing){
+      const same=existing.title===snap.title&&existing.body===snap.body&&existing.category===snap.category&&!!existing.pinned===!!snap.pinned&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks);
+      if(!same){existing.title=snap.title;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.pinned=snap.pinned;touch(existing);changed=true}
+    }else{
+      const stamp=now(),id=makeId("n");
+      state.notes.push({id,title:snap.title,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,pinned:snap.pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      editingNoteId=id;changed=true;$("deleteNoteBtn").classList.remove("hidden");$("noteDuplicateBtn").classList.remove("hidden");
+    }
+    if(changed){scheduleSave();render();if(showSaved)showToast("Nota guardada")}
+    return changed;
+  }
+  function updateNoteEditedHint(n){
+    const hint=$("noteEditedHint");if(!hint)return;
+    if(!n){hint.textContent="Nota nueva";return}
+    const d=new Date(n.updatedAt||n.createdAt||Date.now());
+    hint.textContent="Editada "+d.toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  }
   function openTask(t){
-    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
+    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);$("editorOverlay").classList.remove("noteEditorMode");hideNotePanels();$("richToolbar").classList.add("hidden");
     editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);
     openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
-    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
+    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);$("editorOverlay").classList.add("noteEditorMode");hideNotePanels();$("richToolbar").classList.add("hidden");
     editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
-    $("noteTitle").value=n?n.title:"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);
-    openOverlay("editorOverlay");setTimeout(()=>$("noteTitle").focus(),80)
+    $("noteTitle").value=n?n.title:"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
+    openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
   }
-  function closeEditor(){closeOverlay("editorOverlay");editingTaskId=null;editingNoteId=null;editorPinned=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();setNativeSearchKeyboardMode(true)}
+  function closeEditor(options={}){
+    const isNote=!$("noteForm").classList.contains("hidden");
+    if(isNote&&options.save!==false)persistOpenNote(false);
+    hideNotePanels();$("richToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode");
+    editingTaskId=null;editingNoteId=null;editorPinned=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();setNativeSearchKeyboardMode(true)
+  }
 
-  function syncQuickMode(){
+  function syncQuickMode(){  function syncQuickMode(){
     const isTask=quickMode==="tasks";
     $("quickTaskMode").classList.toggle("active",isTask);
     $("quickNoteMode").classList.toggle("active",!isTask);
@@ -1344,23 +1488,21 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     });
   }
   window.NottasOpenQuickCapture=function(requestedMode){
-    openQuickCapture(requestedMode==="notes"?"notes":"tasks");
+    if(requestedMode==="notes")openNote(null);else openQuickCapture("tasks");
     return true;
   };
 
   window.NottasOpenSharedText=function(text){
     const raw=String(text||"").trim();
     if(!raw)return false;
-    openQuickCapture();
-    quickMode="notes";
-    $("quickTaskText").value=raw.slice(0,180);
-    $("quickNoteText").value=raw;
-    syncQuickMode();
-    setTimeout(()=>$("quickNoteText").focus(),80);
+    openNote(null);
+    editorNoteBlocks=[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}];
+    $("noteBody").value=raw;renderNoteBlocks();setTimeout(()=>$("noteBlocksEditor").querySelector(".richText")?.focus(),80);
     return true;
   };
 
-  function openQuickCapture(requestedMode=null){
+  function openQuickCapture(requestedMode=null){  function openQuickCapture(requestedMode=null){
+    if(requestedMode==="notes"){openNote(null);return}
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
@@ -1671,11 +1813,11 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   document.querySelectorAll("[data-calendar-view]").forEach(b=>b.addEventListener("click",()=>{calendarView=b.dataset.calendarView;renderCalendar()}));
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
   document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
-  $("fab").addEventListener("click",openQuickCapture);
+  $("fab").addEventListener("click",()=>{if(mode==="notes"&&!trash)openNote(null);else openQuickCapture()});
   $("quickClose").addEventListener("click",closeQuickCapture);
   $("quickOverlay").addEventListener("click",e=>{if(e.target===$("quickOverlay"))closeQuickCapture()});
   $("quickTaskMode").addEventListener("click",()=>{quickMode="tasks";syncQuickMode()});
-  $("quickNoteMode").addEventListener("click",()=>{quickMode="notes";syncQuickMode()});
+  $("quickNoteMode").addEventListener("click",()=>{const category=getCategoryPickerValue("quickCategory");closeQuickCapture();openNote(null);setCategoryPicker("noteCategory",category)});
   document.querySelectorAll("[data-quick-date]").forEach(b=>b.addEventListener("click",()=>setQuickDate(b.dataset.quickDate||"")));
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("quickMore").addEventListener("click",expandQuickCapture);
@@ -1717,6 +1859,13 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   });
 
   $("editorPinBtn").addEventListener("click",()=>{editorPinned=!editorPinned;syncEditorPin()});
+  $("noteBackBtn").addEventListener("click",()=>closeEditor());
+  $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
+  $("noteMoreBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteMorePanel")});
+  $("noteFormatBtn").addEventListener("click",()=>{hideNotePanels();$("richToolbar").classList.toggle("hidden")});
+  $("noteInsertText").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("paragraph")});
+  $("noteInsertChecklist").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("checklist")});
+  $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
   $("addSubtaskBtn").addEventListener("click",addEditorSubtask);
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
@@ -1742,9 +1891,11 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   $("editorClose").addEventListener("click",closeEditor);$("editorOverlay").addEventListener("click",e=>{if(e.target===$("editorOverlay"))closeEditor()});
   $("taskForm").addEventListener("submit",e=>{e.preventDefault();const text=$("taskText").value.trim();if(!text)return;const c=getCategoryPickerValue("taskCategory"),tags=normalizeTags($("taskTags").value),dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",priority=$("taskPriority").value||"normal",recurrence=$("taskRecurrence").value||"none",reminder=$("taskTimeButton").dataset.reminderActive==="1"?($("taskReminder").value||"at"):"none",pinned=editorPinned,blocks=cleanNoteBlocks(editorTaskBlocks),body=noteBlocksText(blocks).trim(),items=normalizeTaskItems(editorSubtasks,[]);$("taskBody").value=body;syncTaskTreeDone(items);const subtasks=legacySubtasksFromItems(items);if(reminder!=="none"&&(!dueDate||!dueTime)){showToast("Añade fecha y hora para el recordatorio");return}if(editingTaskId){const t=state.tasks.find(x=>x.id===editingTaskId);if(t){t.text=text;t.body=body;t.blocks=blocks;t.category=c;t.tags=tags;t.dueDate=dueDate;t.dueTime=dueTime;t.priority=priority;t.recurrence=recurrence;t.reminder=reminder;t.items=items;t.subtasks=subtasks;t.pinned=pinned;if(t.done&&items.length&&taskTreeProgressValue(items)<1)t.done=false;touch(t)}}else{const stamp=now();state.tasks.push({id:makeId("t"),text,body,blocks,category:c,tags,done:false,pinned,dueDate,dueTime,priority,recurrence,reminder,recurrenceFrom:"",items,subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();if(reminder!=="none")requestReminderPermission();showToast("Tarea guardada")});
   $("deleteTaskBtn").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===editingTaskId);if(!t)return;t.deletedAt=now();touch(t);closeEditor();scheduleSave();render();showToast("Tarea enviada a papelera")});
-  $("noteForm").addEventListener("submit",e=>{e.preventDefault();const title=$("noteTitle").value.trim(),blocks=cleanNoteBlocks(editorNoteBlocks),body=noteBlocksText(blocks).trim();$("noteBody").value=body;if(!title&&!body)return;const c=getCategoryPickerValue("noteCategory"),tags=normalizeTags($("noteTags").value),pinned=editorPinned;if(editingNoteId){const n=state.notes.find(x=>x.id===editingNoteId);if(n){n.title=title;n.body=body;n.blocks=blocks;n.category=c;n.tags=tags;n.pinned=pinned;touch(n)}}else{const stamp=now();state.notes.push({id:makeId("n"),title,body,blocks,category:c,tags,pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"})}closeEditor();scheduleSave();render();showToast("Nota guardada")});
-  $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);closeEditor();scheduleSave();render();showToast("Nota enviada a papelera")});
+  $("noteForm").addEventListener("submit",e=>{e.preventDefault();persistOpenNote(true)});
+  $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);hideNotePanels();closeEditor({save:false});scheduleSave();render();showToast("Nota enviada a papelera")});
 
+  $("noteTitle").addEventListener("input",()=>{});
+  $("noteTags").addEventListener("change",()=>persistOpenNote(false));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
