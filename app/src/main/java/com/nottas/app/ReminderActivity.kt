@@ -12,7 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
+import android.widget.ScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -107,7 +107,7 @@ class ReminderActivity : Activity() {
 
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(20), dp(22), dp(20), dp(24))
+            setPadding(dp(20), dp(22), dp(20), dp(22))
         }
         root.addView(
             content,
@@ -128,13 +128,13 @@ class ReminderActivity : Activity() {
             brand,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(48)
+                dp(46)
             )
         )
 
         val heading = TextView(this).apply {
-            text = reminders.size.toString() + " recordatorios al mismo tiempo"
-            textSize = 24f
+            text = reminders.size.toString() + " recordatorios"
+            textSize = 26f
             setTextColor(Color.rgb(29, 29, 31))
             typeface = Typeface.create("sans", Typeface.BOLD)
         }
@@ -143,11 +143,11 @@ class ReminderActivity : Activity() {
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = dp(6) }
+            ).apply { topMargin = dp(4) }
         )
 
         val hint = TextView(this).apply {
-            text = "Desliza horizontalmente. Cada tarjeta se completa o pospone por separado."
+            text = "← Completar   ·   → Posponer"
             textSize = 13f
             setTextColor(Color.rgb(142, 142, 147))
         }
@@ -157,26 +157,25 @@ class ReminderActivity : Activity() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
-                topMargin = dp(7)
+                topMargin = dp(6)
                 bottomMargin = dp(14)
             }
         )
 
-        val scroll = HorizontalScrollView(this).apply {
-            isHorizontalScrollBarEnabled = false
-            isFillViewport = false
+        val scroll = ScrollView(this).apply {
+            isVerticalScrollBarEnabled = false
             overScrollMode = View.OVER_SCROLL_NEVER
+            clipToPadding = false
         }
-        val row = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(1), dp(4), dp(10), dp(8))
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, dp(2), 0, dp(14))
         }
         scroll.addView(
-            row,
+            list,
             FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
             )
         )
         content.addView(
@@ -188,28 +187,61 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val cardWidth = (resources.displayMetrics.widthPixels - dp(58)).coerceAtLeast(dp(280))
-
         reminders.forEachIndexed { index, reminder ->
             var cardSnoozeMinutes = 5
+            var startX = 0f
+            var startY = 0f
+            var horizontal = false
+            var thresholdBuzzed = false
+            val threshold = dp(82).toFloat()
+            val maxTravel = (resources.displayMetrics.widthPixels * 0.54f).coerceAtLeast(dp(180).toFloat())
+
+            val host = FrameLayout(this).apply {
+                clipChildren = false
+                clipToPadding = false
+            }
+            list.addView(
+                host,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(174)
+                ).apply { bottomMargin = dp(12) }
+            )
+
+            val action = TextView(this).apply {
+                textSize = 17f
+                gravity = Gravity.CENTER
+                setTextColor(Color.WHITE)
+                typeface = Typeface.create("sans", Typeface.BOLD)
+                background = roundedBackground(Color.rgb(52, 199, 89), dp(20))
+            }
+            host.addView(
+                action,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+            )
 
             val card = LinearLayout(this).apply {
                 orientation = LinearLayout.VERTICAL
-                setPadding(dp(22), dp(20), dp(22), dp(20))
-                background = roundedBackground(Color.WHITE, dp(24))
-                elevation = dp(4).toFloat()
+                setPadding(dp(20), dp(17), dp(20), dp(15))
+                background = roundedBackground(Color.WHITE, dp(20))
+                elevation = dp(3).toFloat()
+                isClickable = true
             }
-            row.addView(
+            host.addView(
                 card,
-                LinearLayout.LayoutParams(cardWidth, LinearLayout.LayoutParams.MATCH_PARENT).apply {
-                    marginEnd = dp(12)
-                }
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
             )
 
             val position = TextView(this).apply {
-                text = "RECORDATORIO " + (index + 1) + " DE " + reminders.size
-                textSize = 11f
-                letterSpacing = 0.09f
+                text = "RECORDATORIO " + (index + 1)
+                textSize = 10f
+                letterSpacing = 0.08f
                 setTextColor(Color.rgb(142, 142, 147))
             }
             card.addView(
@@ -222,143 +254,204 @@ class ReminderActivity : Activity() {
 
             val title = TextView(this).apply {
                 text = reminder.text
-                textSize = 27f
+                textSize = 23f
                 setTextColor(Color.rgb(29, 29, 31))
                 typeface = Typeface.create("sans", Typeface.BOLD)
-                setLineSpacing(0f, 1.05f)
-                maxLines = 7
+                maxLines = 3
+                setLineSpacing(0f, 1.04f)
             }
             card.addView(
                 title,
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply { topMargin = dp(16) }
+                    0,
+                    1f
+                ).apply { topMargin = dp(8) }
             )
 
-            card.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
-
-            val snoozeControls = LinearLayout(this).apply {
+            val controls = LinearLayout(this).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
             }
             card.addView(
-                snoozeControls,
+                controls,
                 LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(54)
-                ).apply { bottomMargin = dp(10) }
+                    dp(42)
+                )
             )
 
+            fun circleButton(label: String, onClick: () -> Unit): TextView =
+                TextView(this).apply {
+                    text = label
+                    textSize = 24f
+                    gravity = Gravity.CENTER
+                    setTextColor(Color.rgb(99, 99, 102))
+                    background = circularBackground(
+                        Color.rgb(242, 242, 247),
+                        Color.TRANSPARENT,
+                        0
+                    )
+                    isClickable = true
+                    setOnClickListener { onClick() }
+                }
+
             val snoozeValue = TextView(this).apply {
-                textSize = 15f
-                setTextColor(Color.rgb(99, 99, 102))
+                textSize = 14f
                 gravity = Gravity.CENTER
+                setTextColor(Color.rgb(99, 99, 102))
                 typeface = Typeface.create("sans", Typeface.BOLD)
             }
             fun refreshSnooze() {
                 snoozeValue.text =
-                    if (cardSnoozeMinutes == 1) "1 min" else cardSnoozeMinutes.toString() + " min"
+                    if (cardSnoozeMinutes == 1) "Posponer 1 min"
+                    else "Posponer " + cardSnoozeMinutes + " min"
+                if (card.translationX > 0f) action.text = snoozeValue.text
             }
             refreshSnooze()
 
-            val minus = TextView(this).apply {
-                text = "−"
-                textSize = 27f
-                gravity = Gravity.CENTER
-                setTextColor(Color.rgb(99, 99, 102))
-                background = circularBackground(Color.rgb(242, 242, 247), Color.TRANSPARENT, 0)
-                isClickable = true
-                setOnClickListener {
-                    if (cardSnoozeMinutes > 1) {
-                        cardSnoozeMinutes -= 1
-                        refreshSnooze()
-                        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    }
+            val minus = circleButton("−") {
+                if (cardSnoozeMinutes > 1) {
+                    cardSnoozeMinutes -= 1
+                    refreshSnooze()
+                    card.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                 }
             }
-            snoozeControls.addView(minus, LinearLayout.LayoutParams(dp(46), dp(46)))
-            snoozeControls.addView(
+            controls.addView(minus, LinearLayout.LayoutParams(dp(40), dp(40)))
+            controls.addView(
                 snoozeValue,
-                LinearLayout.LayoutParams(0, dp(46), 1f).apply {
+                LinearLayout.LayoutParams(0, dp(40), 1f).apply {
                     marginStart = dp(8)
                     marginEnd = dp(8)
                 }
             )
-            val plus = TextView(this).apply {
-                text = "+"
-                textSize = 27f
-                gravity = Gravity.CENTER
-                setTextColor(Color.rgb(99, 99, 102))
-                background = circularBackground(Color.rgb(242, 242, 247), Color.TRANSPARENT, 0)
-                isClickable = true
-                setOnClickListener {
-                    if (cardSnoozeMinutes < 120) {
-                        cardSnoozeMinutes += 1
-                        refreshSnooze()
-                        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
-                    }
+            val plus = circleButton("+") {
+                if (cardSnoozeMinutes < 120) {
+                    cardSnoozeMinutes += 1
+                    refreshSnooze()
+                    card.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                 }
             }
-            snoozeControls.addView(plus, LinearLayout.LayoutParams(dp(46), dp(46)))
+            controls.addView(plus, LinearLayout.LayoutParams(dp(40), dp(40)))
 
-            fun resolveCard(action: () -> Unit) {
-                action()
-                card.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                row.removeView(card)
-                if (row.childCount == 0) finishQuietly()
+            fun resolveComplete() {
+                ReminderActionStore.enqueueComplete(this, reminder.id)
+                ReminderScheduler.remove(this, reminder.id)
+                ReminderScheduler.cancelNotification(this, reminder.id)
             }
 
-            val complete = TextView(this).apply {
-                text = "Completar"
-                textSize = 16f
-                gravity = Gravity.CENTER
-                setTextColor(Color.WHITE)
-                typeface = Typeface.create("sans", Typeface.BOLD)
-                background = roundedBackground(Color.rgb(52, 199, 89), dp(14))
-                isClickable = true
-                setOnClickListener {
-                    resolveCard {
-                        ReminderActionStore.enqueueComplete(this@ReminderActivity, reminder.id)
-                        ReminderScheduler.remove(this@ReminderActivity, reminder.id)
-                        ReminderScheduler.cancelNotification(this@ReminderActivity, reminder.id)
-                    }
-                }
-            }
-            card.addView(
-                complete,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(54)
+            fun resolveSnooze() {
+                ReminderScheduler.snooze(
+                    this,
+                    reminder.id,
+                    reminder.text,
+                    cardSnoozeMinutes
                 )
-            )
+            }
 
-            val snooze = TextView(this).apply {
-                text = "Posponer"
-                textSize = 16f
-                gravity = Gravity.CENTER
-                setTextColor(Color.WHITE)
-                typeface = Typeface.create("sans", Typeface.BOLD)
-                background = roundedBackground(Color.rgb(0, 122, 255), dp(14))
-                isClickable = true
-                setOnClickListener {
-                    resolveCard {
-                        ReminderScheduler.snooze(
-                            this@ReminderActivity,
-                            reminder.id,
-                            reminder.text,
-                            cardSnoozeMinutes
-                        )
+            fun finishCard(toRight: Boolean) {
+                card.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                val target = if (toRight) resources.displayMetrics.widthPixels.toFloat()
+                else -resources.displayMetrics.widthPixels.toFloat()
+                card.animate()
+                    .translationX(target)
+                    .alpha(0f)
+                    .setDuration(150)
+                    .withEndAction {
+                        list.removeView(host)
+                        if (list.childCount == 0) finishQuietly()
                     }
+                    .start()
+            }
+
+            fun resetCard() {
+                card.animate()
+                    .translationX(0f)
+                    .alpha(1f)
+                    .setDuration(150)
+                    .start()
+            }
+
+            card.setOnTouchListener { view, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        startX = event.rawX
+                        startY = event.rawY
+                        horizontal = false
+                        thresholdBuzzed = false
+                        view.animate().cancel()
+                        true
+                    }
+
+                    MotionEvent.ACTION_MOVE -> {
+                        val dx = event.rawX - startX
+                        val dy = event.rawY - startY
+                        if (!horizontal && abs(dx) > dp(8) && abs(dx) > abs(dy) * 1.15f) {
+                            horizontal = true
+                            scroll.requestDisallowInterceptTouchEvent(true)
+                        }
+                        if (!horizontal) return@setOnTouchListener false
+
+                        val travel = dx.coerceIn(-maxTravel, maxTravel)
+                        view.translationX = travel
+
+                        if (travel < 0f) {
+                            action.text = "Completar"
+                            action.background = roundedBackground(
+                                Color.rgb(52, 199, 89),
+                                dp(20)
+                            )
+                        } else {
+                            action.text =
+                                if (cardSnoozeMinutes == 1) "Posponer 1 min"
+                                else "Posponer " + cardSnoozeMinutes + " min"
+                            action.background = roundedBackground(
+                                Color.rgb(0, 122, 255),
+                                dp(20)
+                            )
+                        }
+
+                        val reached = abs(travel) >= threshold
+                        if (reached && !thresholdBuzzed) {
+                            thresholdBuzzed = true
+                            view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                        } else if (!reached) {
+                            thresholdBuzzed = false
+                        }
+                        true
+                    }
+
+                    MotionEvent.ACTION_UP -> {
+                        scroll.requestDisallowInterceptTouchEvent(false)
+                        if (!horizontal) {
+                            resetCard()
+                            return@setOnTouchListener true
+                        }
+
+                        val dx = event.rawX - startX
+                        when {
+                            dx <= -threshold -> {
+                                resolveComplete()
+                                finishCard(false)
+                            }
+                            dx >= threshold -> {
+                                resolveSnooze()
+                                finishCard(true)
+                            }
+                            else -> resetCard()
+                        }
+                        true
+                    }
+
+                    MotionEvent.ACTION_CANCEL -> {
+                        scroll.requestDisallowInterceptTouchEvent(false)
+                        resetCard()
+                        true
+                    }
+
+                    else -> false
                 }
             }
-            card.addView(
-                snooze,
-                LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    dp(54)
-                ).apply { topMargin = dp(9) }
-            )
         }
 
         return root
