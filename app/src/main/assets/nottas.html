@@ -281,6 +281,9 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 [data-calendar-date].calendarDropTarget{outline:2px solid #007aff!important;outline-offset:-2px;background:#dbeaff!important}
 html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#16365d!important}
 .durationQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.durationQuick button{height:40px;border:0;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:13px;font-weight:620}.durationQuick button:active{background:#d1d1d6}html[data-theme="dark"] .durationQuick button{background:#2c2c2e;color:#f5f5f7}
+
+.calendarAllDay{margin-bottom:10px}.calendarAllDayTitle{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;padding:2px 3px 6px}.calendarTimeViewport{position:relative;overflow:auto;max-height:calc(var(--vv-height,100vh) - 285px);min-height:360px;border-top:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;border-radius:12px;background:#fff}.calendarTimeStage{position:relative;min-height:1152px;min-width:100%}.calendarTimeAxis{position:absolute;left:0;top:0;width:48px;height:1152px;z-index:3;background:linear-gradient(to right,#fff 80%,transparent)}.calendarHourLabel{position:absolute;left:0;width:40px;transform:translateY(-7px);font-size:9px;color:#8e8e93;text-align:right}.calendarTimeColumns{position:absolute;left:48px;right:0;top:0;height:1152px;display:grid;grid-template-columns:repeat(var(--calendar-cols,1),minmax(112px,1fr));background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#e5e5ea 47px,#e5e5ea 48px)}.calendarTimeColumn{position:relative;height:1152px;border-left:1px solid #f0f0f2}.calendarTimeColumn.calendarDropTarget{background:rgba(0,122,255,.08)}.calendarTimeColumnHeader{position:sticky;top:0;z-index:8;background:#f5f5f7;padding:6px 3px;text-align:center;font-size:10px;color:#636366}.calendarTimeBlock{position:absolute;left:3px;right:3px;min-height:24px;border-radius:8px;padding:5px 6px 8px 8px;background:#e8f2ff;border-left:3px solid var(--task-color,#1677ff);color:#1d1d1f;overflow:hidden;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.08);touch-action:none;user-select:none}.calendarTimeBlock:active{filter:brightness(.98)}.calendarTimeBlock.calendarDragging{opacity:.42}.calendarTimeBlockTitle{font-size:11px;font-weight:680;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendarTimeBlockMeta{font-size:9px;color:#636366;margin-top:2px;white-space:nowrap}.calendarBlockCheck{position:absolute;right:4px;top:4px;width:16px;height:16px;accent-color:#1677ff}.calendarResizeHandle{position:absolute;left:0;right:0;bottom:0;height:11px;cursor:ns-resize;touch-action:none}.calendarResizeHandle::after{content:"";position:absolute;left:35%;right:35%;bottom:3px;height:2px;border-radius:99px;background:rgba(0,0,0,.22)}.calendarWeekTimeViewport .calendarTimeStage{min-width:760px}.calendarWeekAllDay{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));min-width:760px;gap:3px}.calendarWeekAllDayCol{background:#fff;border-radius:10px;padding:5px;min-height:42px}.calendarWeekAllDayDate{font-size:9px;color:#8e8e93;margin-bottom:3px}.calendarAllDayChip{display:block;width:100%;border:0;border-radius:7px;background:#f2f2f7;color:#1d1d1f;font-size:10px;text-align:left;padding:4px 5px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarTimeAxis,html[data-theme="dark"] .calendarWeekAllDayCol{background:#1c1c1e;border-color:#38383a}html[data-theme="dark"] .calendarTimeAxis{background:linear-gradient(to right,#1c1c1e 80%,transparent)}html[data-theme="dark"] .calendarTimeColumns{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#38383a 47px,#38383a 48px)}html[data-theme="dark"] .calendarTimeColumn{border-left-color:#2c2c2e}html[data-theme="dark"] .calendarTimeBlock{background:#16365d;color:#f5f5f7}html[data-theme="dark"] .calendarTimeBlockMeta{color:#aeaeb2}html[data-theme="dark"] .calendarAllDayChip{background:#2c2c2e;color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -1340,7 +1343,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
   }
   function calendarTaskRows(tasks){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime)+'</span>':"<span>Sin hora</span>")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
   }
   function beginCalendarMove(id){
     const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
@@ -1410,27 +1413,84 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     html+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarTaskRows(calendarTasksFor(calendarDate));
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();
   }
+  const CAL_HOUR_PX=48,CAL_SNAP_MINUTES=15;
+  function calendarTaskStartMinutes(t){const start=timeToMinutes(t?.dueTime);return start===null?null:start}
+  function calendarTaskVisualEndMinutes(t){const start=calendarTaskStartMinutes(t);if(start===null)return null;const end=timeToMinutes(t?.endTime);return end!==null&&end>start?end:Math.min(1440,start+60)}
+  function calendarTaskRangeLabel(t){if(!t?.dueTime)return "Sin hora";return t.dueTime+(t.endTime?"–"+t.endTime:"")}
+  function calendarTimeBlockHtml(t){
+    const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
+    const top=start/60*CAL_HOUR_PX,height=Math.max(24,(end-start)/60*CAL_HOUR_PX);
+    return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+  }
+  function calendarTimeAxisHtml(){let html='<div class="calendarTimeAxis">';for(let h=0;h<24;h++)html+='<span class="calendarHourLabel" style="top:'+(h*CAL_HOUR_PX)+'px">'+String(h).padStart(2,"0")+':00</span>';return html+'</div>'}
+  function calendarTimeColumnHtml(date,tasks){return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'">'+tasks.filter(t=>t.dueTime).map(calendarTimeBlockHtml).join("")+'</div>'}
+  function calendarTimeGridHtml(dates){
+    const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date))).join("");
+    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+'">'+calendarTimeAxisHtml()+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+'">'+cols+'</div></div>';
+  }
+  function scrollCalendarTimeViewport(){
+    const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
+    const tasks=calendarView==="day"?calendarTasksFor(calendarDate).filter(t=>t.dueTime):[];
+    const first=tasks.length?Math.min(...tasks.map(t=>calendarTaskStartMinutes(t)).filter(x=>x!==null)):Math.max(0,new Date().getHours()*60-60);
+    viewport.scrollTop=Math.max(0,first/60*CAL_HOUR_PX-28);
+  }
+  function snapCalendarMinutes(value){return Math.max(0,Math.min(1425,Math.round(value/CAL_SNAP_MINUTES)*CAL_SNAP_MINUTES))}
+  function calendarMinutesFromPointer(column,clientY){const r=column.getBoundingClientRect();return snapCalendarMinutes((clientY-r.top)/CAL_HOUR_PX*60)}
+  function clearCalendarTimeDrop(){document.querySelectorAll(".calendarTimeColumn.calendarDropTarget").forEach(el=>el.classList.remove("calendarDropTarget"))}
+  function installCalendarTimeMove(block,t){
+    if(!block||block.dataset.moveReady==="1")return;block.dataset.moveReady="1";
+    let timer=null,pointerId=null,startX=0,startY=0,active=false,targetDate="",targetMinute=null,ghost=null;
+    const cleanup=()=>{clearTimeout(timer);timer=null;clearCalendarTimeDrop();block.classList.remove("calendarDragging");ghost?.remove();ghost=null;active=false;targetDate="";targetMinute=null;try{if(pointerId!==null&&block.hasPointerCapture(pointerId))block.releasePointerCapture(pointerId)}catch(_){}};
+    block.addEventListener("pointerdown",e=>{
+      if(e.target.closest(".calendarResizeHandle,.calendarBlockCheck")||(e.pointerType==="mouse"&&e.button!==0))return;
+      pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
+      timer=setTimeout(()=>{active=true;try{block.setPointerCapture(pointerId)}catch(_){}block.classList.add("calendarDragging");ghost=makeDragGhost(t.text);moveDragGhost(ghost,e.clientX,e.clientY)},300);
+    });
+    block.addEventListener("pointermove",e=>{
+      if(!active){if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){clearTimeout(timer);timer=null}return}
+      e.preventDefault();moveDragGhost(ghost,e.clientX,e.clientY);autoScrollDrag(block.closest(".calendarTimeViewport"),e.clientY);clearCalendarTimeDrop();
+      const col=document.elementFromPoint(e.clientX,e.clientY)?.closest(".calendarTimeColumn");if(!col)return;
+      targetDate=col.dataset.calendarTimeDate||"";targetMinute=calendarMinutesFromPointer(col,e.clientY);col.classList.add("calendarDropTarget");
+    },{passive:false});
+    const finish=e=>{
+      clearTimeout(timer);timer=null;if(!active)return;e.preventDefault();suppressClickUntil=Date.now()+480;
+      const date=targetDate,minute=targetMinute,duration=taskDurationMinutes(t);cleanup();if(!date||minute===null)return;
+      t.dueDate=date;t.dueTime=minutesToTime(minute);if(duration!==null)t.endTime=minutesToTime(Math.min(1439,minute+duration));touch(t);calendarDate=date;scheduleSave();renderCalendar();render();showToast("Tarea movida a "+t.dueTime);
+    };
+    block.addEventListener("pointerup",finish,{passive:false});block.addEventListener("pointercancel",cleanup);
+  }
+  function installCalendarTimeResize(handle,t,block){
+    if(!handle||handle.dataset.resizeReady==="1")return;handle.dataset.resizeReady="1";
+    let pointerId=null,active=false,lastEnd=null;
+    handle.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;e.preventDefault();e.stopPropagation();pointerId=e.pointerId;active=true;try{handle.setPointerCapture(pointerId)}catch(_){}});
+    handle.addEventListener("pointermove",e=>{if(!active)return;e.preventDefault();const col=block.closest(".calendarTimeColumn"),start=calendarTaskStartMinutes(t);if(!col||start===null)return;let end=calendarMinutesFromPointer(col,e.clientY);end=Math.max(start+15,end);lastEnd=Math.min(1439,end);block.style.height=Math.max(24,(lastEnd-start)/60*CAL_HOUR_PX)+"px";block.querySelector(".calendarTimeBlockMeta").textContent=t.dueTime+"–"+minutesToTime(lastEnd)},{passive:false});
+    const finish=e=>{if(!active)return;e.preventDefault();active=false;suppressClickUntil=Date.now()+350;try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}if(lastEnd!==null){t.endTime=minutesToTime(lastEnd);touch(t);scheduleSave();renderCalendar();render();showToast("Duración actualizada")}};
+    handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",()=>{active=false;renderCalendar()});
+  }
+  function bindCalendarTimeGrid(){
+    $("calendarBody").querySelectorAll("[data-calendar-time-task]").forEach(block=>{
+      const t=state.tasks.find(x=>x.id===block.dataset.calendarTimeTask);if(!t)return;
+      const check=block.querySelector(".calendarBlockCheck"),resize=block.querySelector(".calendarResizeHandle");
+      check?.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
+      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;closeOverlay("calendarOverlay");openTask(t)});
+      installCalendarTimeMove(block,t);installCalendarTimeResize(resize,t,block);
+    });
+  }
   function renderCalendarWeek(){
-    const start=mondayOf(calendarDate);let strip=calendarMoveNotice()+'<div class="calendarWeekStrip">';
-    for(let i=0;i<7;i++){const iso=addCalendarDays(start,i),d=dateFromISO(iso),count=calendarTasksFor(iso).length;strip+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count+" tarea"+(count===1?"":"s"):"")+'</div></button>'}
-    strip+='</div><div class="calendarWeekGroups">';
-    for(let i=0;i<7;i++){
-      const iso=addCalendarDays(start,i),tasks=calendarTasksFor(iso),label=calendarDateLabel(iso,{weekday:"long",day:"numeric",month:"short"});
-      strip+='<section class="calendarWeekGroup"><button class="calendarWeekGroupHeader" type="button" data-calendar-date="'+iso+'"><strong>'+esc(label)+'</strong><span>'+tasks.length+(tasks.length===1?" tarea":" tareas")+'</span></button>'+(tasks.length?calendarTaskRows(tasks):'<div class="calendarWeekEmpty">Sin tareas</div>')+'</section>';
-    }
-    strip+='</div>';$("calendarBody").innerHTML=strip;bindCalendarDateTargets();bindCalendarTasks();
+    const start=mondayOf(calendarDate),dates=Array.from({length:7},(_,i)=>addCalendarDays(start,i));
+    let html=calendarMoveNotice()+'<div class="calendarWeekStrip">';
+    dates.forEach(iso=>{const d=dateFromISO(iso),count=calendarTasksFor(iso).length;html+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count+" tarea"+(count===1?"":"s"):"")+'</div></button>'});
+    html+='</div><div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div><div class="calendarWeekAllDay">';
+    dates.forEach(iso=>{const rows=calendarTasksFor(iso).filter(t=>!t.dueTime);html+='<div class="calendarWeekAllDayCol"><div class="calendarWeekAllDayDate">'+esc(calendarDateLabel(iso,{weekday:"short",day:"numeric"}))+'</div>'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+'</div>'});
+    html+='</div></div><div class="calendarTimeViewport calendarWeekTimeViewport">'+calendarTimeGridHtml(dates)+'</div>';
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarDay(){
-    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),timed=tasks.filter(t=>t.dueTime);
-    let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div><div class="calendarDaySections">';
-    if(allDay.length)html+='<section><div class="calendarDaySectionTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</section>';
-    if(timed.length){
-      html+='<section><div class="calendarDaySectionTitle">Horario</div><div class="calendarTimeline">';
-      html+=timed.map(t=>'<div class="calendarTimelineItem"><span class="calendarTimelineTime">'+esc(t.dueTime)+'</span><i class="calendarTimelineDot" style="background:'+esc(catColor(t.category))+'"></i>'+calendarTaskRows([t])+'</div>').join("");
-      html+='</div></section>';
-    }
-    if(!tasks.length)html+='<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    html+='</div>';$("calendarBody").innerHTML=html;bindCalendarTasks();
+    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime);
+    let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div>';
+    if(allDay.length)html+='<div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</div>';
+    html+='<div class="calendarTimeViewport">'+calendarTimeGridHtml([calendarDate])+'</div>';
+    $("calendarBody").innerHTML=html;bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarAgenda(){
     const start=dateFromISO(calendarDate),end=new Date(start);end.setDate(end.getDate()+60);
