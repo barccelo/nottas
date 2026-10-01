@@ -270,6 +270,16 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 
 .hierarchyMoreBtn{width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:#8e8e93;font-size:20px;line-height:1;display:grid;place-items:center;padding:0}.hierarchyMoreBtn:active{background:rgba(118,118,128,.12)}
 .hierarchyPanelTitle{font-size:12px;color:#8e8e93;padding:0 4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.noteActionRow:disabled{opacity:.32;pointer-events:none}
+
+.dragGhost{position:fixed;left:0;top:0;z-index:200;max-width:min(320px,78vw);pointer-events:none;background:#1d1d1f;color:#fff;border-radius:12px;padding:9px 12px;font-size:13px;font-weight:620;box-shadow:0 10px 30px rgba(0,0,0,.24);opacity:.94;transform:translate3d(-9999px,-9999px,0)}
+.hierarchyMoreBtn,.calendarMoveBtn{touch-action:none}
+[data-hierarchy-id].hierarchyDragging{opacity:.38}
+[data-hierarchy-id].hierarchyDropBefore{box-shadow:inset 0 2px 0 #007aff}
+[data-hierarchy-id].hierarchyDropAfter{box-shadow:inset 0 -2px 0 #007aff}
+[data-hierarchy-id].hierarchyDropChild>.taskTreeRow,[data-hierarchy-id].hierarchyDropChild>.noteBlockRow{outline:2px solid #007aff;outline-offset:2px;border-radius:10px}
+.calendarTaskRow.calendarDragging{opacity:.42}
+[data-calendar-date].calendarDropTarget{outline:2px solid #007aff!important;outline-offset:-2px;background:#dbeaff!important}
+html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#16365d!important}
 </style>
 </head>
 <body>
@@ -790,7 +800,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null;
   let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
@@ -1342,13 +1352,34 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
   function bindCalendarMoveCancel(){
     const b=$("calendarMoveCancel");if(b)b.addEventListener("click",cancelCalendarMove);
   }
+  function clearCalendarDropTargets(){document.querySelectorAll("[data-calendar-date].calendarDropTarget").forEach(el=>el.classList.remove("calendarDropTarget"))}
+  function installCalendarTaskDrag(handle,t,row){
+    if(!handle||handle.dataset.dragReady==="1")return;handle.dataset.dragReady="1";
+    let timer=null,pointerId=null,startX=0,startY=0,active=false,ghost=null,targetDate="";
+    const cleanup=()=>{clearTimeout(timer);timer=null;clearCalendarDropTargets();row?.classList.remove("calendarDragging");ghost?.remove();ghost=null;active=false;targetDate="";calendarCardDrag=null;try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}};
+    handle.addEventListener("pointerdown",e=>{
+      if(calendarMoveTaskId||(e.pointerType==="mouse"&&e.button!==0))return;pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
+      timer=setTimeout(()=>{active=true;calendarCardDrag={taskId:t.id};try{handle.setPointerCapture(pointerId)}catch(_){}row.classList.add("calendarDragging");ghost=makeDragGhost(t.text);moveDragGhost(ghost,e.clientX,e.clientY)},330);
+    });
+    handle.addEventListener("pointermove",e=>{
+      if(!active){if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){clearTimeout(timer);timer=null}return}
+      e.preventDefault();moveDragGhost(ghost,e.clientX,e.clientY);autoScrollDrag($("calendarBody"),e.clientY);clearCalendarDropTargets();
+      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest("[data-calendar-date]");targetDate=target?.dataset.calendarDate||"";if(targetDate)target.classList.add("calendarDropTarget");
+    },{passive:false});
+    const finish=e=>{
+      clearTimeout(timer);timer=null;if(!active)return;e.preventDefault();suppressClickUntil=Date.now()+480;
+      const date=targetDate;cleanup();if(!date)return;
+      const old=t.dueDate||"";t.dueDate=date;calendarDate=date;touch(t);scheduleSave();renderCalendar();render();showToast(old===date?"La tarea ya estaba en esa fecha":"Tarea reprogramada");
+    };
+    handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",cleanup);
+  }
   function bindCalendarTasks(){
     $("calendarBody").querySelectorAll("[data-calendar-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.calendarTask);if(!t)return;
       const check=row.querySelector(".calendarTaskCheck"),move=row.querySelector(".calendarMoveBtn");
       if(check)check.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      if(move)move.addEventListener("click",e=>{e.stopPropagation();beginCalendarMove(t.id)});
-      row.addEventListener("click",e=>{if(e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;closeOverlay("calendarOverlay");openTask(t)});
+      if(move){move.addEventListener("click",e=>{e.stopPropagation();if(Date.now()<suppressClickUntil)return;beginCalendarMove(t.id)});installCalendarTaskDrag(move,t,row)}
+      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;closeOverlay("calendarOverlay");openTask(t)});
       row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();closeOverlay("calendarOverlay");openTask(t)}});
     });
     bindCalendarMoveCancel();
@@ -1794,10 +1825,71 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     else if(action==="delete"){loc.arr.splice(loc.index,1)}
     renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();closeHierarchyPanel();
   }
+  function makeDragGhost(text){
+    const g=document.createElement("div");g.className="dragGhost";g.textContent=String(text||"Elemento").trim()||"Elemento";document.body.appendChild(g);return g;
+  }
+  function moveDragGhost(g,x,y){if(g)g.style.transform="translate3d("+(x+12)+"px,"+(y+12)+"px,0)"}
+  function clearHierarchyDropClasses(){document.querySelectorAll(".hierarchyDropBefore,.hierarchyDropAfter,.hierarchyDropChild").forEach(el=>el.classList.remove("hierarchyDropBefore","hierarchyDropAfter","hierarchyDropChild"))}
+  function hierarchyContainsId(node,id){if(!node)return false;if(node.id===id)return true;return (node.children||[]).some(c=>hierarchyContainsId(c,id))}
+  function hierarchyFindLocation(nodes,id,parent=null){
+    for(let i=0;i<(nodes||[]).length;i++){const n=nodes[i];if(n.id===id)return {arr:nodes,index:i,node:n,parent};const found=hierarchyFindLocation(n.children||[],id,n);if(found)return found}
+    return null;
+  }
+  function hierarchyDetachById(nodes,id){
+    for(let i=0;i<(nodes||[]).length;i++){const n=nodes[i];if(n.id===id)return nodes.splice(i,1)[0];const found=hierarchyDetachById(n.children||[],id);if(found)return found}
+    return null;
+  }
+  function autoScrollDrag(container,y){
+    if(!container)return;const r=container.getBoundingClientRect(),edge=54,step=16;
+    if(y<r.top+edge)container.scrollBy(0,-step);else if(y>r.bottom-edge)container.scrollBy(0,step);
+  }
+  function hierarchyDrop(scope,dragId,targetId,relation){
+    const root=hierarchyRoot(scope);if(!root||!dragId||!targetId||dragId===targetId)return false;
+    const draggedLoc=hierarchyFindLocation(root,dragId),targetBefore=hierarchyFindLocation(root,targetId);if(!draggedLoc||!targetBefore||hierarchyContainsId(draggedLoc.node,targetId))return false;
+    if(scope.startsWith("task-"))commitTaskHistory();
+    const dragged=hierarchyDetachById(root,dragId),target=hierarchyFindLocation(root,targetId);if(!dragged||!target)return false;
+    if(relation==="child"){target.node.children=target.node.children||[];target.node.children.push(dragged)}
+    else target.arr.splice(target.index+(relation==="after"?1:0),0,dragged);
+    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();return true;
+  }
+  function installHierarchyDrag(handle,scope,id){
+    if(!handle||handle.dataset.dragReady==="1")return;handle.dataset.dragReady="1";
+    let timer=null,pointerId=null,startX=0,startY=0,active=false,row=null,ghost=null,targetId=null,relation=null;
+    const cleanup=()=>{
+      clearTimeout(timer);timer=null;clearHierarchyDropClasses();if(row)row.classList.remove("hierarchyDragging");if(ghost)ghost.remove();ghost=null;active=false;targetId=null;relation=null;
+      try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}
+      hierarchyDrag=null;
+    };
+    handle.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse"&&e.button!==0)return;pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;row=handle.closest("[data-hierarchy-id]");
+      timer=setTimeout(()=>{
+        if(!row)return;active=true;hierarchyDrag={scope,id};try{handle.setPointerCapture(pointerId)}catch(_){}
+        row.classList.add("hierarchyDragging");ghost=makeDragGhost(hierarchyNodeLabel(scope,treeNodeAtPath(hierarchyRoot(scope),scope==="task-items"?row.dataset.taskPath:row.dataset.notePath)));moveDragGhost(ghost,e.clientX,e.clientY);
+        try{handle.performHapticFeedback?.()}catch(_){}
+      },330);
+    });
+    handle.addEventListener("pointermove",e=>{
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      if(!active){if(Math.hypot(dx,dy)>10){clearTimeout(timer);timer=null}return}
+      e.preventDefault();moveDragGhost(ghost,e.clientX,e.clientY);autoScrollDrag(handle.closest(".editorSheet"),e.clientY);clearHierarchyDropClasses();
+      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-hierarchy-scope="'+scope+'"][data-hierarchy-id]');
+      if(!target||target.dataset.hierarchyId===id){targetId=null;relation=null;return}
+      const root=hierarchyRoot(scope),dragNode=hierarchyFindLocation(root,id)?.node;if(!dragNode||hierarchyContainsId(dragNode,target.dataset.hierarchyId)){targetId=null;relation=null;return}
+      const r=target.getBoundingClientRect();targetId=target.dataset.hierarchyId;
+      relation=dx>46?"child":(e.clientY<r.top+r.height/2?"before":"after");
+      target.classList.add(relation==="child"?"hierarchyDropChild":relation==="before"?"hierarchyDropBefore":"hierarchyDropAfter");
+    },{passive:false});
+    const finish=e=>{
+      clearTimeout(timer);timer=null;
+      if(!active)return;
+      e.preventDefault();suppressClickUntil=Date.now()+480;const did=targetId&&relation?hierarchyDrop(scope,id,targetId,relation):false;cleanup();if(did)showToast("Elemento movido");
+    };
+    handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",()=>cleanup());
+  }
   function taskNodesHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}" data-hierarchy-scope="task-items" data-hierarchy-id="${esc(n.id)}">`<div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
   function syncTaskCopyUI(){
@@ -1818,7 +1910,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
       input.addEventListener("input",()=>{node.html=sanitizeInlineHtml(input.innerHTML);node.text=inlineHtmlToText(node.html).slice(0,500);rememberRichSelection();scheduleTaskHistory()});
       input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
       child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",html:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
-      more.addEventListener("click",()=>showHierarchyPanel("task-items",path));
+      more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});installHierarchyDrag(more,"task-items",node.id);
     });
     syncTaskCopyUI();syncTaskEditorMeta();
   }
@@ -1827,10 +1919,10 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
   function cloneNoteBlocks(blocks,resetChecks=false){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:resetChecks?false:!!b.checked,children:cloneNoteBlocks(b.children||[],resetChecks)}))}
   function noteBlockOptions(type){const labels={paragraph:"Texto",heading:"Encabezado",subheading:"Subtítulo",quote:"Cita",bullet:"Viñeta",number:"Número",checklist:"Casilla"};return Object.keys(labels).map(k=>'<option value="'+k+'" '+(k===type?"selected":"")+'>'+labels[k]+'</option>').join("")}
   function noteBlockMarker(type,index){return type==="bullet"?"•":type==="number"?String(index+1)+".":type==="quote"?"❝":""}
-  function noteBlocksHtml(nodes,depth=0,prefix=""){
+  function noteBlocksHtml(nodes,depth=0,prefix="",scope="note"){
     return (nodes||[]).map((b,i)=>{
-      const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked;
-      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path)}</div>`:""}</div>`;
+      const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked,hScope=scope==="task"?"task-blocks":"note-blocks";
+      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}" data-hierarchy-scope="${hScope}" data-hierarchy-id="${esc(b.id)}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path,scope)}</div>`:""}</div>`;
     }).join("");
   }
   function findNoteBlockById(nodes,id){for(const b of nodes||[]){if(b.id===id)return b;const found=findNoteBlockById(b.children||[],id);if(found)return found}return null}
@@ -1838,7 +1930,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
   function setBlocksForScope(scope,value){if(scope==="task")editorTaskBlocks=value;else editorNoteBlocks=value}
   function blockEditorForScope(scope){return $(scope==="task"?"taskBlocksEditor":"noteBlocksEditor")}
   function renderContentBlocks(scope,focusPath=null){
-    const box=blockEditorForScope(scope);if(!box)return;let blocks=blocksForScope(scope);if(!blocks.length){blocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];setBlocksForScope(scope,blocks)}box.innerHTML=noteBlocksHtml(blocks);
+    const box=blockEditorForScope(scope);if(!box)return;let blocks=blocksForScope(scope);if(!blocks.length){blocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];setBlocksForScope(scope,blocks)}box.innerHTML=noteBlocksHtml(blocks,0,"",scope);
     box.querySelectorAll("[data-note-path]").forEach(row=>{
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
       const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),more=row.querySelector(":scope > .noteBlockRow .hierarchyMoreBtn");
@@ -1883,7 +1975,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
       });
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
       child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
-      more.addEventListener("click",()=>showHierarchyPanel(scope==="task"?"task-blocks":"note-blocks",path));
+      const hScope=scope==="task"?"task-blocks":"note-blocks";more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel(hScope,path)});installHierarchyDrag(more,hScope,b.id);
     });
     if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
   }
