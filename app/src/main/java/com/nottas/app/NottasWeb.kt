@@ -123,8 +123,11 @@ object NottasWeb {
                 .putBoolean(PREF_WORK_HOURS_ENABLED, enabled)
                 .putString(PREF_WORK_HOURS_START, safeStart)
                 .putString(PREF_WORK_HOURS_END, safeEnd)
-                .apply()
+                .commit()
         }
+
+        @JavascriptInterface
+        fun workHoursStatus(): String = WorkHoursPolicy.status(context)
 
         @JavascriptInterface
         fun setSearchKeyboardMode(active: Boolean) {
