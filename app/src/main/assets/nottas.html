@@ -269,7 +269,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
       <button id="sidebarBtn" class="iconBtn menuBtn" type="button" aria-label="Abrir menú">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
       </button>
-      <h1>Nottas</h1>
+      <h1 id="mainTitle">Nottas</h1>
     </div>
     <div class="headerActions">
       <div id="statusPill" class="statusPill"><span class="statusDot"></span><span id="statusText" class="statusText">Local</span></div>
@@ -768,7 +768,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
-  let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
+  let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
   let suppressClickUntil=0;
 
@@ -939,8 +939,8 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     const toggle=$("themeDarkToggle");if(toggle)toggle.checked=dark;
     try{if(window.NottasNative&&NottasNative.setDarkMode)NottasNative.setDarkMode(dark)}catch(_){}
   }
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(["light","dark"].includes(u.theme))uiTheme=u.theme}catch(_){}applyTheme()}
-  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,noteFilter,activeCategory,theme:uiTheme}))}catch(_){}}
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["today","pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(["light","dark"].includes(u.theme))uiTheme=u.theme}catch(_){}applyTheme()}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,noteFilter,activeCategory,activeTag,theme:uiTheme}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
     try{
@@ -1231,8 +1231,8 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     touch(t);scheduleSave();render();
   }
 
-  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,catName(t.category),tagsText(t.tags),t.dueDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
-  function visibleNote(n){if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
+  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,catName(t.category),tagsText(t.tags),t.dueDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
+  function visibleNote(n){if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
   function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
 
   function updateCounts(){
@@ -1243,8 +1243,8 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   function renderCategories(){
     const box=$("categories");box.innerHTML="";if(trash){box.classList.add("hidden");return}else box.classList.remove("hidden");
     const total=mode==="tasks"?state.tasks.filter(t=>!t.deletedAt).length:state.notes.filter(n=>!n.deletedAt).length;
-    const all=document.createElement("button");all.type="button";all.className="chip"+(activeCategory==="all"?" active":"");all.innerHTML=`Todas <span class="count">${total||""}</span>`;all.addEventListener("click",()=>{activeCategory="all";saveUI();render()});box.appendChild(all);
-    activeCategories().forEach(c=>{const count=mode==="tasks"?state.tasks.filter(t=>!t.deletedAt&&t.category===c.id).length:state.notes.filter(n=>!n.deletedAt&&n.category===c.id).length;const b=document.createElement("button");b.type="button";b.className="chip"+(activeCategory===c.id?" active":"");b.innerHTML=`<span class="dot" style="background:${esc(c.color)}"></span>${esc(c.name)} <span class="count">${count||""}</span>`;b.addEventListener("click",()=>{activeCategory=c.id;saveUI();render()});box.appendChild(b)});
+    const all=document.createElement("button");all.type="button";all.className="chip"+(activeCategory==="all"?" active":"");all.innerHTML=`Todas <span class="count">${total||""}</span>`;all.addEventListener("click",()=>{activeCategory="all";activeTag="";saveUI();render()});box.appendChild(all);
+    activeCategories().forEach(c=>{const count=mode==="tasks"?state.tasks.filter(t=>!t.deletedAt&&t.category===c.id).length:state.notes.filter(n=>!n.deletedAt&&n.category===c.id).length;const b=document.createElement("button");b.type="button";b.className="chip"+(activeCategory===c.id?" active":"");b.innerHTML=`<span class="dot" style="background:${esc(c.color)}"></span>${esc(c.name)} <span class="count">${count||""}</span>`;b.addEventListener("click",()=>{activeCategory=c.id;activeTag="";saveUI();render()});box.appendChild(b)});
   }
 
   function openSidebar(){renderSidebar();$("sidebarBackdrop").classList.add("show");$("sidebarBackdrop").setAttribute("aria-hidden","false")}
@@ -1268,13 +1268,23 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     $("sideCountPinnedNotes").textContent=liveNotes.filter(n=>n.pinned).length||"";
     const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;
     $("sideTrashCount").textContent=trashCount||"";
-    document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.classList.toggle("active",mode==="tasks"&&!trash&&taskFilter===b.dataset.sidebarTaskFilter));
-    document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.classList.toggle("active",mode==="notes"&&!trash&&noteFilter===b.dataset.sidebarNoteFilter));
+    document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.classList.toggle("active",mode==="tasks"&&!trash&&!activeTag&&taskFilter===b.dataset.sidebarTaskFilter));
+    document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.classList.toggle("active",mode==="notes"&&!trash&&!activeTag&&noteFilter===b.dataset.sidebarNoteFilter));
     $("sidebarTrash").classList.toggle("active",trash);
     const box=$("sidebarCategories");box.innerHTML="";
-    const all=document.createElement("button");all.type="button";all.className="sideItem"+(activeCategory==="all"&&!trash?" active":"");all.innerHTML='<span class="sideDot" style="background:#8e8e93"></span><span>Todas las categorías</span>';all.addEventListener("click",()=>{activeCategory="all";trash=false;saveUI();closeSidebar();render()});box.appendChild(all);
+    const all=document.createElement("button");all.type="button";all.className="sideItem"+(activeCategory==="all"&&!activeTag&&!trash?" active":"");all.innerHTML='<span class="sideDot" style="background:#8e8e93"></span><span>Todas las categorías</span>';all.addEventListener("click",()=>{activeCategory="all";activeTag="";trash=false;saveUI();closeSidebar();render()});box.appendChild(all);
     activeCategories().forEach(c=>{
-      const b=document.createElement("button");b.type="button";b.className="sideItem"+(activeCategory===c.id&&!trash?" active":"");b.innerHTML='<span class="sideDot" style="background:'+esc(c.color)+'"></span><span>'+esc(c.name)+'</span>';b.addEventListener("click",()=>{activeCategory=c.id;trash=false;saveUI();closeSidebar();render()});box.appendChild(b);
+      const b=document.createElement("button");b.type="button";b.className="sideItem"+(activeCategory===c.id&&!activeTag&&!trash?" active":"");b.innerHTML='<span class="sideDot" style="background:'+esc(c.color)+'"></span><span>'+esc(c.name)+'</span>';b.addEventListener("click",()=>{activeCategory=c.id;activeTag="";trash=false;saveUI();closeSidebar();render()});box.appendChild(b);
+    });
+    const tagCounts=new Map();
+    [...liveTasks,...liveNotes].forEach(item=>normalizeTags(item.tags).forEach(tag=>tagCounts.set(tag,(tagCounts.get(tag)||0)+1)));
+    const tags=[...tagCounts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+    $("sidebarTagsSection").classList.toggle("hidden",tags.length===0);
+    const tagBox=$("sidebarTags");tagBox.innerHTML="";
+    tags.forEach(([tag,count])=>{
+      const b=document.createElement("button");b.type="button";b.className="sideItem"+(activeTag===tag&&!trash?" active":"");b.innerHTML='<span class="sideTagHash">#</span><span>'+esc(tag)+'</span><span class="sideCount">'+count+'</span>';
+      b.addEventListener("click",()=>{activeTag=tag;activeCategory="all";trash=false;saveUI();closeSidebar();render()});
+      tagBox.appendChild(b);
     });
   }
 
@@ -1340,6 +1350,14 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     $("calendarPeriod").textContent=calendarPeriodText();
     document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("active",b.dataset.calendarView===calendarView));
     if(calendarView==="day")renderCalendarDay();else if(calendarView==="week")renderCalendarWeek();else if(calendarView==="agenda")renderCalendarAgenda();else renderCalendarMonth();
+  }
+  function createTaskOnCalendarDate(){
+    const date=calendarDate||localDateISO();
+    closeOverlay("calendarOverlay");
+    mode="tasks";trash=false;saveUI();
+    openTask(null);
+    $("taskDate").value=date;
+    syncTaskEditorMeta();
   }
   function openCalendar(){calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true)}
   function shiftCalendar(dir){
@@ -1415,7 +1433,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     const trashCount=state.tasks.filter(t=>t.deletedAt).length+state.notes.filter(n=>n.deletedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
-    $("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    $("mainTitle").textContent=activeTag?"#"+activeTag:"Nottas";$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>b.classList.toggle("active",b.dataset.filter===taskFilter));document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -2368,11 +2386,12 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   $("sidebarBtn").addEventListener("click",openSidebar);
   $("sidebarClose").addEventListener("click",closeSidebar);
   $("sidebarBackdrop").addEventListener("click",e=>{if(e.target===$("sidebarBackdrop"))closeSidebar()});
-  document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.addEventListener("click",()=>{mode="tasks";trash=false;taskFilter=b.dataset.sidebarTaskFilter;saveUI();closeSidebar();render()}));
-  document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.addEventListener("click",()=>{mode="notes";trash=false;noteFilter=b.dataset.sidebarNoteFilter;saveUI();closeSidebar();render()}));
-  $("sidebarTrash").addEventListener("click",()=>{trash=true;closeSidebar();render()});
+  document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.addEventListener("click",()=>{mode="tasks";trash=false;activeTag="";taskFilter=b.dataset.sidebarTaskFilter;saveUI();closeSidebar();render()}));
+  document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.addEventListener("click",()=>{mode="notes";trash=false;activeTag="";noteFilter=b.dataset.sidebarNoteFilter;saveUI();closeSidebar();render()}));
+  $("sidebarTrash").addEventListener("click",()=>{activeTag="";trash=true;closeSidebar();render()});
   $("sidebarSettings").addEventListener("click",()=>{closeSidebar();renderSettingsSummary();openOverlay("settingsOverlay")});
   $("calendarBtn").addEventListener("click",openCalendar);
+  $("calendarCreateBtn").addEventListener("click",createTaskOnCalendarDate);
   $("calendarClose").addEventListener("click",()=>closeOverlay("calendarOverlay"));
   $("calendarOverlay").addEventListener("click",e=>{if(e.target===$("calendarOverlay"))closeOverlay("calendarOverlay")});
   $("calendarPrev").addEventListener("click",()=>shiftCalendar(-1));
