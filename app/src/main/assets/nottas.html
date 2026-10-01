@@ -1430,8 +1430,10 @@ html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarT
   }
   function scrollCalendarTimeViewport(){
     const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
-    const tasks=calendarView==="day"?calendarTasksFor(calendarDate).filter(t=>t.dueTime):[];
-    const first=tasks.length?Math.min(...tasks.map(t=>calendarTaskStartMinutes(t)).filter(x=>x!==null)):Math.max(0,new Date().getHours()*60-60);
+    let tasks=[];
+    if(calendarView==="day")tasks=calendarTasksFor(calendarDate).filter(t=>t.dueTime);
+    else if(calendarView==="week"){const start=mondayOf(calendarDate);for(let i=0;i<7;i++)tasks.push(...calendarTasksFor(addCalendarDays(start,i)).filter(t=>t.dueTime))}
+    const starts=tasks.map(t=>calendarTaskStartMinutes(t)).filter(x=>x!==null),first=starts.length?Math.min(...starts):Math.max(0,new Date().getHours()*60-60);
     viewport.scrollTop=Math.max(0,first/60*CAL_HOUR_PX-28);
   }
   function snapCalendarMinutes(value){return Math.max(0,Math.min(1425,Math.round(value/CAL_SNAP_MINUTES)*CAL_SNAP_MINUTES))}
@@ -2863,7 +2865,7 @@ html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarT
   };
   $("importBtn").addEventListener("click",()=>{if(window.NottasNative&&NottasNative.requestImport){NottasNative.requestImport();return}$("importFile").click()});
   $("importTemplateBtn").addEventListener("click",()=>{
-    const sample={templateVersion:2,categories:[{id:"trabajo",name:"Trabajo",color:"#1677ff"}],tasks:[{text:"Ejemplo de tarea",category:"trabajo",dueDate:"",dueTime:"",priority:"normal",recurrence:"none",reminder:"none",blocks:[{type:"checklist",html:"Casilla de contenido: no suma progreso",checked:false,children:[]}],items:[{text:"Elemento principal",done:false,children:[{text:"Elemento interno",done:false,children:[]}]}]}],notes:[{title:"Ejemplo de nota",category:"trabajo",blocks:[{type:"heading",html:"Encabezado",children:[]},{type:"paragraph",html:"Texto con <b>negrita</b> y <i>cursiva</i>.",children:[]},{type:"checklist",html:"Casilla independiente",checked:false,children:[]}]}]};
+    const sample={templateVersion:2,categories:[{id:"trabajo",name:"Trabajo",color:"#1677ff"}],tasks:[{text:"Ejemplo de tarea",category:"trabajo",dueDate:"",dueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:"none",blocks:[{type:"checklist",html:"Casilla de contenido: no suma progreso",checked:false,children:[]}],items:[{text:"Elemento principal",done:false,children:[{text:"Elemento interno",done:false,children:[]}]}]}],notes:[{title:"Ejemplo de nota",category:"trabajo",blocks:[{type:"heading",html:"Encabezado",children:[]},{type:"paragraph",html:"Texto con <b>negrita</b> y <i>cursiva</i>.",children:[]},{type:"checklist",html:"Casilla independiente",checked:false,children:[]}]}]};
     const payload=JSON.stringify(sample,null,2);
     try{
       if(window.NottasNative&&NottasNative.exportImportTemplate){NottasNative.exportImportTemplate(payload);return}
