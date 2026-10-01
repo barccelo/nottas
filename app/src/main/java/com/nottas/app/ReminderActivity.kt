@@ -12,9 +12,11 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import org.json.JSONArray
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -22,7 +24,10 @@ class ReminderActivity : Activity() {
     companion object {
         const val EXTRA_TASK_ID = "task_id"
         const val EXTRA_TASK_TEXT = "task_text"
+        const val EXTRA_REMINDERS_JSON = "reminders_json"
     }
+
+    private data class ReminderItem(val id: String, val text: String)
 
     private var taskId: String = ""
     private var taskText: String = ""
@@ -32,12 +37,13 @@ class ReminderActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        taskId = intent.getStringExtra(EXTRA_TASK_ID).orEmpty()
-        taskText = intent.getStringExtra(EXTRA_TASK_TEXT).orEmpty()
-        if (taskId.isBlank() || taskText.isBlank()) {
+        val reminders = readReminderItems()
+        if (reminders.isEmpty()) {
             finish()
             return
         }
+        taskId = reminders.first().id
+        taskText = reminders.first().text
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
@@ -60,7 +66,302 @@ class ReminderActivity : Activity() {
             View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
 
-        setContentView(buildContent())
+        setContentView(if (reminders.size > 1) buildGroupedContent(reminders) else buildContent())
+    }
+
+    private fun readReminderItems(): List<ReminderItem> {
+        val raw = intent.getStringExtra(EXTRA_REMINDERS_JSON).orEmpty()
+        if (raw.isNotBlank()) {
+            try {
+                val array = JSONArray(raw)
+                val out = mutableListOf<ReminderItem>()
+                val seen = mutableSetOf<String>()
+                for (i in 0 until array.length()) {
+                    val item = array.optJSONObject(i) ?: continue
+                    val id = item.optString("id").trim()
+                    val text = item.optString("text").trim()
+                    if (id.isEmpty() || text.isEmpty() || !seen.add(id)) continue
+                    out.add(ReminderItem(id, text))
+                }
+                if (out.isNotEmpty()) return out
+            } catch (_: Throwable) {
+            }
+        }
+
+        val id = intent.getStringExtra(EXTRA_TASK_ID).orEmpty().trim()
+        val text = intent.getStringExtra(EXTRA_TASK_TEXT).orEmpty().trim()
+        return if (id.isNotEmpty() && text.isNotEmpty()) {
+            listOf(ReminderItem(id, text))
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun buildGroupedContent(reminders: List<ReminderItem>): View {
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).roundToInt()
+
+        val root = FrameLayout(this).apply {
+            setBackgroundColor(Color.rgb(245, 245, 247))
+        }
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(22), dp(20), dp(24))
+        }
+        root.addView(
+            content,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+
+        val brand = TextView(this).apply {
+            text = "Nottas"
+            textSize = 17f
+            setTextColor(Color.rgb(99, 99, 102))
+            typeface = Typeface.create("sans", Typeface.BOLD)
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        }
+        content.addView(
+            brand,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(48)
+            )
+        )
+
+        val heading = TextView(this).apply {
+            text = reminders.size.toString() + " recordatorios al mismo tiempo"
+            textSize = 24f
+            setTextColor(Color.rgb(29, 29, 31))
+            typeface = Typeface.create("sans", Typeface.BOLD)
+        }
+        content.addView(
+            heading,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(6) }
+        )
+
+        val hint = TextView(this).apply {
+            text = "Desliza horizontalmente. Cada tarjeta se completa o pospone por separado."
+            textSize = 13f
+            setTextColor(Color.rgb(142, 142, 147))
+        }
+        content.addView(
+            hint,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = dp(7)
+                bottomMargin = dp(14)
+            }
+        )
+
+        val scroll = HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            isFillViewport = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(1), dp(4), dp(10), dp(8))
+        }
+        scroll.addView(
+            row,
+            HorizontalScrollView.LayoutParams(
+                HorizontalScrollView.LayoutParams.WRAP_CONTENT,
+                HorizontalScrollView.LayoutParams.MATCH_PARENT
+            )
+        )
+        content.addView(
+            scroll,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            )
+        )
+
+        val cardWidth = (resources.displayMetrics.widthPixels - dp(58)).coerceAtLeast(dp(280))
+
+        reminders.forEachIndexed { index, reminder ->
+            var cardSnoozeMinutes = 5
+
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(22), dp(20), dp(22), dp(20))
+                background = roundedBackground(Color.WHITE, dp(24))
+                elevation = dp(4).toFloat()
+            }
+            row.addView(
+                card,
+                LinearLayout.LayoutParams(cardWidth, LinearLayout.LayoutParams.MATCH_PARENT).apply {
+                    marginEnd = dp(12)
+                }
+            )
+
+            val position = TextView(this).apply {
+                text = "RECORDATORIO " + (index + 1) + " DE " + reminders.size
+                textSize = 11f
+                letterSpacing = 0.09f
+                setTextColor(Color.rgb(142, 142, 147))
+            }
+            card.addView(
+                position,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+
+            val title = TextView(this).apply {
+                text = reminder.text
+                textSize = 27f
+                setTextColor(Color.rgb(29, 29, 31))
+                typeface = Typeface.create("sans", Typeface.BOLD)
+                setLineSpacing(0f, 1.05f)
+                maxLines = 7
+            }
+            card.addView(
+                title,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(16) }
+            )
+
+            card.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
+
+            val snoozeControls = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+            card.addView(
+                snoozeControls,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(54)
+                ).apply { bottomMargin = dp(10) }
+            )
+
+            val snoozeValue = TextView(this).apply {
+                textSize = 15f
+                setTextColor(Color.rgb(99, 99, 102))
+                gravity = Gravity.CENTER
+                typeface = Typeface.create("sans", Typeface.BOLD)
+            }
+            fun refreshSnooze() {
+                snoozeValue.text =
+                    if (cardSnoozeMinutes == 1) "1 min" else cardSnoozeMinutes.toString() + " min"
+            }
+            refreshSnooze()
+
+            val minus = TextView(this).apply {
+                text = "−"
+                textSize = 27f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(99, 99, 102))
+                background = circularBackground(Color.rgb(242, 242, 247), Color.TRANSPARENT, 0)
+                isClickable = true
+                setOnClickListener {
+                    if (cardSnoozeMinutes > 1) {
+                        cardSnoozeMinutes -= 1
+                        refreshSnooze()
+                        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    }
+                }
+            }
+            snoozeControls.addView(minus, LinearLayout.LayoutParams(dp(46), dp(46)))
+            snoozeControls.addView(
+                snoozeValue,
+                LinearLayout.LayoutParams(0, dp(46), 1f).apply {
+                    marginStart = dp(8)
+                    marginEnd = dp(8)
+                }
+            )
+            val plus = TextView(this).apply {
+                text = "+"
+                textSize = 27f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(99, 99, 102))
+                background = circularBackground(Color.rgb(242, 242, 247), Color.TRANSPARENT, 0)
+                isClickable = true
+                setOnClickListener {
+                    if (cardSnoozeMinutes < 120) {
+                        cardSnoozeMinutes += 1
+                        refreshSnooze()
+                        performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    }
+                }
+            }
+            snoozeControls.addView(plus, LinearLayout.LayoutParams(dp(46), dp(46)))
+
+            fun resolveCard(action: () -> Unit) {
+                action()
+                card.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                row.removeView(card)
+                if (row.childCount == 0) finishQuietly()
+            }
+
+            val complete = TextView(this).apply {
+                text = "Completar"
+                textSize = 16f
+                gravity = Gravity.CENTER
+                setTextColor(Color.WHITE)
+                typeface = Typeface.create("sans", Typeface.BOLD)
+                background = roundedBackground(Color.rgb(52, 199, 89), dp(14))
+                isClickable = true
+                setOnClickListener {
+                    resolveCard {
+                        ReminderActionStore.enqueueComplete(this@ReminderActivity, reminder.id)
+                        ReminderScheduler.remove(this@ReminderActivity, reminder.id)
+                        ReminderScheduler.cancelNotification(this@ReminderActivity, reminder.id)
+                    }
+                }
+            }
+            card.addView(
+                complete,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(54)
+                )
+            )
+
+            val snooze = TextView(this).apply {
+                text = "Posponer"
+                textSize = 16f
+                gravity = Gravity.CENTER
+                setTextColor(Color.WHITE)
+                typeface = Typeface.create("sans", Typeface.BOLD)
+                background = roundedBackground(Color.rgb(0, 122, 255), dp(14))
+                isClickable = true
+                setOnClickListener {
+                    resolveCard {
+                        ReminderScheduler.snooze(
+                            this@ReminderActivity,
+                            reminder.id,
+                            reminder.text,
+                            cardSnoozeMinutes
+                        )
+                    }
+                }
+            }
+            card.addView(
+                snooze,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    dp(54)
+                ).apply { topMargin = dp(9) }
+            )
+        }
+
+        return root
     }
 
     private fun buildContent(): View {
