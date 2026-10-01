@@ -2128,6 +2128,31 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   }
 
   function renderCategoryManage(){const box=$("categoryManage");box.innerHTML="";activeCategories().forEach(c=>{const r=document.createElement("div");r.className="settingsRow categoryManage";r.innerHTML=`<span class="colorSwatch" style="background:${esc(c.color)}"></span><span class="name">${esc(c.name)}</span>${c.id==="inbox"?"":`<button type="button" aria-label="Editar ${esc(c.name)}"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button>`}`;const b=r.querySelector("button");if(b)b.addEventListener("click",()=>openCategory(c));box.appendChild(r)})}
+  function wakeStatus(){
+    try{if(window.NottasNative&&NottasNative.wakeControlStatus)return JSON.parse(NottasNative.wakeControlStatus()||"{}")}catch(_){}
+    return null;
+  }
+  function wakeUntilText(ms){
+    const d=new Date(Number(ms)||0);if(!Number.isFinite(d.getTime()))return "";
+    return d.toLocaleTimeString("es",{hour:"numeric",minute:"2-digit"});
+  }
+  function refreshWakeControlUI(){
+    const btn=$("wakeQuickBtn");if(!btn)return;
+    const status=wakeStatus();
+    if(!status){btn.classList.add("hidden");return}
+    btn.classList.remove("hidden");
+    let stateName="on",title="Activo",desc="Nottas puede mostrarse al encender o desbloquear.";
+    if(!status.enabled){stateName="off";title="Apagado";desc="Nottas no se mostrará automáticamente hasta que vuelvas a activarlo."}
+    else if(status.snoozed){stateName="snoozed";title="Snooze activo";desc="Pausado temporalmente hasta "+wakeUntilText(status.snoozeUntil)+"."}
+    else if(status.workHoursEnabled&&!status.withinHours){stateName="blocked";title="Bloqueado por horario";desc="Está activo, pero el horario de trabajo tiene prioridad y ahora estás fuera de la franja permitida."}
+    else if(status.workHoursEnabled&&status.withinHours){desc="Activo y dentro del horario de trabajo permitido."}
+    btn.dataset.state=stateName;
+    $("wakeControlStatusTitle").textContent=title;$("wakeControlStatusDesc").textContent=desc;
+    $("wakeOnBtn").classList.toggle("active",!!status.enabled&&!status.snoozed);
+    $("wakeOffBtn").classList.toggle("active",!status.enabled);
+    const wake=$("wakeEnabled");if(wake)wake.checked=!!status.enabled;
+  }
+  function openWakeControl(){refreshWakeControlUI();openOverlay("wakeControlOverlay")}
   function refreshWorkHoursNativeStatus(){
     const el=$("workHoursNativeStatus");if(!el)return;
     const prefs=state&&state.preferences?state.preferences:{};
@@ -2147,7 +2172,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   function syncNativeWorkHours(){
     const prefs=state&&state.preferences?state.preferences:{};
     try{if(window.NottasNative&&NottasNative.setWorkHours)NottasNative.setWorkHours(!!prefs.workHoursEnabled,prefs.workHoursStart||"08:00",prefs.workHoursEnd||"17:00")}catch(_){}
-    refreshWorkHoursNativeStatus();
+    refreshWorkHoursNativeStatus();refreshWakeControlUI();
   }
   function syncWorkHoursSettings(){
     const prefs=state.preferences||{};
@@ -2510,6 +2535,12 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
 
   $("noteTags").addEventListener("change",()=>persistOpenNote(false));
   ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()}));
+  $("wakeQuickBtn").addEventListener("click",openWakeControl);
+  $("wakeControlClose").addEventListener("click",()=>closeOverlay("wakeControlOverlay"));
+  $("wakeControlOverlay").addEventListener("click",e=>{if(e.target===$("wakeControlOverlay"))closeOverlay("wakeControlOverlay")});
+  $("wakeOnBtn").addEventListener("click",()=>{try{NottasNative.setWakeEnabled(true)}catch(_){}refreshWakeControlUI();showToast("Mostrar al desbloquear: On")});
+  $("wakeOffBtn").addEventListener("click",()=>{try{NottasNative.setWakeEnabled(false)}catch(_){}refreshWakeControlUI();showToast("Mostrar al desbloquear: Off")});
+  document.querySelectorAll("[data-wake-snooze]").forEach(b=>b.addEventListener("click",()=>{const minutes=Number(b.dataset.wakeSnooze)||15;try{NottasNative.snoozeWake(minutes)}catch(_){}refreshWakeControlUI();closeOverlay("wakeControlOverlay");showToast("Pausado "+(minutes<60?minutes+" min":minutes/60+" h"))}));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
@@ -2550,7 +2581,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
-  window.addEventListener("focus",()=>consumeNativeReminderActions());
+  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus()});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)consumeNativeReminderActions()});
 
   window.NottasHandleBack=function(){
@@ -2565,6 +2596,10 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     }
     if($("sidebarBackdrop").classList.contains("show")){
       closeSidebar();
+      return true;
+    }
+    if($("wakeControlOverlay").classList.contains("show")){
+      closeOverlay("wakeControlOverlay");
       return true;
     }
     if($("calendarOverlay").classList.contains("show")){
@@ -2597,8 +2632,8 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   if(window.NottasNative&&NottasNative.isNativeApp&&NottasNative.isNativeApp()){
     const sec=$("androidSettings"),wake=$("wakeEnabled");
     sec.classList.remove("hidden");
-    wake.checked=!!NottasNative.isWakeEnabled();
-    wake.addEventListener("change",()=>NottasNative.setWakeEnabled(wake.checked));
+    wake.checked=!!NottasNative.isWakeEnabled();refreshWakeControlUI();
+    wake.addEventListener("change",()=>{NottasNative.setWakeEnabled(wake.checked);refreshWakeControlUI()});
     const unlockBtn=$("unlockNotificationBtn"),unlockDesc=$("unlockNotificationDesc");
     if(unlockBtn&&NottasNative.openUnlockNotificationSettings){
       unlockBtn.addEventListener("click",()=>NottasNative.openUnlockNotificationSettings());
