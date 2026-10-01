@@ -100,13 +100,11 @@ object NottasWeb {
 
         @JavascriptInterface
         fun setWakeEnabled(enabled: Boolean) {
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val editor = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(PREF_WAKE_ENABLED, enabled)
-                .apply {
-                    if (enabled) remove(PREF_WAKE_SNOOZE_UNTIL)
-                }
-                .apply()
+            if (enabled) editor.remove(PREF_WAKE_SNOOZE_UNTIL)
+            editor.apply()
         }
 
         @JavascriptInterface
