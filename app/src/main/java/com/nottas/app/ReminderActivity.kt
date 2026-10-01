@@ -227,8 +227,8 @@ class ReminderActivity : Activity() {
                 FrameLayout.LayoutParams(
                     dp(44),
                     dp(44),
-                    Gravity.START or Gravity.CENTER_VERTICAL
-                ).apply { marginStart = dp(14) }
+                    Gravity.END or Gravity.CENTER_VERTICAL
+                ).apply { marginEnd = dp(14) }
             )
 
             val snoozeIcon = ImageView(this).apply {
@@ -242,8 +242,8 @@ class ReminderActivity : Activity() {
                 FrameLayout.LayoutParams(
                     dp(30),
                     dp(30),
-                    Gravity.END or Gravity.CENTER_VERTICAL
-                ).apply { marginEnd = dp(22) }
+                    Gravity.START or Gravity.CENTER_VERTICAL
+                ).apply { marginStart = dp(22) }
             )
 
             val card = LinearLayout(this).apply {
@@ -451,7 +451,7 @@ class ReminderActivity : Activity() {
             }
 
             // Grouped reminders inherit the normal reminder actions horizontally:
-            // swipe left = snooze, swipe right = complete.
+            // swipe left = complete, swipe right = snooze.
             card.setOnTouchListener { view, event ->
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
@@ -477,14 +477,14 @@ class ReminderActivity : Activity() {
 
                         if (travel < 0f) {
                             actionLayer.background =
-                                roundedBackground(Color.rgb(0, 122, 255), dp(18))
-                            completeIcon.visibility = View.GONE
-                            snoozeIcon.visibility = View.VISIBLE
-                        } else {
-                            actionLayer.background =
                                 roundedBackground(Color.rgb(52, 199, 89), dp(18))
                             completeIcon.visibility = View.VISIBLE
                             snoozeIcon.visibility = View.GONE
+                        } else {
+                            actionLayer.background =
+                                roundedBackground(Color.rgb(0, 122, 255), dp(18))
+                            completeIcon.visibility = View.GONE
+                            snoozeIcon.visibility = View.VISIBLE
                         }
 
                         val reached = abs(travel) >= threshold
@@ -507,12 +507,12 @@ class ReminderActivity : Activity() {
                         val dx = event.rawX - startX
                         when {
                             dx <= -threshold -> {
-                                resolveSnooze()
+                                resolveComplete()
                                 finishCard(false)
                             }
 
                             dx >= threshold -> {
-                                resolveComplete()
+                                resolveSnooze()
                                 finishCard(true)
                             }
 
