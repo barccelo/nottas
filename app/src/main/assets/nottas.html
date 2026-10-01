@@ -1471,7 +1471,7 @@ html[data-theme="dark"] .noteActionPanelHandle{background:#636366}
     editingTaskId=null;editingNoteId=null;editorPinned=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();setNativeSearchKeyboardMode(true)
   }
 
-  function syncQuickMode(){  function syncQuickMode(){
+  function syncQuickMode(){
     const isTask=quickMode==="tasks";
     $("quickTaskMode").classList.toggle("active",isTask);
     $("quickNoteMode").classList.toggle("active",!isTask);
@@ -1501,7 +1501,7 @@ html[data-theme="dark"] .noteActionPanelHandle{background:#636366}
     return true;
   };
 
-  function openQuickCapture(requestedMode=null){  function openQuickCapture(requestedMode=null){
+  function openQuickCapture(requestedMode=null){
     if(requestedMode==="notes"){openNote(null);return}
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
