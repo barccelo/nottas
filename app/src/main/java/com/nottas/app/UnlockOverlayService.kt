@@ -15,6 +15,54 @@ import android.os.IBinder
 import android.provider.Settings
 import java.util.Calendar
 
+object WorkHoursPolicy {
+    fun isActiveNow(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
+        if (!prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)) return false
+
+        val start = parseMinutes(
+            prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00"),
+            8 * 60
+        )
+        val end = parseMinutes(
+            prefs.getString(NottasWeb.PREF_WORK_HOURS_END, "17:00"),
+            17 * 60
+        )
+        val now = Calendar.getInstance().let {
+            it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE)
+        }
+
+        // Equal endpoints represent an empty/disabled interval, not a 24-hour block.
+        return when {
+            start == end -> false
+            start < end -> now >= start && now < end
+            else -> now >= start || now < end
+        }
+    }
+
+    fun status(context: Context): String {
+        val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
+        val enabled = prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)
+        val start = prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00") ?: "08:00"
+        val end = prefs.getString(NottasWeb.PREF_WORK_HOURS_END, "17:00") ?: "17:00"
+        return org.json.JSONObject()
+            .put("enabled", enabled)
+            .put("start", start)
+            .put("end", end)
+            .put("activeNow", enabled && isActiveNow(context))
+            .toString()
+    }
+
+    private fun parseMinutes(value: String?, fallback: Int): Int {
+        val parts = value?.split(":") ?: return fallback
+        if (parts.size != 2) return fallback
+        val hour = parts[0].toIntOrNull() ?: return fallback
+        val minute = parts[1].toIntOrNull() ?: return fallback
+        if (hour !in 0..23 || minute !in 0..59) return fallback
+        return hour * 60 + minute
+    }
+}
+
 class UnlockOverlayService : Service() {
     companion object {
         const val CHANNEL_ID = "nottas_unlock"
@@ -71,33 +119,10 @@ class UnlockOverlayService : Service() {
         getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
             .getBoolean(NottasWeb.PREF_WAKE_ENABLED, true)
 
-    private fun workHoursActiveNow(): Boolean {
-        val prefs = getSharedPreferences(NottasWeb.PREFS, MODE_PRIVATE)
-        if (!prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)) return false
-
-        val start = parseMinutes(prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00"), 8 * 60)
-        val end = parseMinutes(prefs.getString(NottasWeb.PREF_WORK_HOURS_END, "17:00"), 17 * 60)
-        val now = Calendar.getInstance().let { it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE) }
-
-        return when {
-            start == end -> true
-            start < end -> now >= start && now < end
-            else -> now >= start || now < end
-        }
-    }
-
-    private fun parseMinutes(value: String?, fallback: Int): Int {
-        val parts = value?.split(":") ?: return fallback
-        if (parts.size != 2) return fallback
-        val hour = parts[0].toIntOrNull() ?: return fallback
-        val minute = parts[1].toIntOrNull() ?: return fallback
-        if (hour !in 0..23 || minute !in 0..59) return fallback
-        return hour * 60 + minute
-    }
 
     private fun launchQuickCaptureIfArmed() {
         if (!armedForWake) return
-        if (!wakeEnabled() || workHoursActiveNow() || !Settings.canDrawOverlays(this)) return
+        if (!wakeEnabled() || WorkHoursPolicy.isActiveNow(this) || !Settings.canDrawOverlays(this)) return
 
         armedForWake = false
 
