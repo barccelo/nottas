@@ -1677,7 +1677,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       rich.addEventListener("keyup",rememberRichSelection);
       rich.addEventListener("pointerup",rememberRichSelection);
       rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory()});
-      rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML);rich.innerHTML=b.html});
+      rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML)});
       rich.addEventListener("keydown",e=>{
         const loc=treeArrayForPath(blocks,path);if(!loc)return;
         const sel=window.getSelection(),range=sel&&sel.rangeCount?sel.getRangeAt(0):null;
@@ -1734,7 +1734,6 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function syncRichTargetModel(target){
     if(!target)return;
     const htmlValue=sanitizeInlineHtml(target.innerHTML),plain=inlineHtmlToText(htmlValue),kind=target.dataset.richKind||"";
-    target.innerHTML=htmlValue;
     if(kind==="task-title"||kind==="note-title")return;
     if(kind==="subtask"){
       const item=findTaskItemById(editorSubtasks,target.dataset.taskId||"");
@@ -1767,14 +1766,15 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   }
   function applyRichCommand(command,scopeHint=null){
     const scope=scopeHint||activeRichScope;
-    if(!scope||!savedRichRange||savedRichScope!==scope){showToast("Selecciona texto primero");return}
+    if(!scope||!savedRichRange||savedRichScope!==scope){showToast("Coloca el cursor o selecciona texto");return}
     const target=richTargetFromNode(savedRichRange.commonAncestorContainer);
-    if(!target||richScopeForTarget(target)!==scope){showToast("Selecciona texto primero");return}
+    if(!target||richScopeForTarget(target)!==scope){showToast("Coloca el cursor o selecciona texto");return}
     if(scope==="task")commitTaskHistory();
-    target.focus({preventScroll:true});
-    if(!restoreRichSelection(scope,target)){showToast("Selecciona texto primero");return}
+    if(document.activeElement!==target)target.focus({preventScroll:true});
+    if(!restoreRichSelection(scope,target)){showToast("Coloca el cursor o selecciona texto");return}
     try{document.execCommand(command,false,null)}catch(_){}
-    syncRichTargetModel(target);rememberRichSelection();
+    syncRichTargetModel(target);
+    rememberRichSelection();
     if(scope==="task")commitTaskHistory();
   }
 
@@ -2407,7 +2407,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
   document.querySelectorAll("[data-rich-command]").forEach(btn=>{
-    btn.addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});
+    btn.addEventListener("pointerdown",e=>e.preventDefault());
     btn.addEventListener("click",()=>applyRichCommand(btn.dataset.richCommand||"",btn.dataset.richScope||null));
   });
   $("taskTimeButton").addEventListener("click",openTimePicker);
@@ -2529,6 +2529,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     try{$("versionLabel").textContent=NottasNative.appVersion()||"—"}catch(_){}
   }
 
+  document.addEventListener("selectionchange",()=>{
+    const sel=window.getSelection();if(!sel||!sel.rangeCount)return;
+    const target=richTargetFromNode(sel.getRangeAt(0).commonAncestorContainer);
+    if(target&&(target.closest("#taskForm:not(.hidden)")||target.closest("#noteForm:not(.hidden)")))rememberRichSelection();
+  });
   initSheetGestures();
   initActionPanelGestures();
   load();
