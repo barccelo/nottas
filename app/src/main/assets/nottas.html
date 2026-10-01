@@ -280,6 +280,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 .calendarTaskRow.calendarDragging{opacity:.42}
 [data-calendar-date].calendarDropTarget{outline:2px solid #007aff!important;outline-offset:-2px;background:#dbeaff!important}
 html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#16365d!important}
+.durationQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.durationQuick button{height:40px;border:0;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:13px;font-weight:620}.durationQuick button:active{background:#d1d1d6}html[data-theme="dark"] .durationQuick button{background:#2c2c2e;color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -562,7 +563,9 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
           <div class="field taskMoreWide"><div class="noteActionLabel">Etiquetas</div><input id="taskTags" class="textInput" type="text" maxlength="240" placeholder="trabajo, urgente" autocomplete="off"></div>
           <div class="field"><div class="noteActionLabel">Fecha</div><input id="taskDate" class="dateInput" type="date"></div>
           <div class="field"><div class="noteActionLabel">Prioridad</div><select id="taskPriority" class="select"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></div>
-          <div class="field taskMoreWide"><div class="noteActionLabel">Hora y recordatorio</div><button id="taskTimeButton" class="timeFieldButton" type="button"><span class="timeFieldText"><span id="taskTimeValue" class="timeFieldValue">Sin hora</span><span id="taskTimeReminderText" class="timeFieldReminder">Sin recordatorio</span></span><svg viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button><input id="taskTime" type="hidden" value=""></div>
+          <div class="field taskMoreWide"><div class="noteActionLabel">Inicio y recordatorio</div><button id="taskTimeButton" class="timeFieldButton" type="button"><span class="timeFieldText"><span id="taskTimeValue" class="timeFieldValue">Sin hora</span><span id="taskTimeReminderText" class="timeFieldReminder">Sin recordatorio</span></span><svg viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button><input id="taskTime" type="hidden" value=""></div>
+          <div class="field"><div class="noteActionLabel">Fin</div><input id="taskEndTime" class="timeInput" type="time" step="900"></div>
+          <div class="field"><div class="noteActionLabel">Duración rápida</div><div class="durationQuick"><button type="button" data-duration-minutes="30">30 m</button><button type="button" data-duration-minutes="60">1 h</button><button type="button" data-duration-minutes="90">1 h 30</button><button type="button" data-duration-minutes="120">2 h</button></div></div>
           <div class="field taskMoreWide"><div class="noteActionLabel">Repetir</div><select id="taskRecurrence" class="select"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></div>
         </div>
         <button id="deleteTaskBtn" class="noteActionRow noteActionDanger hidden" type="button">
@@ -957,11 +960,11 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     let cats=Array.isArray(o.categories)?o.categories:[];
     if(!cats.some(c=>c&&c.id==="inbox"))cats.unshift({id:"inbox",name:"Sin categoría",color:"#8e8e93"});
     o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
-    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
+    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false};
-    o.schemaVersion=9;o.version=9;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
+    o.schemaVersion=10;o.version=10;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
   function applyTheme(){
@@ -1196,7 +1199,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
       label=d.toLocaleDateString("es",{day:"numeric",month:"short",...(d.getFullYear()!==todayDate.getFullYear()?{year:"numeric"}:{})});
     }
     if(isOverdue(t))label="Vencida · "+label;
-    if(t.dueTime)label+=" · "+t.dueTime;
+    if(t.dueTime)label+=" · "+t.dueTime+(t.endTime?"–"+t.endTime:"");
     return label;
   }
   function priorityLabel(p){return p==="high"?"Alta":p==="low"?"Baja":""}
@@ -1249,7 +1252,7 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     if(!t||!t.recurrence||t.recurrence==="none")return null;
     if(state.tasks.some(x=>x.recurrenceFrom===t.id))return null;
     const stamp=now();
-    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[],true);const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[],true);const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",endTime:t.endTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
     state.tasks.push(next);
     return next;
   }
@@ -1662,6 +1665,12 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     if(h<0||h>23||min<0||min>59)return null;
     return {h,m:min};
   }
+  function timeToMinutes(raw){const p=parseStoredTime(raw);return p?p.h*60+p.m:null}
+  function minutesToTime(value){const m=Math.max(0,Math.min(1439,Math.round(Number(value)||0)));return formatTimeParts(Math.floor(m/60),m%60)}
+  function taskDurationMinutes(t){const start=timeToMinutes(t?.dueTime),end=timeToMinutes(t?.endTime);if(start===null||end===null||end<=start)return null;return end-start}
+  function normalizeTaskEndTime(startRaw,endRaw){const start=timeToMinutes(startRaw),end=timeToMinutes(endRaw);if(start===null||end===null||end<=start)return "";return minutesToTime(end)}
+  function setTaskDuration(minutes){const start=timeToMinutes($("taskTime").value);if(start===null){showToast("Añade primero una hora de inicio");return}const end=Math.min(1439,start+Math.max(15,Number(minutes)||60));$("taskEndTime").value=minutesToTime(end);syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()}
+
   function syncTimePartButtons(){
     $("hourEditButton").textContent=String(timeDraftHour).padStart(2,"0");
     $("minuteEditButton").textContent=String(timeDraftMinute).padStart(2,"0");
@@ -1698,8 +1707,8 @@ html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#1636
     setTimeout(()=>{timeWheelMute=false},smooth?260:80);
   }
   function syncTaskTimeButton(){
-    const value=$("taskTime").value||"",reminder=$("taskReminder").value||"at";
-    $("taskTimeValue").textContent=value||"Sin hora";
+    const value=$("taskTime").value||"",end=$("taskEndTime").value||"",reminder=$("taskReminder").value||"at";
+    $("taskTimeValue").textContent=value?(value+(end?" – "+end:"")):"Sin hora";
     const active=!!value&&$("taskTimeButton").dataset.reminderActive==="1";
     $("taskTimeReminderText").textContent=active?(reminderLabel(reminder)||"Recordatorio"):"Sin recordatorio";
   }
