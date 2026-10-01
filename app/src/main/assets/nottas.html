@@ -282,8 +282,42 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 html[data-theme="dark"] [data-calendar-date].calendarDropTarget{background:#16365d!important}
 .durationQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.durationQuick button{height:40px;border:0;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:13px;font-weight:620}.durationQuick button:active{background:#d1d1d6}html[data-theme="dark"] .durationQuick button{background:#2c2c2e;color:#f5f5f7}
 
-.calendarAllDay{margin-bottom:10px}.calendarAllDayTitle{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;padding:2px 3px 6px}.calendarTimeViewport{position:relative;overflow:auto;max-height:calc(var(--vv-height,100vh) - 285px);min-height:360px;border-top:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;border-radius:12px;background:#fff}.calendarTimeStage{position:relative;min-height:1152px;min-width:100%}.calendarTimeAxis{position:absolute;left:0;top:0;width:48px;height:1152px;z-index:3;background:linear-gradient(to right,#fff 80%,transparent)}.calendarHourLabel{position:absolute;left:0;width:40px;transform:translateY(-7px);font-size:9px;color:#8e8e93;text-align:right}.calendarTimeColumns{position:absolute;left:48px;right:0;top:0;height:1152px;display:grid;grid-template-columns:repeat(var(--calendar-cols,1),minmax(112px,1fr));background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#e5e5ea 47px,#e5e5ea 48px)}.calendarTimeColumn{position:relative;height:1152px;border-left:1px solid #f0f0f2}.calendarTimeColumn.calendarDropTarget{background:rgba(0,122,255,.08)}.calendarTimeColumnHeader{position:sticky;top:0;z-index:8;background:#f5f5f7;padding:6px 3px;text-align:center;font-size:10px;color:#636366}.calendarTimeBlock{position:absolute;left:3px;right:3px;min-height:24px;border-radius:8px;padding:5px 6px 8px 8px;background:#e8f2ff;border-left:3px solid var(--task-color,#1677ff);color:#1d1d1f;overflow:hidden;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.08);touch-action:none;user-select:none}.calendarTimeBlock:active{filter:brightness(.98)}.calendarTimeBlock.calendarDragging{opacity:.42}.calendarTimeBlockTitle{font-size:11px;font-weight:680;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendarTimeBlockMeta{font-size:9px;color:#636366;margin-top:2px;white-space:nowrap}.calendarBlockCheck{position:absolute;right:4px;top:4px;width:16px;height:16px;accent-color:#1677ff}.calendarResizeHandle{position:absolute;left:0;right:0;bottom:0;height:11px;cursor:ns-resize;touch-action:none}.calendarResizeHandle::after{content:"";position:absolute;left:35%;right:35%;bottom:3px;height:2px;border-radius:99px;background:rgba(0,0,0,.22)}.calendarWeekTimeViewport .calendarTimeStage{min-width:760px}.calendarWeekAllDay{display:grid;grid-template-columns:repeat(7,minmax(112px,1fr));min-width:760px;gap:3px}.calendarWeekAllDayCol{background:#fff;border-radius:10px;padding:5px;min-height:42px}.calendarWeekAllDayDate{font-size:9px;color:#8e8e93;margin-bottom:3px}.calendarAllDayChip{display:block;width:100%;border:0;border-radius:7px;background:#f2f2f7;color:#1d1d1f;font-size:10px;text-align:left;padding:4px 5px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendarAllDay{margin-bottom:10px}.calendarAllDayTitle{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;padding:2px 3px 6px}.calendarTimeViewport{position:relative;overflow:auto;max-height:calc(var(--vv-height,100vh) - 285px);min-height:360px;border-top:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;border-radius:12px;background:#fff}.calendarTimeStage{position:relative;min-height:1152px;min-width:100%}.calendarTimeAxis{position:absolute;left:0;top:0;width:48px;height:1152px;z-index:3;background:linear-gradient(to right,#fff 80%,transparent)}.calendarHourLabel{position:absolute;left:0;width:40px;transform:translateY(-7px);font-size:9px;color:#8e8e93;text-align:right}.calendarTimeColumns{position:absolute;left:48px;right:0;top:0;height:1152px;display:grid;grid-template-columns:repeat(var(--calendar-cols,1),minmax(112px,1fr));background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#e5e5ea 47px,#e5e5ea 48px)}.calendarTimeColumn{position:relative;height:1152px;border-left:1px solid #f0f0f2}.calendarTimeColumn.calendarDropTarget{background:rgba(0,122,255,.08)}.calendarTimeColumnHeader{position:sticky;top:0;z-index:8;background:#f5f5f7;padding:6px 3px;text-align:center;font-size:10px;color:#636366}.calendarTimeBlock{position:absolute;left:3px;right:3px;min-height:24px;border-radius:8px;padding:5px 6px 8px 8px;background:#e8f2ff;border-left:3px solid var(--task-color,#1677ff);color:#1d1d1f;overflow:hidden;z-index:4;box-shadow:0 1px 2px rgba(0,0,0,.08);touch-action:none;user-select:none}.calendarTimeBlock:active{filter:brightness(.98)}.calendarTimeBlock.calendarDragging{opacity:.42}.calendarTimeBlockTitle{font-size:11px;font-weight:680;line-height:1.18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.calendarTimeBlockMeta{font-size:9px;color:#636366;margin-top:2px;white-space:nowrap}.calendarBlockCheck{position:absolute;right:4px;top:4px;width:16px;height:16px;accent-color:#1677ff}.calendarResizeHandle{position:absolute;left:0;right:0;bottom:0;height:11px;cursor:ns-resize;touch-action:none}.calendarResizeHandle::after{content:"";position:absolute;left:35%;right:35%;bottom:3px;height:2px;border-radius:99px;background:rgba(0,0,0,.22)}.calendarWeekAllDay{display:grid;gap:3px}.calendarWeekAllDayCol{background:#fff;border-radius:10px;padding:5px;min-height:42px}.calendarWeekAllDayDate{font-size:9px;color:#8e8e93;margin-bottom:3px}.calendarAllDayChip{display:block;width:100%;border:0;border-radius:7px;background:#f2f2f7;color:#1d1d1f;font-size:10px;text-align:left;padding:4px 5px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarTimeAxis,html[data-theme="dark"] .calendarWeekAllDayCol{background:#1c1c1e;border-color:#38383a}html[data-theme="dark"] .calendarTimeAxis{background:linear-gradient(to right,#1c1c1e 80%,transparent)}html[data-theme="dark"] .calendarTimeColumns{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,#38383a 47px,#38383a 48px)}html[data-theme="dark"] .calendarTimeColumn{border-left-color:#2c2c2e}html[data-theme="dark"] .calendarTimeBlock{background:#16365d;color:#f5f5f7}html[data-theme="dark"] .calendarTimeBlockMeta{color:#aeaeb2}html[data-theme="dark"] .calendarAllDayChip{background:#2c2c2e;color:#f5f5f7}
+
+/* Calendar week view: keep header, all-day row and timeline aligned on mobile */
+.calendarBody{flex:1 1 auto}
+.calendarBody[data-calendar-body-view="week"]{display:flex;flex-direction:column;overflow:hidden;padding-bottom:0}
+.calendarWeekStrip{grid-template-columns:38px repeat(7,minmax(0,1fr));gap:2px;margin-bottom:6px;flex:0 0 auto}
+.calendarWeekAxisSpacer{min-width:0}
+.calendarWeekDay{background:transparent;padding:5px 0 6px;border-radius:9px;overflow:hidden}
+.calendarWeekDay.selected{background:#e8f2ff}
+.calendarWeekDay .weekDow{font-size:8px}
+.calendarWeekDay .weekNum{font-size:14px;margin-top:2px}
+.calendarWeekDay .weekCount{font-size:8px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.calendarWeekAllDayWrap{display:grid;grid-template-columns:38px minmax(0,1fr);gap:0;align-items:start;margin-bottom:6px;flex:0 0 auto}
+.calendarWeekAllDayLabel{font-size:8px;line-height:1.1;color:#8e8e93;text-transform:uppercase;letter-spacing:.04em;padding:6px 4px 0 0;text-align:right}
+.calendarWeekAllDay{grid-template-columns:repeat(7,minmax(0,1fr));min-width:0;gap:2px}
+.calendarWeekAllDayCol{min-width:0;min-height:28px;background:transparent;border-radius:8px;padding:2px}
+.calendarWeekAllDayDate{display:none}
+.calendarWeekAllDayCol:has(.calendarAllDayChip){background:#fff}
+.calendarAllDayChip{font-size:8px;padding:3px 3px;margin:1px 0;border-radius:5px}
+.calendarWeekTimeViewport{flex:1 1 auto;width:100%;min-height:0;max-height:none;overflow-y:auto;overflow-x:hidden;border-radius:10px}
+.calendarWeekTimeViewport .calendarTimeStage{min-width:0;width:100%}
+.calendarWeekTimeViewport .calendarTimeAxis{width:38px}
+.calendarWeekTimeViewport .calendarHourLabel{left:0;width:31px;font-size:8px}
+.calendarWeekTimeViewport .calendarTimeColumns{left:38px;grid-template-columns:repeat(7,minmax(0,1fr))}
+.calendarWeekTimeViewport .calendarTimeColumnHeader{display:none}
+.calendarWeekTimeViewport .calendarTimeBlock{left:1px;right:1px;padding:4px 2px 6px 3px;border-left-width:2px;border-radius:6px}
+.calendarWeekTimeViewport .calendarTimeBlockTitle{font-size:8.5px;line-height:1.12}
+.calendarWeekTimeViewport .calendarTimeBlockMeta{font-size:7px;margin-top:1px}
+.calendarWeekTimeViewport .calendarBlockCheck{display:none}
+.calendarWeekTimeViewport .calendarResizeHandle::after{left:28%;right:28%}
+html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){background:#1c1c1e}
+@media(max-width:420px){
+  .calendarWeekDay .weekCount{display:none}
+  .calendarWeekTimeViewport .calendarTimeBlockMeta{display:none}
+}
 </style>
 </head>
 <body>
@@ -1480,11 +1514,16 @@ html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarT
   }
   function renderCalendarWeek(){
     const start=mondayOf(calendarDate),dates=Array.from({length:7},(_,i)=>addCalendarDays(start,i));
-    let html=calendarMoveNotice()+'<div class="calendarWeekStrip">';
-    dates.forEach(iso=>{const d=dateFromISO(iso),count=calendarTasksFor(iso).length;html+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count+" tarea"+(count===1?"":"s"):"")+'</div></button>'});
-    html+='</div><div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div><div class="calendarWeekAllDay">';
-    dates.forEach(iso=>{const rows=calendarTasksFor(iso).filter(t=>!t.dueTime);html+='<div class="calendarWeekAllDayCol"><div class="calendarWeekAllDayDate">'+esc(calendarDateLabel(iso,{weekday:"short",day:"numeric"}))+'</div>'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+'</div>'});
-    html+='</div></div><div class="calendarTimeViewport calendarWeekTimeViewport">'+calendarTimeGridHtml(dates)+'</div>';
+    const allDayByDate=dates.map(iso=>calendarTasksFor(iso).filter(t=>!t.dueTime)),hasAllDay=allDayByDate.some(rows=>rows.length);
+    let html=calendarMoveNotice()+'<div class="calendarWeekStrip"><div class="calendarWeekAxisSpacer" aria-hidden="true"></div>';
+    dates.forEach(iso=>{const d=dateFromISO(iso),count=calendarTasksFor(iso).length;html+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count:"")+'</div></button>'});
+    html+='</div>';
+    if(hasAllDay){
+      html+='<div class="calendarWeekAllDayWrap"><div class="calendarWeekAllDayLabel">Sin<br>hora</div><div class="calendarWeekAllDay">';
+      allDayByDate.forEach(rows=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+'</div>'});
+      html+='</div></div>';
+    }
+    html+='<div class="calendarTimeViewport calendarWeekTimeViewport">'+calendarTimeGridHtml(dates)+'</div>';
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarDay(){
@@ -1505,6 +1544,7 @@ html[data-theme="dark"] .calendarTimeViewport,html[data-theme="dark"] .calendarT
   }
   function renderCalendar(){
     if(!state)return;
+    $("calendarBody").dataset.calendarBodyView=calendarView;
     $("calendarPeriod").textContent=calendarPeriodText();
     $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
     document.querySelectorAll("[data-calendar-view]").forEach(b=>{b.classList.toggle("active",b.dataset.calendarView===calendarView);b.disabled=!!calendarMoveTaskId&&b.dataset.calendarView!=="month"});$("calendarPrev").disabled=!!calendarMoveTaskId;$("calendarNext").disabled=!!calendarMoveTaskId;
