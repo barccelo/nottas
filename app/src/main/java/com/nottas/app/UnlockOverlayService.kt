@@ -16,9 +16,9 @@ import android.provider.Settings
 import java.util.Calendar
 
 object WorkHoursPolicy {
-    fun isActiveNow(context: Context): Boolean {
+    fun isWithinConfiguredHours(context: Context): Boolean {
         val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
-        if (!prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)) return false
+        if (!prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)) return true
 
         val start = parseMinutes(
             prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00"),
@@ -32,7 +32,7 @@ object WorkHoursPolicy {
             it.get(Calendar.HOUR_OF_DAY) * 60 + it.get(Calendar.MINUTE)
         }
 
-        // Equal endpoints represent an empty/disabled interval, not a 24-hour block.
+        // Equal endpoints are treated as an empty window: no automatic overlay.
         return when {
             start == end -> false
             start < end -> now >= start && now < end
@@ -40,16 +40,24 @@ object WorkHoursPolicy {
         }
     }
 
+    fun allowsWakeOverlay(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
+        val enabled = prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)
+        return !enabled || isWithinConfiguredHours(context)
+    }
+
     fun status(context: Context): String {
         val prefs = context.getSharedPreferences(NottasWeb.PREFS, Context.MODE_PRIVATE)
         val enabled = prefs.getBoolean(NottasWeb.PREF_WORK_HOURS_ENABLED, false)
         val start = prefs.getString(NottasWeb.PREF_WORK_HOURS_START, "08:00") ?: "08:00"
         val end = prefs.getString(NottasWeb.PREF_WORK_HOURS_END, "17:00") ?: "17:00"
+        val within = enabled && isWithinConfiguredHours(context)
         return org.json.JSONObject()
             .put("enabled", enabled)
             .put("start", start)
             .put("end", end)
-            .put("activeNow", enabled && isActiveNow(context))
+            .put("withinHours", within)
+            .put("allowsWakeOverlay", !enabled || within)
             .toString()
     }
 
@@ -122,7 +130,7 @@ class UnlockOverlayService : Service() {
 
     private fun launchQuickCaptureIfArmed() {
         if (!armedForWake) return
-        if (!wakeEnabled() || WorkHoursPolicy.isActiveNow(this) || !Settings.canDrawOverlays(this)) return
+        if (!wakeEnabled() || !WorkHoursPolicy.allowsWakeOverlay(this) || !Settings.canDrawOverlays(this)) return
 
         armedForWake = false
 
