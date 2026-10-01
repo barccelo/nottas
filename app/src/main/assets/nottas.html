@@ -225,7 +225,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
 .subtaskCopyCheck{display:none;width:20px;height:20px;margin:10px 0 0 4px;accent-color:#1677ff}
 .taskSubtasksBox.copyMode .taskTreeRow{grid-template-columns:28px minmax(0,1fr)}
 .taskSubtasksBox.copyMode .subtaskCopyCheck{display:block}
-.taskSubtasksBox.copyMode .subtaskEditorCheck,.taskSubtasksBox.copyMode .taskTreeChild,.taskSubtasksBox.copyMode .subtaskRemove{display:none}
+.taskSubtasksBox.copyMode .subtaskEditorCheck,.taskSubtasksBox.copyMode .taskTreeChild,.taskSubtasksBox.copyMode .subtaskRemove,.taskSubtasksBox.copyMode .hierarchyMoreBtn{display:none}
 .taskSubtasksBox.copyMode .subtaskEditorInput{cursor:default}
 .taskListToggleRow{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:7px 4px;color:#1d1d1f}
 .taskListToggleText{min-width:0}.taskListToggleTitle{font-size:16px}.taskListToggleDesc{font-size:12px;color:#8e8e93;margin-top:2px}
@@ -267,6 +267,9 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
 .calendarDaySections{display:flex;flex-direction:column;gap:13px}.calendarDaySectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8e8e93;margin:2px 3px 6px}.calendarTimeline{position:relative;display:flex;flex-direction:column;gap:7px;padding-left:54px}.calendarTimeline::before{content:"";position:absolute;left:43px;top:7px;bottom:7px;width:1px;background:#d1d1d6}.calendarTimelineItem{position:relative}.calendarTimelineTime{position:absolute;right:calc(100% + 13px);top:12px;width:42px;text-align:right;font-size:11px;color:#8e8e93}.calendarTimelineDot{position:absolute;left:-15px;top:17px;width:7px;height:7px;border-radius:50%;border:2px solid #f5f5f7}
 .calendarWeekGroups{display:flex;flex-direction:column;gap:12px;margin-top:12px}.calendarWeekGroup{border-radius:15px}.calendarWeekGroupHeader{width:100%;border:0;background:transparent;display:flex;align-items:center;justify-content:space-between;padding:5px 3px 7px;color:#1d1d1f;text-align:left}.calendarWeekGroupHeader strong{font-size:14px}.calendarWeekGroupHeader span{font-size:11px;color:#8e8e93}.calendarWeekEmpty{font-size:12px;color:#aeaeb2;padding:5px 4px 9px}
 html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}html[data-theme="dark"] .calendarMoveBtn:active{background:#16365d}html[data-theme="dark"] .calendarTimeline::before{background:#3a3a3c}html[data-theme="dark"] .calendarTimelineDot{border-color:#000}html[data-theme="dark"] .calendarWeekGroupHeader{color:#f5f5f7}
+
+.hierarchyMoreBtn{width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:#8e8e93;font-size:20px;line-height:1;display:grid;place-items:center;padding:0}.hierarchyMoreBtn:active{background:rgba(118,118,128,.12)}
+.hierarchyPanelTitle{font-size:12px;color:#8e8e93;padding:0 4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.noteActionRow:disabled{opacity:.32;pointer-events:none}
 </style>
 </head>
 <body>
@@ -651,6 +654,17 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
         </button>
       </div>
     </form>
+
+    <div id="hierarchyPanel" class="noteActionPanel hidden" aria-hidden="true">
+      <div class="noteActionPanelHandle"></div>
+      <div id="hierarchyPanelTitle" class="hierarchyPanelTitle">Organizar elemento</div>
+      <button id="hierarchyMoveUp" class="noteActionRow" type="button"><span>↑</span><span>Mover arriba</span></button>
+      <button id="hierarchyMoveDown" class="noteActionRow" type="button"><span>↓</span><span>Mover abajo</span></button>
+      <button id="hierarchyIndent" class="noteActionRow" type="button"><span>→</span><span>Hacer subelemento</span></button>
+      <button id="hierarchyOutdent" class="noteActionRow" type="button"><span>←</span><span>Sacar un nivel</span></button>
+      <button id="hierarchyAddChild" class="noteActionRow" type="button"><span>＋</span><span>Añadir dentro</span></button>
+      <button id="hierarchyDelete" class="noteActionRow noteActionDanger" type="button"><span>×</span><span>Eliminar</span></button>
+    </div>
   </div>
 </div>
 
@@ -776,7 +790,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null;
   let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
@@ -1736,10 +1750,54 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     for(const i of parts){if(!arr[i])return null;arr=arr[i].children||(arr[i].children=[])}
     return {arr,index:last};
   }
+  function hierarchyRoot(scope){
+    if(scope==="task-items")return editorSubtasks;
+    if(scope==="task-blocks")return editorTaskBlocks;
+    if(scope==="note-blocks")return editorNoteBlocks;
+    return null;
+  }
+  function hierarchyNodeLabel(scope,node){
+    if(!node)return "Organizar elemento";
+    if(scope==="task-items")return inlineHtmlToText(node.html||plainToInlineHtml(node.text||""))||"Subtarea";
+    return inlineHtmlToText(node.html||"")||"Bloque";
+  }
+  function hierarchyBlank(scope){
+    return scope==="task-items"?{id:makeId("s"),text:"",html:"",done:false,children:[]}:{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]};
+  }
+  function hierarchyParentInfo(root,path){
+    const parts=String(path||"").split(".").filter(Boolean).map(Number);if(parts.length<2)return null;
+    const childIndex=parts.pop(),parentIndex=parts.pop();let parentArr=root;
+    for(const i of parts){if(!parentArr[i])return null;parentArr=parentArr[i].children||(parentArr[i].children=[])}
+    const parent=parentArr[parentIndex];return parent?{parentArr,parentIndex,parent,childIndex}:null;
+  }
+  function renderHierarchyScope(scope){
+    if(scope==="task-items"){syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}
+    else if(scope==="task-blocks")renderTaskBlocks();
+    else if(scope==="note-blocks")renderNoteBlocks();
+  }
+  function closeHierarchyPanel(){closeEditorActionPanel($("hierarchyPanel"));hierarchyScope=null;hierarchyPath=""}
+  function showHierarchyPanel(scope,path){
+    const root=hierarchyRoot(scope),loc=root?treeArrayForPath(root,path):null,node=root?treeNodeAtPath(root,path):null;if(!root||!loc||!node)return;
+    closeOpenEditorPanel();hierarchyScope=scope;hierarchyPath=path;$("hierarchyPanelTitle").textContent=hierarchyNodeLabel(scope,node);
+    $("hierarchyMoveUp").disabled=loc.index<=0;$("hierarchyMoveDown").disabled=loc.index>=loc.arr.length-1;$("hierarchyIndent").disabled=loc.index<=0;$("hierarchyOutdent").disabled=String(path).split(".").length<2;
+    const p=$("hierarchyPanel");resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false");
+  }
+  function mutateHierarchy(action){
+    const scope=hierarchyScope,path=hierarchyPath,root=hierarchyRoot(scope);if(!scope||!root)return;
+    const loc=treeArrayForPath(root,path),node=treeNodeAtPath(root,path);if(!loc||!node)return;
+    if(scope.startsWith("task-"))commitTaskHistory();
+    if(action==="up"&&loc.index>0){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index-1,0,n)}
+    else if(action==="down"&&loc.index<loc.arr.length-1){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index+1,0,n)}
+    else if(action==="indent"&&loc.index>0){const n=loc.arr.splice(loc.index,1)[0],parent=loc.arr[loc.index-1];parent.children=parent.children||[];parent.children.push(n)}
+    else if(action==="outdent"){const info=hierarchyParentInfo(root,path);if(info){const n=info.parent.children.splice(info.childIndex,1)[0];info.parentArr.splice(info.parentIndex+1,0,n)}}
+    else if(action==="child"){node.children=node.children||[];node.children.push(hierarchyBlank(scope))}
+    else if(action==="delete"){loc.arr.splice(loc.index,1)}
+    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();closeHierarchyPanel();
+  }
   function taskNodesHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
   function syncTaskCopyUI(){
@@ -1752,7 +1810,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);box.innerHTML=taskNodesHtml(editorSubtasks);
     box.querySelectorAll("[data-task-path]").forEach(row=>{
       const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
-      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
+      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),more=row.querySelector(":scope > .taskTreeRow .hierarchyMoreBtn");
       copy.addEventListener("change",()=>{if(copy.checked)taskCopySelection.add(node.id);else taskCopySelection.delete(node.id);syncTaskCopyUI()});
       check.addEventListener("change",()=>{commitTaskHistory();setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
       input.contentEditable=taskCopyMode?"false":"true";
@@ -1760,7 +1818,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
       input.addEventListener("input",()=>{node.html=sanitizeInlineHtml(input.innerHTML);node.text=inlineHtmlToText(node.html).slice(0,500);rememberRichSelection();scheduleTaskHistory()});
       input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
       child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",html:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
-      remove.addEventListener("click",()=>{commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
+      more.addEventListener("click",()=>showHierarchyPanel("task-items",path));
     });
     syncTaskCopyUI();syncTaskEditorMeta();
   }
@@ -1772,7 +1830,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
   function noteBlocksHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((b,i)=>{
       const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked;
-      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="noteBlockRemove" type="button" aria-label="Eliminar bloque">×</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
   function findNoteBlockById(nodes,id){for(const b of nodes||[]){if(b.id===id)return b;const found=findNoteBlockById(b.children||[],id);if(found)return found}return null}
@@ -1783,7 +1841,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     const box=blockEditorForScope(scope);if(!box)return;let blocks=blocksForScope(scope);if(!blocks.length){blocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];setBlocksForScope(scope,blocks)}box.innerHTML=noteBlocksHtml(blocks);
     box.querySelectorAll("[data-note-path]").forEach(row=>{
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
-      const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),remove=row.querySelector(":scope > .noteBlockRow .noteBlockRemove");
+      const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),more=row.querySelector(":scope > .noteBlockRow .hierarchyMoreBtn");
       type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory()});
       rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope;rememberRichSelection()});
       rich.addEventListener("keyup",rememberRichSelection);
@@ -1825,7 +1883,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
       });
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
       child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
-      remove.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();const loc=treeArrayForPath(blocks,path);if(!loc)return;loc.arr.splice(loc.index,1);renderContentBlocks(scope);if(scope==="task")commitTaskHistory()});
+      more.addEventListener("click",()=>showHierarchyPanel(scope==="task"?"task-blocks":"note-blocks",path));
     });
     if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
   }
@@ -1942,7 +2000,7 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     return wasOpen;
   }
   function closeOpenEditorPanel(){
-    for(const id of ["taskListPanel","taskMorePanel","noteInsertPanel","noteMorePanel"]){
+    for(const id of ["hierarchyPanel","taskListPanel","taskMorePanel","noteInsertPanel","noteMorePanel"]){
       const panel=$(id);
       if(panel&&!panel.classList.contains("hidden")){closeEditorActionPanel(panel);return true}
     }
@@ -2531,6 +2589,12 @@ html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}htm
     }catch(_){showToast("No pude recuperar la copia")}
   });
 
+  $("hierarchyMoveUp").addEventListener("click",()=>mutateHierarchy("up"));
+  $("hierarchyMoveDown").addEventListener("click",()=>mutateHierarchy("down"));
+  $("hierarchyIndent").addEventListener("click",()=>mutateHierarchy("indent"));
+  $("hierarchyOutdent").addEventListener("click",()=>mutateHierarchy("outdent"));
+  $("hierarchyAddChild").addEventListener("click",()=>mutateHierarchy("child"));
+  $("hierarchyDelete").addEventListener("click",()=>mutateHierarchy("delete"));
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
