@@ -246,6 +246,15 @@ html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
 .noteBottomBar .inlineRichToolbar .formatBtn:active{background:rgba(118,118,128,.12)}
 html[data-theme="dark"] .noteBottomBar .inlineRichToolbar{background:rgba(16,16,18,.98)!important}
 html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatBtn{color:#f5f5f7;background:transparent}
+
+/* Rich formatting follows the active title/body/subtask text */
+.richEditable{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;outline:none}
+.richEditable:empty::before,.subtaskEditorInput[contenteditable="true"]:empty::before{content:attr(data-placeholder);color:#8e8e93;pointer-events:none}
+.taskTitleInput.richEditable{display:block;min-height:38px;max-width:100%}
+#editorOverlay.noteEditorMode #noteTitle.richEditable{display:block;min-height:42px}
+.taskSubtasksBox .subtaskEditorInput[contenteditable]{display:block;min-height:40px;height:auto;max-height:none;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+#editorOverlay.noteEditorMode .noteBlocksEditor,#editorOverlay.taskEditorMode #taskBlocksEditor{gap:1px}
+#editorOverlay.noteEditorMode .richText,#editorOverlay.taskEditorMode #taskBlocksEditor .richText{min-height:34px;padding-top:4px;padding-bottom:4px}
 </style>
 </head>
 <body>
@@ -427,7 +436,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
           <button id="taskDoneBtn" class="taskDoneBtn" type="button" aria-label="Completar tarea">
             <svg viewBox="0 0 28 28" aria-hidden="true"><circle class="taskDoneFill" cx="14" cy="14" r="11.5"></circle><circle cx="14" cy="14" r="11.5"></circle><path class="taskDoneCheck" d="m8.5 14.2 3.4 3.4 7.6-7.7"></path></svg>
           </button>
-          <input id="taskText" class="taskTitleInput" type="text" maxlength="180" placeholder="Tarea" autocomplete="off" required>
+          <div id="taskText" class="taskTitleInput richEditable" contenteditable="true" role="textbox" aria-label="Tarea" data-placeholder="Tarea" data-rich-kind="task-title"></div>
         </div>
 
         <div id="taskMetaChips" class="taskMetaChips hidden">
@@ -536,7 +545,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
 
     <form id="noteForm" class="hidden">
       <div class="card">
-        <div class="field"><input id="noteTitle" class="textInput" type="text" maxlength="120" placeholder="Título" autocomplete="off"></div>
+        <div class="field"><div id="noteTitle" class="textInput richEditable" contenteditable="true" role="textbox" aria-label="Título" data-placeholder="Título" data-rich-kind="note-title"></div></div>
         <div class="field">
           <div id="noteBlocksEditor" class="noteBlocksEditor"></div>
           <button id="addNoteBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
@@ -795,7 +804,8 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function normalizeTaskNode(node,depth=0){
     if(!node||typeof node!=="object"||depth>30)return null;
     const children=(Array.isArray(node.children)?node.children:[]).map(x=>normalizeTaskNode(x,depth+1)).filter(x=>x&&(x.text.trim()||x.children.length));
-    const out={id:String(node.id||makeId("s")),text:String(node.text||"").slice(0,500),done:!!node.done,children};
+    const text=String(node.text||"").slice(0,500),html=sanitizeInlineHtml(node.html||plainToInlineHtml(text));
+    const out={id:String(node.id||makeId("s")),text,html,done:!!node.done,children};
     if(children.length)out.done=children.every(x=>taskNodeProgress(x)>=1);
     return out;
   }
@@ -821,7 +831,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function syncTaskTreeDone(nodes){
     (nodes||[]).forEach(n=>{syncTaskTreeDone(n.children||[]);if((n.children||[]).length)n.done=n.children.every(c=>taskNodeProgress(c)>=1)});
   }
-  function cloneTaskItems(items,resetDone=false){return (items||[]).map(n=>({id:makeId("s"),text:n.text||"",done:resetDone?false:!!n.done,children:cloneTaskItems(n.children||[],resetDone)}))}
+  function cloneTaskItems(items,resetDone=false){return (items||[]).map(n=>({id:makeId("s"),text:n.text||"",html:sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||"")),done:resetDone?false:!!n.done,children:cloneTaskItems(n.children||[],resetDone)}))}
   function legacySubtasksFromItems(items){return (items||[]).map(n=>({id:n.id||makeId("s"),text:n.text||"",done:taskNodeProgress(n)>=1})).filter(n=>n.text.trim())}
   function taskItemsText(items){let out=[];(items||[]).forEach(n=>{if(n.text)out.push(n.text);out.push(taskItemsText(n.children||[]))});return out.filter(Boolean).join(" ")}
   function cloneSerializable(value){return JSON.parse(JSON.stringify(value))}
@@ -846,7 +856,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function taskItemsToBulletBlocks(nodes){
     return (nodes||[]).filter(n=>String(n.text||"").trim()||(n.children||[]).length).map(n=>({
       id:makeId("b"),type:"bullet",
-      html:(taskNodeProgress(n)>=1?"<s>":"")+plainToInlineHtml(n.text||"")+(taskNodeProgress(n)>=1?"</s>":""),
+      html:(taskNodeProgress(n)>=1?"<s>":"")+sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))+(taskNodeProgress(n)>=1?"</s>":""),
       checked:false,children:taskItemsToBulletBlocks(n.children||[])
     }));
   }
@@ -876,11 +886,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     let cats=Array.isArray(o.categories)?o.categories:[];
     if(!cats.some(c=>c&&c.id==="inbox"))cats.unshift({id:"inbox",name:"Sin categoría",color:"#8e8e93"});
     o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
-    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");return {id:String(t.id||makeId("t")),text:String(t.text??t.title??""),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
-    o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");return {id:String(n.id||makeId("n")),title:String(n.title||""),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
+    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
+    o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false};
-    o.schemaVersion=8;o.version=8;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
+    o.schemaVersion=9;o.version=9;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
   function applyTheme(){
@@ -1304,14 +1314,14 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay tareas eliminadas.":taskFilter==="today"?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
     list.innerHTML=rows.map(t=>{
       const d=dueLabel(t),p=priorityLabel(t.priority);
-      if(trash)return `<div class="item ${t.done?"done":""}" data-task="${esc(t.id)}"><div class="content"><div class="taskTitle">${esc(t.text)}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span></div></div><div class="rowActions"><button class="miniBtn restore restoreTask" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
+      if(trash)return `<div class="item ${t.done?"done":""}" data-task="${esc(t.id)}"><div class="content"><div class="taskTitle">${sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text))}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span></div></div><div class="rowActions"><button class="miniBtn restore restoreTask" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
       return `<div class="swipeRow" data-swipe-task="${esc(t.id)}">
         <button class="swipeAction swipeEdit" type="button" aria-label="Editar tarea">${iconEdit}</button>
         <button class="swipeAction swipeDelete" type="button" aria-label="Eliminar tarea">${iconTrash}</button>
         <div class="item swipeCard ${t.done?"done":""} ${isOverdue(t)?"overdue":""}" data-task="${esc(t.id)}">
           <label class="checkHit"><input class="check" type="checkbox" ${t.done?"checked":""} aria-label="Completar"></label>
           <div class="content taskOpen">
-            <div class="cardHeader"><div class="taskTitle">${esc(t.text)}</div><button class="miniBtn pin ${t.pinned?"active":""} pinItem pinTask" type="button" aria-label="${t.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>${t.body?`<div class="preview">${esc(t.body)}</div>`:""}
+            <div class="cardHeader"><div class="taskTitle">${sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text))}</div><button class="miniBtn pin ${t.pinned?"active":""} pinItem pinTask" type="button" aria-label="${t.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>${t.body?`<div class="preview">${esc(t.body)}</div>`:""}
             <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.items?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${tagsMeta(t.tags)}</div>
           </div>
         </div>
@@ -1334,13 +1344,13 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     const list=$("list"),rows=state.notes.filter(visibleNote).slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt)));
     if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay notas eliminadas.":"Crea una nota con el botón +."}</div></div>`;return}
     list.innerHTML=rows.map(n=>{
-      if(trash)return `<div class="item" data-note="${esc(n.id)}"><div class="content"><div class="noteTitle">${esc(n.title||"Sin título")}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span>${tagsMeta(n.tags)}</div></div><div class="rowActions"><button class="miniBtn restore restoreNote" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
+      if(trash)return `<div class="item" data-note="${esc(n.id)}"><div class="content"><div class="noteTitle">${n.title?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"Sin título"}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span>${tagsMeta(n.tags)}</div></div><div class="rowActions"><button class="miniBtn restore restoreNote" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
       return `<div class="swipeRow" data-swipe-note="${esc(n.id)}">
         <button class="swipeAction swipeEdit" type="button" aria-label="Editar nota">${iconEdit}</button>
         <button class="swipeAction swipeDelete" type="button" aria-label="Eliminar nota">${iconTrash}</button>
         <div class="item swipeCard" data-note="${esc(n.id)}">
           <div class="content noteOpen">
-            <div class="cardHeader"><div class="noteTitle">${esc(n.title||"Sin título")}</div><button class="miniBtn pin ${n.pinned?"active":""} pinItem pinNote" type="button" aria-label="${n.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>
+            <div class="cardHeader"><div class="noteTitle">${n.title?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"Sin título"}</div><button class="miniBtn pin ${n.pinned?"active":""} pinItem pinNote" type="button" aria-label="${n.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>
             <div class="preview">${esc(n.body||"")}</div>
             <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span>${tagsMeta(n.tags)}</div>
           </div>
@@ -1617,10 +1627,9 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function taskNodesHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><textarea class="subtaskEditorInput" rows="1" maxlength="500" placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${esc(n.text)}</textarea><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
-  function autoGrowSubtaskInput(el){if(!el)return;el.style.height="auto";el.style.height=Math.max(42,el.scrollHeight+3)+"px"}
   function syncTaskCopyUI(){
     const box=$("taskSubtasksBox");if(box)box.classList.toggle("copyMode",taskCopyMode);
     $("taskListToolsBtn")?.classList.toggle("hidden",taskCopyMode);
@@ -1634,15 +1643,16 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
       copy.addEventListener("change",()=>{if(copy.checked)taskCopySelection.add(node.id);else taskCopySelection.delete(node.id);syncTaskCopyUI()});
       check.addEventListener("change",()=>{commitTaskHistory();setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
-      autoGrowSubtaskInput(input);input.readOnly=taskCopyMode;
-      input.addEventListener("input",()=>{node.text=input.value;autoGrowSubtaskInput(input);scheduleTaskHistory()});
-      input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
-      child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
+      input.contentEditable=taskCopyMode?"false":"true";
+      input.addEventListener("focus",rememberRichSelection);input.addEventListener("keyup",rememberRichSelection);input.addEventListener("pointerup",rememberRichSelection);
+      input.addEventListener("input",()=>{node.html=sanitizeInlineHtml(input.innerHTML);node.text=inlineHtmlToText(node.html).slice(0,500);rememberRichSelection();scheduleTaskHistory()});
+      input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
+      child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",html:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
       remove.addEventListener("click",()=>{commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
     });
     syncTaskCopyUI();syncTaskEditorMeta();
   }
-  function addEditorSubtask(){commitTaskHistory();editorSubtasks.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
+  function addEditorSubtask(){commitTaskHistory();editorSubtasks.push({id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
 
   function cloneNoteBlocks(blocks,resetChecks=false){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:resetChecks?false:!!b.checked,children:cloneNoteBlocks(b.children||[],resetChecks)}))}
   function noteBlockOptions(type){const labels={paragraph:"Texto",heading:"Encabezado",subheading:"Subtítulo",quote:"Cita",bullet:"Viñeta",number:"Número",checklist:"Casilla"};return Object.keys(labels).map(k=>'<option value="'+k+'" '+(k===type?"selected":"")+'>'+labels[k]+'</option>').join("")}
@@ -1668,7 +1678,39 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       rich.addEventListener("pointerup",rememberRichSelection);
       rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory()});
       rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML);rich.innerHTML=b.html});
-      rich.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();b.html=sanitizeInlineHtml(rich.innerHTML);const loc=treeArrayForPath(blocks,path);if(!loc)return;const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,nextPath)}});
+      rich.addEventListener("keydown",e=>{
+        const loc=treeArrayForPath(blocks,path);if(!loc)return;
+        const sel=window.getSelection(),range=sel&&sel.rangeCount?sel.getRangeAt(0):null;
+        if(e.key==="Enter"&&!e.shiftKey){
+          e.preventDefault();if(scope==="task")commitTaskHistory();
+          if(range&&!range.collapsed)range.deleteContents();
+          const before=document.createElement("div"),after=document.createElement("div");
+          if(range){
+            const r1=document.createRange();r1.selectNodeContents(rich);r1.setEnd(range.startContainer,range.startOffset);before.appendChild(r1.cloneContents());
+            const r2=document.createRange();r2.selectNodeContents(rich);r2.setStart(range.startContainer,range.startOffset);after.appendChild(r2.cloneContents());
+          }else before.innerHTML=rich.innerHTML;
+          b.html=sanitizeInlineHtml(before.innerHTML);
+          const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);
+          loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:sanitizeInlineHtml(after.innerHTML),checked:false,children:[]});
+          renderContentBlocks(scope,nextPath);if(scope==="task")commitTaskHistory();return;
+        }
+        if(e.key==="Backspace"&&range&&range.collapsed){
+          const probe=document.createRange();probe.selectNodeContents(rich);probe.setEnd(range.startContainer,range.startOffset);
+          if(probe.toString().length!==0)return;
+          const plain=inlineHtmlToText(rich.innerHTML);
+          if(loc.index>0){
+            e.preventDefault();if(scope==="task")commitTaskHistory();
+            const prev=loc.arr[loc.index-1];prev.html=sanitizeInlineHtml((prev.html||"")+(b.html||""));loc.arr.splice(loc.index,1);
+            const prevPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index-1);
+            renderContentBlocks(scope,prevPath);
+            setTimeout(()=>{const prevEl=box.querySelector('[data-note-path="'+prevPath+'"] .richText');if(!prevEl)return;const r=document.createRange();r.selectNodeContents(prevEl);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);rememberRichSelection()},25);
+            if(scope==="task")commitTaskHistory();return;
+          }
+          if(!plain&&loc.arr.length>1){
+            e.preventDefault();if(scope==="task")commitTaskHistory();loc.arr.splice(loc.index,1);renderContentBlocks(scope,"0");if(scope==="task")commitTaskHistory();
+          }
+        }
+      });
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
       child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
       remove.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();const loc=treeArrayForPath(blocks,path);if(!loc)return;loc.arr.splice(loc.index,1);renderContentBlocks(scope);if(scope==="task")commitTaskHistory()});
@@ -1680,18 +1722,39 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function addNoteBlockOfType(type="paragraph"){const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
   function addNoteBlock(){addNoteBlockOfType("paragraph")}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
+  function richTargetFromNode(node){
+    const el=node?.nodeType===1?node:node?.parentElement;if(!el)return null;
+    return el.closest?.(".richText,.richEditable")||null;
+  }
+  function richScopeForTarget(target){
+    if(!target)return null;
+    return target.closest("#taskForm")?"task":target.closest("#noteForm")?"note":null;
+  }
+  function findTaskItemById(nodes,id){for(const n of nodes||[]){if(n.id===id)return n;const found=findTaskItemById(n.children||[],id);if(found)return found}return null}
+  function syncRichTargetModel(target){
+    if(!target)return;
+    const htmlValue=sanitizeInlineHtml(target.innerHTML),plain=inlineHtmlToText(htmlValue),kind=target.dataset.richKind||"";
+    target.innerHTML=htmlValue;
+    if(kind==="task-title"||kind==="note-title")return;
+    if(kind==="subtask"){
+      const item=findTaskItemById(editorSubtasks,target.dataset.taskId||"");
+      if(item){item.html=htmlValue;item.text=plain.slice(0,500)}
+      return;
+    }
+    const id=target.dataset.richBlock||"";
+    if(id){const b=findNoteBlockById(blocksForScope(richScopeForTarget(target)),id);if(b)b.html=htmlValue}
+  }
   function rememberRichSelection(){
     const sel=window.getSelection();if(!sel||!sel.rangeCount)return false;
-    const range=sel.getRangeAt(0),node=range.commonAncestorContainer,el=node.nodeType===1?node:node.parentElement,rich=el?.closest?.(".richText");
-    if(!rich)return false;
-    const scope=rich.closest("#taskBlocksEditor")?"task":rich.closest("#noteBlocksEditor")?"note":null;
-    if(!scope)return false;
-    activeRichBlockId=rich.dataset.richBlock||activeRichBlockId;activeRichScope=scope;savedRichScope=scope;
+    const range=sel.getRangeAt(0),target=richTargetFromNode(range.commonAncestorContainer);
+    if(!target)return false;
+    const scope=richScopeForTarget(target);if(!scope)return false;
+    activeRichBlockId=target.dataset.richBlock||null;activeRichScope=scope;savedRichScope=scope;
     try{savedRichRange=range.cloneRange()}catch(_){savedRichRange=null}
     return true;
   }
-  function restoreRichSelection(scope,active){
-    if(!savedRichRange||savedRichScope!==scope||!active)return false;
+  function restoreRichSelection(scope,target){
+    if(!savedRichRange||savedRichScope!==scope||!target)return false;
     try{
       if(!savedRichRange.startContainer.isConnected||!savedRichRange.endContainer.isConnected)return false;
       const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedRichRange);return true;
@@ -1703,23 +1766,21 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     if(open)rememberRichSelection();
   }
   function applyRichCommand(command,scopeHint=null){
-    const scope=scopeHint||activeRichScope;if(!scope)return;
-    const box=blockEditorForScope(scope);
-    let active=activeRichBlockId?box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]'):null;
-    if(!active)active=box?.querySelector(".richText");
-    if(!active)return;
+    const scope=scopeHint||activeRichScope;
+    if(!scope||!savedRichRange||savedRichScope!==scope){showToast("Selecciona texto primero");return}
+    const target=richTargetFromNode(savedRichRange.commonAncestorContainer);
+    if(!target||richScopeForTarget(target)!==scope){showToast("Selecciona texto primero");return}
     if(scope==="task")commitTaskHistory();
-    active.focus({preventScroll:true});restoreRichSelection(scope,active);
+    target.focus({preventScroll:true});
+    if(!restoreRichSelection(scope,target)){showToast("Selecciona texto primero");return}
     try{document.execCommand(command,false,null)}catch(_){}
-    const id=active.dataset.richBlock||activeRichBlockId,b=findNoteBlockById(blocksForScope(scope),id);
-    if(b)b.html=sanitizeInlineHtml(active.innerHTML);
-    rememberRichSelection();
+    syncRichTargetModel(target);rememberRichSelection();
     if(scope==="task")commitTaskHistory();
   }
 
   function captureTaskEditorState(){
     return {
-      text:$("taskText")?.value||"",category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
+      text:inlineHtmlToText($("taskText")?.innerHTML||""),textHtml:sanitizeInlineHtml($("taskText")?.innerHTML||""),category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
       dueDate:$("taskDate")?.value||"",dueTime:$("taskTime")?.value||"",priority:$("taskPriority")?.value||"normal",
       recurrence:$("taskRecurrence")?.value||"none",reminder:$("taskReminder")?.value||"at",
       reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,
@@ -1743,7 +1804,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   function scheduleTaskHistory(){if(taskHistoryApplying)return;clearTimeout(taskHistoryTimer);taskHistoryTimer=setTimeout(commitTaskHistory,420)}
   function applyTaskHistoryState(snap){
     if(!snap)return;taskHistoryApplying=true;
-    $("taskText").value=snap.text||"";setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
+    $("taskText").innerHTML=sanitizeInlineHtml(snap.textHtml||plainToInlineHtml(snap.text||""));setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
     $("taskDate").value=snap.dueDate||"";$("taskTime").value=snap.dueTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
     editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
     renderTaskBlocks();renderEditorSubtasks();syncTaskTimeButton();syncTaskEditorMeta();syncEditorPin();taskHistoryApplying=false;
@@ -1806,14 +1867,14 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     syncTaskDoneButton();
   }
   function taskSnapshot(){
-    const text=$("taskText").value.trim(),blocks=cleanNoteBlocks(editorTaskBlocks),body=noteBlocksText(blocks).trim();
+    const textHtml=sanitizeInlineHtml($("taskText").innerHTML),text=inlineHtmlToText(textHtml).trim(),blocks=cleanNoteBlocks(editorTaskBlocks),body=noteBlocksText(blocks).trim();
     $("taskBody").value=body;
     let items=normalizeTaskItems(editorSubtasks,[]);syncTaskTreeDone(items);
     if(editorTaskDone){items.forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(items)}
     let reminder=$("taskTimeButton").dataset.reminderActive==="1"?($("taskReminder").value||"at"):"none";
     const dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"";
     if(reminder!=="none"&&(!dueDate||!dueTime))reminder="none";
-    return {text,body,blocks,category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,dueTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,items,subtasks:legacySubtasksFromItems(items)};
+    return {text,textHtml,body,blocks,category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,dueTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,items,subtasks:legacySubtasksFromItems(items)};
   }
   function persistOpenTask(showSaved=false){
     if($("taskForm").classList.contains("hidden"))return false;
@@ -1822,14 +1883,14 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     let changed=false,target=existing;
     if(existing){
       const wasDone=!!existing.done;
-      const same=existing.text===snap.text&&existing.body===snap.body&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&existing.dueTime===snap.dueTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
+      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&existing.dueTime===snap.dueTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
       if(!same){
-        existing.text=snap.text;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.dueTime=snap.dueTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
+        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.dueTime=snap.dueTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
         if(existing.done&&!wasDone)createNextOccurrence(existing);
       }
     }else{
       const stamp=now(),id=makeId("t");
-      target={id,text:snap.text,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,dueTime:snap.dueTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,dueTime:snap.dueTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
       state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskBtn").classList.remove("hidden");
       if(target.done)createNextOccurrence(target);
     }
@@ -1868,9 +1929,9 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     return true;
   }
   function noteSnapshot(){
-    const title=$("noteTitle").value.trim(),blocks=cleanNoteBlocks(editorNoteBlocks),body=noteBlocksText(blocks).trim();
+    const titleHtml=sanitizeInlineHtml($("noteTitle").innerHTML),title=inlineHtmlToText(titleHtml).trim(),blocks=cleanNoteBlocks(editorNoteBlocks),body=noteBlocksText(blocks).trim();
     $("noteBody").value=body;
-    return {title,blocks,body,category:getCategoryPickerValue("noteCategory"),tags:normalizeTags($("noteTags").value),pinned:editorPinned};
+    return {title,titleHtml,blocks,body,category:getCategoryPickerValue("noteCategory"),tags:normalizeTags($("noteTags").value),pinned:editorPinned};
   }
   function persistOpenNote(showSaved=false){
     if($("noteForm").classList.contains("hidden"))return false;
@@ -1878,11 +1939,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     if(!existing&&!snap.title&&!snap.body)return false;
     let changed=false;
     if(existing){
-      const same=existing.title===snap.title&&existing.body===snap.body&&existing.category===snap.category&&!!existing.pinned===!!snap.pinned&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks);
-      if(!same){existing.title=snap.title;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.pinned=snap.pinned;touch(existing);changed=true}
+      const same=existing.title===snap.title&&sanitizeInlineHtml(existing.titleHtml||plainToInlineHtml(existing.title))===snap.titleHtml&&existing.body===snap.body&&existing.category===snap.category&&!!existing.pinned===!!snap.pinned&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks);
+      if(!same){existing.title=snap.title;existing.titleHtml=snap.titleHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.category=snap.category;existing.tags=snap.tags;existing.pinned=snap.pinned;touch(existing);changed=true}
     }else{
       const stamp=now(),id=makeId("n");
-      state.notes.push({id,title:snap.title,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,pinned:snap.pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      state.notes.push({id,title:snap.title,titleHtml:snap.titleHtml,body:snap.body,blocks:snap.blocks,category:snap.category,tags:snap.tags,pinned:snap.pinned,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       editingNoteId=id;changed=true;$("deleteNoteBtn").classList.remove("hidden");$("noteDuplicateBtn").classList.remove("hidden");
     }
     if(changed){scheduleSave();render();if(showSaved)showToast("Nota guardada")}
@@ -1899,7 +1960,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
+    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
@@ -1909,7 +1970,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
-    $("noteTitle").value=n?n.title:"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
+    $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
     openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
   }
   function closeEditor(options={}){
@@ -1979,11 +2040,11 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
       const text=$("quickTaskText").value.trim();if(!text)return false;
-      state.tasks.push({id:makeId("t"),text,body:"",blocks:[],category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
-    state.notes.push({id:makeId("n"),title:"",body:raw,blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+    state.notes.push({id:makeId("n"),title:"",titleHtml:"",body:raw,blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
     closeQuickCapture();scheduleSave();render();showToast("Nota guardada");return true;
   }
   function expandQuickCapture(){
@@ -1993,14 +2054,14 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
       const due=quickDueDate;
       closeQuickCapture();
       openTask(null);
-      $("taskText").value=text;
+      $("taskText").innerHTML=plainToInlineHtml(text);
       setCategoryPicker("taskCategory",category);
       $("taskDate").value=due;
     }else{
       const raw=$("quickNoteText").value;
       closeQuickCapture();
       openNote(null);
-      $("noteTitle").value="";
+      $("noteTitle").innerHTML="";
       editorNoteBlocks=[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}];
       $("noteBody").value=raw;
       renderNoteBlocks();
@@ -2309,6 +2370,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
 
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
+  ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
   $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
   $("taskDateBtn").addEventListener("click",openTaskDatePicker);
@@ -2331,7 +2393,6 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   $("taskRemoveChecksBtn").addEventListener("click",()=>{if(!editorSubtasks.length)return;commitTaskHistory();const bullets=taskItemsToBulletBlocks(editorSubtasks),existing=cleanNoteBlocks(editorTaskBlocks);editorTaskBlocks=[...existing,...bullets];editorSubtasks=[];renderTaskBlocks();renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"));showToast("Casillas eliminadas")});
   $("taskUndoBtn").addEventListener("click",undoTaskEditor);
   $("taskRedoBtn").addEventListener("click",redoTaskEditor);
-  $("taskText").addEventListener("input",scheduleTaskHistory);
   $("taskCategory").querySelector(".categoryPickerInput").addEventListener("input",scheduleTaskHistory);
   $("taskDate").addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()});
   $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
@@ -2341,7 +2402,7 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   $("noteFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
   $("noteFormatClose").addEventListener("click",()=>setRichToolbar("note",false));
   $("noteInsertChecklist").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("checklist")});
-  $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
+  $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,titleHtml:snap.titleHtml,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
   $("addSubtaskBtn").addEventListener("click",addEditorSubtask);
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
@@ -2370,7 +2431,6 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
   $("noteForm").addEventListener("submit",e=>{e.preventDefault();persistOpenNote(true)});
   $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);hideNotePanels();closeEditor({save:false});scheduleSave();render();showToast("Nota enviada a papelera")});
 
-  $("noteTitle").addEventListener("input",()=>{});
   $("noteTags").addEventListener("change",()=>persistOpenNote(false));
   ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()}));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
