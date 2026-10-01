@@ -211,6 +211,28 @@ body.imeVisible #editorOverlay.noteEditorMode .noteBottomBar,body.imeVisible #ed
 body.imeVisible .noteActionPanel{bottom:var(--ime-offset,0px)}
 html[data-theme="dark"] .noteActionPanelHandle{background:transparent!important}
 html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
+
+/* Checklist controls, history and copy-selection */
+.taskSubtasksBox .subtaskEditorInput{line-height:1.42;padding:8px 7px 12px}
+.taskTreeNode.completed>.taskTreeRow .subtaskEditorInput{text-decoration:line-through;color:#8e8e93}
+.taskSubtasksHead{min-height:38px;padding-bottom:6px}
+.taskSubtasksHeadMain{display:flex;align-items:center;gap:8px;min-width:0}
+.taskSubtasksHeadActions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.taskSubtaskHeadBtn{min-height:34px;border:0;border-radius:9px;background:transparent;color:#007aff;padding:0 8px;font-size:12px;font-weight:620}
+.taskSubtaskHeadBtn:active{background:rgba(118,118,128,.10)}
+.taskSubtaskMoreBtn{width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:#636366;font-size:22px;line-height:1;display:grid;place-items:center;padding:0}
+.taskSubtaskMoreBtn:active{background:rgba(118,118,128,.10)}
+.subtaskCopyCheck{display:none;width:20px;height:20px;margin:10px 0 0 4px;accent-color:#1677ff}
+.taskSubtasksBox.copyMode .taskTreeRow{grid-template-columns:28px minmax(0,1fr)}
+.taskSubtasksBox.copyMode .subtaskCopyCheck{display:block}
+.taskSubtasksBox.copyMode .subtaskEditorCheck,.taskSubtasksBox.copyMode .taskTreeChild,.taskSubtasksBox.copyMode .subtaskRemove{display:none}
+.taskSubtasksBox.copyMode .subtaskEditorInput{cursor:default}
+.taskListToggleRow{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:7px 4px;color:#1d1d1f}
+.taskListToggleText{min-width:0}.taskListToggleTitle{font-size:16px}.taskListToggleDesc{font-size:12px;color:#8e8e93;margin-top:2px}
+.taskHistoryBtn:disabled{opacity:.28;pointer-events:none}
+#editorOverlay.taskEditorMode #taskBottomBar{gap:3px;padding-left:10px;padding-right:10px}
+#editorOverlay.taskEditorMode #taskBottomBar .noteToolBtn{width:40px;height:40px;flex:0 0 40px}
+html[data-theme="dark"] .taskListToggleRow{color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -412,11 +434,39 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
 
-        <div class="taskSubtasksBox">
-          <div class="taskSubtasksHead"><span>Subtareas</span><span id="taskProgressMini" class="taskProgressMini"></span></div>
+        <div id="taskSubtasksBox" class="taskSubtasksBox">
+          <div class="taskSubtasksHead">
+            <div class="taskSubtasksHeadMain"><span>Subtareas</span><span id="taskProgressMini" class="taskProgressMini"></span></div>
+            <div class="taskSubtasksHeadActions">
+              <button id="taskCopyAllBtn" class="taskSubtaskHeadBtn hidden" type="button">Todo</button>
+              <button id="taskCopyConfirmBtn" class="taskSubtaskHeadBtn hidden" type="button">Copiar</button>
+              <button id="taskCopyCancelBtn" class="taskSubtaskHeadBtn hidden" type="button">Cancelar</button>
+              <button id="taskListToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de subtareas">⋮</button>
+            </div>
+          </div>
           <div id="subtasksEditor" class="subtasksEditor"></div>
           <button id="addSubtaskBtn" class="addSubtaskBtn" type="button">+ Añadir subtarea</button>
         </div>
+      </div>
+
+      <div id="taskListPanel" class="noteActionPanel hidden" aria-hidden="true">
+        <div class="noteActionPanelHandle"></div>
+        <div class="taskListToggleRow">
+          <div class="taskListToggleText"><div class="taskListToggleTitle">Completadas al final</div><div class="taskListToggleDesc">Si está activo, las subtareas marcadas bajan al final.</div></div>
+          <label class="iosSwitch"><input id="taskCompletedAtEndToggle" type="checkbox"><span aria-hidden="true"></span></label>
+        </div>
+        <button id="taskMarkAllBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect><path d="m7 12 3 3 7-7"></path></svg><span>Marcar todas</span>
+        </button>
+        <button id="taskUnmarkAllBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect></svg><span>Desmarcar todas</span>
+        </button>
+        <button id="taskSelectCopyBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Seleccionar para copiar</span>
+        </button>
+        <button id="taskRemoveChecksBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"></path></svg><span>Eliminar casillas de verificación</span>
+        </button>
       </div>
 
       <div id="taskMorePanel" class="noteActionPanel taskMorePanel hidden" aria-hidden="true">
@@ -458,6 +508,12 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
         </button>
         <button id="taskFormatBtn" class="noteToolBtn format" type="button" aria-label="Formato">A</button>
         <div class="noteBottomSpacer"></div>
+        <button id="taskUndoBtn" class="noteToolBtn taskHistoryBtn" type="button" aria-label="Deshacer" disabled>
+          <svg viewBox="0 0 24 24"><path d="M9 8H4v-5M4.5 8.5A8 8 0 1 1 6 17"></path></svg>
+        </button>
+        <button id="taskRedoBtn" class="noteToolBtn taskHistoryBtn" type="button" aria-label="Rehacer" disabled>
+          <svg viewBox="0 0 24 24"><path d="M15 8h5v-5M19.5 8.5A8 8 0 1 0 18 17"></path></svg>
+        </button>
         <button id="taskMoreBtn" class="noteToolBtn" type="button" aria-label="Más opciones">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
         </button>
@@ -653,7 +709,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO();
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set();
   let suppressClickUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -757,6 +813,32 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
   function cloneTaskItems(items,resetDone=false){return (items||[]).map(n=>({id:makeId("s"),text:n.text||"",done:resetDone?false:!!n.done,children:cloneTaskItems(n.children||[],resetDone)}))}
   function legacySubtasksFromItems(items){return (items||[]).map(n=>({id:n.id||makeId("s"),text:n.text||"",done:taskNodeProgress(n)>=1})).filter(n=>n.text.trim())}
   function taskItemsText(items){let out=[];(items||[]).forEach(n=>{if(n.text)out.push(n.text);out.push(taskItemsText(n.children||[]))});return out.filter(Boolean).join(" ")}
+  function cloneSerializable(value){return JSON.parse(JSON.stringify(value))}
+  function completedSubtasksAtEnd(){return state?.preferences?.completedSubtasksAtEnd!==false}
+  function sortCompletedTaskItems(nodes){
+    (nodes||[]).forEach(n=>sortCompletedTaskItems(n.children||[]));
+    if(!completedSubtasksAtEnd()||!Array.isArray(nodes))return nodes;
+    const open=[],done=[];nodes.forEach(n=>(taskNodeProgress(n)>=1?done:open).push(n));nodes.splice(0,nodes.length,...open,...done);return nodes;
+  }
+  function setAllTaskItemsDone(nodes,done){(nodes||[]).forEach(n=>setTaskNodeDone(n,done));syncTaskTreeDone(nodes)}
+  function allTaskItemIds(nodes,out=[]){(nodes||[]).forEach(n=>{out.push(n.id);allTaskItemIds(n.children||[],out)});return out}
+  function selectedTaskItemsText(nodes,selected,depth=0,out=[]){
+    (nodes||[]).forEach(n=>{
+      if(selected.has(n.id)&&String(n.text||"").trim()){
+        const indent="  ".repeat(depth),text=String(n.text||"").trim().replace(/\r?\n/g,"\n"+indent+"  ");
+        out.push(indent+"- "+text);
+      }
+      selectedTaskItemsText(n.children||[],selected,depth+1,out);
+    });
+    return out.join("\n");
+  }
+  function taskItemsToBulletBlocks(nodes){
+    return (nodes||[]).filter(n=>String(n.text||"").trim()||(n.children||[]).length).map(n=>({
+      id:makeId("b"),type:"bullet",
+      html:(taskNodeProgress(n)>=1?"<s>":"")+plainToInlineHtml(n.text||"")+(taskNodeProgress(n)>=1?"</s>":""),
+      checked:false,children:taskItemsToBulletBlocks(n.children||[])
+    }));
+  }
 
   const NOTE_BLOCK_TYPES=new Set(["paragraph","heading","subheading","quote","bullet","number","checklist"]);
   function normalizeNoteBlock(block,depth=0){
@@ -786,7 +868,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");return {id:String(t.id||makeId("t")),text:String(t.text??t.title??""),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");return {id:String(n.id||makeId("n")),title:String(n.title||""),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
-    o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00"};
+    o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false};
     o.schemaVersion=8;o.version=8;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
@@ -1498,7 +1580,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     $("taskReminder").value=on?($("taskReminder").value||"at"):"at";
     $("taskTimeButton").dataset.reminderActive=on?"1":"0";
     if(on)requestReminderPermission();
-    syncTaskTimeButton();syncTaskEditorMeta();
+    syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
     closeTimePicker();
   }
   function clearTaskTime(){
@@ -1507,7 +1589,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     $("taskTimeButton").dataset.reminderActive="0";
     timeDraftReminder="none";
     $("timeReminderToggle").checked=false;
-    syncTaskTimeButton();syncTaskEditorMeta();
+    syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
     closeTimePicker();
   }
 
@@ -1524,25 +1606,32 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
   function taskNodesHtml(nodes,depth=0,prefix=""){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><textarea class="subtaskEditorInput" rows="1" maxlength="500" placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${esc(n.text)}</textarea><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><textarea class="subtaskEditorInput" rows="1" maxlength="500" placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${esc(n.text)}</textarea><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
-  function autoGrowSubtaskInput(el){if(!el)return;el.style.height="auto";el.style.height=Math.max(40,el.scrollHeight)+"px"}
+  function autoGrowSubtaskInput(el){if(!el)return;el.style.height="auto";el.style.height=Math.max(42,el.scrollHeight+3)+"px"}
+  function syncTaskCopyUI(){
+    const box=$("taskSubtasksBox");if(box)box.classList.toggle("copyMode",taskCopyMode);
+    $("taskListToolsBtn")?.classList.toggle("hidden",taskCopyMode);
+    ["taskCopyAllBtn","taskCopyConfirmBtn","taskCopyCancelBtn"].forEach(id=>$(id)?.classList.toggle("hidden",!taskCopyMode));
+    const count=taskCopySelection.size,copy=$("taskCopyConfirmBtn");if(copy)copy.textContent=count?"Copiar ("+count+")":"Copiar";
+  }
   function renderEditorSubtasks(){
-    const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);box.innerHTML=taskNodesHtml(editorSubtasks);
+    const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);box.innerHTML=taskNodesHtml(editorSubtasks);
     box.querySelectorAll("[data-task-path]").forEach(row=>{
       const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
-      const check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
-      check.addEventListener("change",()=>{setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
-      autoGrowSubtaskInput(input);
-      input.addEventListener("input",()=>{node.text=input.value;autoGrowSubtaskInput(input)});
-      input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
-      child.addEventListener("click",()=>{node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
-      remove.addEventListener("click",()=>{const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
+      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
+      copy.addEventListener("change",()=>{if(copy.checked)taskCopySelection.add(node.id);else taskCopySelection.delete(node.id);syncTaskCopyUI()});
+      check.addEventListener("change",()=>{commitTaskHistory();setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
+      autoGrowSubtaskInput(input);input.readOnly=taskCopyMode;
+      input.addEventListener("input",()=>{node.text=input.value;autoGrowSubtaskInput(input);scheduleTaskHistory()});
+      input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
+      child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
+      remove.addEventListener("click",()=>{commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
     });
-    syncTaskEditorMeta();
+    syncTaskCopyUI();syncTaskEditorMeta();
   }
-  function addEditorSubtask(){editorSubtasks.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
+  function addEditorSubtask(){commitTaskHistory();editorSubtasks.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
 
   function cloneNoteBlocks(blocks,resetChecks=false){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:resetChecks?false:!!b.checked,children:cloneNoteBlocks(b.children||[],resetChecks)}))}
   function noteBlockOptions(type){const labels={paragraph:"Texto",heading:"Encabezado",subheading:"Subtítulo",quote:"Cita",bullet:"Viñeta",number:"Número",checklist:"Casilla"};return Object.keys(labels).map(k=>'<option value="'+k+'" '+(k===type?"selected":"")+'>'+labels[k]+'</option>').join("")}
@@ -1562,14 +1651,14 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     box.querySelectorAll("[data-note-path]").forEach(row=>{
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
       const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),remove=row.querySelector(":scope > .noteBlockRow .noteBlockRemove");
-      type.addEventListener("change",()=>{b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path)});
+      type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory()});
       rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope});
-      rich.addEventListener("input",()=>{b.html=rich.innerHTML});
+      rich.addEventListener("input",()=>{b.html=rich.innerHTML;if(scope==="task")scheduleTaskHistory()});
       rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML);rich.innerHTML=b.html});
       rich.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();b.html=sanitizeInlineHtml(rich.innerHTML);const loc=treeArrayForPath(blocks,path);if(!loc)return;const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,nextPath)}});
-      if(check)check.addEventListener("change",()=>{b.checked=check.checked;row.classList.toggle("checked",b.checked)});
-      child.addEventListener("click",()=>{b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1))});
-      remove.addEventListener("click",()=>{const loc=treeArrayForPath(blocks,path);if(!loc)return;loc.arr.splice(loc.index,1);renderContentBlocks(scope)});
+      if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
+      child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
+      remove.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();const loc=treeArrayForPath(blocks,path);if(!loc)return;loc.arr.splice(loc.index,1);renderContentBlocks(scope);if(scope==="task")commitTaskHistory()});
     });
     if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
   }
@@ -1578,7 +1667,47 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
   function addNoteBlockOfType(type="paragraph"){const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
   function addNoteBlock(){addNoteBlockOfType("paragraph")}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
-  function applyRichCommand(command,scopeHint=null){const scope=activeRichScope||scopeHint;if(!activeRichBlockId||!scope)return;const box=blockEditorForScope(scope),active=box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(blocksForScope(scope),activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML)}
+  function applyRichCommand(command,scopeHint=null){const scope=activeRichScope||scopeHint;if(!activeRichBlockId||!scope)return;if(scope==="task")commitTaskHistory();const box=blockEditorForScope(scope),active=box?.querySelector('.richText[data-rich-block="'+activeRichBlockId+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(blocksForScope(scope),activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML);if(scope==="task")commitTaskHistory()}
+
+  function captureTaskEditorState(){
+    return {
+      text:$("taskText")?.value||"",category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
+      dueDate:$("taskDate")?.value||"",dueTime:$("taskTime")?.value||"",priority:$("taskPriority")?.value||"normal",
+      recurrence:$("taskRecurrence")?.value||"none",reminder:$("taskReminder")?.value||"at",
+      reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,
+      blocks:cloneSerializable(editorTaskBlocks||[]),items:cloneSerializable(editorSubtasks||[])
+    };
+  }
+  function taskHistoryKey(s){return JSON.stringify(s)}
+  function syncTaskHistoryButtons(){
+    const u=$("taskUndoBtn"),r=$("taskRedoBtn");if(u)u.disabled=taskUndoStack.length<2;if(r)r.disabled=!taskRedoStack.length;
+  }
+  function resetTaskHistory(){
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskRedoStack=[];taskUndoStack=[captureTaskEditorState()];syncTaskHistoryButtons();
+  }
+  function commitTaskHistory(){
+    if(taskHistoryApplying||$("taskForm")?.classList.contains("hidden"))return;
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;
+    const snap=captureTaskEditorState(),last=taskUndoStack[taskUndoStack.length-1];
+    if(!last||taskHistoryKey(last)!==taskHistoryKey(snap)){taskUndoStack.push(snap);if(taskUndoStack.length>80)taskUndoStack.shift();taskRedoStack=[]}
+    syncTaskHistoryButtons();
+  }
+  function scheduleTaskHistory(){if(taskHistoryApplying)return;clearTimeout(taskHistoryTimer);taskHistoryTimer=setTimeout(commitTaskHistory,420)}
+  function applyTaskHistoryState(snap){
+    if(!snap)return;taskHistoryApplying=true;
+    $("taskText").value=snap.text||"";setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
+    $("taskDate").value=snap.dueDate||"";$("taskTime").value=snap.dueTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
+    editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
+    renderTaskBlocks();renderEditorSubtasks();syncTaskTimeButton();syncTaskEditorMeta();syncEditorPin();taskHistoryApplying=false;
+  }
+  function undoTaskEditor(){
+    commitTaskHistory();if(taskUndoStack.length<2)return;
+    const current=taskUndoStack.pop();taskRedoStack.push(current);applyTaskHistoryState(taskUndoStack[taskUndoStack.length-1]);syncTaskHistoryButtons();
+  }
+  function redoTaskEditor(){
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;if(!taskRedoStack.length)return;
+    const next=taskRedoStack.pop();taskUndoStack.push(cloneSerializable(next));applyTaskHistoryState(next);syncTaskHistoryButtons();
+  }
 
   function resetEditorActionPanel(panel){
     if(!panel)return;
@@ -1592,16 +1721,20 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     return wasOpen;
   }
   function closeOpenEditorPanel(){
-    for(const id of ["taskMorePanel","noteInsertPanel","noteMorePanel"]){
+    for(const id of ["taskListPanel","taskMorePanel","noteInsertPanel","noteMorePanel"]){
       const panel=$(id);
       if(panel&&!panel.classList.contains("hidden")){closeEditorActionPanel(panel);return true}
     }
     return false;
   }
-  function hideTaskPanels(){closeEditorActionPanel($("taskMorePanel"))}
+  function hideTaskPanels(){closeEditorActionPanel($("taskListPanel"));closeEditorActionPanel($("taskMorePanel"))}
   function showTaskPanel(){
-    const active=document.activeElement;if(active&&active.blur)active.blur();
+    const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskListPanel"));
     const p=$("taskMorePanel");if(p){resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
+  }
+  function showTaskListPanel(){
+    const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskMorePanel"));
+    const p=$("taskListPanel");if(p){resetEditorActionPanel(p);$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
   }
   function taskDateText(value){
     if(!value)return "";
@@ -1720,8 +1853,8 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();
-    openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
+    taskCopyMode=false;taskCopySelection.clear();editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
@@ -1736,7 +1869,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
-    editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();setNativeSearchKeyboardMode(true)
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true)
   }
 
   function syncQuickMode(){
@@ -2126,9 +2259,9 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
     }catch(_){showToast("No pude recuperar la copia")}
   });
 
-  $("editorPinBtn").addEventListener("click",()=>{editorPinned=!editorPinned;syncEditorPin()});
+  $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
-  $("taskDoneBtn").addEventListener("click",()=>{editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta()});
+  $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
   $("taskDateBtn").addEventListener("click",openTaskDatePicker);
   $("taskDateChip").addEventListener("click",openTaskDatePicker);
@@ -2136,7 +2269,20 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
   $("taskTimeChip").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");openTimePicker()});
   $("taskFormatBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.toggle("hidden")});
   $("taskMoreBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskPanel()});
-  $("taskDate").addEventListener("change",syncTaskEditorMeta);
+  $("taskListToolsBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskListPanel()});
+  $("taskCompletedAtEndToggle").addEventListener("change",()=>{state.preferences.completedSubtasksAtEnd=$("taskCompletedAtEndToggle").checked;if(completedSubtasksAtEnd())sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();scheduleSave()});
+  $("taskMarkAllBtn").addEventListener("click",()=>{commitTaskHistory();setAllTaskItemsDone(editorSubtasks,true);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"))});
+  $("taskUnmarkAllBtn").addEventListener("click",()=>{commitTaskHistory();setAllTaskItemsDone(editorSubtasks,false);renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"))});
+  $("taskSelectCopyBtn").addEventListener("click",()=>{closeEditorActionPanel($("taskListPanel"));taskCopyMode=true;taskCopySelection.clear();renderEditorSubtasks()});
+  $("taskCopyAllBtn").addEventListener("click",()=>{taskCopySelection=new Set(allTaskItemIds(editorSubtasks,[]));renderEditorSubtasks()});
+  $("taskCopyCancelBtn").addEventListener("click",()=>{taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks()});
+  $("taskCopyConfirmBtn").addEventListener("click",async()=>{if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}const text=selectedTaskItemsText(editorSubtasks,taskCopySelection);let ok=false;try{await navigator.clipboard.writeText(text);ok=true}catch(_){try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(__){}}if(ok){taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks();showToast("Lista copiada")}else showToast("No pude copiar")});
+  $("taskRemoveChecksBtn").addEventListener("click",()=>{if(!editorSubtasks.length)return;commitTaskHistory();const bullets=taskItemsToBulletBlocks(editorSubtasks),existing=cleanNoteBlocks(editorTaskBlocks);editorTaskBlocks=[...existing,...bullets];editorSubtasks=[];renderTaskBlocks();renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"));showToast("Casillas eliminadas")});
+  $("taskUndoBtn").addEventListener("click",undoTaskEditor);
+  $("taskRedoBtn").addEventListener("click",redoTaskEditor);
+  $("taskText").addEventListener("input",scheduleTaskHistory);
+  $("taskCategory").querySelector(".categoryPickerInput").addEventListener("input",scheduleTaskHistory);
+  $("taskDate").addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()});
   $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
   $("noteMoreBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteMorePanel")});
   $("noteFormatBtn").addEventListener("click",()=>{hideNotePanels();$("richToolbar").classList.toggle("hidden")});
@@ -2173,7 +2319,7 @@ html[data-theme="dark"] .noteActionPanelHandle::after{background:#636366}
 
   $("noteTitle").addEventListener("input",()=>{});
   $("noteTags").addEventListener("change",()=>persistOpenNote(false));
-  ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta()}));
+  ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()}));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
