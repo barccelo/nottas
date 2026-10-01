@@ -455,7 +455,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     const layoutH=document.documentElement.clientHeight||window.innerHeight;
     document.body.classList.toggle("keyboardOpen",!!vv&&layoutH-h>120);
     const active=document.activeElement;
-    if(active&&active.closest&&active.closest("#editorOverlay")&&active.matches("input,textarea,select")){
+    if(active&&active.closest&&active.closest("#editorOverlay")&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       setTimeout(()=>active.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}),40);
     }
   }
@@ -497,7 +497,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     return holder.innerHTML;
   }
   function plainToInlineHtml(text){return esc(String(text||"")).replace(/\r?\n/g,"<br>")}
-  function inlineHtmlToText(html){const d=document.createElement("div");d.innerHTML=sanitizeInlineHtml(html);return (d.textContent||"").replace(/\u00a0/g," ").trim()}
+  function inlineHtmlToText(html){const d=document.createElement("div");d.innerHTML=sanitizeInlineHtml(html);d.querySelectorAll("br").forEach(br=>br.replaceWith("\n"));return (d.textContent||"").replace(/\u00a0/g," ").trim()}
 
   function normalizeTaskNode(node,depth=0){
     if(!node||typeof node!=="object"||depth>30)return null;
@@ -561,7 +561,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");return {id:String(n.id||makeId("n")),title:String(n.title||""),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00"};
-    o.schemaVersion=7;o.version=7;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
+    o.schemaVersion=8;o.version=8;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
   function applyTheme(){
@@ -845,7 +845,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     if(!t||!t.recurrence||t.recurrence==="none")return null;
     if(state.tasks.some(x=>x.recurrenceFrom===t.id))return null;
     const stamp=now();
-    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[]);const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[],true);const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
     state.tasks.push(next);
     return next;
   }
@@ -1270,13 +1270,13 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
       check.addEventListener("change",()=>{setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
       input.addEventListener("input",()=>{node.text=input.value});
       input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
-      child.addEventListener("click",()=>{node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();setTimeout(()=>{const inputs=row.parentElement?.querySelectorAll(".subtaskEditorInput");inputs?.[inputs.length-1]?.focus()},20)});
+      child.addEventListener("click",()=>{node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
       remove.addEventListener("click",()=>{const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
     });
   }
   function addEditorSubtask(){editorSubtasks.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
 
-  function cloneNoteBlocks(blocks){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:!!b.checked,children:cloneNoteBlocks(b.children||[])}))}
+  function cloneNoteBlocks(blocks,resetChecks=false){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:resetChecks?false:!!b.checked,children:cloneNoteBlocks(b.children||[],resetChecks)}))}
   function noteBlockOptions(type){const labels={paragraph:"Texto",heading:"Encabezado",subheading:"Subtítulo",quote:"Cita",bullet:"Viñeta",number:"Número",checklist:"Casilla"};return Object.keys(labels).map(k=>'<option value="'+k+'" '+(k===type?"selected":"")+'>'+labels[k]+'</option>').join("")}
   function noteBlockMarker(type,index){return type==="bullet"?"•":type==="number"?String(index+1)+".":type==="quote"?"❝":""}
   function noteBlocksHtml(nodes,depth=0,prefix=""){
@@ -1455,7 +1455,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
   function closeCategory(){editingCategoryId=null;closeOverlay("categoryOverlay")}
 
   document.addEventListener("focusin",e=>{
-    if(!e.target.matches("input,textarea,select"))return;
+    if(!e.target.matches("input,textarea,select,[contenteditable=\"true\"]"))return;
     setTimeout(()=>{
       syncVisualViewport();
       const sheet=e.target.closest(".sheet");
@@ -1786,7 +1786,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
 
   window.NottasHandleBack=function(){
     const active=document.activeElement;
-    if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select")){
+    if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       active.blur();
       return true;
     }
