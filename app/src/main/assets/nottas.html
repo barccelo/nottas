@@ -770,7 +770,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
-  let suppressClickUntil=0;
+  let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
     try{
@@ -2145,6 +2145,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     return d.toLocaleTimeString("es",{hour:"numeric",minute:"2-digit"});
   }
   function refreshWakeControlUI(){
+    clearTimeout(wakeRefreshTimer);wakeRefreshTimer=null;
     const btn=$("wakeQuickBtn");if(!btn)return;
     const status=wakeStatus();
     if(!status){btn.classList.add("hidden");return}
@@ -2159,6 +2160,12 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
     $("wakeOnBtn").classList.toggle("active",!!status.enabled&&!status.snoozed);
     $("wakeOffBtn").classList.toggle("active",!status.enabled);
     const wake=$("wakeEnabled");if(wake)wake.checked=!!status.enabled;
+    if(status.snoozed){
+      const delay=Math.max(500,Math.min(60_000,(Number(status.snoozeUntil)||0)-Date.now()+250));
+      wakeRefreshTimer=setTimeout(refreshWakeControlUI,delay);
+    }else if(status.workHoursEnabled){
+      wakeRefreshTimer=setTimeout(refreshWakeControlUI,30_000);
+    }
   }
   function openWakeControl(){refreshWakeControlUI();openOverlay("wakeControlOverlay")}
   function refreshWorkHoursNativeStatus(){
@@ -2591,7 +2598,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
   window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus()});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)consumeNativeReminderActions()});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus()}});
 
   window.NottasHandleBack=function(){
     const active=document.activeElement;
