@@ -812,7 +812,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
       if(!hasExact&&NottasNative.requestExactAlarmAccess)NottasNative.requestExactAlarmAccess();
     }catch(_){}
   }
-  function subtaskProgress(t){const total=t.subtasks?.length||0;if(!total)return "";const done=t.subtasks.filter(s=>s.done).length;return done+"/"+total}
+  function subtaskProgress(t){return taskProgressLabel(t)}
   function nextRecurrenceDate(baseDate,rule){
     if(!rule||rule==="none")return "";
     const base=baseDate||localDateISO();
@@ -833,7 +833,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     if(!t||!t.recurrence||t.recurrence==="none")return null;
     if(state.tasks.some(x=>x.recurrenceFrom===t.id))return null;
     const stamp=now();
-    const next={id:makeId("t"),text:t.text,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,subtasks:(t.subtasks||[]).map(s=>({id:makeId("s"),text:s.text,done:false})),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+    const items=cloneTaskItems(t.items||[],true);const next={id:makeId("t"),text:t.text,category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
     state.tasks.push(next);
     return next;
   }
@@ -842,13 +842,15 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     const wasDone=!!t.done;
     t.done=!!done;
     if(t.done&&!wasDone){
-      (t.subtasks||[]).forEach(s=>s.done=true);
+      (t.items||[]).forEach(n=>setTaskNodeDone(n,true));
+      syncTaskTreeDone(t.items||[]);
+      t.subtasks=legacySubtasksFromItems(t.items||[]);
       createNextOccurrence(t);
     }
     touch(t);scheduleSave();render();
   }
 
-  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,catName(t.category),tagsText(t.tags),t.dueDate,t.priority,recurrenceLabel(t.recurrence),(t.subtasks||[]).map(s=>s.text).join(" "))}
+  function visibleTask(t){if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(taskFilter==="today"&&(t.done||t.dueDate!==localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,catName(t.category),tagsText(t.tags),t.dueDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
   function visibleNote(n){if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
   function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
 
@@ -979,7 +981,7 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
           <label class="checkHit"><input class="check" type="checkbox" ${t.done?"checked":""} aria-label="Completar"></label>
           <div class="content taskOpen">
             <div class="cardHeader"><div class="taskTitle">${esc(t.text)}</div><button class="miniBtn pin ${t.pinned?"active":""} pinItem pinTask" type="button" aria-label="${t.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>
-            <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.subtasks?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${tagsMeta(t.tags)}</div>
+            <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.items?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${tagsMeta(t.tags)}</div>
           </div>
         </div>
       </div>`;
@@ -1232,40 +1234,80 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     closeTimePicker();
   }
 
+  function treeNodeAtPath(root,path){
+    const parts=String(path||"").split(".").filter(Boolean).map(Number);let arr=root,node=null;
+    for(const i of parts){if(!arr||!arr[i])return null;node=arr[i];arr=node.children||[]}
+    return node;
+  }
+  function treeArrayForPath(root,path){
+    const parts=String(path||"").split(".").filter(Boolean).map(Number);const last=parts.pop();let arr=root;
+    for(const i of parts){if(!arr[i])return null;arr=arr[i].children||(arr[i].children=[])}
+    return {arr,index:last};
+  }
+  function taskNodesHtml(nodes,depth=0,prefix=""){
+    return (nodes||[]).map((n,i)=>{
+      const path=prefix?prefix+"."+i:String(i),checked=taskNodeProgress(n)>=1;
+      return `<div class="taskTreeNode" style="--tree-depth:${depth}" data-task-path="${path}"><div class="taskTreeRow"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><input class="subtaskEditorInput" type="text" maxlength="500" value="${esc(n.text)}" placeholder="${depth?"Elemento interno":"Nuevo elemento"}"><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="subtaskRemove" type="button" aria-label="Eliminar elemento">×</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+    }).join("");
+  }
   function renderEditorSubtasks(){
-    const box=$("subtasksEditor");if(!box)return;
-    box.innerHTML=editorSubtasks.map((s,i)=>`<div class="subtaskEditorRow" data-subtask-index="${i}"><input class="subtaskEditorCheck" type="checkbox" ${s.done?"checked":""} aria-label="Completar subtarea"><input class="subtaskEditorInput" type="text" maxlength="180" value="${esc(s.text)}" placeholder="Nuevo paso"><button class="subtaskRemove" type="button" aria-label="Eliminar subtarea">×</button></div>`).join("");
-    box.querySelectorAll("[data-subtask-index]").forEach(row=>{
-      const i=Number(row.dataset.subtaskIndex),check=row.querySelector(".subtaskEditorCheck"),input=row.querySelector(".subtaskEditorInput"),remove=row.querySelector(".subtaskRemove");
-      check.addEventListener("change",()=>{if(editorSubtasks[i])editorSubtasks[i].done=check.checked});
-      input.addEventListener("input",()=>{if(editorSubtasks[i])editorSubtasks[i].text=input.value});
-      input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();editorSubtasks.splice(i+1,0,{id:makeId("s"),text:"",done:false});renderEditorSubtasks();setTimeout(()=>$("subtasksEditor").querySelectorAll(".subtaskEditorInput")[i+1]?.focus(),20)}});
-      remove.addEventListener("click",()=>{editorSubtasks.splice(i,1);renderEditorSubtasks()});
+    const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);box.innerHTML=taskNodesHtml(editorSubtasks);
+    box.querySelectorAll("[data-task-path]").forEach(row=>{
+      const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
+      const check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),remove=row.querySelector(":scope > .taskTreeRow .subtaskRemove");
+      check.addEventListener("change",()=>{setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
+      input.addEventListener("input",()=>{node.text=input.value});
+      input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
+      child.addEventListener("click",()=>{node.children=node.children||[];node.children.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();setTimeout(()=>{const inputs=row.parentElement?.querySelectorAll(".subtaskEditorInput");inputs?.[inputs.length-1]?.focus()},20)});
+      remove.addEventListener("click",()=>{const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index,1);syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()});
     });
   }
-  function addEditorSubtask(){
-    editorSubtasks.push({id:makeId("s"),text:"",done:false});
-    renderEditorSubtasks();
-    setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20);
+  function addEditorSubtask(){editorSubtasks.push({id:makeId("s"),text:"",done:false,children:[]});renderEditorSubtasks();setTimeout(()=>{const inputs=$("subtasksEditor").querySelectorAll(".subtaskEditorInput");inputs[inputs.length-1]?.focus()},20)}
+
+  function cloneNoteBlocks(blocks){return (blocks||[]).map(b=>({id:b.id||makeId("b"),type:NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",html:sanitizeInlineHtml(b.html||""),checked:!!b.checked,children:cloneNoteBlocks(b.children||[])}))}
+  function noteBlockOptions(type){const labels={paragraph:"Texto",heading:"Encabezado",subheading:"Subtítulo",quote:"Cita",bullet:"Viñeta",number:"Número",checklist:"Casilla"};return Object.keys(labels).map(k=>'<option value="'+k+'" '+(k===type?"selected":"")+'>'+labels[k]+'</option>').join("")}
+  function noteBlockMarker(type,index){return type==="bullet"?"•":type==="number"?String(index+1)+".":type==="quote"?"❝":""}
+  function noteBlocksHtml(nodes,depth=0,prefix=""){
+    return (nodes||[]).map((b,i)=>{
+      const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked;
+      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="noteBlockRemove" type="button" aria-label="Eliminar bloque">×</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path)}</div>`:""}</div>`;
+    }).join("");
   }
+  function findNoteBlockById(nodes,id){for(const b of nodes||[]){if(b.id===id)return b;const found=findNoteBlockById(b.children||[],id);if(found)return found}return null}
+  function renderNoteBlocks(focusPath=null){
+    const box=$("noteBlocksEditor");if(!box)return;if(!editorNoteBlocks.length)editorNoteBlocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];box.innerHTML=noteBlocksHtml(editorNoteBlocks);
+    box.querySelectorAll("[data-note-path]").forEach(row=>{
+      const path=row.dataset.notePath,b=treeNodeAtPath(editorNoteBlocks,path);if(!b)return;
+      const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),remove=row.querySelector(":scope > .noteBlockRow .noteBlockRemove");
+      type.addEventListener("change",()=>{b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderNoteBlocks(path)});
+      rich.addEventListener("focus",()=>{activeRichBlockId=b.id});
+      rich.addEventListener("input",()=>{b.html=rich.innerHTML});
+      rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML);rich.innerHTML=b.html});
+      rich.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();b.html=sanitizeInlineHtml(rich.innerHTML);const loc=treeArrayForPath(editorNoteBlocks,path);if(!loc)return;const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderNoteBlocks(nextPath)}});
+      if(check)check.addEventListener("change",()=>{b.checked=check.checked;row.classList.toggle("checked",b.checked)});
+      child.addEventListener("click",()=>{b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderNoteBlocks(path+"."+(b.children.length-1))});
+      remove.addEventListener("click",()=>{const loc=treeArrayForPath(editorNoteBlocks,path);if(!loc)return;loc.arr.splice(loc.index,1);renderNoteBlocks()});
+    });
+    if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
+  }
+  function addNoteBlock(){editorNoteBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
+  function applyRichCommand(command){const active=document.querySelector('.richText[data-rich-block="'+CSS.escape(activeRichBlockId||"")+'"]');if(!active)return;active.focus();try{document.execCommand(command,false,null)}catch(_){}const b=findNoteBlockById(editorNoteBlocks,activeRichBlockId);if(b)b.html=sanitizeInlineHtml(active.innerHTML)}
 
   function openTask(t){
-    leaveSearchKeyboardMode();
-    setNativeSearchKeyboardMode(false);
+    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;$("taskTimeButton").dataset.reminderActive=t&&t.reminder&&t.reminder!=="none"?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";editorSubtasks=(t?.subtasks||[]).map(s=>({id:s.id||makeId("s"),text:s.text||"",done:!!s.done}));renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);
+    $("taskText").value=t?t.text:"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):"";$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);
     openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
-    leaveSearchKeyboardMode();
-    setNativeSearchKeyboardMode(false);
+    leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
-    $("noteTitle").value=n?n.title:"";$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);
+    $("noteTitle").value=n?n.title:"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):"";$("deleteNoteBtn").classList.toggle("hidden",!n);
     openOverlay("editorOverlay");setTimeout(()=>$("noteTitle").focus(),80)
   }
-  function closeEditor(){closeOverlay("editorOverlay");editingTaskId=null;editingNoteId=null;editorPinned=false;editorSubtasks=[];syncEditorPin();setNativeSearchKeyboardMode(true)}
+  function closeEditor(){closeOverlay("editorOverlay");editingTaskId=null;editingNoteId=null;editorPinned=false;editorSubtasks=[];editorNoteBlocks=[];activeRichBlockId=null;syncEditorPin();setNativeSearchKeyboardMode(true)}
 
   function syncQuickMode(){
     const isTask=quickMode==="tasks";
@@ -1328,11 +1370,11 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
       const text=$("quickTaskText").value.trim();if(!text)return false;
-      state.tasks.push({id:makeId("t"),text,category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      state.tasks.push({id:makeId("t"),text,category,done:false,pinned:false,dueDate:quickDueDate,dueTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
-    state.notes.push({id:makeId("n"),title:"",body:raw,category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+    state.notes.push({id:makeId("n"),title:"",body:raw,blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
     closeQuickCapture();scheduleSave();render();showToast("Nota guardada");return true;
   }
   function expandQuickCapture(){
@@ -1350,7 +1392,9 @@ html[data-theme="dark"] .noteBlock-quote .richText{color:#d1d1d6}
       closeQuickCapture();
       openNote(null);
       $("noteTitle").value="";
+      editorNoteBlocks=[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}];
       $("noteBody").value=raw;
+      renderNoteBlocks();
       setCategoryPicker("noteCategory",category);
     }
   }
