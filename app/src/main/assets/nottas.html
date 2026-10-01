@@ -260,6 +260,13 @@ html[data-theme="dark"] .noteBottomBar .inlineRichToolbar .formatModeClose,html[
 .calendarCreateBtn{width:38px;height:38px;border:0;border-radius:50%;background:#e8f2ff;color:#007aff;font-size:25px;line-height:1;display:grid;place-items:center}.calendarCreateBtn:active{background:#d9eaff}
 .sideTagHash{width:20px;text-align:center;color:#5856d6;font-weight:750;flex:0 0 20px}
 html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] .wakeControlStatus,html[data-theme="dark"] .wakeSnoozeBtn{background:#1c1c1e;color:#f5f5f7}html[data-theme="dark"] .wakeControlAction{background:#2c2c2e;color:#f5f5f7}html[data-theme="dark"] .calendarCreateBtn{background:#16365d}
+
+.calendarMoveBanner{display:flex;align-items:center;gap:10px;background:#e8f2ff;color:#1d1d1f;border-radius:13px;padding:10px 12px;margin-bottom:10px;font-size:13px}.calendarMoveBanner strong{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.calendarMoveCancel{border:0;background:transparent;color:#007aff;font-weight:650;padding:6px}
+.calendarTaskRow{grid-template-columns:30px minmax(0,1fr) 38px}.calendarMoveBtn{width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:#007aff;display:grid;place-items:center;padding:0}.calendarMoveBtn:active{background:#e8f2ff}.calendarMoveBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.calendarDay.moveTarget{outline:1px dashed #8bbcff}.calendarDay.moveTarget:active{background:#dbeaff}.calendarWeekDay.moveTarget{outline:1px dashed #8bbcff}
+.calendarDaySections{display:flex;flex-direction:column;gap:13px}.calendarDaySectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#8e8e93;margin:2px 3px 6px}.calendarTimeline{position:relative;display:flex;flex-direction:column;gap:7px;padding-left:54px}.calendarTimeline::before{content:"";position:absolute;left:43px;top:7px;bottom:7px;width:1px;background:#d1d1d6}.calendarTimelineItem{position:relative}.calendarTimelineTime{position:absolute;right:calc(100% + 13px);top:12px;width:42px;text-align:right;font-size:11px;color:#8e8e93}.calendarTimelineDot{position:absolute;left:-15px;top:17px;width:7px;height:7px;border-radius:50%;border:2px solid #f5f5f7}
+.calendarWeekGroups{display:flex;flex-direction:column;gap:12px;margin-top:12px}.calendarWeekGroup{border-radius:15px}.calendarWeekGroupHeader{width:100%;border:0;background:transparent;display:flex;align-items:center;justify-content:space-between;padding:5px 3px 7px;color:#1d1d1f;text-align:left}.calendarWeekGroupHeader strong{font-size:14px}.calendarWeekGroupHeader span{font-size:11px;color:#8e8e93}.calendarWeekEmpty{font-size:12px;color:#aeaeb2;padding:5px 4px 9px}
+html[data-theme="dark"] .calendarMoveBanner{background:#16365d;color:#f5f5f7}html[data-theme="dark"] .calendarMoveBtn:active{background:#16365d}html[data-theme="dark"] .calendarTimeline::before{background:#3a3a3c}html[data-theme="dark"] .calendarTimelineDot{border-color:#000}html[data-theme="dark"] .calendarWeekGroupHeader{color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -769,7 +776,7 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),savedRichRange=null,savedRichScope=null;
   let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
@@ -1298,17 +1305,45 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   function mondayOf(value){const d=dateFromISO(value),dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);return localDateISO(d)}
   function calendarTasksFor(value){return state.tasks.filter(t=>!t.deletedAt&&t.dueDate===value).slice().sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")||String(a.text).localeCompare(String(b.text)))}
   function calendarDateLabel(value,opts){return dateFromISO(value).toLocaleDateString("es",{...opts})}
+  function calendarMoveNotice(){
+    if(!calendarMoveTaskId)return "";
+    const t=state.tasks.find(x=>x.id===calendarMoveTaskId);
+    if(!t){calendarMoveTaskId=null;return ""}
+    return '<div class="calendarMoveBanner"><span>Reprogramar</span><strong>'+esc(t.text)+'</strong><button id="calendarMoveCancel" class="calendarMoveCancel" type="button">Cancelar</button></div>';
+  }
   function calendarTaskRows(tasks){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime)+'</span>':"")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'"><input class="calendarTaskCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime)+'</span>':"<span>Sin hora</span>")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span></span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
+  }
+  function beginCalendarMove(id){
+    const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
+    calendarMoveTaskId=t.id;calendarDate=t.dueDate||calendarDate||localDateISO();calendarView="month";renderCalendar();
+  }
+  function cancelCalendarMove(){calendarMoveTaskId=null;renderCalendar()}
+  function moveCalendarTaskTo(date){
+    const t=state.tasks.find(x=>x.id===calendarMoveTaskId&&!x.deletedAt);if(!t){calendarMoveTaskId=null;renderCalendar();return}
+    const old=t.dueDate||"";t.dueDate=date;touch(t);calendarMoveTaskId=null;calendarDate=date;scheduleSave();renderCalendar();render();
+    showToast(old===date?"La tarea ya estaba en esa fecha":"Tarea reprogramada");
+  }
+  function bindCalendarMoveCancel(){
+    const b=$("calendarMoveCancel");if(b)b.addEventListener("click",cancelCalendarMove);
   }
   function bindCalendarTasks(){
     $("calendarBody").querySelectorAll("[data-calendar-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.calendarTask);if(!t)return;
-      const check=row.querySelector(".calendarTaskCheck");
+      const check=row.querySelector(".calendarTaskCheck"),move=row.querySelector(".calendarMoveBtn");
       if(check)check.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      row.addEventListener("click",e=>{if(e.target===check)return;closeOverlay("calendarOverlay");openTask(t)});row.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();closeOverlay("calendarOverlay");openTask(t)}});
+      if(move)move.addEventListener("click",e=>{e.stopPropagation();beginCalendarMove(t.id)});
+      row.addEventListener("click",e=>{if(e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;closeOverlay("calendarOverlay");openTask(t)});
+      row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();closeOverlay("calendarOverlay");openTask(t)}});
     });
+    bindCalendarMoveCancel();
+  }
+  function bindCalendarDateTargets(){
+    $("calendarBody").querySelectorAll("[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{
+      const date=b.dataset.calendarDate;if(!date)return;
+      if(calendarMoveTaskId)moveCalendarTaskTo(date);else{calendarDate=date;renderCalendar()}
+    }));
   }
   function calendarPeriodText(){
     if(calendarView==="day")return calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"});
@@ -1318,53 +1353,64 @@ html[data-theme="dark"] .wakeQuickDot{border-color:#000}html[data-theme="dark"] 
   }
   function renderCalendarMonth(){
     const selected=dateFromISO(calendarDate),first=new Date(selected.getFullYear(),selected.getMonth(),1,12),offset=(first.getDay()+6)%7,start=new Date(first);start.setDate(first.getDate()-offset);
-    const dows=["L","M","X","J","V","S","D"];let html='<div class="calendarGrid">'+dows.map(x=>'<div class="calendarDow">'+x+'</div>').join("");
+    const dows=["L","M","X","J","V","S","D"];let html=calendarMoveNotice()+'<div class="calendarGrid">'+dows.map(x=>'<div class="calendarDow">'+x+'</div>').join("");
     for(let i=0;i<42;i++){
       const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
       const dots=tasks.slice(0,3).map(t=>'<i style="background:'+esc(catColor(t.category))+'"></i>').join("");
-      html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
+      html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
     }
     html+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarTaskRows(calendarTasksFor(calendarDate));
-    $("calendarBody").innerHTML=html;
-    $("calendarBody").querySelectorAll("[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{calendarDate=b.dataset.calendarDate;renderCalendar()}));
-    bindCalendarTasks();
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();
   }
   function renderCalendarWeek(){
-    const start=mondayOf(calendarDate);let strip='<div class="calendarWeekStrip">';
-    for(let i=0;i<7;i++){const iso=addCalendarDays(start,i),d=dateFromISO(iso),count=calendarTasksFor(iso).length;strip+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count+" tarea"+(count===1?"":"s"):"")+'</div></button>'}
-    strip+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarTaskRows(calendarTasksFor(calendarDate));
-    $("calendarBody").innerHTML=strip;
-    $("calendarBody").querySelectorAll("[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{calendarDate=b.dataset.calendarDate;renderCalendar()}));
-    bindCalendarTasks();
+    const start=mondayOf(calendarDate);let strip=calendarMoveNotice()+'<div class="calendarWeekStrip">';
+    for(let i=0;i<7;i++){const iso=addCalendarDays(start,i),d=dateFromISO(iso),count=calendarTasksFor(iso).length;strip+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count+" tarea"+(count===1?"":"s"):"")+'</div></button>'}
+    strip+='</div><div class="calendarWeekGroups">';
+    for(let i=0;i<7;i++){
+      const iso=addCalendarDays(start,i),tasks=calendarTasksFor(iso),label=calendarDateLabel(iso,{weekday:"long",day:"numeric",month:"short"});
+      strip+='<section class="calendarWeekGroup"><button class="calendarWeekGroupHeader" type="button" data-calendar-date="'+iso+'"><strong>'+esc(label)+'</strong><span>'+tasks.length+(tasks.length===1?" tarea":" tareas")+'</span></button>'+(tasks.length?calendarTaskRows(tasks):'<div class="calendarWeekEmpty">Sin tareas</div>')+'</section>';
+    }
+    strip+='</div>';$("calendarBody").innerHTML=strip;bindCalendarDateTargets();bindCalendarTasks();
   }
   function renderCalendarDay(){
-    $("calendarBody").innerHTML='<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div>'+calendarTaskRows(calendarTasksFor(calendarDate));
-    bindCalendarTasks();
+    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),timed=tasks.filter(t=>t.dueTime);
+    let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div><div class="calendarDaySections">';
+    if(allDay.length)html+='<section><div class="calendarDaySectionTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</section>';
+    if(timed.length){
+      html+='<section><div class="calendarDaySectionTitle">Horario</div><div class="calendarTimeline">';
+      html+=timed.map(t=>'<div class="calendarTimelineItem"><span class="calendarTimelineTime">'+esc(t.dueTime)+'</span><i class="calendarTimelineDot" style="background:'+esc(catColor(t.category))+'"></i>'+calendarTaskRows([t])+'</div>').join("");
+      html+='</div></section>';
+    }
+    if(!tasks.length)html+='<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
+    html+='</div>';$("calendarBody").innerHTML=html;bindCalendarTasks();
   }
   function renderCalendarAgenda(){
     const start=dateFromISO(calendarDate),end=new Date(start);end.setDate(end.getDate()+60);
     const tasks=state.tasks.filter(t=>!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
-    if(!tasks.length){$("calendarBody").innerHTML='<div class="calendarEmpty">No hay tareas con fecha en los próximos 60 días.</div>';return}
+    let html=calendarMoveNotice();
+    if(!tasks.length){$("calendarBody").innerHTML=html+'<div class="calendarEmpty">No hay tareas con fecha en los próximos 60 días.</div>';bindCalendarMoveCancel();return}
     const groups={};tasks.forEach(t=>(groups[t.dueDate]||(groups[t.dueDate]=[])).push(t));
-    $("calendarBody").innerHTML=Object.keys(groups).sort().map(date=>'<div class="agendaGroup"><div class="agendaGroupTitle">'+calendarDateLabel(date,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarTaskRows(groups[date])+'</div>').join("");
-    bindCalendarTasks();
+    html+=Object.keys(groups).sort().map(date=>'<div class="agendaGroup"><button class="agendaGroupTitle" type="button" data-calendar-date="'+date+'">'+calendarDateLabel(date,{weekday:"long",day:"numeric",month:"long"})+'</button>'+calendarTaskRows(groups[date])+'</div>').join("");
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();
   }
   function renderCalendar(){
     if(!state)return;
     $("calendarPeriod").textContent=calendarPeriodText();
+    $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
     document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("active",b.dataset.calendarView===calendarView));
     if(calendarView==="day")renderCalendarDay();else if(calendarView==="week")renderCalendarWeek();else if(calendarView==="agenda")renderCalendarAgenda();else renderCalendarMonth();
   }
   function createTaskOnCalendarDate(){
-    const date=calendarDate||localDateISO();
+    const date=calendarDate||localDateISO();calendarMoveTaskId=null;
     closeOverlay("calendarOverlay");
     mode="tasks";trash=false;saveUI();
     openTask(null);
     $("taskDate").value=date;
     syncTaskEditorMeta();
   }
-  function openCalendar(){calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true)}
+  function openCalendar(){calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true)}
   function shiftCalendar(dir){
+    if(calendarMoveTaskId)return;
     if(calendarView==="day")calendarDate=addCalendarDays(calendarDate,dir);
     else if(calendarView==="week")calendarDate=addCalendarDays(calendarDate,dir*7);
     else calendarDate=addCalendarMonths(calendarDate,dir);
