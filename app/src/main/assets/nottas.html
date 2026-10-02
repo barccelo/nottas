@@ -1856,12 +1856,7 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
     openOverlay("timeOverlay");
     requestAnimationFrame(()=>positionTimeWheels(false));
   }
-  function closeTimePicker(){
-    $("hourDirectInput").blur();$("minuteDirectInput").blur();
-    setTimePartEditing("hour",false);setTimePartEditing("minute",false);
-    closeOverlay("timeOverlay");
-  }
-  function commitTimePicker(){
+  function applyTimePickerDraft(persist=true){
     if(!$("hourDirectInput").classList.contains("hidden"))commitTimePartEdit("hour");
     if(!$("minuteDirectInput").classList.contains("hidden"))commitTimePartEdit("minute");
     const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),oldDuration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:null;
@@ -1870,9 +1865,20 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
     const on=$("timeReminderToggle").checked;
     $("taskReminder").value=on?($("taskReminder").value||"at"):"at";
     $("taskTimeButton").dataset.reminderActive=on?"1":"0";
+    timeDraftReminder=on?($("taskReminder").value||"at"):"none";
     if(on)requestReminderPermission();
     syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
-    closeTimePicker();
+    if(persist)persistOpenTask(false);
+  }
+  function closeTimePicker(saveDraft=true){
+    if(saveDraft&&$("timeOverlay").classList.contains("show"))applyTimePickerDraft(true);
+    $("hourDirectInput").blur();$("minuteDirectInput").blur();
+    setTimePartEditing("hour",false);setTimePartEditing("minute",false);
+    closeOverlay("timeOverlay");
+  }
+  function commitTimePicker(){
+    applyTimePickerDraft(true);
+    closeTimePicker(false);
   }
   function clearTaskTime(){
     $("taskTime").value="";
@@ -1882,7 +1888,8 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
     timeDraftReminder="none";
     $("timeReminderToggle").checked=false;
     syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
-    closeTimePicker();
+    persistOpenTask(false);
+    closeTimePicker(false);
   }
 
   function treeNodeAtPath(root,path){
@@ -2850,7 +2857,7 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
   $("timeOverlay").addEventListener("click",e=>{if(e.target===$("timeOverlay"))closeTimePicker()});
   $("timeDone").addEventListener("click",commitTimePicker);
   $("timeClear").addEventListener("click",clearTaskTime);
-  $("timeReminderToggle").addEventListener("change",()=>{syncTimeReminderUI();if($("timeReminderToggle").checked)requestReminderPermission()});
+  $("timeReminderToggle").addEventListener("change",()=>{syncTimeReminderUI();const on=$("timeReminderToggle").checked;$("taskTimeButton").dataset.reminderActive=on?"1":"0";$("taskReminder").value=on?($("taskReminder").value||"at"):"at";syncTaskTimeButton();if(on)requestReminderPermission()});
   $("taskReminder").addEventListener("change",()=>{timeDraftReminder=$("taskReminder").value||"at";if($("timeReminderToggle").checked)requestReminderPermission()});
   $("hourEditButton").addEventListener("click",()=>beginTimePartEdit("hour"));
   $("minuteEditButton").addEventListener("click",()=>beginTimePartEdit("minute"));
