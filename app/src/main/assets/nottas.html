@@ -318,6 +318,30 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
   .calendarWeekDay .weekCount{display:none}
   .calendarWeekTimeViewport .calendarTimeBlockMeta{display:none}
 }
+
+/* Interaction stability: keyboard, draggable sheets and calendar event drag */
+body.imeVisible #editorOverlay.noteEditorMode .noteBottomBar,
+body.imeVisible #editorOverlay.taskEditorMode .noteBottomBar{bottom:0}
+body.imeVisible .noteActionPanel{bottom:0}
+.sheet.sheetDragging,.noteActionPanel.panelDragging{transition:none!important;will-change:transform}
+.sheetHandle,.noteActionPanelHandle{touch-action:none}
+.calendarTimeBlock.calendarDraggingSource{opacity:.16}
+.calendarDragPreview{
+  position:fixed!important;
+  right:auto!important;
+  margin:0!important;
+  z-index:240!important;
+  pointer-events:none!important;
+  opacity:.97!important;
+  overflow:visible!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.24)!important;
+  transform:scale(1.02);
+  transform-origin:center;
+  transition:left .045s linear,top .045s linear,width .045s linear;
+}
+.calendarDragPreview .calendarTimeBlockMeta{display:block!important;font-size:9px!important;color:#48484a!important;white-space:nowrap!important}
+.calendarDragPreview .calendarBlockCheck,.calendarDragPreview .calendarResizeHandle{display:none!important}
+html[data-theme="dark"] .calendarDragPreview .calendarTimeBlockMeta{color:#d1d1d6!important}
 </style>
 </head>
 <body>
@@ -859,18 +883,17 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
     document.body.classList.toggle("imeVisible",value>0);
   };
 
+  let viewportSyncFrame=0;
   function syncVisualViewport(){
-    const vv=window.visualViewport;
-    const h=vv?vv.height:window.innerHeight;
-    const top=vv?vv.offsetTop:0;
-    document.documentElement.style.setProperty("--vv-height",Math.max(260,h)+"px");
-    document.documentElement.style.setProperty("--vv-top",top+"px");
-    const layoutH=document.documentElement.clientHeight||window.innerHeight;
-    document.body.classList.toggle("keyboardOpen",!!vv&&layoutH-h>120);
-    const active=document.activeElement;
-    if(active&&active.closest&&active.closest("#editorOverlay")&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
-      setTimeout(()=>active.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"}),40);
-    }
+    cancelAnimationFrame(viewportSyncFrame);
+    viewportSyncFrame=requestAnimationFrame(()=>{
+      const vv=window.visualViewport;
+      const h=vv?vv.height:window.innerHeight;
+      const layoutH=document.documentElement.clientHeight||window.innerHeight;
+      document.documentElement.style.setProperty("--vv-height",Math.max(260,h)+"px");
+      document.documentElement.style.setProperty("--vv-top","0px");
+      document.body.classList.toggle("keyboardOpen",document.body.classList.contains("imeVisible")||(!!vv&&layoutH-h>120));
+    });
   }
   syncVisualViewport();
   if(window.visualViewport){
@@ -1475,25 +1498,87 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
   function clearCalendarTimeDrop(){document.querySelectorAll(".calendarTimeColumn.calendarDropTarget").forEach(el=>el.classList.remove("calendarDropTarget"))}
   function installCalendarTimeMove(block,t){
     if(!block||block.dataset.moveReady==="1")return;block.dataset.moveReady="1";
-    let timer=null,pointerId=null,startX=0,startY=0,active=false,targetDate="",targetMinute=null,ghost=null;
-    const cleanup=()=>{clearTimeout(timer);timer=null;clearCalendarTimeDrop();block.classList.remove("calendarDragging");ghost?.remove();ghost=null;active=false;targetDate="";targetMinute=null;try{if(pointerId!==null&&block.hasPointerCapture(pointerId))block.releasePointerCapture(pointerId)}catch(_){}};
+    let timer=null,pointerId=null,startX=0,startY=0,active=false,targetDate="",targetMinute=null,preview=null,grabOffsetY=0,previewHeight=0;
+    const viewport=block.closest(".calendarTimeViewport");
+    const columns=()=>Array.from(viewport?.querySelectorAll(".calendarTimeColumn")||[]);
+    const columnAtX=x=>{
+      const cols=columns();
+      let best=null,bestDist=Infinity;
+      cols.forEach(col=>{
+        const r=col.getBoundingClientRect();
+        if(x>=r.left&&x<=r.right){best=col;bestDist=0;return}
+        const d=x<r.left?r.left-x:x-r.right;
+        if(d<bestDist){bestDist=d;best=col}
+      });
+      return bestDist<=28?best:null;
+    };
+    const updatePreview=(col,minute)=>{
+      if(!preview||!col||minute===null)return;
+      const r=col.getBoundingClientRect();
+      const top=r.top+(minute/60)*CAL_HOUR_PX;
+      preview.style.left=(r.left+1)+"px";
+      preview.style.top=top+"px";
+      preview.style.width=Math.max(28,r.width-2)+"px";
+      preview.style.height=previewHeight+"px";
+      const duration=taskDurationMinutes(t),end=duration!==null?minutesToTime(Math.min(1439,minute+duration)):"";
+      const meta=preview.querySelector(".calendarTimeBlockMeta");
+      if(meta)meta.textContent=end?minutesToTime(minute)+"–"+end:minutesToTime(minute);
+      preview.dataset.dragTime=minutesToTime(minute);
+    };
+    const cleanup=()=>{
+      clearTimeout(timer);timer=null;
+      block.classList.remove("calendarDraggingSource");
+      preview?.remove();preview=null;active=false;targetDate="";targetMinute=null;
+      try{if(pointerId!==null&&block.hasPointerCapture(pointerId))block.releasePointerCapture(pointerId)}catch(_){}
+    };
     block.addEventListener("pointerdown",e=>{
       if(e.target.closest(".calendarResizeHandle,.calendarBlockCheck")||(e.pointerType==="mouse"&&e.button!==0))return;
       pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
-      timer=setTimeout(()=>{active=true;try{block.setPointerCapture(pointerId)}catch(_){}block.classList.add("calendarDragging");ghost=makeDragGhost(t.text);moveDragGhost(ghost,e.clientX,e.clientY)},300);
+      const rect=block.getBoundingClientRect();grabOffsetY=Math.max(0,Math.min(rect.height,e.clientY-rect.top));previewHeight=rect.height;
+      timer=setTimeout(()=>{
+        active=true;
+        try{block.setPointerCapture(pointerId)}catch(_){}
+        block.classList.add("calendarDraggingSource");
+        preview=block.cloneNode(true);
+        preview.removeAttribute("data-calendar-time-task");
+        preview.classList.remove("calendarDraggingSource");
+        preview.classList.add("calendarDragPreview");
+        preview.querySelectorAll("input,button").forEach(el=>{el.tabIndex=-1;el.setAttribute("aria-hidden","true")});
+        document.body.appendChild(preview);
+        const col=columnAtX(startX);
+        if(col){
+          targetDate=col.dataset.calendarTimeDate||"";
+          targetMinute=calendarMinutesFromPointer(col,startY-grabOffsetY);
+          updatePreview(col,targetMinute);
+        }
+      },280);
     });
     block.addEventListener("pointermove",e=>{
-      if(!active){if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){clearTimeout(timer);timer=null}return}
-      e.preventDefault();moveDragGhost(ghost,e.clientX,e.clientY);autoScrollDrag(block.closest(".calendarTimeViewport"),e.clientY);clearCalendarTimeDrop();
-      const col=document.elementFromPoint(e.clientX,e.clientY)?.closest(".calendarTimeColumn");if(!col)return;
-      targetDate=col.dataset.calendarTimeDate||"";targetMinute=calendarMinutesFromPointer(col,e.clientY);col.classList.add("calendarDropTarget");
+      if(!active){
+        if(Math.hypot(e.clientX-startX,e.clientY-startY)>10){clearTimeout(timer);timer=null}
+        return;
+      }
+      e.preventDefault();
+      autoScrollDrag(viewport,e.clientY);
+      const col=columnAtX(e.clientX);
+      if(!col){targetDate="";targetMinute=null;return}
+      targetDate=col.dataset.calendarTimeDate||"";
+      targetMinute=calendarMinutesFromPointer(col,e.clientY-grabOffsetY);
+      updatePreview(col,targetMinute);
     },{passive:false});
     const finish=e=>{
-      clearTimeout(timer);timer=null;if(!active)return;e.preventDefault();suppressClickUntil=Date.now()+480;
-      const date=targetDate,minute=targetMinute,duration=taskDurationMinutes(t);cleanup();if(!date||minute===null)return;
-      t.dueDate=date;t.dueTime=minutesToTime(minute);if(duration!==null)t.endTime=minutesToTime(Math.min(1439,minute+duration));touch(t);calendarDate=date;scheduleSave();renderCalendar();render();showToast("Tarea movida a "+t.dueTime);
+      clearTimeout(timer);timer=null;
+      if(!active)return;
+      e.preventDefault();suppressClickUntil=Date.now()+480;
+      const date=targetDate,minute=targetMinute,duration=taskDurationMinutes(t);
+      cleanup();
+      if(!date||minute===null)return;
+      t.dueDate=date;t.dueTime=minutesToTime(minute);
+      if(duration!==null)t.endTime=minutesToTime(Math.min(1439,minute+duration));
+      touch(t);calendarDate=date;scheduleSave();renderCalendar();render();showToast("Tarea movida a "+t.dueTime);
     };
-    block.addEventListener("pointerup",finish,{passive:false});block.addEventListener("pointercancel",cleanup);
+    block.addEventListener("pointerup",finish,{passive:false});
+    block.addEventListener("pointercancel",cleanup);
   }
   function installCalendarTimeResize(handle,t,block){
     if(!handle||handle.dataset.resizeReady==="1")return;handle.dataset.resizeReady="1";
@@ -1660,6 +1745,20 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
     const overlay=sheet&&sheet.closest?sheet.closest(".overlay"):null;
     if(overlay&&overlay.id)closeOverlay(overlay.id);
   }
+  function settleSheetPosition(sheet,expanded){
+    if(!sheet)return;
+    sheet.classList.remove("sheetDragging");
+    sheet.classList.toggle("sheetExpanded",!!expanded);
+    requestAnimationFrame(()=>sheet.style.setProperty("--sheet-drag-y","0px"));
+    setTimeout(()=>sheet.style.removeProperty("--sheet-drag-y"),230);
+  }
+  function animateSheetClosed(sheet){
+    if(!sheet)return;
+    sheet.classList.remove("sheetDragging");
+    const distance=Math.max(window.innerHeight||0,sheet.getBoundingClientRect().height+48);
+    requestAnimationFrame(()=>sheet.style.setProperty("--sheet-drag-y",distance+"px"));
+    setTimeout(()=>closeSheetFromHandle(sheet),190);
+  }
   function initSheetGestures(){
     document.querySelectorAll(".sheet").forEach(sheet=>{
       const handle=sheet.querySelector(".sheetHandle");
@@ -1678,41 +1777,45 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=e.clientY-drag.startY;
-        const visual=dy>=0?Math.min(dy,180):Math.max(dy*.35,-48);
+        const maxDown=Math.max(window.innerHeight||0,sheet.getBoundingClientRect().height+64);
+        const visual=Math.max(-110,Math.min(maxDown,dy));
         sheet.style.setProperty("--sheet-drag-y",visual+"px");
-        if(Math.abs(dy)>3)e.preventDefault();
-      });
+        if(Math.abs(dy)>2)e.preventDefault();
+      },{passive:false});
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
         try{handle.releasePointerCapture(e.pointerId)}catch(_){}
-        const dy=(Number.isFinite(e.clientY)?e.clientY:g.lastY)-g.startY;
-        const elapsed=Math.max(1,performance.now()-g.started);
-        const velocity=dy/elapsed;
-        sheet.classList.remove("sheetDragging");
-        sheet.style.removeProperty("--sheet-drag-y");
-        if(dy<-42||velocity<-.55){
+        const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
+        const dy=endY-g.startY;
+        const velocity=dy/Math.max(1,performance.now()-g.started);
+        if(dy<-48||velocity<-.55){
           const active=document.activeElement;
           if(active&&active!==document.body&&active.blur)active.blur();
-          setSheetExpanded(sheet,true);
+          settleSheetPosition(sheet,true);
           return;
         }
-        if(dy>76||velocity>.65){
-          if(g.expanded)setSheetExpanded(sheet,false);
-          else closeSheetFromHandle(sheet);
+        if(dy>72||velocity>.58){
+          if(g.expanded)settleSheetPosition(sheet,false);
+          else animateSheetClosed(sheet);
           return;
         }
-        setSheetExpanded(sheet,g.expanded);
+        settleSheetPosition(sheet,g.expanded);
       };
-      handle.addEventListener("pointerup",finish);
+      handle.addEventListener("pointerup",finish,{passive:false});
       handle.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
-        const wasExpanded=drag.expanded;drag=null;
-        sheet.classList.remove("sheetDragging");
-        sheet.style.removeProperty("--sheet-drag-y");
-        setSheetExpanded(sheet,wasExpanded);
+        const expanded=drag.expanded;drag=null;
+        settleSheetPosition(sheet,expanded);
       });
     });
+  }
+  function animateActionPanelClosed(panel){
+    if(!panel)return;
+    panel.classList.remove("panelDragging");
+    const distance=Math.max(window.innerHeight||0,panel.getBoundingClientRect().height+40);
+    requestAnimationFrame(()=>panel.style.setProperty("--panel-drag-y",distance+"px"));
+    setTimeout(()=>closeEditorActionPanel(panel),180);
   }
   function initActionPanelGestures(){
     document.querySelectorAll(".noteActionPanel").forEach(panel=>{
@@ -1732,9 +1835,9 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=Math.max(0,e.clientY-drag.startY);
-        panel.style.setProperty("--panel-drag-y",Math.min(dy,260)+"px");
-        if(dy>3)e.preventDefault();
-      });
+        panel.style.setProperty("--panel-drag-y",dy+"px");
+        if(dy>2)e.preventDefault();
+      },{passive:false});
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
@@ -1742,14 +1845,21 @@ html[data-theme="dark"] .calendarWeekAllDayCol:has(.calendarAllDayChip){backgrou
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=Math.max(0,endY-g.startY);
         const velocity=dy/Math.max(1,performance.now()-g.started);
-        panel.classList.remove("panelDragging");
-        if(dy>68||velocity>.55)closeEditorActionPanel(panel);
-        else panel.style.removeProperty("--panel-drag-y");
+        if(dy>64||velocity>.52){
+          animateActionPanelClosed(panel);
+        }else{
+          panel.classList.remove("panelDragging");
+          panel.style.setProperty("--panel-drag-y","0px");
+          setTimeout(()=>panel.style.removeProperty("--panel-drag-y"),210);
+        }
       };
-      handle.addEventListener("pointerup",finish);
+      handle.addEventListener("pointerup",finish,{passive:false});
       handle.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
-        drag=null;panel.classList.remove("panelDragging");panel.style.removeProperty("--panel-drag-y");
+        drag=null;
+        panel.classList.remove("panelDragging");
+        panel.style.setProperty("--panel-drag-y","0px");
+        setTimeout(()=>panel.style.removeProperty("--panel-drag-y"),210);
       });
     });
   }
