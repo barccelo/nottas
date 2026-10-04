@@ -478,6 +478,18 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
 .taskInlineQuickRow{flex-wrap:wrap;overflow:visible}
 .taskInlineQuickRow button{flex:0 0 auto}
 .taskInlineInlineSelect,.taskInlineText{min-width:0}
+
+/* Calendar view swipe/options + inline time wheels */
+.calendarBody{touch-action:pan-y;transition:transform .12s ease}
+.calendarGrid{grid-template-columns:repeat(var(--calendar-month-cols,7),1fr)}
+.calendarTimeViewport.workHoursOnly{flex:0 1 auto!important;min-height:0!important;height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important;max-height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important}
+.taskInlineTimeTabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.taskInlineTimeTabs button{height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#636366;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-size:11px}
+.taskInlineTimeTabs button strong{font-size:15px;color:#1d1d1f}.taskInlineTimeTabs button.active{background:#e4efff;color:#007aff}
+.taskInlineWheelWrap{position:relative;display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;height:176px;max-width:320px;margin:0 auto}
+.taskInlineWheelColumn{height:176px;min-width:0;position:relative;z-index:2}.taskInlineWheel{height:176px;overflow-y:auto;scroll-snap-type:y mandatory;padding:66px 0;scrollbar-width:none;overscroll-behavior:contain}.taskInlineWheel::-webkit-scrollbar{display:none}
+.taskInlineWheelItem{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:21px;color:#a1a1a6;user-select:none}.taskInlineWheelColon{text-align:center;font-size:27px;font-weight:700;color:#1d1d1f;z-index:3}.taskInlineWheelSelection{position:absolute;left:0;right:0;top:66px;height:44px;border-radius:11px;background:rgba(118,118,128,.10);pointer-events:none;z-index:1}
+html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a1a6}html[data-theme="dark"] .taskInlineTimeTabs button strong,html[data-theme="dark"] .taskInlineWheelColon{color:#f5f5f7}html[data-theme="dark"] .taskInlineTimeTabs button.active{background:#19344f;color:#64a9ff}html[data-theme="dark"] .taskInlineWheelSelection{background:rgba(118,118,128,.20)}
 </style>
 </head>
 <body>
@@ -630,18 +642,22 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
       <button id="calendarPrev" class="calendarNavBtn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
       <div id="calendarPeriod" class="calendarPeriod"></div>
       <button id="calendarToday" class="calendarToday" type="button">Hoy</button>
-      <div id="calendarWeekOptions" class="calendarWeekControls hidden">
-        <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-label="Opciones de vista semanal" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
+      <div id="calendarWeekOptions" class="calendarWeekControls">
+        <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-label="Opciones de esta vista" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M14 5v4M4 17h2M10 17h10M8 15v4M4 12h5M13 12h7M11 10v4"></path></svg>
         </button>
         <div id="calendarWeekOptionsPopover" class="calendarWeekOptionsPopover hidden">
-          <label class="calendarWeekOptionRow">
+          <label id="calendarOptionWorkHours" class="calendarWeekOptionRow">
             <span><strong>Horario laboral</strong><small id="calendarWeekWorkRange"></small></span>
             <span class="miniSwitch"><input id="calendarWeekWorkHoursToggle" type="checkbox"><i></i></span>
           </label>
-          <label class="calendarWeekOptionRow">
+          <label id="calendarOptionWeekend" class="calendarWeekOptionRow">
             <span><strong>Fin de semana</strong><small>Mostrar sábado y domingo</small></span>
             <span class="miniSwitch"><input id="calendarWeekWeekendToggle" type="checkbox"><i></i></span>
+          </label>
+          <label id="calendarOptionCompleted" class="calendarWeekOptionRow hidden">
+            <span><strong>Completadas</strong><small>Mostrar tareas completadas</small></span>
+            <span class="miniSwitch"><input id="calendarAgendaCompletedToggle" type="checkbox"><i></i></span>
           </label>
         </div>
       </div>
@@ -740,9 +756,15 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
             <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button></div>
           </div>
           <div id="taskInlineTimePanel" class="taskInlineExpand hidden">
-            <div class="taskInlineTimeGrid">
-              <label><span>Inicio</span><input id="taskInlineStartInput" type="text" inputmode="numeric" maxlength="5" placeholder="09:00"></label>
-              <label><span>Fin</span><input id="taskInlineEndInput" type="text" inputmode="numeric" maxlength="5" placeholder="10:00"></label>
+            <div class="taskInlineTimeTabs">
+              <button id="taskInlineStartTab" class="active" type="button" data-inline-time-target="start"><span>Inicio</span><strong id="taskInlineStartTabValue">09:00</strong></button>
+              <button id="taskInlineEndTab" type="button" data-inline-time-target="end"><span>Fin</span><strong id="taskInlineEndTabValue">10:00</strong></button>
+            </div>
+            <div class="taskInlineWheelWrap">
+              <div class="taskInlineWheelColumn"><div id="taskInlineHourWheel" class="taskInlineWheel" aria-label="Hora"></div></div>
+              <div class="taskInlineWheelColon">:</div>
+              <div class="taskInlineWheelColumn"><div id="taskInlineMinuteWheel" class="taskInlineWheel" aria-label="Minutos"></div></div>
+              <div class="taskInlineWheelSelection" aria-hidden="true"></div>
             </div>
             <div class="taskInlineQuickRow"><button type="button" data-inline-duration="30">30 min</button><button type="button" data-inline-duration="60">1 h</button><button type="button" data-inline-duration="90">1 h 30</button><button type="button" data-inline-duration="120">2 h</button></div>
           </div>
@@ -1055,7 +1077,7 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
@@ -1220,7 +1242,7 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
-    o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false};
+    o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false,calendarMonthShowWeekends:prefs.calendarMonthShowWeekends!==false,calendarAgendaShowCompleted:prefs.calendarAgendaShowCompleted!==false};
     o.schemaVersion=10;o.version=10;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
@@ -1692,9 +1714,11 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
   }
   function renderCalendarMonth(){
     const selected=dateFromISO(calendarDate),first=new Date(selected.getFullYear(),selected.getMonth(),1,12),offset=(first.getDay()+6)%7,start=new Date(first);start.setDate(first.getDate()-offset);
-    const dows=["L","M","X","J","V","S","D"];let html=calendarMoveNotice()+'<div class="calendarGrid">'+dows.map(x=>'<div class="calendarDow">'+x+'</div>').join("");
+    const showWeekends=state.preferences.calendarMonthShowWeekends!==false,dows=showWeekends?["L","M","X","J","V","S","D"]:["L","M","X","J","V"];
+    let html=calendarMoveNotice()+'<div class="calendarGrid" style="--calendar-month-cols:'+dows.length+'">'+dows.map(x=>'<div class="calendarDow">'+x+'</div>').join("");
     for(let i=0;i<42;i++){
-      const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
+      const d=new Date(start);d.setDate(start.getDate()+i);if(!showWeekends&&(d.getDay()===0||d.getDay()===6))continue;
+      const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
       const dots=tasks.slice(0,3).map(t=>'<i style="background:'+esc(catColor(t.category))+'"></i>').join("");
       html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
     }
@@ -1711,7 +1735,7 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
   }
   function calendarVisibleRange(){
-    if(calendarView!=="week"||!state.preferences.calendarWeekWorkHoursOnly)return {start:0,end:1440};
+    if(!["day","week"].includes(calendarView)||!state.preferences.calendarWeekWorkHoursOnly)return {start:0,end:1440};
     let start=timeToMinutes(state.preferences.workHoursStart),end=timeToMinutes(state.preferences.workHoursEnd);
     if(start===null||end===null||end<=start){start=8*60;end=17*60}
     return {start:Math.max(0,start),end:Math.min(1440,end)};
@@ -1886,15 +1910,15 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarDay(){
-    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime);
+    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),range=calendarVisibleRange(),gridHeight=Math.max(CAL_HOUR_PX,(range.end-range.start)/60*CAL_HOUR_PX);
     let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div>';
     if(allDay.length)html+='<div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</div>';
-    html+='<div class="calendarTimeViewport">'+calendarTimeGridHtml([calendarDate])+'</div>';
+    html+='<div class="calendarTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px">'+calendarTimeGridHtml([calendarDate],range.start,range.end)+'</div>';
     $("calendarBody").innerHTML=html;bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarAgenda(){
     const start=dateFromISO(calendarDate),end=new Date(start);end.setDate(end.getDate()+60);
-    const tasks=state.tasks.filter(t=>!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
+    const tasks=state.tasks.filter(t=>!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end&&(state.preferences.calendarAgendaShowCompleted!==false||!t.done)).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
     let html=calendarMoveNotice();
     if(!tasks.length){$("calendarBody").innerHTML=html+'<div class="calendarEmpty">No hay tareas con fecha en los próximos 60 días.</div>';bindCalendarMoveCancel();return}
     const groups={};tasks.forEach(t=>(groups[t.dueDate]||(groups[t.dueDate]=[])).push(t));
@@ -1907,13 +1931,18 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     $("calendarBody").dataset.calendarBodyView=calendarView;
     $("calendarPeriod").textContent=calendarPeriodText();
     $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
-    $("calendarWeekOptions").classList.toggle("hidden",calendarView!=="week");
-    if(calendarView!=="week"){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}
+    $("calendarWeekOptions").classList.remove("hidden");
+    $("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
+    const showWork=calendarView==="day"||calendarView==="week",showWeekend=calendarView==="week"||calendarView==="month",showCompleted=calendarView==="agenda";
+    $("calendarOptionWorkHours").classList.toggle("hidden",!showWork);
+    $("calendarOptionWeekend").classList.toggle("hidden",!showWeekend);
+    $("calendarOptionCompleted").classList.toggle("hidden",!showCompleted);
     $("calendarWeekWorkHoursToggle").checked=!!state.preferences.calendarWeekWorkHoursOnly;
-    $("calendarWeekWeekendToggle").checked=state.preferences.calendarWeekShowWeekends!==false;
+    $("calendarWeekWeekendToggle").checked=calendarView==="month"?state.preferences.calendarMonthShowWeekends!==false:state.preferences.calendarWeekShowWeekends!==false;
+    $("calendarAgendaCompletedToggle").checked=state.preferences.calendarAgendaShowCompleted!==false;
     const workRange=(state.preferences.workHoursStart||"08:00")+"–"+(state.preferences.workHoursEnd||"17:00");
     $("calendarWeekWorkRange").textContent=workRange;
-    $("calendarWeekOptionsBtn").title=(state.preferences.calendarWeekWorkHoursOnly?"Horario laboral":"24 horas")+" · "+(state.preferences.calendarWeekShowWeekends!==false?"7 días":"Lunes a viernes");
+    $("calendarWeekOptionsBtn").title=showWork?(state.preferences.calendarWeekWorkHoursOnly?"Horario laboral":"24 horas"):showWeekend?(($("calendarWeekWeekendToggle").checked)?"Con fines de semana":"Sin fines de semana"):(state.preferences.calendarAgendaShowCompleted!==false?"Con completadas":"Sin completadas");
     document.querySelectorAll("[data-calendar-view]").forEach(b=>{b.classList.toggle("active",b.dataset.calendarView===calendarView);b.disabled=!!calendarMoveTaskId&&b.dataset.calendarView!=="month"});$("calendarPrev").disabled=!!calendarMoveTaskId;$("calendarNext").disabled=!!calendarMoveTaskId;
     if(calendarView==="day")renderCalendarDay();else if(calendarView==="week")renderCalendarWeek();else if(calendarView==="agenda")renderCalendarAgenda();else renderCalendarMonth();
   }
@@ -2642,10 +2671,33 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     syncTaskDoneButton();
     if(!$("taskForm")?.classList.contains("hidden"))syncTaskInlineForm();
   }
-  function parseInlineTime(value){
-    const m=String(value||"").trim().match(/^(\d{1,2}):(\d{2})$/);if(!m)return null;
-    const h=Number(m[1]),min=Number(m[2]);if(h<0||h>23||min<0||min>59)return null;
-    return String(h).padStart(2,"0")+":"+String(min).padStart(2,"0");
+  const INLINE_TIME_ROW=44;
+  function buildTaskInlineTimeWheels(){
+    const hw=$("taskInlineHourWheel"),mw=$("taskInlineMinuteWheel");if(!hw||!mw)return;
+    if(!hw.children.length)hw.innerHTML=Array.from({length:24},(_,i)=>'<div class="taskInlineWheelItem" data-inline-wheel-value="'+i+'">'+String(i).padStart(2,"0")+'</div>').join("");
+    if(!mw.children.length)mw.innerHTML=Array.from({length:60},(_,i)=>'<div class="taskInlineWheelItem" data-inline-wheel-value="'+i+'">'+String(i).padStart(2,"0")+'</div>').join("");
+    [hw,mw].forEach((wheel,idx)=>{
+      if(wheel.dataset.ready==="1")return;wheel.dataset.ready="1";let timer=null,last=-1;
+      wheel.addEventListener("scroll",()=>{clearTimeout(timer);timer=setTimeout(()=>{
+        const max=idx===0?23:59,value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/INLINE_TIME_ROW)));
+        if(!taskInlineWheelMute&&value!==last){last=value;hapticTick();applyTaskInlineWheelValue(idx,value)}
+      },40)},{passive:true});
+      wheel.addEventListener("click",e=>{const item=e.target.closest("[data-inline-wheel-value]");if(item)wheel.scrollTo({top:Number(item.dataset.inlineWheelValue)*INLINE_TIME_ROW,behavior:"smooth"})});
+    });
+  }
+  function currentTaskInlineTime(){const raw=taskInlineTimeTarget==="end"?$("taskEndTime").value:$("taskTime").value;return parseStoredTime(raw)||{h:taskInlineTimeTarget==="end"?10:9,m:0}}
+  function positionTaskInlineTimeWheels(smooth=false){
+    buildTaskInlineTimeWheels();const v=currentTaskInlineTime();taskInlineWheelMute=true;
+    $("taskInlineHourWheel").scrollTo({top:v.h*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});$("taskInlineMinuteWheel").scrollTo({top:v.m*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});
+    $("taskInlineStartTab").classList.toggle("active",taskInlineTimeTarget==="start");$("taskInlineEndTab").classList.toggle("active",taskInlineTimeTarget==="end");
+    setTimeout(()=>{taskInlineWheelMute=false},smooth?260:80);
+  }
+  function setTaskInlineTimeTarget(target){taskInlineTimeTarget=target==="end"?"end":"start";syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
+  function applyTaskInlineWheelValue(part,value){
+    const current=currentTaskInlineTime(),hour=part===0?value:current.h,minute=part===1?value:current.m,newValue=formatTimeParts(hour,minute);commitTaskHistory();
+    if(taskInlineTimeTarget==="start"){const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;$("taskTime").value=newValue;const start=timeToMinutes(newValue);$("taskEndTime").value=minutesToTime(Math.min(1439,start+duration))}
+    else{const start=timeToMinutes($("taskTime").value),end=timeToMinutes(newValue);$("taskEndTime").value=minutesToTime(start!==null&&end!==null&&end<=start?Math.min(1439,start+15):end)}
+    syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
   }
   function formatTaskInlineDate(value){if(!value)return "Sin fecha";const d=dateFromISO(value);return d.toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"})}
   function setTaskInlinePanel(name){
@@ -2653,6 +2705,7 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
     $("taskInlineTimePanel").classList.toggle("hidden",taskInlineOpenPanel!=="time");
     if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
+    if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
   }
   function setTaskInlineDate(value){$("taskDate").value=value||"";if(value)taskInlineMonth=dateFromISO(value);syncTaskEditorMeta();commitTaskHistory()}
@@ -2666,16 +2719,10 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
   }
   function syncTaskInlineForm(){
     const date=$("taskDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
-    $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartInput").value=start;$("taskInlineEndInput").value=end;
+    $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartTabValue").textContent=start||"09:00";$("taskInlineEndTabValue").textContent=end||"10:00";
     const reminderOn=$("taskTimeButton").dataset.reminderActive==="1";$("taskInlineReminderToggle").checked=reminderOn;$("taskInlineReminderOptions").classList.toggle("hidden",!reminderOn);$("taskInlineReminderSelect").value=$("taskReminder").value||"at";$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
     const cat=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=cat==="inbox"?"":cat;$("taskInlineTags").value=$("taskTags").value||"";
     const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
-  }
-  function applyInlineTime(which){
-    const field=which==="start"?$("taskInlineStartInput"):$("taskInlineEndInput"),parsed=parseInlineTime(field.value);if(!parsed){field.value=which==="start"?($("taskTime").value||""):($("taskEndTime").value||"");return}
-    if(which==="start"){const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;$("taskTime").value=parsed;const m=timeToMinutes(parsed);if(m!==null)$("taskEndTime").value=minutesToTime(Math.min(1439,m+duration))}
-    else{const start=timeToMinutes($("taskTime").value),end=timeToMinutes(parsed);if(start!==null&&end!==null&&end<=start){field.value=$("taskEndTime").value||"";return}$("taskEndTime").value=parsed}
-    syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
   }
   function taskSnapshot(){
     const textHtml=sanitizeInlineHtml($("taskText").innerHTML),text=inlineHtmlToText(textHtml).trim(),blocks=cleanNoteBlocks(editorTaskBlocks),body=noteBlocksText(blocks).trim();
@@ -3182,6 +3229,12 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
   $("calendarPrev").addEventListener("click",()=>shiftCalendar(-1));
   $("calendarNext").addEventListener("click",()=>shiftCalendar(1));
   $("calendarToday").addEventListener("click",()=>{calendarDate=localDateISO();renderCalendar()});
+  function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
+  let calendarViewSwipe=null;
+  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
+  $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25)calendarViewSwipe.horizontal=true;if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
+  const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
+  $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").style.transform=""}});
   document.querySelectorAll("[data-calendar-view]").forEach(b=>b.addEventListener("click",()=>{calendarView=b.dataset.calendarView;renderCalendar()}));
   $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();closeCalendarPeek();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
   $("calendarWeekOptionsPopover").addEventListener("click",e=>e.stopPropagation());
@@ -3190,7 +3243,8 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
   $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t)return;closeCalendarPeek();closeOverlay("calendarOverlay");openTask(t)});
   $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task]"))closeCalendarPeek()});
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
-  $("calendarWeekWeekendToggle").addEventListener("change",()=>{state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
+  $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
+  $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
   document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
   $("fab").addEventListener("click",()=>{if(mode==="notes"&&!trash)openNote(null);else openQuickCapture()});
@@ -3248,15 +3302,15 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
   $("taskInlineDateBtn").addEventListener("click",()=>setTaskInlinePanel("date"));
-  $("taskInlineStartBtn").addEventListener("click",()=>setTaskInlinePanel("time"));
-  $("taskInlineEndBtn").addEventListener("click",()=>setTaskInlinePanel("time"));
+  $("taskInlineStartBtn").addEventListener("click",()=>{taskInlineTimeTarget="start";setTaskInlinePanel("time")});
+  $("taskInlineEndBtn").addEventListener("click",()=>{taskInlineTimeTarget="end";setTaskInlinePanel("time")});
+  document.querySelectorAll("[data-inline-time-target]").forEach(btn=>btn.addEventListener("click",()=>setTaskInlineTimeTarget(btn.dataset.inlineTimeTarget)));
   $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
   $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
   $("taskInlineToday").addEventListener("click",()=>{setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
   $("taskInlineTomorrow").addEventListener("click",()=>{setTaskInlineDate(addCalendarDays(localDateISO(),1));setTaskInlinePanel("")});
   $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
   $("taskAllDayToggle").addEventListener("change",()=>{commitTaskHistory();if($("taskAllDayToggle").checked){if(!$("taskDate").value)$("taskDate").value=localDateISO();$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0"}else{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
-  $("taskInlineStartInput").addEventListener("change",()=>applyInlineTime("start"));$("taskInlineStartInput").addEventListener("blur",()=>applyInlineTime("start"));$("taskInlineEndInput").addEventListener("change",()=>applyInlineTime("end"));$("taskInlineEndInput").addEventListener("blur",()=>applyInlineTime("end"));
   document.querySelectorAll("[data-inline-duration]").forEach(btn=>btn.addEventListener("click",()=>{commitTaskHistory();let start=timeToMinutes($("taskTime").value);if(start===null){$("taskTime").value="09:00";start=540}const d=Number(btn.dataset.inlineDuration)||60;$("taskEndTime").value=minutesToTime(Math.min(1439,start+d));syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()}));
   $("taskInlineReminderToggle").addEventListener("change",()=>{commitTaskHistory();const on=$("taskInlineReminderToggle").checked;if(on){if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00";$("taskTimeButton").dataset.reminderActive="1";$("taskReminder").value=$("taskInlineReminderSelect").value||"at";requestReminderPermission()}else{$("taskTimeButton").dataset.reminderActive="0"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
   $("taskInlineReminderSelect").addEventListener("change",()=>{commitTaskHistory();$("taskReminder").value=$("taskInlineReminderSelect").value;$("taskTimeButton").dataset.reminderActive="1";syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
