@@ -481,6 +481,7 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
 
 /* Calendar view swipe/options + inline time wheels */
 .calendarBody{touch-action:pan-y;transition:transform .12s ease}
+.calendarBody.calendarViewSwiping{transition:none}
 .calendarGrid{grid-template-columns:repeat(var(--calendar-month-cols,7),1fr)}
 .calendarTimeViewport.workHoursOnly{flex:0 1 auto!important;min-height:0!important;height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important;max-height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important}
 .taskInlineTimeTabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
@@ -1702,6 +1703,7 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
   }
   function bindCalendarDateTargets(){
     $("calendarBody").querySelectorAll("[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{
+      if(Date.now()<suppressClickUntil)return;
       const date=b.dataset.calendarDate;if(!date)return;
       if(calendarMoveTaskId)moveCalendarTaskTo(date);else{calendarDate=date;renderCalendar()}
     }));
@@ -3232,9 +3234,9 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
   $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
-  $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25)calendarViewSwipe.horizontal=true;if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
-  const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
-  $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").style.transform=""}});
+  $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25){calendarViewSwipe.horizontal=true;$("calendarBody").classList.add("calendarViewSwiping")}if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
+  const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
+  $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform=""}});
   document.querySelectorAll("[data-calendar-view]").forEach(b=>b.addEventListener("click",()=>{calendarView=b.dataset.calendarView;renderCalendar()}));
   $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();closeCalendarPeek();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
   $("calendarWeekOptionsPopover").addEventListener("click",e=>e.stopPropagation());
