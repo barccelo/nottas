@@ -388,6 +388,44 @@ html[data-theme="dark"] .calendarWeekOptionsBtn{background:#2c2c2e;color:#d1d1d6
 html[data-theme="dark"] .calendarWeekOptionsPopover{background:#242426}
 html[data-theme="dark"] .calendarWeekOptionRow{color:#f5f5f7}
 html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
+
+/* Compact week controls + readable event titles + tap peek */
+.calendarSheet{position:relative}
+.calendarNav{grid-template-columns:44px minmax(0,1fr) auto auto 44px}
+.calendarWeekControls{position:relative;display:block;margin:0;flex:0 0 auto}
+.calendarWeekOptionsBtn{width:36px;height:36px;padding:0;border-radius:10px;justify-content:center}
+.calendarWeekOptionsBtn svg{width:18px;height:18px}
+.calendarWeekOptionsPopover{top:42px;right:0}
+.calendarWeekTimeViewport .calendarTimeBlockTitle{
+  white-space:normal!important;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--title-lines,1);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:anywhere;
+}
+.calendarWeekTimeViewport .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockMeta{display:none}
+.calendarWeekTimeViewport .calendarTimeBlock{padding-right:3px}
+.calendarPeek{
+  position:absolute;
+  z-index:90;
+  background:#fff;
+  color:#1d1d1f;
+  border-radius:16px;
+  padding:14px 14px 12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.20);
+  border:1px solid rgba(60,60,67,.10);
+}
+.calendarPeekClose{
+  position:absolute;right:8px;top:8px;width:30px;height:30px;border:0;border-radius:50%;
+  background:#f2f2f7;color:#636366;font-size:22px;line-height:1;display:grid;place-items:center
+}
+.calendarPeekTitle{font-size:17px;font-weight:700;line-height:1.25;padding-right:34px;white-space:normal;overflow-wrap:anywhere}
+.calendarPeekMeta{font-size:11px;color:#8e8e93;margin-top:7px}
+.calendarPeekOpen{margin-top:12px;height:36px;border:0;border-radius:10px;background:#1677ff;color:#fff;padding:0 14px;font-size:12px;font-weight:650}
+html[data-theme="dark"] .calendarPeek{background:#242426;color:#f5f5f7;border-color:#38383a}
+html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
 </style>
 </head>
 <body>
@@ -540,26 +578,30 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
       <button id="calendarPrev" class="calendarNavBtn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
       <div id="calendarPeriod" class="calendarPeriod"></div>
       <button id="calendarToday" class="calendarToday" type="button">Hoy</button>
+      <div id="calendarWeekOptions" class="calendarWeekControls hidden">
+        <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-label="Opciones de vista semanal" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M14 5v4M4 17h2M10 17h10M8 15v4M4 12h5M13 12h7M11 10v4"></path></svg>
+        </button>
+        <div id="calendarWeekOptionsPopover" class="calendarWeekOptionsPopover hidden">
+          <label class="calendarWeekOptionRow">
+            <span><strong>Horario laboral</strong><small id="calendarWeekWorkRange"></small></span>
+            <span class="miniSwitch"><input id="calendarWeekWorkHoursToggle" type="checkbox"><i></i></span>
+          </label>
+          <label class="calendarWeekOptionRow">
+            <span><strong>Fin de semana</strong><small>Mostrar sábado y domingo</small></span>
+            <span class="miniSwitch"><input id="calendarWeekWeekendToggle" type="checkbox"><i></i></span>
+          </label>
+        </div>
+      </div>
       <button id="calendarNext" class="calendarNavBtn" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
     </div>
-    <div id="calendarWeekOptions" class="calendarWeekControls hidden">
-      <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M14 5v4M4 17h2M10 17h10M8 15v4M4 12h5M13 12h7M11 10v4"></path></svg>
-        <span>Vista</span>
-        <span id="calendarWeekOptionsSummary" class="calendarWeekOptionsSummary"></span>
-      </button>
-      <div id="calendarWeekOptionsPopover" class="calendarWeekOptionsPopover hidden">
-        <label class="calendarWeekOptionRow">
-          <span><strong>Horario laboral</strong><small id="calendarWeekWorkRange"></small></span>
-          <span class="miniSwitch"><input id="calendarWeekWorkHoursToggle" type="checkbox"><i></i></span>
-        </label>
-        <label class="calendarWeekOptionRow">
-          <span><strong>Fin de semana</strong><small>Mostrar sábado y domingo</small></span>
-          <span class="miniSwitch"><input id="calendarWeekWeekendToggle" type="checkbox"><i></i></span>
-        </label>
-      </div>
-    </div>
     <div id="calendarBody" class="calendarBody"></div>
+    <div id="calendarPeek" class="calendarPeek hidden" role="dialog" aria-modal="false" aria-label="Vista previa del evento">
+      <button id="calendarPeekClose" class="calendarPeekClose" type="button" aria-label="Cerrar vista previa">×</button>
+      <div id="calendarPeekTitle" class="calendarPeekTitle"></div>
+      <div id="calendarPeekMeta" class="calendarPeekMeta"></div>
+      <button id="calendarPeekOpen" class="calendarPeekOpen" type="button">Abrir</button>
+    </div>
   </div>
 </div>
 
@@ -1505,14 +1547,48 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
     };
     handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",cleanup);
   }
+  function closeCalendarPeek(){
+    const peek=$("calendarPeek");if(!peek)return false;
+    const open=!peek.classList.contains("hidden");
+    peek.classList.add("hidden");peek.dataset.taskId="";peek.style.removeProperty("left");peek.style.removeProperty("top");peek.style.removeProperty("width");
+    return open;
+  }
+  function calendarPeekDurationLabel(t){
+    const minutes=taskDurationMinutes(t);if(minutes===null)return "";
+    if(minutes<60)return minutes+" min";
+    if(minutes%60===0)return (minutes/60)+" h";
+    return Math.floor(minutes/60)+" h "+(minutes%60)+" min";
+  }
+  function showCalendarPeek(t,anchor){
+    if(!t||!anchor)return;
+    const peek=$("calendarPeek"),sheet=document.querySelector("#calendarOverlay .calendarSheet");if(!peek||!sheet)return;
+    $("calendarPeekTitle").textContent=t.text||"Sin título";
+    const bits=[];
+    if(t.dueDate)bits.push(calendarDateLabel(t.dueDate,{weekday:"short",day:"numeric",month:"short"}));
+    if(t.dueTime)bits.push(calendarTaskRangeLabel(t));
+    const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
+    $("calendarPeekMeta").textContent=bits.join(" · ");
+    peek.dataset.taskId=t.id;peek.classList.remove("hidden");
+    requestAnimationFrame(()=>{
+      const sr=sheet.getBoundingClientRect(),ar=anchor.getBoundingClientRect(),width=Math.min(286,Math.max(220,sr.width-28));
+      peek.style.width=width+"px";
+      const ph=peek.offsetHeight;
+      let left=ar.left-sr.left+(ar.width-width)/2;
+      left=Math.max(12,Math.min(sr.width-width-12,left));
+      let top=ar.bottom-sr.top+8;
+      if(top+ph>sr.height-14)top=ar.top-sr.top-ph-8;
+      top=Math.max(12,Math.min(sr.height-ph-12,top));
+      peek.style.left=left+"px";peek.style.top=top+"px";
+    });
+  }
   function bindCalendarTasks(){
     $("calendarBody").querySelectorAll("[data-calendar-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.calendarTask);if(!t)return;
       const check=row.querySelector(".calendarTaskCheck"),move=row.querySelector(".calendarMoveBtn");
       if(check)check.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
       if(move){move.addEventListener("click",e=>{e.stopPropagation();if(Date.now()<suppressClickUntil)return;beginCalendarMove(t.id)});installCalendarTaskDrag(move,t,row)}
-      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;closeOverlay("calendarOverlay");openTask(t)});
-      row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();closeOverlay("calendarOverlay");openTask(t)}});
+      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;if(calendarView==="week")showCalendarPeek(t,row);else{closeOverlay("calendarOverlay");openTask(t)}});
+      row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();if(calendarView==="week")showCalendarPeek(t,row);else{closeOverlay("calendarOverlay");openTask(t)}}});
     });
     bindCalendarMoveCancel();
   }
@@ -1545,8 +1621,8 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
   function calendarTaskRangeLabel(t){if(!t?.dueTime)return "Sin hora";return t.dueTime+(t.endTime?"–"+t.endTime:"")}
   function calendarTimeBlockHtml(t){
     const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
-    const top=start/60*CAL_HOUR_PX,height=Math.max(24,(end-start)/60*CAL_HOUR_PX);
-    return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+    const duration=end-start,top=start/60*CAL_HOUR_PX,height=Math.max(24,duration/60*CAL_HOUR_PX),lines=duration<=30?1:duration<=60?2:3,compact=duration<60;
+    return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
   }
   function calendarVisibleRange(){
     if(calendarView!=="week"||!state.preferences.calendarWeekWorkHoursOnly)return {start:0,end:1440};
@@ -1567,8 +1643,8 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
   function calendarTimeColumnHtml(date,tasks,rangeStart=0,rangeEnd=1440){
     const blocks=tasks.filter(t=>{const m=calendarTaskStartMinutes(t);return m!==null&&m>=rangeStart&&m<rangeEnd}).map(t=>{
       const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
-      const top=(start-rangeStart)/60*CAL_HOUR_PX,height=Math.max(24,(Math.min(end,rangeEnd)-start)/60*CAL_HOUR_PX);
-      return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+      const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*CAL_HOUR_PX,height=Math.max(24,(visibleEnd-start)/60*CAL_HOUR_PX),lines=duration<=30?1:duration<=60?2:3,compact=duration<60;
+      return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
     }).join("");
     return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'">'+blocks+'</div>';
   }
@@ -1626,7 +1702,7 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
     };
     block.addEventListener("pointerdown",e=>{
       if(e.target.closest(".calendarResizeHandle,.calendarBlockCheck")||(e.pointerType==="mouse"&&e.button!==0))return;
-      pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
+      closeCalendarPeek();pointerId=e.pointerId;startX=e.clientX;startY=e.clientY;
       const rect=block.getBoundingClientRect();grabOffsetY=Math.max(0,Math.min(rect.height,e.clientY-rect.top));previewHeight=rect.height;
       timer=setTimeout(()=>{
         active=true;
@@ -1704,7 +1780,7 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
       const t=state.tasks.find(x=>x.id===block.dataset.calendarTimeTask);if(!t)return;
       const check=block.querySelector(".calendarBlockCheck"),resize=block.querySelector(".calendarResizeHandle");
       check?.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;closeOverlay("calendarOverlay");openTask(t)});
+      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;if(calendarView==="week")showCalendarPeek(t,block);else{closeOverlay("calendarOverlay");openTask(t)}});
       installCalendarTimeMove(block,t);installCalendarTimeResize(resize,t,block);
     });
   }
@@ -1741,6 +1817,7 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
   }
   function renderCalendar(){
     if(!state)return;
+    closeCalendarPeek();
     $("calendarBody").dataset.calendarBodyView=calendarView;
     $("calendarPeriod").textContent=calendarPeriodText();
     $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
@@ -1750,7 +1827,7 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
     $("calendarWeekWeekendToggle").checked=state.preferences.calendarWeekShowWeekends!==false;
     const workRange=(state.preferences.workHoursStart||"08:00")+"–"+(state.preferences.workHoursEnd||"17:00");
     $("calendarWeekWorkRange").textContent=workRange;
-    $("calendarWeekOptionsSummary").textContent=(state.preferences.calendarWeekWorkHoursOnly?"Laboral":"24 h")+" · "+(state.preferences.calendarWeekShowWeekends!==false?"7 d":"L–V");
+    $("calendarWeekOptionsBtn").title=(state.preferences.calendarWeekWorkHoursOnly?"Horario laboral":"24 horas")+" · "+(state.preferences.calendarWeekShowWeekends!==false?"7 días":"Lunes a viernes");
     document.querySelectorAll("[data-calendar-view]").forEach(b=>{b.classList.toggle("active",b.dataset.calendarView===calendarView);b.disabled=!!calendarMoveTaskId&&b.dataset.calendarView!=="month"});$("calendarPrev").disabled=!!calendarMoveTaskId;$("calendarNext").disabled=!!calendarMoveTaskId;
     if(calendarView==="day")renderCalendarDay();else if(calendarView==="week")renderCalendarWeek();else if(calendarView==="agenda")renderCalendarAgenda();else renderCalendarMonth();
   }
@@ -2984,9 +3061,12 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
   $("calendarNext").addEventListener("click",()=>shiftCalendar(1));
   $("calendarToday").addEventListener("click",()=>{calendarDate=localDateISO();renderCalendar()});
   document.querySelectorAll("[data-calendar-view]").forEach(b=>b.addEventListener("click",()=>{calendarView=b.dataset.calendarView;renderCalendar()}));
-  $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
+  $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();closeCalendarPeek();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
   $("calendarWeekOptionsPopover").addEventListener("click",e=>e.stopPropagation());
-  $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}});
+  $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
+  $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
+  $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t)return;closeCalendarPeek();closeOverlay("calendarOverlay");openTask(t)});
+  $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task]"))closeCalendarPeek()});
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{taskFilter=b.dataset.filter;saveUI();render()}));
@@ -3178,6 +3258,7 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
       return true;
     }
     if($("calendarOverlay").classList.contains("show")){
+      if(closeCalendarPeek())return true;
       closeOverlay("calendarOverlay");
       return true;
     }
