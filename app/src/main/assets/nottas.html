@@ -426,6 +426,21 @@ html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
 .calendarPeekOpen{margin-top:12px;height:36px;border:0;border-radius:10px;background:#1677ff;color:#fff;padding:0 14px;font-size:12px;font-weight:650}
 html[data-theme="dark"] .calendarPeek{background:#242426;color:#f5f5f7;border-color:#38383a}
 html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
+
+/* Unified task/event form */
+#editorOverlay.taskEditorMode .taskMetaChips{display:none!important}
+.taskInlineForm{margin:6px 0 14px 50px;border-top:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea}
+.taskInlineRow{width:100%;min-height:49px;border:0;border-bottom:1px solid #ececf0;background:transparent;color:#1d1d1f;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 2px;text-align:left}
+.taskInlineRow:last-child{border-bottom:0}.taskInlineRowMain{display:flex;align-items:center;gap:10px;min-width:0;font-size:14px}.taskInlineIcon{width:22px;flex:0 0 22px;text-align:center;color:#8e8e93;font-size:15px}.taskInlineValue{font-size:12px;color:#8e8e93;white-space:nowrap}.taskInlineButtonRow{font:inherit;cursor:pointer}
+.taskInlineSchedule{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.8fr) 18px minmax(0,.8fr);align-items:center;gap:5px;padding:9px 0;border-bottom:1px solid #ececf0}
+.taskInlineScheduleBtn{border:0;background:#f2f2f7;color:#1d1d1f;border-radius:11px;min-height:48px;padding:7px 9px;text-align:left;min-width:0}.taskInlineScheduleBtn:disabled{opacity:.42}.taskInlineScheduleBtn strong{display:block;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.taskInlineScheduleLabel{display:block;color:#8e8e93;font-size:9px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}.taskInlineArrow{text-align:center;color:#8e8e93}
+.taskInlineExpand{padding:10px 0 12px;border-bottom:1px solid #ececf0}.taskInlinePanelHead{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;text-align:center;margin-bottom:8px}.taskInlineMiniBtn{height:34px;border:0;border-radius:9px;background:#f2f2f7;color:#1d1d1f;font-size:24px;line-height:1}.taskInlinePanelHead strong{font-size:13px}.taskInlineWeekdays,.taskInlineCalendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.taskInlineWeekdays{margin-bottom:4px;color:#8e8e93;font-size:9px;text-align:center}
+.taskInlineCalendarGrid button{aspect-ratio:1;border:0;border-radius:9px;background:transparent;color:#1d1d1f;font-size:11px}.taskInlineCalendarGrid button.other{color:#c7c7cc}.taskInlineCalendarGrid button.today{outline:1px solid #0a84ff}.taskInlineCalendarGrid button.selected{background:#1677ff;color:#fff;outline:0}
+.taskInlineQuickRow{display:flex;gap:6px;overflow-x:auto;margin-top:9px;scrollbar-width:none}.taskInlineQuickRow::-webkit-scrollbar{display:none}.taskInlineQuickRow button{height:31px;flex:0 0 auto;border:0;border-radius:9px;background:#f2f2f7;color:#1d1d1f;padding:0 10px;font-size:11px;font-weight:600}
+.taskInlineTimeGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.taskInlineTimeGrid label{display:flex;flex-direction:column;gap:4px;color:#8e8e93;font-size:9px;text-transform:uppercase}.taskInlineTimeGrid input{height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 11px;font-size:16px;font-weight:650;outline:none}.taskInlineSelect{width:100%;height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 10px}
+.taskInlineInlineSelect{max-width:48%;border:0;background:transparent;color:#636366;text-align:right;font-size:12px;outline:none}.taskInlineText{min-width:0;max-width:58%;height:36px;border:0;background:transparent;color:#1d1d1f;text-align:right;outline:none;font-size:12px}.taskInlineText::placeholder{color:#8e8e93}.taskInlineSectionLabel{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#8e8e93;margin:8px 2px 4px}
+#editorOverlay.taskEditorMode .taskSubtasksBox{margin-top:4px}#editorOverlay.taskEditorMode .taskSubtasksBox.inlineCollapsed{display:none}.taskMorePanel .taskMoreGrid{display:none}
+html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="dark"] .taskInlineRow,html[data-theme="dark"] .taskInlineSchedule,html[data-theme="dark"] .taskInlineExpand{border-color:#38383a;color:#f5f5f7}html[data-theme="dark"] .taskInlineScheduleBtn,html[data-theme="dark"] .taskInlineMiniBtn,html[data-theme="dark"] .taskInlineQuickRow button,html[data-theme="dark"] .taskInlineTimeGrid input,html[data-theme="dark"] .taskInlineSelect{background:#2c2c2e;color:#f5f5f7}html[data-theme="dark"] .taskInlineCalendarGrid button{color:#f5f5f7}html[data-theme="dark"] .taskInlineCalendarGrid button.other{color:#636366}html[data-theme="dark"] .taskInlineInlineSelect,html[data-theme="dark"] .taskInlineText{color:#d1d1d6}
 </style>
 </head>
 <body>
@@ -670,7 +685,41 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
           <button id="taskTimeChip" class="taskMetaChip hidden" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3.5 2"></path></svg><span id="taskTimeChipText"></span></button>
         </div>
 
+        <div id="taskInlineForm" class="taskInlineForm">
+          <div class="taskInlineRow taskInlineToggleRow">
+            <div class="taskInlineRowMain"><span class="taskInlineIcon">◷</span><span>Todo el día</span></div>
+            <label class="iosSwitch"><input id="taskAllDayToggle" type="checkbox"><span aria-hidden="true"></span></label>
+          </div>
+          <div class="taskInlineSchedule">
+            <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Fecha</span><strong id="taskInlineDateText">Sin fecha</strong></button>
+            <button id="taskInlineStartBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Inicio</span><strong id="taskInlineStartText">Sin hora</strong></button>
+            <span class="taskInlineArrow">→</span>
+            <button id="taskInlineEndBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Fin</span><strong id="taskInlineEndText">—</strong></button>
+          </div>
+          <div id="taskInlineDatePanel" class="taskInlineExpand hidden">
+            <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior">‹</button><strong id="taskInlineMonthLabel"></strong><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente">›</button></div>
+            <div class="taskInlineWeekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+            <div id="taskInlineCalendarGrid" class="taskInlineCalendarGrid"></div>
+            <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button></div>
+          </div>
+          <div id="taskInlineTimePanel" class="taskInlineExpand hidden">
+            <div class="taskInlineTimeGrid">
+              <label><span>Inicio</span><input id="taskInlineStartInput" type="text" inputmode="numeric" maxlength="5" placeholder="09:00"></label>
+              <label><span>Fin</span><input id="taskInlineEndInput" type="text" inputmode="numeric" maxlength="5" placeholder="10:00"></label>
+            </div>
+            <div class="taskInlineQuickRow"><button type="button" data-inline-duration="30">30 min</button><button type="button" data-inline-duration="60">1 h</button><button type="button" data-inline-duration="90">1 h 30</button><button type="button" data-inline-duration="120">2 h</button></div>
+          </div>
+          <div class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">◉</span><span>Recordatorio</span></div><label class="iosSwitch"><input id="taskInlineReminderToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
+          <div id="taskInlineReminderOptions" class="taskInlineExpand hidden"><select id="taskInlineReminderSelect" class="taskInlineSelect"><option value="at">A la hora</option><option value="5m">5 min antes</option><option value="15m">15 min antes</option><option value="30m">30 min antes</option><option value="1h">1 hora antes</option><option value="1d">1 día antes</option></select></div>
+          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">↻</span><span>Repetir</span></div><select id="taskInlineRecurrence" class="taskInlineInlineSelect"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></label>
+          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">!</span><span>Prioridad</span></div><select id="taskInlinePriority" class="taskInlineInlineSelect"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></label>
+          <div class="taskInlineRow taskInlineFieldRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">●</span><span>Categoría</span></div><input id="taskInlineCategory" class="taskInlineText" type="text" maxlength="40" placeholder="Sin categoría" autocomplete="off"></div>
+          <div class="taskInlineRow taskInlineFieldRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">#</span><span>Tags</span></div><input id="taskInlineTags" class="taskInlineText" type="text" maxlength="240" placeholder="Añadir"></div>
+          <button id="taskInlineSubtasksToggle" class="taskInlineRow taskInlineButtonRow" type="button"><div class="taskInlineRowMain"><span class="taskInlineIcon">☑</span><span>Subtareas</span></div><span id="taskInlineSubtasksSummary" class="taskInlineValue">Añadir</span></button>
+        </div>
+
         <div class="taskContentArea">
+          <div class="taskInlineSectionLabel">Notas / descripción</div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
           <button id="addTaskBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
@@ -969,7 +1018,7 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
 
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false;
   let suppressClickUntil=0,wakeRefreshTimer=null;
 
   function setNativeSearchKeyboardMode(active){
@@ -1766,7 +1815,7 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
     $("taskTime").value=minutesToTime(minute);
     $("taskEndTime").value=minutesToTime(Math.min(1439,minute+60));
     $("taskTimeButton").dataset.reminderActive="0";
-    syncTaskTimeButton();syncTaskEditorMeta();
+    syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();setTaskInlinePanel("time");
   }
   function bindCalendarTimeGrid(){
     $("calendarBody").querySelectorAll(".calendarTimeColumn").forEach(col=>{
@@ -2554,6 +2603,42 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
     const p=taskTreeProgressValue(editorSubtasks||[]),label=$("taskProgressMini");
     if(label)label.textContent=p===null?"":Math.round(p*100)+"%";
     syncTaskDoneButton();
+    if(!$("taskForm")?.classList.contains("hidden"))syncTaskInlineForm();
+  }
+  function parseInlineTime(value){
+    const m=String(value||"").trim().match(/^(\d{1,2}):(\d{2})$/);if(!m)return null;
+    const h=Number(m[1]),min=Number(m[2]);if(h<0||h>23||min<0||min>59)return null;
+    return String(h).padStart(2,"0")+":"+String(min).padStart(2,"0");
+  }
+  function formatTaskInlineDate(value){if(!value)return "Sin fecha";const d=dateFromISO(value);return d.toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"})}
+  function setTaskInlinePanel(name){
+    taskInlineOpenPanel=taskInlineOpenPanel===name?"":name;
+    $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
+    $("taskInlineTimePanel").classList.toggle("hidden",taskInlineOpenPanel!=="time");
+    if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
+    if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
+  }
+  function setTaskInlineDate(value){$("taskDate").value=value||"";if(value)taskInlineMonth=dateFromISO(value);syncTaskEditorMeta();commitTaskHistory()}
+  function renderTaskInlineCalendar(){
+    const host=$("taskInlineCalendarGrid");if(!host)return;
+    const y=taskInlineMonth.getFullYear(),m=taskInlineMonth.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);
+    $("taskInlineMonthLabel").textContent=new Date(y,m,1).toLocaleDateString("es",{month:"long",year:"numeric"});
+    const selected=$("taskDate").value,today=localDateISO();let out="";
+    for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),other=d.getMonth()!==m;out+='<button type="button" data-inline-date="'+iso+'" class="'+(other?"other ":"")+(iso===today?"today ":"")+(iso===selected?"selected":"")+'">'+d.getDate()+'</button>'}
+    host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{setTaskInlineDate(btn.dataset.inlineDate);setTaskInlinePanel("")}));
+  }
+  function syncTaskInlineForm(){
+    const date=$("taskDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
+    $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartInput").value=start;$("taskInlineEndInput").value=end;
+    const reminderOn=$("taskTimeButton").dataset.reminderActive==="1";$("taskInlineReminderToggle").checked=reminderOn;$("taskInlineReminderOptions").classList.toggle("hidden",!reminderOn);$("taskInlineReminderSelect").value=$("taskReminder").value||"at";$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
+    const cat=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=cat==="inbox"?"":cat;$("taskInlineTags").value=$("taskTags").value||"";
+    const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
+  }
+  function applyInlineTime(which){
+    const field=which==="start"?$("taskInlineStartInput"):$("taskInlineEndInput"),parsed=parseInlineTime(field.value);if(!parsed){field.value=which==="start"?($("taskTime").value||""):($("taskEndTime").value||"");return}
+    if(which==="start"){const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;$("taskTime").value=parsed;const m=timeToMinutes(parsed);if(m!==null)$("taskEndTime").value=minutesToTime(Math.min(1439,m+duration))}
+    else{const start=timeToMinutes($("taskTime").value),end=timeToMinutes(parsed);if(start!==null&&end!==null&&end<=start){field.value=$("taskEndTime").value||"";return}$("taskEndTime").value=parsed}
+    syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
   }
   function taskSnapshot(){
     const textHtml=sanitizeInlineHtml($("taskText").innerHTML),text=inlineHtmlToText(textHtml).trim(),blocks=cleanNoteBlocks(editorTaskBlocks),body=noteBlocksText(blocks).trim();
@@ -2651,7 +2736,7 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -3125,12 +3210,30 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
+  $("taskInlineDateBtn").addEventListener("click",()=>setTaskInlinePanel("date"));
+  $("taskInlineStartBtn").addEventListener("click",()=>setTaskInlinePanel("time"));
+  $("taskInlineEndBtn").addEventListener("click",()=>setTaskInlinePanel("time"));
+  $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
+  $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
+  $("taskInlineToday").addEventListener("click",()=>{setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
+  $("taskInlineTomorrow").addEventListener("click",()=>{setTaskInlineDate(addCalendarDays(localDateISO(),1));setTaskInlinePanel("")});
+  $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
+  $("taskAllDayToggle").addEventListener("change",()=>{commitTaskHistory();if($("taskAllDayToggle").checked){if(!$("taskDate").value)$("taskDate").value=localDateISO();$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0"}else{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
+  $("taskInlineStartInput").addEventListener("change",()=>applyInlineTime("start"));$("taskInlineStartInput").addEventListener("blur",()=>applyInlineTime("start"));$("taskInlineEndInput").addEventListener("change",()=>applyInlineTime("end"));$("taskInlineEndInput").addEventListener("blur",()=>applyInlineTime("end"));
+  document.querySelectorAll("[data-inline-duration]").forEach(btn=>btn.addEventListener("click",()=>{commitTaskHistory();let start=timeToMinutes($("taskTime").value);if(start===null){$("taskTime").value="09:00";start=540}const d=Number(btn.dataset.inlineDuration)||60;$("taskEndTime").value=minutesToTime(Math.min(1439,start+d));syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()}));
+  $("taskInlineReminderToggle").addEventListener("change",()=>{commitTaskHistory();const on=$("taskInlineReminderToggle").checked;if(on){if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00";$("taskTimeButton").dataset.reminderActive="1";$("taskReminder").value=$("taskInlineReminderSelect").value||"at";requestReminderPermission()}else{$("taskTimeButton").dataset.reminderActive="0"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
+  $("taskInlineReminderSelect").addEventListener("change",()=>{commitTaskHistory();$("taskReminder").value=$("taskInlineReminderSelect").value;$("taskTimeButton").dataset.reminderActive="1";syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
+  $("taskInlineRecurrence").addEventListener("change",()=>{commitTaskHistory();$("taskRecurrence").value=$("taskInlineRecurrence").value;commitTaskHistory()});
+  $("taskInlinePriority").addEventListener("change",()=>{commitTaskHistory();$("taskPriority").value=$("taskInlinePriority").value;commitTaskHistory()});
+  $("taskInlineCategory").addEventListener("change",()=>{commitTaskHistory();setCategoryPicker("taskCategory",$("taskInlineCategory").value.trim()||"inbox");commitTaskHistory()});
+  $("taskInlineTags").addEventListener("change",()=>{commitTaskHistory();$("taskTags").value=$("taskInlineTags").value;commitTaskHistory()});
+  $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
   $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
-  $("taskDateBtn").addEventListener("click",openTaskDatePicker);
-  $("taskDateChip").addEventListener("click",openTaskDatePicker);
-  $("taskTimeQuickBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");openTimePicker()});
-  $("taskTimeChip").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");openTimePicker()});
+  $("taskDateBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");setTaskInlinePanel("date")});
+  $("taskDateChip").addEventListener("click",()=>setTaskInlinePanel("date"));
+  $("taskTimeQuickBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");setTaskInlinePanel("time")});
+  $("taskTimeChip").addEventListener("click",()=>setTaskInlinePanel("time"));
   $("taskFormatBtn").addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});
   $("taskFormatBtn").addEventListener("click",()=>{hideTaskPanels();setRichToolbar("task",$("taskRichToolbar").classList.contains("hidden"))});
   $("taskFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
@@ -3188,7 +3291,7 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
   $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);hideNotePanels();closeEditor({save:false});scheduleSave();render();showToast("Nota enviada a papelera")});
 
   $("noteTags").addEventListener("change",()=>persistOpenNote(false));
-  ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()}));
+  ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory()}));
   $("wakeQuickBtn").addEventListener("click",openWakeControl);
   $("wakeControlClose").addEventListener("click",()=>closeOverlay("wakeControlOverlay"));
   $("wakeControlOverlay").addEventListener("click",e=>{if(e.target===$("wakeControlOverlay"))closeOverlay("wakeControlOverlay")});
