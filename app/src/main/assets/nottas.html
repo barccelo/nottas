@@ -1915,7 +1915,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     $("taskTime").value=minutesToTime(minute);
     $("taskEndTime").value=minutesToTime(Math.min(1439,minute+60));
     $("taskTimeButton").dataset.reminderActive="0";
-    syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();setTaskInlinePanel("time");
+    taskInlineTimeTarget="start";taskInlineOpenPanel="";syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();
   }
   function bindCalendarTimeGrid(){
     $("calendarBody").querySelectorAll(".calendarTimeColumn").forEach(col=>{
