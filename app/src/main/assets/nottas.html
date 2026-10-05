@@ -491,6 +491,34 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
 .taskInlineWheelColumn{height:176px;min-width:0;position:relative;z-index:2}.taskInlineWheel{height:176px;overflow-y:auto;scroll-snap-type:y mandatory;padding:66px 0;scrollbar-width:none;overscroll-behavior:contain}.taskInlineWheel::-webkit-scrollbar{display:none}
 .taskInlineWheelItem{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:21px;color:#a1a1a6;user-select:none}.taskInlineWheelColon{text-align:center;font-size:27px;font-weight:700;color:#1d1d1f;z-index:3}.taskInlineWheelSelection{position:absolute;left:0;right:0;top:66px;height:44px;border-radius:11px;background:rgba(118,118,128,.10);pointer-events:none;z-index:1}
 html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a1a6}html[data-theme="dark"] .taskInlineTimeTabs button strong,html[data-theme="dark"] .taskInlineWheelColon{color:#f5f5f7}html[data-theme="dark"] .taskInlineTimeTabs button.active{background:#19344f;color:#64a9ff}html[data-theme="dark"] .taskInlineWheelSelection{background:rgba(118,118,128,.20)}
+
+/* Fit work-hour timelines to the available screen height */
+.calendarTimeColumns{
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--calendar-hour-px,48px) - 1px),
+    #e5e5ea calc(var(--calendar-hour-px,48px) - 1px),
+    #e5e5ea var(--calendar-hour-px,48px)
+  )!important;
+}
+html[data-theme="dark"] .calendarTimeColumns{
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--calendar-hour-px,48px) - 1px),
+    #38383a calc(var(--calendar-hour-px,48px) - 1px),
+    #38383a var(--calendar-hour-px,48px)
+  )!important;
+}
+.calendarTimeViewport.workHoursOnly{
+  flex:1 1 auto!important;
+  height:auto!important;
+  max-height:none!important;
+  min-height:0!important;
+}
+.calendarWeekTimeViewport.workHoursOnly{overflow-y:auto}
+.calendarWeekTimeViewport .calendarTimeBlockTitle{line-height:1.08}
 </style>
 </head>
 <body>
@@ -1742,40 +1770,49 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
     if(start===null||end===null||end<=start){start=8*60;end=17*60}
     return {start:Math.max(0,start),end:Math.min(1440,end)};
   }
-  function calendarTimeAxisHtml(rangeStart=0,rangeEnd=1440){
+  function calendarHourPxForRange(rangeStart=0,rangeEnd=1440){
+    if(!state?.preferences?.calendarWeekWorkHoursOnly||!["day","week"].includes(calendarView))return CAL_HOUR_PX;
+    const hours=Math.max(1,(rangeEnd-rangeStart)/60),body=$("calendarBody");
+    const bodyHeight=Math.max(0,body?.clientHeight||0);
+    const reserved=calendarView==="week"?74:48;
+    const usable=Math.max(0,bodyHeight-reserved);
+    const fitted=usable>0?usable/hours:CAL_HOUR_PX;
+    return Math.max(CAL_HOUR_PX,Math.min(84,fitted));
+  }
+  function calendarTimeAxisHtml(rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     let html='<div class="calendarTimeAxis">';
     const first=Math.floor(rangeStart/60),last=Math.ceil(rangeEnd/60);
     for(let h=first;h<=last;h++){
       const minute=h*60;if(minute<rangeStart||minute>rangeEnd)continue;
       const edge=minute===rangeStart?" first":minute===rangeEnd?" last":"";
-      html+='<span class="calendarHourLabel'+edge+'" style="top:'+((minute-rangeStart)/60*CAL_HOUR_PX)+'px">'+String(h%24).padStart(2,"0")+':00</span>';
+      html+='<span class="calendarHourLabel'+edge+'" style="top:'+((minute-rangeStart)/60*hourPx)+'px">'+String(h%24).padStart(2,"0")+':00</span>';
     }
     return html+'</div>';
   }
-  function calendarTimeColumnHtml(date,tasks,rangeStart=0,rangeEnd=1440){
+  function calendarTimeColumnHtml(date,tasks,rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     const blocks=tasks.filter(t=>{const m=calendarTaskStartMinutes(t);return m!==null&&m>=rangeStart&&m<rangeEnd}).map(t=>{
       const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
-      const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*CAL_HOUR_PX,height=Math.max(24,(visibleEnd-start)/60*CAL_HOUR_PX),lines=duration<=30?1:duration<=60?2:3,compact=duration<60;
+      const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*hourPx,height=Math.max(24,(visibleEnd-start)/60*hourPx),lines=height>=54?3:height>=31?2:1,compact=height<44;
       return '<div class="calendarTimeBlock" data-calendar-time-task="'+esc(t.id)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
     }).join("");
-    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'">'+blocks+'</div>';
+    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+'</div>';
   }
-  function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440){
-    const height=Math.max(CAL_HOUR_PX,(rangeEnd-rangeStart)/60*CAL_HOUR_PX);
-    const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date),rangeStart,rangeEnd)).join("");
-    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+'">'+cols+'</div></div>';
+  function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440,hourPx=calendarHourPxForRange(rangeStart,rangeEnd)){
+    const height=Math.max(hourPx,(rangeEnd-rangeStart)/60*hourPx);
+    const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date),rangeStart,rangeEnd,hourPx)).join("");
+    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
   }
   function scrollCalendarTimeViewport(){
     const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
     let tasks=[];
     if(calendarView==="day")tasks=calendarTasksFor(calendarDate).filter(t=>t.dueTime);
     else if(calendarView==="week"){const start=mondayOf(calendarDate);for(let i=0;i<7;i++)tasks.push(...calendarTasksFor(addCalendarDays(start,i)).filter(t=>t.dueTime))}
-    const rangeStart=Number(viewport.querySelector(".calendarTimeColumn")?.dataset.calendarStartMinute)||0;
+    const col=viewport.querySelector(".calendarTimeColumn"),rangeStart=Number(col?.dataset.calendarStartMinute)||0,hourPx=Number(col?.dataset.calendarHourPx)||CAL_HOUR_PX;
     const starts=tasks.map(t=>calendarTaskStartMinutes(t)).filter(x=>x!==null&&x>=rangeStart),first=starts.length?Math.min(...starts):Math.max(rangeStart,new Date().getHours()*60-60);
-    viewport.scrollTop=Math.max(0,(first-rangeStart)/60*CAL_HOUR_PX-28);
+    viewport.scrollTop=Math.max(0,(first-rangeStart)/60*hourPx-28);
   }
   function snapCalendarMinutes(value){return Math.max(0,Math.min(1425,Math.round(value/CAL_SNAP_MINUTES)*CAL_SNAP_MINUTES))}
-  function calendarMinutesFromPointer(column,clientY){const r=column.getBoundingClientRect(),base=Number(column.dataset.calendarStartMinute)||0,end=Number(column.dataset.calendarEndMinute)||1440;return Math.min(Math.max(base,snapCalendarMinutes(base+(clientY-r.top)/CAL_HOUR_PX*60)),Math.max(base,end-15))}
+  function calendarMinutesFromPointer(column,clientY){const r=column.getBoundingClientRect(),base=Number(column.dataset.calendarStartMinute)||0,end=Number(column.dataset.calendarEndMinute)||1440,hourPx=Number(column.dataset.calendarHourPx)||CAL_HOUR_PX;return Math.min(Math.max(base,snapCalendarMinutes(base+(clientY-r.top)/hourPx*60)),Math.max(base,end-15))}
   function clearCalendarTimeDrop(){document.querySelectorAll(".calendarTimeColumn.calendarDropTarget").forEach(el=>el.classList.remove("calendarDropTarget"))}
   function installCalendarTimeMove(block,t){
     if(!block||block.dataset.moveReady==="1")return;block.dataset.moveReady="1";
@@ -1795,8 +1832,8 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
     };
     const updatePreview=(col,minute)=>{
       if(!preview||!col||minute===null)return;
-      const r=col.getBoundingClientRect(),base=Number(col.dataset.calendarStartMinute)||0;
-      const top=r.top+((minute-base)/60)*CAL_HOUR_PX;
+      const r=col.getBoundingClientRect(),base=Number(col.dataset.calendarStartMinute)||0,hourPx=Number(col.dataset.calendarHourPx)||CAL_HOUR_PX;
+      const top=r.top+((minute-base)/60)*hourPx;
       preview.style.left=(r.left+1)+"px";
       preview.style.top=top+"px";
       preview.style.width=Math.max(28,r.width-2)+"px";
@@ -1829,7 +1866,7 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
         if(col){
           targetDate=col.dataset.calendarTimeDate||"";
           targetMinute=calendarMinutesFromPointer(col,startY-grabOffsetY);
-          const r=col.getBoundingClientRect(),top=r.top+((targetMinute-(Number(col.dataset.calendarStartMinute)||0))/60)*CAL_HOUR_PX;
+          const r=col.getBoundingClientRect(),hourPx=Number(col.dataset.calendarHourPx)||CAL_HOUR_PX,top=r.top+((targetMinute-(Number(col.dataset.calendarStartMinute)||0))/60)*hourPx;
           preview.style.left=(r.left+1)+"px";preview.style.top=top+"px";preview.style.width=Math.max(28,r.width-2)+"px";preview.style.height=previewHeight+"px";
         }
         document.body.appendChild(preview);
@@ -1867,7 +1904,7 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
     if(!handle||handle.dataset.resizeReady==="1")return;handle.dataset.resizeReady="1";
     let pointerId=null,active=false,lastEnd=null;
     handle.addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;e.preventDefault();e.stopPropagation();pointerId=e.pointerId;active=true;try{handle.setPointerCapture(pointerId)}catch(_){}});
-    handle.addEventListener("pointermove",e=>{if(!active)return;e.preventDefault();const col=block.closest(".calendarTimeColumn"),start=calendarTaskStartMinutes(t);if(!col||start===null)return;let end=calendarMinutesFromPointer(col,e.clientY);end=Math.max(start+15,end);lastEnd=Math.min(1439,end);block.style.height=Math.max(24,(lastEnd-start)/60*CAL_HOUR_PX)+"px";block.querySelector(".calendarTimeBlockMeta").textContent=t.dueTime+"–"+minutesToTime(lastEnd)},{passive:false});
+    handle.addEventListener("pointermove",e=>{if(!active)return;e.preventDefault();const col=block.closest(".calendarTimeColumn"),start=calendarTaskStartMinutes(t);if(!col||start===null)return;let end=calendarMinutesFromPointer(col,e.clientY);end=Math.max(start+15,end);lastEnd=Math.min(1439,end);const hourPx=Number(col.dataset.calendarHourPx)||CAL_HOUR_PX;block.style.height=Math.max(24,(lastEnd-start)/60*hourPx)+"px";block.querySelector(".calendarTimeBlockMeta").textContent=t.dueTime+"–"+minutesToTime(lastEnd)},{passive:false});
     const finish=e=>{if(!active)return;e.preventDefault();active=false;suppressClickUntil=Date.now()+350;try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}if(lastEnd!==null){t.endTime=minutesToTime(lastEnd);touch(t);scheduleSave();renderCalendar();render();showToast("Duración actualizada")}};
     handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",()=>{active=false;renderCalendar()});
   }
@@ -1907,15 +1944,15 @@ html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a
       allDayByDate.forEach(rows=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+'</div>'});
       html+='</div></div>';
     }
-    const gridHeight=Math.max(CAL_HOUR_PX,(range.end-range.start)/60*CAL_HOUR_PX);
-    html+='<div class="calendarTimeViewport calendarWeekTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px">'+calendarTimeGridHtml(dates,range.start,range.end)+'</div>';
+    const hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
+    html+='<div class="calendarTimeViewport calendarWeekTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px;--calendar-hour-px:'+hourPx+'px">'+calendarTimeGridHtml(dates,range.start,range.end,hourPx)+'</div>';
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarDay(){
-    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),range=calendarVisibleRange(),gridHeight=Math.max(CAL_HOUR_PX,(range.end-range.start)/60*CAL_HOUR_PX);
+    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),range=calendarVisibleRange(),hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
     let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div>';
     if(allDay.length)html+='<div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</div>';
-    html+='<div class="calendarTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px">'+calendarTimeGridHtml([calendarDate],range.start,range.end)+'</div>';
+    html+='<div class="calendarTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px;--calendar-hour-px:'+hourPx+'px">'+calendarTimeGridHtml([calendarDate],range.start,range.end,hourPx)+'</div>';
     $("calendarBody").innerHTML=html;bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarAgenda(){
