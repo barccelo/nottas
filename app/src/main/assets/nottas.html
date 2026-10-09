@@ -548,22 +548,25 @@ html[data-theme="dark"] .calendarTimeColumns{
 body.imeVisible #quickOverlay,body.imeVisible #timeOverlay{height:var(--keyboard-available-height,var(--vv-height,100vh));top:0;align-items:flex-end}
 body.imeVisible #quickOverlay .quickSheet,body.imeVisible #timeOverlay .timePickerSheet{max-height:calc(var(--keyboard-available-height,var(--vv-height,100vh)) - 4px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:14px}
 body.imeVisible #quickOverlay .quickSheet{scroll-padding-bottom:22px}
-.timeDirectRow{display:flex;align-items:center;gap:10px;margin:4px 4px 12px}
-.timeDirectRow label{font-size:13px;color:#636366;flex:1}
-.timeDirectText,.taskInlineTimeText{width:118px;height:44px;max-width:100%;border:1px solid #c7c7cc;border-radius:11px;background:#fff;color:#1d1d1f;padding:0 10px;text-align:center;font-size:19px;font-variant-numeric:tabular-nums;outline:none}
-.timeDirectText:focus,.taskInlineTimeText:focus{border-color:#007aff}
-.taskInlineTypedRow{display:flex;gap:9px;align-items:center;justify-content:space-between;padding:6px 3px 12px;color:#636366;font-size:12px}
-html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeText{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 
 
 /* A proposed task may be directly scheduled by its assistant, by explicit tap. */
-.taskInlineTimeHide{height:38px;border:0;border-radius:9px;background:#e5e5ea;color:#1d1d1f;padding:0 10px;font-size:12px;font-weight:600}
-html[data-theme="dark"] .taskInlineTimeHide{background:#3a3a3c;color:#f5f5f7}
 #assistantTaskStatus{cursor:default;font:inherit;appearance:none;-webkit-appearance:none}
 #assistantTaskStatus:disabled{opacity:1}
 #assistantTaskStatus:not(:disabled){cursor:pointer;touch-action:manipulation}
 #assistantTaskStatus.scheduled{background:#e7f5eb;color:#217744}
 html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:#93d6a6}
+
+/* Direct entry replaces only the selected number, without extra input rows. */
+.taskInlineWheelEdit{position:absolute;z-index:6;top:66px;left:0;width:100%;height:44px;box-sizing:border-box;border:0!important;border-radius:0;background:transparent;color:#1d1d1f;text-align:center;font-size:21px;font-weight:650;line-height:44px;padding:0 3px;outline:none!important;box-shadow:none!important;font-variant-numeric:tabular-nums}
+.taskInlineWheelItem.inlineWheelEditingTarget{color:transparent!important}
+.taskInlineWheelEdit::selection{background:rgba(0,122,255,.25)}
+html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f7}
+.timePartButton,.timePartInput{border:0!important;box-shadow:none!important;outline:none!important;background:transparent!important;color:inherit}
+.timePartButton,.timePartInput{font-size:28px;font-weight:650;font-variant-numeric:tabular-nums}
+.timePartInput:focus{background:rgba(118,118,128,.09)!important}
+#assistantTaskStatus,#assistantTaskStatus:disabled{border:0!important;outline:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;background-clip:padding-box;-webkit-tap-highlight-color:transparent;line-height:1.2;font-size:11px;font-weight:700}
+#assistantTaskStatus:focus-visible{box-shadow:0 0 0 2px rgba(0,122,255,.35)!important}
 </style>
 </head>
 <body>
@@ -847,14 +850,10 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
               <button id="taskInlineStartTab" class="active" type="button" data-inline-time-target="start"><span>Inicio</span><strong id="taskInlineStartTabValue">09:00</strong></button>
               <button id="taskInlineEndTab" type="button" data-inline-time-target="end"><span>Fin</span><strong id="taskInlineEndTabValue">10:00</strong></button>
             </div>
-            <div id="taskInlineTypedRow" class="taskInlineTypedRow hidden">
-              <label for="taskInlineTimeText">Escribir hora</label>
-              <input id="taskInlineTimeText" class="taskInlineTimeText" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="HH:MM" aria-label="Hora de inicio o fin en formato 24 horas"><button id="taskInlineTimeHide" class="taskInlineTimeHide" type="button" aria-label="Ocultar escritura de hora">Listo</button>
-            </div>
             <div class="taskInlineWheelWrap">
-              <div class="taskInlineWheelColumn"><div id="taskInlineHourWheel" class="taskInlineWheel" aria-label="Hora"></div></div>
+              <div class="taskInlineWheelColumn"><div id="taskInlineHourWheel" class="taskInlineWheel" aria-label="Hora"></div><input id="taskInlineHourEdit" class="taskInlineWheelEdit hidden" type="text" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="Editar las horas seleccionadas"></div>
               <div class="taskInlineWheelColon">:</div>
-              <div class="taskInlineWheelColumn"><div id="taskInlineMinuteWheel" class="taskInlineWheel" aria-label="Minutos"></div></div>
+              <div class="taskInlineWheelColumn"><div id="taskInlineMinuteWheel" class="taskInlineWheel" aria-label="Minutos"></div><input id="taskInlineMinuteEdit" class="taskInlineWheelEdit hidden" type="text" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="Editar los minutos seleccionados"></div>
               <div class="taskInlineWheelSelection" aria-hidden="true"></div>
             </div>
             <div class="taskInlineQuickRow"><button type="button" data-inline-duration="30">30 min</button><button type="button" data-inline-duration="60">1 h</button><button type="button" data-inline-duration="90">1 h 30</button><button type="button" data-inline-duration="120">2 h</button></div>
@@ -3134,7 +3133,7 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
     if(!mw.children.length)mw.innerHTML=Array.from({length:60},(_,i)=>'<div class="taskInlineWheelItem" data-inline-wheel-value="'+i+'">'+String(i).padStart(2,"0")+'</div>').join("");
     [hw,mw].forEach((wheel,idx)=>{
       if(wheel.dataset.ready==="1")return;wheel.dataset.ready="1";let timer=null,last=-1;
-      wheel.addEventListener("scroll",()=>{clearTimeout(timer);timer=setTimeout(()=>{
+      wheel.addEventListener("scroll",()=>{if(taskInlineEditingPart>=0&&!taskInlineWheelMute)finishInlineWheelEdit();clearTimeout(timer);timer=setTimeout(()=>{
         const max=idx===0?23:59,value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/INLINE_TIME_ROW)));
         if(!taskInlineWheelMute&&value!==last){last=value;hapticTick();applyTaskInlineWheelValue(idx,value)}
       },40)},{passive:true});
@@ -3142,44 +3141,47 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
         const item=e.target.closest("[data-inline-wheel-value]");if(!item)return;
         const value=Number(item.dataset.inlineWheelValue),selected=idx===0?currentTaskInlineTime().h:currentTaskInlineTime().m;
         if(value===selected && Math.abs(wheel.scrollTop-value*INLINE_TIME_ROW)<INLINE_TIME_ROW/2){
-          toggleTaskInlineTimeText(idx===0?"hour":"minute");return;
+          beginInlineWheelEdit(idx);return;
         }
         wheel.scrollTo({top:value*INLINE_TIME_ROW,behavior:"smooth"});
       });
     });
   }
   function currentTaskInlineTime(){const raw=taskInlineTimeTarget==="end"?$("taskEndTime").value:$("taskTime").value;return parseStoredTime(raw)||{h:taskInlineTimeTarget==="end"?10:9,m:0}}
-  function syncTaskInlineTimeText(){
-    const input=$("taskInlineTimeText");if(input&&document.activeElement!==input){const v=currentTaskInlineTime();input.value=formatTimeParts(v.h,v.m)}
-  }
-  function toggleTaskInlineTimeText(part="hour"){
-    const row=$("taskInlineTypedRow"),input=$("taskInlineTimeText"),willShow=row.classList.contains("hidden");
-    if(!willShow){if(document.activeElement===input)applyTypedInlineTime();row.classList.add("hidden");input.blur();return}
-    syncTaskInlineTimeText();row.classList.remove("hidden");
-    requestAnimationFrame(()=>{input.focus();input.setSelectionRange(part==="minute"?3:0,part==="minute"?5:2)});
-  }
-  function applyTypedInlineTime(){
-    const input=$("taskInlineTimeText"),parsed=parseTypedClock(input.value);
-    if(!parsed){showToast("Escribe una hora válida: 14:35");syncTaskInlineTimeText();return}
-    const newValue=formatTimeParts(parsed.h,parsed.m),start=timeToMinutes($("taskTime").value);
-    if(taskInlineTimeTarget==="end"&&start!==null&&timeToMinutes(newValue)<=start){
-      showToast("La hora de fin debe ser posterior al inicio");
-      input.value=$("taskEndTime").value||"10:00";return;
+  let taskInlineEditingPart=-1;
+  function inlineWheelEditingInput(part){return $(part===0?"taskInlineHourEdit":"taskInlineMinuteEdit")}
+  function finishInlineWheelEdit(commit=true){
+    if(taskInlineEditingPart<0)return;
+    const part=taskInlineEditingPart,input=inlineWheelEditingInput(part),digits=input.value.trim();
+    taskInlineEditingPart=-1;input.classList.add("hidden");
+    for(const el of document.querySelectorAll(".inlineWheelEditingTarget"))el.classList.remove("inlineWheelEditingTarget");
+    input.blur();
+    if(commit){
+      const value=/^\d{1,2}$/.test(digits)?Number(digits):NaN,max=part===0?23:59;
+      if(Number.isInteger(value)&&value>=0&&value<=max){
+        const old=currentTaskInlineTime();
+        if(value!==(part===0?old.h:old.m))applyTaskInlineWheelValue(part,value);
+      }else showToast(part===0?"Hora inválida (0–23)":"Minutos inválidos (0–59)");
     }
-    if(taskInlineTimeTarget==="start"){
-      const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value);
-      const duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;
-      $("taskTime").value=newValue;$("taskEndTime").value=minutesToTime(Math.min(1439,timeToMinutes(newValue)+duration));
-    }else $("taskEndTime").value=newValue;
-    commitTaskHistory();syncTaskTimeButton();syncTaskEditorMeta();positionTaskInlineTimeWheels(false);commitTaskHistory();
+    if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
+  }
+  function beginInlineWheelEdit(part){
+    if(taskInlineEditingPart===part){finishInlineWheelEdit();return}
+    if(taskInlineEditingPart>=0)finishInlineWheelEdit();
+    const current=currentTaskInlineTime(),value=part===0?current.h:current.m,input=inlineWheelEditingInput(part),wheel=$(part===0?"taskInlineHourWheel":"taskInlineMinuteWheel");
+    taskInlineEditingPart=part;input.value=String(value).padStart(2,"0");
+    const selected=wheel.querySelector('[data-inline-wheel-value="'+value+'"]');
+    if(selected)selected.classList.add("inlineWheelEditingTarget");
+    input.classList.remove("hidden");
+    requestAnimationFrame(()=>{if(taskInlineEditingPart===part){input.focus();input.select()}});
   }
   function positionTaskInlineTimeWheels(smooth=false){
     buildTaskInlineTimeWheels();const v=currentTaskInlineTime();taskInlineWheelMute=true;
     $("taskInlineHourWheel").scrollTo({top:v.h*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});$("taskInlineMinuteWheel").scrollTo({top:v.m*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});
-    $("taskInlineStartTab").classList.toggle("active",taskInlineTimeTarget==="start");$("taskInlineEndTab").classList.toggle("active",taskInlineTimeTarget==="end");syncTaskInlineTimeText();
+    $("taskInlineStartTab").classList.toggle("active",taskInlineTimeTarget==="start");$("taskInlineEndTab").classList.toggle("active",taskInlineTimeTarget==="end");
     setTimeout(()=>{taskInlineWheelMute=false},smooth?260:80);
   }
-  function setTaskInlineTimeTarget(target){taskInlineTimeTarget=target==="end"?"end":"start";$("taskInlineTypedRow").classList.add("hidden");$("taskInlineTimeText").blur();syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
+  function setTaskInlineTimeTarget(target){finishInlineWheelEdit();taskInlineTimeTarget=target==="end"?"end":"start";syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
   function applyTaskInlineWheelValue(part,value){
     const current=currentTaskInlineTime(),hour=part===0?value:current.h,minute=part===1?value:current.m,newValue=formatTimeParts(hour,minute);commitTaskHistory();
     if(taskInlineTimeTarget==="start"){const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;$("taskTime").value=newValue;const start=timeToMinutes(newValue);$("taskEndTime").value=minutesToTime(Math.min(1439,start+duration))}
@@ -3191,7 +3193,7 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
     taskInlineOpenPanel=taskInlineOpenPanel===name?"":name;
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
     $("taskInlineTimePanel").classList.toggle("hidden",taskInlineOpenPanel!=="time");
-    if(taskInlineOpenPanel!=="time"){$("taskInlineTypedRow").classList.add("hidden");$("taskInlineTimeText").blur()}
+    if(taskInlineOpenPanel!=="time")finishInlineWheelEdit();
     if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
@@ -3209,7 +3211,7 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
     const date=$("taskDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
     $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartTabValue").textContent=start||"09:00";$("taskInlineEndTabValue").textContent=end||"10:00";
     const reminderOn=$("taskTimeButton").dataset.reminderActive==="1";$("taskInlineReminderToggle").checked=reminderOn;$("taskInlineReminderOptions").classList.toggle("hidden",!reminderOn);$("taskInlineReminderSelect").value=$("taskReminder").value||"at";$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
-    syncTaskInlineTimeText();const cat=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=cat==="inbox"?"":cat;$("taskInlineTags").value=$("taskTags").value||"";
+    const cat=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=cat==="inbox"?"":cat;$("taskInlineTags").value=$("taskTags").value||"";
     const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
   }
   function assistantStatusLabel(status){
@@ -3351,7 +3353,7 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";$("taskInlineTypedRow").classList.add("hidden");editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -3835,22 +3837,26 @@ html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
   $("taskInlineDateBtn").addEventListener("click",()=>setTaskInlinePanel("date"));
-  $("taskInlineStartBtn").addEventListener("click",()=>{taskInlineTimeTarget="start";setTaskInlinePanel("time")});
-  $("taskInlineEndBtn").addEventListener("click",()=>{taskInlineTimeTarget="end";setTaskInlinePanel("time")});
+  function toggleInlineTimePanelFor(target){
+    const next=target==="end"?"end":"start";
+    if(taskInlineOpenPanel==="time"&&taskInlineTimeTarget===next){setTaskInlinePanel("");return}
+    if(taskInlineOpenPanel==="time"){setTaskInlineTimeTarget(next);return}
+    taskInlineTimeTarget=next;setTaskInlinePanel("time");
+  }
+  $("taskInlineStartBtn").addEventListener("click",()=>toggleInlineTimePanelFor("start"));
+  $("taskInlineEndBtn").addEventListener("click",()=>toggleInlineTimePanelFor("end"));
   document.querySelectorAll("[data-inline-time-target]").forEach(btn=>btn.addEventListener("click",()=>setTaskInlineTimeTarget(btn.dataset.inlineTimeTarget)));
   $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
   $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
-  $("taskInlineStartTabValue").addEventListener("click",e=>{e.stopPropagation();if(taskInlineTimeTarget!=="start")setTaskInlineTimeTarget("start");toggleTaskInlineTimeText()});
-  $("taskInlineEndTabValue").addEventListener("click",e=>{e.stopPropagation();if(taskInlineTimeTarget!=="end")setTaskInlineTimeTarget("end");toggleTaskInlineTimeText()});
-  $("taskInlineTimeHide").addEventListener("click",()=>toggleTaskInlineTimeText());
-  $("taskInlineTimeText").addEventListener("input",()=>{
-    const input=$("taskInlineTimeText");
-    if(/^\d{2}:\d{2}$/.test(input.value)&&input.selectionStart===2&&input.selectionEnd===2)
-      input.setSelectionRange(3,5);
+  ["hour","minute"].forEach((name,part)=>{
+    const input=inlineWheelEditingInput(part);
+    input.addEventListener("input",()=>{input.value=input.value.replace(/\D/g,"").slice(0,2)});
+    input.addEventListener("blur",()=>{if(taskInlineEditingPart===part)finishInlineWheelEdit()});
+    input.addEventListener("keydown",e=>{
+      if(e.key==="Enter"){e.preventDefault();finishInlineWheelEdit()}
+      if(e.key==="Escape"){e.preventDefault();finishInlineWheelEdit(false)}
+    });
   });
-  $("taskInlineTimeText").addEventListener("change",applyTypedInlineTime);
-  $("taskInlineTimeText").addEventListener("blur",()=>{if(!$("taskInlineTimePanel").classList.contains("hidden"))applyTypedInlineTime()});
-  $("taskInlineTimeText").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyTypedInlineTime();$("taskInlineTimeText").blur()}});
   $("taskInlineToday").addEventListener("click",()=>{setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
   $("taskInlineTomorrow").addEventListener("click",()=>{setTaskInlineDate(addCalendarDays(localDateISO(),1));setTaskInlinePanel("")});
   $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
