@@ -43,6 +43,11 @@ async function route(request, env) {
   if (path === "/v1/sync" && request.method === "POST") return pushSync(request, auth, env);
   if (path === "/v1/calls/pending" && request.method === "GET") return pendingCalls(auth, env);
 
+  const activityWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/activity$/);
+  if (activityWorkspace && request.method === "GET") {
+    return workspaceActivity(decodeURIComponent(activityWorkspace[1]), auth, env);
+  }
+
   const callWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/call$/);
   if (callWorkspace && request.method === "POST") {
     return createAssistantCall(request, decodeURIComponent(callWorkspace[1]), auth, env);
@@ -322,6 +327,62 @@ async function pushSync(request, auth, env) {
 
   const latest = await env.DB.prepare("SELECT COALESCE(MAX(seq),0) AS seq FROM changes").first();
   return json({ ok: true, accepted, conflicts, cursor: Number(latest?.seq || 0) });
+}
+
+async function workspaceActivity(workspaceId, auth, env) {
+  const member = await membership(workspaceId, auth.userId, env);
+  if (!member) return json({ error: "workspace_forbidden" }, 403);
+
+  const membersResult = await env.DB.prepare(
+    "SELECT m.user_id,m.role,m.joined_at,u.display_name FROM workspace_members m JOIN users u ON u.id=m.user_id WHERE m.workspace_id=? AND m.status='active' ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,m.joined_at"
+  ).bind(workspaceId).all();
+
+  const changesResult = await env.DB.prepare(
+    "SELECT c.seq,c.entity_type,c.entity_id,c.op,c.payload_json,c.created_at,c.actor_user_id,u.display_name FROM changes c JOIN users u ON u.id=c.actor_user_id WHERE c.workspace_id=? ORDER BY c.seq DESC LIMIT 40"
+  ).bind(workspaceId).all();
+
+  const callsResult = await env.DB.prepare(
+    "SELECT c.id,c.status,c.response,c.created_at,c.responded_at,fu.display_name AS from_name,tu.display_name AS to_name FROM assistant_calls c JOIN users fu ON fu.id=c.from_user_id JOIN users tu ON tu.id=c.to_user_id WHERE c.workspace_id=? ORDER BY c.created_at DESC LIMIT 20"
+  ).bind(workspaceId).all();
+
+  const activity = [];
+  for (const row of (changesResult.results || [])) {
+    const payload = safeJson(row.payload_json, {});
+    activity.push({
+      kind: "change",
+      seq: row.seq,
+      entityType: row.entity_type,
+      entityId: row.entity_id,
+      op: row.op,
+      title: textValue(payload.text || payload.title || payload.name || row.entity_type, 140),
+      actorUserId: row.actor_user_id,
+      actorName: row.display_name,
+      createdAt: row.created_at
+    });
+  }
+  for (const row of (callsResult.results || [])) {
+    activity.push({
+      kind: "call",
+      id: row.id,
+      status: row.status,
+      response: row.response || "",
+      fromName: row.from_name,
+      toName: row.to_name,
+      createdAt: row.created_at,
+      respondedAt: row.responded_at || null
+    });
+  }
+  activity.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+  return json({
+    members: (membersResult.results || []).map(r => ({
+      userId: r.user_id,
+      displayName: r.display_name,
+      role: r.role,
+      joinedAt: r.joined_at
+    })),
+    activity: activity.slice(0, 50)
+  });
 }
 
 async function createAssistantCall(request, workspaceId, auth, env) {
