@@ -19,6 +19,7 @@ class AssistantMessagingService : FirebaseMessagingService() {
             this,
             JSONObject().put("type", "push_token").put("fcmToken", token)
         )
+        AssistantPush.ensureServerRegistration(this)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {

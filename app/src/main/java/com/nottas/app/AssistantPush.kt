@@ -1,5 +1,6 @@
 package com.nottas.app
 
+import android.app.Activity
 import android.content.Context
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -15,13 +16,14 @@ import org.json.JSONObject
  * Background events remain in AssistantEventStore until the next resume.
  */
 object AssistantForegroundBridge {
-    @Volatile private var resumedActivity: MainActivity? = null
+    @Volatile private var resumedActivity: Activity? = null
 
-    fun attach(activity: MainActivity) {
+    fun attach(activity: Activity) {
         resumedActivity = activity
+        AssistantPush.ensureServerRegistration(activity.applicationContext)
     }
 
-    fun detach(activity: MainActivity) {
+    fun detach(activity: Activity) {
         if (resumedActivity === activity) resumedActivity = null
     }
 
@@ -30,7 +32,11 @@ object AssistantForegroundBridge {
     fun notifyQueuedEvent() {
         val activity = resumedActivity ?: return
         activity.runOnUiThread {
-            if (resumedActivity === activity) activity.onAssistantNativeEvent()
+            if (resumedActivity !== activity) return@runOnUiThread
+            when (activity) {
+                is MainActivity -> activity.onAssistantNativeEvent()
+                is QuickCaptureActivity -> activity.onAssistantNativeEvent()
+            }
         }
     }
 }
@@ -46,6 +52,48 @@ object AssistantPush {
     private const val KEY_SERVER_URL = "server_url"
     private const val KEY_SESSION_TOKEN = "session_token"
     private const val KEY_DEVICE_ID = "device_id"
+
+    private const val KEY_REGISTERED_KEY = "push_server_registration_key"
+    private const val KEY_REGISTERED_AT = "push_server_registered_at"
+    @Volatile private var registrationInProgress = false
+
+    // Check only when the app resumes or a new FCM token is issued.
+    // One registration per device/session/token per day; no periodic polling.
+    fun ensureServerRegistration(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val server = prefs.getString(KEY_SERVER_URL, "").orEmpty().trimEnd('/')
+        val session = prefs.getString(KEY_SESSION_TOKEN, "").orEmpty()
+        val token = prefs.getString(KEY_FCM_TOKEN, "").orEmpty()
+        if (server.isBlank() || session.isBlank() || token.isBlank()) return
+
+        val identity = (server + "|" + session + "|" + token).hashCode().toString()
+        val age = System.currentTimeMillis() - prefs.getLong(KEY_REGISTERED_AT, 0L)
+        if (prefs.getString(KEY_REGISTERED_KEY, "") == identity &&
+            age >= 0L && age < 86_400_000L
+        ) return
+
+        synchronized(this) {
+            if (registrationInProgress) return
+            registrationInProgress = true
+        }
+        Thread {
+            try {
+                val ok = postJson(
+                    server + "/v1/devices/push-token",
+                    session,
+                    JSONObject().put("fcmToken", token).put("deviceLabel", "Nottas Android")
+                )
+                if (ok) {
+                    prefs.edit()
+                        .putString(KEY_REGISTERED_KEY, identity)
+                        .putLong(KEY_REGISTERED_AT, System.currentTimeMillis())
+                        .apply()
+                }
+            } finally {
+                synchronized(this) { registrationInProgress = false }
+            }
+        }.start()
+    }
 
     fun deviceId(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -117,6 +165,7 @@ object AssistantPush {
                         context,
                         JSONObject().put("type", "push_token").put("fcmToken", task.result)
                     )
+                    ensureServerRegistration(context)
                 } else {
                     prefs.edit()
                         .putString(KEY_FCM_ERROR, task.exception?.message ?: "token_failed")
@@ -157,12 +206,14 @@ object AssistantPush {
             .putString(KEY_SERVER_URL, safeUrl)
             .putString(KEY_SESSION_TOKEN, sessionToken.trim())
             .apply()
+        ensureServerRegistration(context)
         return true
     }
 
     fun clearSession(context: Context) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit().remove(KEY_SERVER_URL).remove(KEY_SESSION_TOKEN).apply()
+            .edit().remove(KEY_SERVER_URL).remove(KEY_SESSION_TOKEN)
+            .remove(KEY_REGISTERED_KEY).remove(KEY_REGISTERED_AT).apply()
     }
 
     fun respondToCall(context: Context, callId: String, response: String) {

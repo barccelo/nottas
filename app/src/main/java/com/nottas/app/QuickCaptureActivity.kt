@@ -66,6 +66,31 @@ class QuickCaptureActivity : Activity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        AssistantForegroundBridge.attach(this)
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript(
+                "window.NottasAssistantResume && window.NottasAssistantResume()",
+                null
+            )
+        }
+    }
+
+    override fun onPause() {
+        AssistantForegroundBridge.detach(this)
+        super.onPause()
+    }
+
+    fun onAssistantNativeEvent() {
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript(
+                "window.NottasAssistantPushArrived && window.NottasAssistantPushArrived()",
+                null
+            )
+        }
+    }
+
     private fun configureSystemBars() {
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         @Suppress("DEPRECATION")
@@ -187,6 +212,7 @@ class QuickCaptureActivity : Activity() {
     }
 
     override fun onDestroy() {
+        AssistantForegroundBridge.detach(this)
         webView.removeJavascriptInterface("NottasNative")
         webView.destroy()
         super.onDestroy()
