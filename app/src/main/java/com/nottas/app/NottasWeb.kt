@@ -463,6 +463,47 @@ object NottasWeb {
         }
 
         @JavascriptInterface
+        fun assistantDeviceId(): String = AssistantPush.deviceId(context)
+
+        @JavascriptInterface
+        fun configureAssistantPush(json: String): String =
+            AssistantPush.configureFirebase(context, json)
+
+        @JavascriptInterface
+        fun assistantPushStatus(): String = AssistantPush.status(context)
+
+        @JavascriptInterface
+        fun refreshAssistantPushToken(): Boolean = AssistantPush.refreshToken(context)
+
+        @JavascriptInterface
+        fun setAssistantSession(serverUrl: String, sessionToken: String): Boolean =
+            AssistantPush.setSession(context, serverUrl, sessionToken)
+
+        @JavascriptInterface
+        fun clearAssistantSession() {
+            AssistantPush.clearSession(context)
+        }
+
+        @JavascriptInterface
+        fun consumeAssistantEvents(): String = AssistantEventStore.consume(context)
+
+        @JavascriptInterface
+        fun previewAssistantCall(callerName: String, workspaceName: String): Boolean {
+            return try {
+                val id = "preview_" + System.currentTimeMillis()
+                AssistantCallNotifier.show(
+                    context,
+                    id,
+                    callerName.trim().ifBlank { "Tu jefe" },
+                    workspaceName.trim().ifBlank { "Asistente" }
+                )
+                true
+            } catch (_: Throwable) {
+                false
+            }
+        }
+
+        @JavascriptInterface
         fun appVersion(): String {
             return try {
                 context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
