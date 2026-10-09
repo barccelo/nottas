@@ -1,0 +1,11 @@
+name = "nottas-assistant-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nottas-assistant"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+APP_ENV = "pilot"
