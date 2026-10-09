@@ -1417,7 +1417,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     syncNativeWorkHours();
     if(activeCategory!=="all"&&!state.categories.some(c=>c.id===activeCategory&&!c.deletedAt))activeCategory="all";
     if(activeTag){
-      const tagExists=[...state.tasks.filter(t=>!t.deletedAt),...state.notes.filter(n=>!n.deletedAt)].some(item=>normalizeTags(item.tags).includes(activeTag));
+      const tagExists=[...state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt),...state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt)].some(item=>normalizeTags(item.tags).includes(activeTag));
       if(!tagExists)activeTag="";
     }
     consumeNativeReminderActions();
@@ -3130,6 +3130,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     if($("taskForm").classList.contains("hidden"))return false;
     const snap=taskSnapshot();if(!snap.text)return false;
     const existing=editingTaskId?state.tasks.find(x=>x.id===editingTaskId):null;
+    if(existing&&isSharedWorkspace()&&currentWorkspaceRole()==="assistant"&&(existing.approvalStatus||"confirmed")==="confirmed"&&(existing.dueDate!==snap.dueDate||existing.dueTime!==snap.dueTime||(existing.endTime||"")!==snap.endTime)){snap.approvalStatus="proposed";snap.requiresApproval=true;editorTaskApprovalStatus="proposed";editorTaskRequiresApproval=true;syncAssistantTaskStrip()}
     let changed=false,target=existing;
     if(existing){
       const wasDone=!!existing.done;
@@ -3384,7 +3385,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     refreshWorkHoursNativeStatus();
   }
   function renderSettingsSummary(){
-    syncWorkHoursSettings();
+    syncWorkHoursSettings();renderAssistantSummary();
     const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
     $("trashCountDesc").textContent=trashCount?`${trashCount} elemento${trashCount===1?"":"s"} eliminado${trashCount===1?"":"s"}.`:"No hay elementos eliminados.";
     renderCategoryManage();
@@ -3785,6 +3786,16 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("wakeOffBtn").addEventListener("click",()=>{try{NottasNative.setWakeEnabled(false)}catch(_){}refreshWakeControlUI();showToast("Mostrar al desbloquear: Off")});
   document.querySelectorAll("[data-wake-snooze]").forEach(b=>b.addEventListener("click",()=>{const minutes=Number(b.dataset.wakeSnooze)||15;try{NottasNative.snoozeWake(minutes)}catch(_){}refreshWakeControlUI();closeOverlay("wakeControlOverlay");showToast("Pausado "+(minutes<60?minutes+" min":minutes/60+" h"))}));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
+  $("assistantSettingsBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");openAssistantSettings()});
+  $("assistantClose").addEventListener("click",()=>closeOverlay("assistantOverlay"));
+  $("assistantOverlay").addEventListener("click",e=>{if(e.target===$("assistantOverlay"))closeOverlay("assistantOverlay")});
+  $("assistantRegisterBtn").addEventListener("click",assistantRegisterDevice);
+  $("assistantSyncBtn").addEventListener("click",()=>assistantSync(false,false));
+  $("assistantCreateWorkspaceBtn").addEventListener("click",assistantCreateWorkspace);
+  $("assistantJoinWorkspaceBtn").addEventListener("click",assistantJoinWorkspace);
+  $("assistantConfigurePushBtn").addEventListener("click",()=>{try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}assistantConfigurePush()});
+  $("assistantPreviewCallBtn").addEventListener("click",assistantPreviewCall);
+  $("assistantCallBtn").addEventListener("click",assistantCall);
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
   ["workHoursStart","workHoursEnd"].forEach(id=>{
@@ -3826,8 +3837,8 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
-  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus()});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus()}});
+  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true)});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true)}});
 
   window.NottasHandleBack=function(){
     const active=document.activeElement;
@@ -3862,6 +3873,10 @@ html[data-theme="dark"] .calendarTimeColumns{
     }
     if($("editorOverlay").classList.contains("show")){
       return handleEditorBack();
+    }
+    if($("assistantOverlay").classList.contains("show")){
+      closeOverlay("assistantOverlay");
+      return true;
     }
     if($("settingsOverlay").classList.contains("show")){
       closeOverlay("settingsOverlay");
@@ -3899,6 +3914,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   initSheetGestures();
   initActionPanelGestures();
   load();
+  setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();assistantSync(false,true)}},350);
 })();
 </script>
 </body>
