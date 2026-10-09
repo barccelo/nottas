@@ -145,6 +145,16 @@ object AssistantPush {
             "coming", "five_min", "unavailable" -> response
             else -> return
         }
+        if (callId.startsWith("preview_")) {
+            AssistantEventStore.enqueue(
+                context,
+                JSONObject()
+                    .put("type", "call_preview_response")
+                    .put("callId", callId)
+                    .put("response", safeResponse)
+            )
+            return
+        }
         Thread {
             val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             val server = prefs.getString(KEY_SERVER_URL, "").orEmpty().trimEnd('/')
