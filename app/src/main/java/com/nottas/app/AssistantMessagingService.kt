@@ -25,6 +25,11 @@ class AssistantMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         val type = data["type"].orEmpty()
+        getSharedPreferences("nottas_assistant", MODE_PRIVATE)
+            .edit()
+            .putLong("last_fcm_received_at", System.currentTimeMillis())
+            .putString("last_fcm_received_type", type)
+            .apply()
         val event = JSONObject()
         data.forEach { (key, value) -> event.put(key, value) }
         AssistantEventStore.enqueue(this, event)

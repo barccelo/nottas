@@ -191,6 +191,8 @@ object AssistantPush {
             .put("configured", configured)
             .put("initialized", FirebaseApp.getApps(context).isNotEmpty())
             .put("fcmToken", prefs.getString(KEY_FCM_TOKEN, "").orEmpty())
+            .put("lastFcmAt", prefs.getLong("last_fcm_received_at", 0L))
+            .put("lastFcmType", prefs.getString("last_fcm_received_type", "").orEmpty())
             .put("error", prefs.getString(KEY_FCM_ERROR, "").orEmpty())
             .put("deviceId", deviceId(context))
             .put("serverConfigured", !prefs.getString(KEY_SERVER_URL, "").isNullOrBlank())
