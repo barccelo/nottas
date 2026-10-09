@@ -39,7 +39,6 @@ async function route(request, env) {
   if (path === "/v1/workspaces" && request.method === "POST") return createWorkspace(request, auth, env);
   if (path === "/v1/workspaces/join" && request.method === "POST") return joinWorkspace(request, auth, env);
   if (path === "/v1/devices/push-token" && request.method === "POST") return registerPushToken(request, auth, env);
-  if (path === "/v1/devices/push-test" && request.method === "POST") return testDevicePush(auth, env);
   if (path === "/v1/sync" && request.method === "GET") return pullSync(url, auth, env);
   if (path === "/v1/sync" && request.method === "POST") return pushSync(request, auth, env);
   if (path === "/v1/calls/pending" && request.method === "GET") return pendingCalls(auth, env);
@@ -193,24 +192,6 @@ async function registerPushToken(request, auth, env) {
     "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,fcm_token=excluded.fcm_token,platform=excluded.platform,updated_at=excluded.updated_at"
   ).bind(auth.deviceId, auth.userId, label, fcmToken, "android", Date.now()).run();
   return json({ ok: true });
-}
-
-// Self-test for the currently authenticated device, without exposing tokens.
-async function testDevicePush(auth, env) {
-  const device = await env.DB.prepare(
-    "SELECT fcm_token FROM devices WHERE id=? AND user_id=?"
-  ).bind(auth.deviceId, auth.userId).first();
-  if (!device?.fcm_token) return json({ ok: false, error: "device_not_registered_for_push" }, 409);
-  if (!env.FCM_SERVICE_ACCOUNT_JSON) return json({ ok: false, error: "fcm_not_configured" }, 503);
-  try {
-    const sentAt = Date.now();
-    await sendFcm(device.fcm_token, { type: "push_test", sentAt: String(sentAt) }, env);
-    return json({ ok: true, acceptedByFirebase: true, sentAt });
-  } catch (error) {
-    const http = String(error?.message || "").match(/FCM (\d{3})/);
-    console.error("FCM self-test", error);
-    return json({ ok: false, error: "fcm_send_failed", fcmStatus: http?.[1] || "unknown" }, 502);
-  }
 }
 
 async function pullSync(url, auth, env) {
@@ -460,8 +441,8 @@ async function workspaceActivity(workspaceId, auth, env) {
 }
 
 async function createAssistantCall(request, workspaceId, auth, env) {
-  const membership = await membership(workspaceId, auth.userId, env);
-  if (!membership || membership.role !== "owner") return json({ error: "owner_required" }, 403);
+  const callerMembership = await membership(workspaceId, auth.userId, env);
+  if (!callerMembership || callerMembership.role !== "owner") return json({ error: "owner_required" }, 403);
 
   const body = await bodyJson(request);
   let toUserId = textValue(body.toUserId, 100);
@@ -584,9 +565,9 @@ async function sendPushToUser(userId, data, env) {
 }
 
 async function sendFcm(token, data, env) {
-  if (!env.FCM_SERVICE_ACCOUNT_JSON) throw new Error("FCM credentials missing");
+  if (!env.FCM_SERVICE_ACCOUNT_JSON) return;
   const serviceAccount = safeJson(env.FCM_SERVICE_ACCOUNT_JSON, null);
-  if (!serviceAccount?.project_id || !serviceAccount?.client_email || !serviceAccount?.private_key) throw new Error("FCM credentials invalid");
+  if (!serviceAccount?.project_id || !serviceAccount?.client_email || !serviceAccount?.private_key) return;
   const accessToken = await googleAccessToken(serviceAccount);
   const stringData = {};
   for (const [key, value] of Object.entries(data || {})) stringData[key] = String(value ?? "");

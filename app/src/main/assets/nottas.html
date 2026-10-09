@@ -1141,11 +1141,9 @@ html[data-theme="dark"] .calendarTimeColumns{
     </div>
     <div class="assistantActions">
       <button id="assistantConfigurePushBtn" class="btn secondary" type="button">Configurar push</button>
-      <button id="assistantTestPushBtn" class="btn secondary" type="button">Probar recepción push</button>
       <button id="assistantPreviewCallBtn" class="btn secondary" type="button">Probar llamada en este teléfono</button>
     </div>
     <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
-    <div id="assistantPushTestDesc" class="assistantSectionHint"></div>
 
     <div class="sectionTitle">Llamar</div>
     <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
@@ -1643,24 +1641,6 @@ html[data-theme="dark"] .calendarTimeColumns{
       state.assistant.pushRegisteredAt=now();scheduleSave();return true;
     }catch(_){return false}
   }
-  async function assistantTestPush(){
-    if(!assistantConfigured()){showToast("Registra primero el dispositivo");return}
-    $("assistantTestPushBtn").disabled=true;
-    $("assistantPushTestDesc").textContent="Comprobando envío de Firebase…";
-    try{
-      if(!await assistantRegisterPushToken())throw new Error("No se pudo registrar el token en Cloudflare");
-      const result=await assistantRequest("/v1/devices/push-test",{method:"POST",body:{}});
-      if(result.acceptedByFirebase){
-        $("assistantPushTestDesc").textContent="Firebase aceptó el envío. Esperando recepción en este teléfono…";
-        setTimeout(renderAssistantSettings,3000);
-        setTimeout(renderAssistantSettings,6500);
-      }
-    }catch(error){
-      $("assistantPushTestDesc").textContent="Error en la prueba: "+String(error?.message||error);
-    }finally{
-      $("assistantTestPushBtn").disabled=false;
-    }
-  }
   async function assistantCall(){
     const ws=currentWorkspace();
     if(!ws||ws.kind!=="assistant"||ws.role!=="owner"){showToast("Abre un espacio donde seas jefe");return}
@@ -1684,7 +1664,6 @@ html[data-theme="dark"] .calendarTimeColumns{
     for(const event of events){
       if(event.type==="push_token")assistantRegisterPushToken();
       else if(event.type==="sync")needsSync=true;
-      else if(event.type==="push_test"){$("assistantPushTestDesc").textContent="Push recibido correctamente en este teléfono.";showToast("Push de Firebase recibido");renderAssistantSettings()}
       else if(event.type==="assistant_call_response")showToast((event.fromName||"Asistente")+": "+assistantResponseLabel(event.response));
       else if(event.type==="call_response_pending"&&assistantConfigured()){
         try{await assistantRequest("/v1/calls/"+encodeURIComponent(event.callId)+"/respond",{method:"POST",body:{response:event.response}})}catch(_){}
@@ -1737,7 +1716,6 @@ html[data-theme="dark"] .calendarTimeColumns{
     const ownerShared=ws?.kind==="assistant"&&ws?.role==="owner";$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
     $("assistantPushDesc").textContent=push.fcmToken?("Push listo · token "+String(push.fcmToken).slice(0,12)+"…"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
-    if(push.lastFcmAt)$("assistantPushDesc").textContent+=" · Último FCM: "+new Date(push.lastFcmAt).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit",second:"2-digit"})+" ("+(push.lastFcmType||"sin tipo")+")";
     renderAssistantSummary();
   }
   function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true)}
@@ -3857,7 +3835,6 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("assistantCreateWorkspaceBtn").addEventListener("click",assistantCreateWorkspace);
   $("assistantJoinWorkspaceBtn").addEventListener("click",assistantJoinWorkspace);
   $("assistantConfigurePushBtn").addEventListener("click",()=>{try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}assistantConfigurePush()});
-  $("assistantTestPushBtn").addEventListener("click",assistantTestPush);
   $("assistantPreviewCallBtn").addEventListener("click",assistantPreviewCall);
   $("assistantCallBtn").addEventListener("click",assistantCall);
   $("assistantActivityRefresh").addEventListener("click",()=>assistantLoadActivity(false));
