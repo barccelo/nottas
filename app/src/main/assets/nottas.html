@@ -521,6 +521,7 @@ html[data-theme="dark"] .calendarTimeColumns{
 .calendarWeekTimeViewport .calendarTimeBlockTitle{line-height:1.08}
 .workspaceContextBtn{max-width:145px;height:30px;border:0;border-radius:999px;background:#e8f2ff;color:#0066cc;padding:0 10px;font-size:11px;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.workspaceContextBtn.shared{background:#ede7ff;color:#5e35b1}.workspaceContextBtn:active{opacity:.65}.workspaceRole{margin-left:auto;font-size:10px;color:#8e8e93;text-transform:uppercase;letter-spacing:.04em}.workspaceSideIcon{width:22px;height:22px;border-radius:7px;background:#e8f2ff;color:#007aff;display:grid;place-items:center;font-size:12px;font-weight:750;flex:0 0 auto}.workspaceSideIcon.shared{background:#ede7ff;color:#6f42c1}html[data-theme="dark"] .workspaceContextBtn{background:#16365d;color:#64a9ff}html[data-theme="dark"] .workspaceContextBtn.shared,html[data-theme="dark"] .workspaceSideIcon.shared{background:#302452;color:#b69cff}
 .assistantStatusCard{background:#fff;border-radius:16px;padding:13px 14px;margin-bottom:10px}.assistantStatusLine{display:flex;align-items:center;justify-content:space-between;gap:10px}.assistantStatusTitle{font-size:17px;font-weight:700}.assistantStatusDesc{font-size:12px;color:#8e8e93;margin-top:4px;line-height:1.35}.assistantBadge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#e5e5ea;color:#636366;font-size:10px;font-weight:700}.assistantBadge.ok{background:#e4f7e9;color:#248a3d}.assistantBadge.warn{background:#fff4d6;color:#9a6700}.assistantGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.assistantGrid .wide{grid-column:1/-1}.assistantInput{width:100%;height:46px;border:1px solid #d1d1d6;border-radius:12px;background:#fff;color:#1d1d1f;padding:0 12px;font-size:15px;outline:none}.assistantInput:focus{border-color:#1677ff}.assistantActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.assistantActions .btn{flex:1 1 135px}.assistantInviteCode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;font-size:16px;font-weight:750}.assistantCallBtn{background:#34c759!important;color:#fff!important}.assistantDangerBtn{background:#fff0f0!important;color:#b42318!important}.assistantSectionHint{font-size:12px;color:#8e8e93;line-height:1.4;margin:4px 2px 10px}.assistantTaskStrip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 4px}.assistantTaskStatus{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;background:#e5e5ea;color:#636366}.assistantTaskStatus.proposed{background:#fff4d6;color:#9a6700}.assistantTaskStatus.confirmed{background:#e4f7e9;color:#248a3d}.assistantTaskStatus.rejected,.assistantTaskStatus.cancelled{background:#ffe8e6;color:#b42318}.assistantTaskStatus.changes_requested{background:#e8f2ff;color:#0066cc}.assistantTaskActions{display:flex;gap:6px;margin-left:auto}.assistantTaskActions button{height:32px;border:0;border-radius:9px;padding:0 10px;font-size:11px;font-weight:650;background:#e5e5ea;color:#1d1d1f}.assistantTaskActions .approve{background:#34c759;color:#fff}.assistantTaskActions .reject{background:#ff3b30;color:#fff}.assistantMeta{color:#6f42c1!important}html[data-theme="dark"] .assistantStatusCard,html[data-theme="dark"] .assistantInput{background:#1c1c1e;border-color:#3a3a3c;color:#f5f5f7}html[data-theme="dark"] .assistantBadge{background:#2c2c2e;color:#d1d1d6}html[data-theme="dark"] .assistantTaskActions button{background:#2c2c2e;color:#f5f5f7}
+.assistantMembers{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}.assistantMember{display:flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}.assistantMemberRole{font-size:9px;color:#8e8e93;text-transform:uppercase}.assistantActivity{display:flex;flex-direction:column;gap:6px}.assistantActivityRow{background:#fff;border-radius:12px;padding:9px 11px}.assistantActivityMain{font-size:13px;color:#1d1d1f}.assistantActivityMeta{font-size:10px;color:#8e8e93;margin-top:3px}.assistantActivityEmpty{font-size:12px;color:#8e8e93;padding:10px 2px}.assistantRefreshBtn{border:0;background:transparent;color:#007aff;font-size:13px;font-weight:650;padding:6px}html[data-theme="dark"] .assistantMember,html[data-theme="dark"] .assistantActivityRow{background:#1c1c1e}html[data-theme="dark"] .assistantActivityMain{color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -1142,6 +1143,10 @@ html[data-theme="dark"] .calendarTimeColumns{
     <div class="sectionTitle">Llamar</div>
     <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
     <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
+
+    <div class="sectionTitle" style="margin-top:16px">Equipo y actividad <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
+    <div id="assistantMembers" class="assistantMembers"></div>
+    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div>
   </div>
 </div>
 
@@ -1565,6 +1570,7 @@ html[data-theme="dark"] .calendarTimeColumns{
       setTimeout(()=>{assistantApplyingRemote=false},500);
       render();
       renderAssistantSummary();
+      if($("assistantOverlay")?.classList.contains("show"))assistantLoadActivity(true);
       if(!silent)showToast("Asistente sincronizado");
       setStatus("Nube","ok");
       return true;
@@ -1662,6 +1668,29 @@ html[data-theme="dark"] .calendarTimeColumns{
     const ws=currentWorkspace(),connected=assistantConfigured();
     el.textContent=connected?((ws?.kind==="assistant"?(ws.name+" · "+(ws.role==="owner"?"Jefe":"Asistente")):"Cuenta conectada")+" · "+(state.assistant.lastSyncAt?"sync "+new Date(state.assistant.lastSyncAt).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}):"sin sincronizar")):"No configurado. Los datos siguen solo en este dispositivo.";
   }
+  function assistantActivityText(row){
+    if(row.kind==="call"){
+      const result=row.status==="responded"&&row.response?(" · "+assistantResponseLabel(row.response)):"";
+      return (row.fromName||"Jefe")+" llamó a "+(row.toName||"Asistente")+result;
+    }
+    const action=row.op==="create"?"creó":row.op==="delete"?"eliminó":"actualizó";
+    const type=row.entityType==="task"?"tarea":row.entityType==="note"?"nota":"categoría";
+    return (row.actorName||"Alguien")+" "+action+" "+type+": "+(row.title||"");
+  }
+  function renderAssistantActivity(data=null){
+    const members=$("assistantMembers"),activity=$("assistantActivity");if(!members||!activity)return;
+    const rows=data?.members||[],events=data?.activity||[];
+    members.innerHTML=rows.map(m=>'<div class="assistantMember"><strong>'+esc(m.displayName||"Usuario")+'</strong><span class="assistantMemberRole">'+esc(m.role==="owner"?"Jefe":"Asistente")+'</span></div>').join("");
+    activity.innerHTML=events.length?events.slice(0,30).map(row=>'<div class="assistantActivityRow"><div class="assistantActivityMain">'+esc(assistantActivityText(row))+'</div><div class="assistantActivityMeta">'+new Date(Number(row.createdAt)||Date.now()).toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})+'</div></div>').join(""):'<div class="assistantActivityEmpty">Todavía no hay actividad compartida.</div>';
+  }
+  async function assistantLoadActivity(silent=false){
+    const ws=currentWorkspace();if(!assistantConfigured()||!ws||ws.kind!=="assistant"){renderAssistantActivity({members:[],activity:[]});return false}
+    try{
+      const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/activity");
+      renderAssistantActivity(data);return true;
+    }catch(error){if(!silent)showToast("Actividad: "+String(error?.message||error));return false}
+  }
+
   function renderAssistantSettings(){
     if(!state)return;
     const a=state.assistant||{},f=a.firebase||{},auth=assistantAuth(),ws=currentWorkspace(),push=assistantNativePushStatus(),connected=assistantConfigured();
@@ -1681,7 +1710,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     $("assistantPushDesc").textContent=push.fcmToken?("Push listo · token "+String(push.fcmToken).slice(0,12)+"…"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
     renderAssistantSummary();
   }
-  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay")}
+  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true)}
   window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true);return true}
 
   function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
@@ -3798,6 +3827,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("assistantConfigurePushBtn").addEventListener("click",()=>{try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}assistantConfigurePush()});
   $("assistantPreviewCallBtn").addEventListener("click",assistantPreviewCall);
   $("assistantCallBtn").addEventListener("click",assistantCall);
+  $("assistantActivityRefresh").addEventListener("click",()=>assistantLoadActivity(false));
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   $("workHoursEnabled").addEventListener("change",()=>{state.preferences.workHoursEnabled=$("workHoursEnabled").checked;syncWorkHoursSettings();syncNativeWorkHours();scheduleSave()});
   ["workHoursStart","workHoursEnd"].forEach(id=>{
