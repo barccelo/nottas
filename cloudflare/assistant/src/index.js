@@ -195,7 +195,7 @@ async function pullSync(url, auth, env) {
 
   if (full) {
     const items = await env.DB.prepare(
-      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items ORDER BY updated_at ASC LIMIT 5000"
+      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items WHERE deleted_at IS NULL ORDER BY updated_at ASC LIMIT 5000"
     ).all();
     const snapshot = [];
     for (const row of (items.results || [])) {
@@ -233,7 +233,7 @@ async function pullSync(url, auth, env) {
       actorUserId: row.actor_user_id
     });
   }
-  cursor = Math.max(cursor, latestCursor);
+  if ((result.results || []).length < 500) cursor = Math.max(cursor, latestCursor);
   return json({ cursor, changes, workspaces: await workspaceRows(auth.userId, env) });
 }
 
@@ -248,7 +248,7 @@ async function pushSync(request, auth, env) {
 
   for (const change of changes) {
     const workspaceId = textValue(change.workspaceId, 100);
-    const entityType = change.entityType === "note" ? "note" : change.entityType === "task" ? "task" : "";
+    const entityType = change.entityType === "note" ? "note" : change.entityType === "task" ? "task" : change.entityType === "category" ? "category" : "";
     const entityId = textValue(change.entityId || change.payload?.id, 120);
     if (!workspaceId || !entityType || !entityId || !memberships.has(workspaceId)) continue;
 
@@ -311,7 +311,7 @@ async function pushSync(request, auth, env) {
     const inserted = await env.DB.prepare(
       "INSERT INTO changes(workspace_id,entity_type,entity_id,op,payload_json,created_at,actor_user_id) VALUES(?,?,?,?,?,?,?) RETURNING seq"
     ).bind(workspaceId, entityType, entityId, op, JSON.stringify(payload), Date.now(), auth.userId).first();
-    accepted.push({ workspaceId, entityType, entityId, rev: nextRev, updatedAt: incomingUpdatedAt, seq: inserted?.seq || 0 });
+    accepted.push({ workspaceId, entityType, entityId, rev: nextRev, updatedAt: incomingUpdatedAt, seq: inserted?.seq || 0, payload });
     touchedWorkspaces.add(workspaceId);
   }
 
