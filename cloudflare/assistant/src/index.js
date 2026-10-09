@@ -273,26 +273,42 @@ async function pushSync(request, auth, env) {
     const current = await env.DB.prepare(
       "SELECT payload_json,rev,updated_at,deleted_at FROM items WHERE workspace_id=? AND entity_type=? AND id=?"
     ).bind(workspaceId, entityType, entityId).first();
+    // Authenticated authorship is immutable; a client cannot impersonate the boss.
+    if (!current) payload.createdBy = auth.userId;
+    else payload.createdBy = safeJson(current.payload_json, {}).createdBy || auth.userId;
 
     if (entityType === "task" && membershipRoles.get(workspaceId) === "assistant") {
       const currentPayload = current ? safeJson(current.payload_json, {}) : null;
       const currentStatus = currentPayload?.approvalStatus || "confirmed";
       const requestedStatus = payload.approvalStatus || currentStatus;
+      const assistantIsAuthor = !currentPayload || currentPayload.createdBy === auth.userId;
+      const requestsDirectScheduling = requestedStatus === "scheduled" && assistantIsAuthor;
+      const requestsProposal = requestedStatus === "proposed" && assistantIsAuthor;
       const scheduleChanged = !!currentPayload && (
         String(currentPayload.dueDate || "") !== String(payload.dueDate || "") ||
         String(currentPayload.dueTime || "") !== String(payload.dueTime || "") ||
         String(currentPayload.endTime || "") !== String(payload.endTime || "")
       );
       if (!currentPayload) {
-        payload.approvalStatus = "proposed";
-        payload.requiresApproval = true;
+        // An assistant may explicitly schedule a new task without approval.
+        payload.approvalStatus = requestsDirectScheduling ? "scheduled" : "proposed";
+        payload.requiresApproval = !requestsDirectScheduling;
       } else if (currentStatus === "confirmed" && scheduleChanged) {
+        // Changes to a task approved by the boss still require approval.
         payload.approvalStatus = "proposed";
         payload.requiresApproval = true;
+      } else if (currentStatus === "scheduled" && requestsProposal) {
+        payload.approvalStatus = "proposed";
+        payload.requiresApproval = true;
+      } else if (currentStatus === "proposed" && requestsDirectScheduling) {
+        // Only the task's original assistant may change its approval mode.
+        payload.approvalStatus = "scheduled";
+        payload.requiresApproval = false;
       } else if (["changes_requested", "rejected"].includes(currentStatus) && requestedStatus === "proposed") {
         payload.approvalStatus = "proposed";
         payload.requiresApproval = true;
       } else {
+        // Never let an assistant override the boss's confirmed/rejected state.
         payload.approvalStatus = currentStatus;
         payload.requiresApproval = currentStatus === "proposed" || currentStatus === "changes_requested";
       }

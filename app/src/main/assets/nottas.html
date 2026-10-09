@@ -555,6 +555,15 @@ body.imeVisible #quickOverlay .quickSheet{scroll-padding-bottom:22px}
 .taskInlineTypedRow{display:flex;gap:9px;align-items:center;justify-content:space-between;padding:6px 3px 12px;color:#636366;font-size:12px}
 html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeText{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 
+
+/* A proposed task may be directly scheduled by its assistant, by explicit tap. */
+.taskInlineTimeHide{height:38px;border:0;border-radius:9px;background:#e5e5ea;color:#1d1d1f;padding:0 10px;font-size:12px;font-weight:600}
+html[data-theme="dark"] .taskInlineTimeHide{background:#3a3a3c;color:#f5f5f7}
+#assistantTaskStatus{cursor:default;font:inherit;appearance:none;-webkit-appearance:none}
+#assistantTaskStatus:disabled{opacity:1}
+#assistantTaskStatus:not(:disabled){cursor:pointer;touch-action:manipulation}
+#assistantTaskStatus.scheduled{background:#e7f5eb;color:#217744}
+html[data-theme="dark"] #assistantTaskStatus.scheduled{background:#163925;color:#93d6a6}
 </style>
 </head>
 <body>
@@ -806,7 +815,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
         </div>
 
         <div id="assistantTaskStrip" class="assistantTaskStrip hidden">
-          <span id="assistantTaskStatus" class="assistantTaskStatus"></span>
+          <button id="assistantTaskStatus" class="assistantTaskStatus" type="button" aria-label="Estado de aprobación" aria-pressed="false"></button>
           <span id="assistantTaskHint" class="assistantSectionHint" style="margin:0"></span>
           <div id="assistantTaskActions" class="assistantTaskActions"></div>
         </div>
@@ -838,9 +847,9 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
               <button id="taskInlineStartTab" class="active" type="button" data-inline-time-target="start"><span>Inicio</span><strong id="taskInlineStartTabValue">09:00</strong></button>
               <button id="taskInlineEndTab" type="button" data-inline-time-target="end"><span>Fin</span><strong id="taskInlineEndTabValue">10:00</strong></button>
             </div>
-            <div class="taskInlineTypedRow">
+            <div id="taskInlineTypedRow" class="taskInlineTypedRow hidden">
               <label for="taskInlineTimeText">Escribir hora</label>
-              <input id="taskInlineTimeText" class="taskInlineTimeText" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="HH:MM" aria-label="Hora de inicio o fin en formato 24 horas">
+              <input id="taskInlineTimeText" class="taskInlineTimeText" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="HH:MM" aria-label="Hora de inicio o fin en formato 24 horas"><button id="taskInlineTimeHide" class="taskInlineTimeHide" type="button" aria-label="Ocultar escritura de hora">Listo</button>
             </div>
             <div class="taskInlineWheelWrap">
               <div class="taskInlineWheelColumn"><div id="taskInlineHourWheel" class="taskInlineWheel" aria-label="Hora"></div></div>
@@ -1043,10 +1052,6 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     <div class="sheetHeader">
       <h2>Hora</h2>
       <button id="timeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
-    </div>
-    <div class="timeDirectRow">
-      <label for="timeDirectText">Escribir hora (HH:MM)</label>
-      <input id="timeDirectText" class="timeDirectText" type="text" inputmode="numeric" maxlength="5" placeholder="14:35" autocomplete="off" aria-label="Escribir hora en formato 24 horas">
     </div>
     <div class="timeWheelWrap">
       <div class="timeWheelColumn">
@@ -1415,7 +1420,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     o.categories=o.categories.map(c=>({...c,workspaceId:c.id==="inbox"?"*":String(c.workspaceId||personalId),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||"")}));
     o.workspaces=workspaces;
     o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
-    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
+    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false,calendarMonthShowWeekends:prefs.calendarMonthShowWeekends!==false,calendarAgendaShowCompleted:prefs.calendarAgendaShowCompleted!==false};
@@ -2636,7 +2641,6 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
   function syncTimePartButtons(){
     $("hourEditButton").textContent=String(timeDraftHour).padStart(2,"0");
     $("minuteEditButton").textContent=String(timeDraftMinute).padStart(2,"0");
-    const direct=$("timeDirectText");if(direct&&document.activeElement!==direct)direct.value=formatTimeParts(timeDraftHour,timeDraftMinute);
   }
   function buildTimeWheels(){
     const hw=$("hourWheel"),mw=$("minuteWheel");
@@ -2691,11 +2695,6 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     else return null;
     return h>=0&&h<=23&&m>=0&&m<=59?{h,m}:null;
   }
-  function commitWheelClockText(){
-    const input=$("timeDirectText"),clock=parseTypedClock(input.value);
-    if(!clock){showToast("Escribe una hora válida: 14:35");input.value=formatTimeParts(timeDraftHour,timeDraftMinute);return false}
-    timeDraftHour=clock.h;timeDraftMinute=clock.m;positionTimeWheels(false);return true;
-  }
   function setTimePartEditing(part,editing){
     const isHour=part==="hour",button=$(isHour?"hourEditButton":"minuteEditButton"),input=$(isHour?"hourDirectInput":"minuteDirectInput");
     button.classList.toggle("hidden",editing);
@@ -2706,6 +2705,8 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     }
   }
   function beginTimePartEdit(part){
+    const editing=!$(part==="hour"?"hourDirectInput":"minuteDirectInput").classList.contains("hidden");
+    if(editing){commitTimePartEdit(part);return}
     setTimePartEditing(part==="hour"?"minute":"hour",false);
     setTimePartEditing(part,true);
   }
@@ -2733,7 +2734,6 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     requestAnimationFrame(()=>positionTimeWheels(false));
   }
   function applyTimePickerDraft(persist=true){
-    if(document.activeElement===$("timeDirectText"))commitWheelClockText();
     if(!$("hourDirectInput").classList.contains("hidden"))commitTimePartEdit("hour");
     if(!$("minuteDirectInput").classList.contains("hidden"))commitTimePartEdit("minute");
     const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),oldDuration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:null;
@@ -3138,12 +3138,25 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
         const max=idx===0?23:59,value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/INLINE_TIME_ROW)));
         if(!taskInlineWheelMute&&value!==last){last=value;hapticTick();applyTaskInlineWheelValue(idx,value)}
       },40)},{passive:true});
-      wheel.addEventListener("click",e=>{const item=e.target.closest("[data-inline-wheel-value]");if(item)wheel.scrollTo({top:Number(item.dataset.inlineWheelValue)*INLINE_TIME_ROW,behavior:"smooth"})});
+      wheel.addEventListener("click",e=>{
+        const item=e.target.closest("[data-inline-wheel-value]");if(!item)return;
+        const value=Number(item.dataset.inlineWheelValue),selected=idx===0?currentTaskInlineTime().h:currentTaskInlineTime().m;
+        if(value===selected && Math.abs(wheel.scrollTop-value*INLINE_TIME_ROW)<INLINE_TIME_ROW/2){
+          toggleTaskInlineTimeText(idx===0?"hour":"minute");return;
+        }
+        wheel.scrollTo({top:value*INLINE_TIME_ROW,behavior:"smooth"});
+      });
     });
   }
   function currentTaskInlineTime(){const raw=taskInlineTimeTarget==="end"?$("taskEndTime").value:$("taskTime").value;return parseStoredTime(raw)||{h:taskInlineTimeTarget==="end"?10:9,m:0}}
   function syncTaskInlineTimeText(){
     const input=$("taskInlineTimeText");if(input&&document.activeElement!==input){const v=currentTaskInlineTime();input.value=formatTimeParts(v.h,v.m)}
+  }
+  function toggleTaskInlineTimeText(part="hour"){
+    const row=$("taskInlineTypedRow"),input=$("taskInlineTimeText"),willShow=row.classList.contains("hidden");
+    if(!willShow){if(document.activeElement===input)applyTypedInlineTime();row.classList.add("hidden");input.blur();return}
+    syncTaskInlineTimeText();row.classList.remove("hidden");
+    requestAnimationFrame(()=>{input.focus();input.setSelectionRange(part==="minute"?3:0,part==="minute"?5:2)});
   }
   function applyTypedInlineTime(){
     const input=$("taskInlineTimeText"),parsed=parseTypedClock(input.value);
@@ -3166,7 +3179,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     $("taskInlineStartTab").classList.toggle("active",taskInlineTimeTarget==="start");$("taskInlineEndTab").classList.toggle("active",taskInlineTimeTarget==="end");syncTaskInlineTimeText();
     setTimeout(()=>{taskInlineWheelMute=false},smooth?260:80);
   }
-  function setTaskInlineTimeTarget(target){taskInlineTimeTarget=target==="end"?"end":"start";syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
+  function setTaskInlineTimeTarget(target){taskInlineTimeTarget=target==="end"?"end":"start";$("taskInlineTypedRow").classList.add("hidden");$("taskInlineTimeText").blur();syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
   function applyTaskInlineWheelValue(part,value){
     const current=currentTaskInlineTime(),hour=part===0?value:current.h,minute=part===1?value:current.m,newValue=formatTimeParts(hour,minute);commitTaskHistory();
     if(taskInlineTimeTarget==="start"){const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:60;$("taskTime").value=newValue;const start=timeToMinutes(newValue);$("taskEndTime").value=minutesToTime(Math.min(1439,start+duration))}
@@ -3178,6 +3191,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     taskInlineOpenPanel=taskInlineOpenPanel===name?"":name;
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
     $("taskInlineTimePanel").classList.toggle("hidden",taskInlineOpenPanel!=="time");
+    if(taskInlineOpenPanel!=="time"){$("taskInlineTypedRow").classList.add("hidden");$("taskInlineTimeText").blur()}
     if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
@@ -3199,7 +3213,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
   }
   function assistantStatusLabel(status){
-    return status==="proposed"?"Propuesta":status==="confirmed"?"Confirmada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Confirmada";
+    return status==="proposed"?"Propuesta":status==="scheduled"?"Agendada":status==="confirmed"?"Confirmada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Confirmada";
   }
   function assistantTaskMetaHtml(t){
     if(!t||!isSharedWorkspace())return "";
@@ -3214,8 +3228,11 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     if(!shared)return;
     const st=editorTaskApprovalStatus||"confirmed",role=currentWorkspaceRole();
     status.textContent=assistantStatusLabel(st);status.className="assistantTaskStatus "+st;
+    const toggleAllowed=role==="assistant"&&["proposed","scheduled"].includes(st)&&( !editingTaskId || !!state.tasks.find(t=>t.id===editingTaskId&&String(t.createdBy||"")===currentUserId()) );
+    status.disabled=!toggleAllowed;status.setAttribute("aria-pressed",st==="scheduled"?"true":"false");
+    status.title=toggleAllowed?(st==="proposed"?"Tocar para agendar sin aprobación":"Tocar para solicitar aprobación"):"Estado de la tarea";
     actions.innerHTML="";
-    hint.textContent=role==="owner"?(st==="proposed"?"Pendiente de tu decisión.":st==="changes_requested"?"Esperando una nueva propuesta.":"Espacio compartido."):(st==="proposed"?"Esperando aprobación del jefe.":st==="changes_requested"?"El jefe pidió otra fecha u hora.":"Espacio compartido.");
+    hint.textContent=role==="owner"?(st==="proposed"?"Pendiente de tu decisión.":st==="scheduled"?"Agendada directamente por el asistente.":st==="changes_requested"?"Esperando una nueva propuesta.":"Espacio compartido."):(st==="proposed"?"Toca Propuesta para agendar sin aprobación.":st==="scheduled"?"Toca Agendada para solicitar aprobación.":st==="changes_requested"?"El jefe pidió otra fecha u hora.":"Espacio compartido.");
     const add=(label,cls,fn)=>{const b=document.createElement("button");b.type="button";b.textContent=label;if(cls)b.className=cls;b.addEventListener("click",fn);actions.appendChild(b)};
     if(role==="owner"&&st==="proposed"){
       add("Aprobar","approve",()=>setEditorTaskApproval("confirmed"));
@@ -3229,7 +3246,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     }
   }
   function setEditorTaskApproval(status){
-    if(!["proposed","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
+    if(!["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
     editorTaskApprovalStatus=status;editorTaskRequiresApproval=status==="proposed"||status==="changes_requested";
     syncAssistantTaskStrip();
     if(editingTaskId)persistOpenTask(false);
@@ -3334,7 +3351,7 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";$("taskReminder").value=t&&t.reminder&&t.reminder!=="none"?t.reminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";$("taskInlineTypedRow").classList.add("hidden");editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -3823,6 +3840,14 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
   document.querySelectorAll("[data-inline-time-target]").forEach(btn=>btn.addEventListener("click",()=>setTaskInlineTimeTarget(btn.dataset.inlineTimeTarget)));
   $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
   $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
+  $("taskInlineStartTabValue").addEventListener("click",e=>{e.stopPropagation();if(taskInlineTimeTarget!=="start")setTaskInlineTimeTarget("start");toggleTaskInlineTimeText()});
+  $("taskInlineEndTabValue").addEventListener("click",e=>{e.stopPropagation();if(taskInlineTimeTarget!=="end")setTaskInlineTimeTarget("end");toggleTaskInlineTimeText()});
+  $("taskInlineTimeHide").addEventListener("click",()=>toggleTaskInlineTimeText());
+  $("taskInlineTimeText").addEventListener("input",()=>{
+    const input=$("taskInlineTimeText");
+    if(/^\d{2}:\d{2}$/.test(input.value)&&input.selectionStart===2&&input.selectionEnd===2)
+      input.setSelectionRange(3,5);
+  });
   $("taskInlineTimeText").addEventListener("change",applyTypedInlineTime);
   $("taskInlineTimeText").addEventListener("blur",()=>{if(!$("taskInlineTimePanel").classList.contains("hidden"))applyTypedInlineTime()});
   $("taskInlineTimeText").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();applyTypedInlineTime();$("taskInlineTimeText").blur()}});
@@ -3838,6 +3863,12 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
   $("taskInlineCategory").addEventListener("change",()=>{commitTaskHistory();setCategoryPicker("taskCategory",$("taskInlineCategory").value.trim()||"inbox");commitTaskHistory()});
   $("taskInlineTags").addEventListener("change",()=>{commitTaskHistory();$("taskTags").value=$("taskInlineTags").value;commitTaskHistory()});
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
+  $("assistantTaskStatus").addEventListener("click",()=>{
+    if($("assistantTaskStatus").disabled)return;
+    const st=editorTaskApprovalStatus==="scheduled"?"proposed":"scheduled";
+    setEditorTaskApproval(st);
+    showToast(st==="scheduled"?"Tarea agendada · sin aprobación":"Tarea como propuesta");
+  });
   $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
   $("taskDateBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");setTaskInlinePanel("date")});
@@ -3886,9 +3917,6 @@ html[data-theme="dark"] .timeDirectText,html[data-theme="dark"] .taskInlineTimeT
   $("timeClear").addEventListener("click",clearTaskTime);
   $("timeReminderToggle").addEventListener("change",()=>{syncTimeReminderUI();const on=$("timeReminderToggle").checked;$("taskTimeButton").dataset.reminderActive=on?"1":"0";$("taskReminder").value=on?($("taskReminder").value||"at"):"at";syncTaskTimeButton();if(on)requestReminderPermission()});
   $("taskReminder").addEventListener("change",()=>{timeDraftReminder=$("taskReminder").value||"at";if($("timeReminderToggle").checked)requestReminderPermission()});
-  $("timeDirectText").addEventListener("change",commitWheelClockText);
-  $("timeDirectText").addEventListener("blur",()=>{if($("timeOverlay").classList.contains("show"))commitWheelClockText()});
-  $("timeDirectText").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitWheelClockText();$("timeDirectText").blur()}});
   $("hourEditButton").addEventListener("click",()=>beginTimePartEdit("hour"));
   $("minuteEditButton").addEventListener("click",()=>beginTimePartEdit("minute"));
   ["hour","minute"].forEach(part=>{
