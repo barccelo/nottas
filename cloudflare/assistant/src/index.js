@@ -240,7 +240,8 @@ async function pullSync(url, auth, env) {
 async function pushSync(request, auth, env) {
   const body = await bodyJson(request);
   const changes = Array.isArray(body.changes) ? body.changes.slice(0, 200) : [];
-  const memberships = await memberWorkspaceIds(auth.userId, env);
+  const membershipRoles = await memberWorkspaceRoles(auth.userId, env);
+  const memberships = new Set(membershipRoles.keys());
   const accepted = [];
   const conflicts = [];
   const touchedWorkspaces = new Set();
@@ -262,6 +263,30 @@ async function pushSync(request, auth, env) {
     const current = await env.DB.prepare(
       "SELECT payload_json,rev,updated_at,deleted_at FROM items WHERE workspace_id=? AND entity_type=? AND id=?"
     ).bind(workspaceId, entityType, entityId).first();
+
+    if (entityType === "task" && membershipRoles.get(workspaceId) === "assistant") {
+      const currentPayload = current ? safeJson(current.payload_json, {}) : null;
+      const currentStatus = currentPayload?.approvalStatus || "confirmed";
+      const requestedStatus = payload.approvalStatus || currentStatus;
+      const scheduleChanged = !!currentPayload && (
+        String(currentPayload.dueDate || "") !== String(payload.dueDate || "") ||
+        String(currentPayload.dueTime || "") !== String(payload.dueTime || "") ||
+        String(currentPayload.endTime || "") !== String(payload.endTime || "")
+      );
+      if (!currentPayload) {
+        payload.approvalStatus = "proposed";
+        payload.requiresApproval = true;
+      } else if (currentStatus === "confirmed" && scheduleChanged) {
+        payload.approvalStatus = "proposed";
+        payload.requiresApproval = true;
+      } else if (["changes_requested", "rejected"].includes(currentStatus) && requestedStatus === "proposed") {
+        payload.approvalStatus = "proposed";
+        payload.requiresApproval = true;
+      } else {
+        payload.approvalStatus = currentStatus;
+        payload.requiresApproval = currentStatus === "proposed" || currentStatus === "changes_requested";
+      }
+    }
 
     if (current && Number(current.updated_at) > incomingUpdatedAt && Number(current.rev) >= incomingRev) {
       conflicts.push({
@@ -384,6 +409,13 @@ async function memberWorkspaceIds(userId, env) {
     "SELECT workspace_id FROM workspace_members WHERE user_id=? AND status='active'"
   ).bind(userId).all();
   return new Set((result.results || []).map(r => r.workspace_id));
+}
+
+async function memberWorkspaceRoles(userId, env) {
+  const result = await env.DB.prepare(
+    "SELECT workspace_id,role FROM workspace_members WHERE user_id=? AND status='active'"
+  ).bind(userId).all();
+  return new Map((result.results || []).map(r => [r.workspace_id, r.role]));
 }
 
 async function pushWorkspaceSync(workspaceId, actorUserId, env) {
