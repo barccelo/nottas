@@ -5,6 +5,13 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+
+concurrency:
+  group: nottas-android-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,11 +35,51 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Build debug APK
+      - name: Build debug APK with existing stable signing key
         run: gradle :app:assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Verify APK signature
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload APK to Actions
         uses: actions/upload-artifact@v4
         with:
           name: Nottas-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Read Android app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version_name="$(sed -nE 's/^[[:space:]]*versionName[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' app/build.gradle.kts | head -n1)"
+          version_code="$(sed -nE 's/^[[:space:]]*versionCode[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' app/build.gradle.kts | head -n1)"
+          test -n "$version_name"
+          test -n "$version_code"
+          echo "name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version_name" >> "$GITHUB_OUTPUT"
+
+      - name: Publish new version for Obtainium
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists. Increase versionName and versionCode for the next update."
+            exit 0
+          fi
+          apk="$RUNNER_TEMP/Nottas-$RELEASE_TAG.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$apk"
+          gh release create "$RELEASE_TAG" "$apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Nottas $VERSION_NAME" \
+            --latest \
+            --notes "Nottas $VERSION_NAME (versionCode $VERSION_CODE). APK firmado con la clave estable del proyecto. Para actualizar una instalación existente, ambos APK deben compartir el mismo certificado."
