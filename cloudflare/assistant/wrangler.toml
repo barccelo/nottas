@@ -5,7 +5,7 @@ compatibility_date = "2026-10-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "nottas-assistant"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "0c72b84c-a2aa-4bab-88b9-fd9ae0fd6080"
 
 [vars]
 APP_ENV = "pilot"
