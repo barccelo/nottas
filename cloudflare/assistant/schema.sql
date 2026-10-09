@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS devices (
 CREATE TABLE IF NOT EXISTS items (
   id TEXT NOT NULL,
   workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-  entity_type TEXT NOT NULL CHECK(entity_type IN ('task','note')),
+  entity_type TEXT NOT NULL CHECK(entity_type IN ('task','note','category')),
   payload_json TEXT NOT NULL,
   rev INTEGER NOT NULL DEFAULT 1,
   updated_at INTEGER NOT NULL,
