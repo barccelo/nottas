@@ -1171,7 +1171,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false;
-  let suppressClickUntil=0,wakeRefreshTimer=null;
+  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantApplyingRemote=false;
 
   function setNativeSearchKeyboardMode(active){
     try{
@@ -1406,6 +1406,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     }
 
     state=loaded||normalize({});
+    try{const auth=assistantAuth();if(state.assistant.serverUrl&&auth.sessionToken&&window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(state.assistant.serverUrl,auth.sessionToken)}catch(_){}
     if(!activeWorkspaceId||!state.workspaces.some(w=>w.id===activeWorkspaceId&&w.status!=="inactive"))activeWorkspaceId=state.assistant.personalWorkspaceId;
     syncNativeWorkHours();
     if(activeCategory!=="all"&&!state.categories.some(c=>c.id===activeCategory&&!c.deletedAt))activeCategory="all";
@@ -1452,12 +1453,228 @@ html[data-theme="dark"] .calendarTimeColumns{
       $("backupBadge").textContent="Activa";
       $("backupDesc").textContent="Copia automática local + historial interno.";
       setStatus("Local");
+      if(!assistantApplyingRemote&&assistantConfigured())scheduleAssistantSync(650);
     }catch(_){
       setStatus("Error local","err");
     }finally{
       saving=false;
     }
   }
+
+  function assistantConfigured(){
+    const auth=assistantAuth();
+    return !!(state?.assistant?.serverUrl&&state?.assistant?.userId&&auth.sessionToken);
+  }
+  function assistantDeviceId(){
+    try{if(window.NottasNative&&NottasNative.assistantDeviceId)return String(NottasNative.assistantDeviceId()||"")}catch(_){}
+    return String(state?.sync?.deviceId||"android_web");
+  }
+  function assistantNativePushStatus(){
+    try{if(window.NottasNative&&NottasNative.assistantPushStatus)return JSON.parse(NottasNative.assistantPushStatus()||"{}")}catch(_){}
+    return {};
+  }
+  async function assistantRequest(path,options={}){
+    const server=String(options.serverUrl||state?.assistant?.serverUrl||"").trim().replace(/\/+$/,"");
+    if(!server)throw new Error("Configura la URL del Worker");
+    const headers={"Content-Type":"application/json",...(options.headers||{})};
+    if(options.auth!==false){
+      const token=assistantAuth().sessionToken||"";
+      if(!token)throw new Error("Registra este dispositivo");
+      headers.Authorization="Bearer "+token;
+    }
+    const response=await fetch(server+path,{method:options.method||"GET",headers,body:options.body===undefined?undefined:JSON.stringify(options.body)});
+    let data={};try{data=await response.json()}catch(_){}
+    if(!response.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
+    return data;
+  }
+  function normalizeRemoteWorkspace(w){
+    return {id:String(w?.id||""),name:String(w?.name||"Espacio").slice(0,100),kind:w?.kind==="assistant"?"assistant":"personal",ownerUserId:String(w?.ownerUserId||""),inviteCode:String(w?.inviteCode||""),role:w?.role==="assistant"?"assistant":"owner",status:w?.status==="inactive"?"inactive":"active",updatedAt:w?.updatedAt||now()};
+  }
+  function mergeAssistantWorkspaces(rows){
+    (Array.isArray(rows)?rows:[]).forEach(raw=>{
+      const w=normalizeRemoteWorkspace(raw);if(!w.id)return;
+      const existing=state.workspaces.find(x=>x.id===w.id);
+      if(existing)Object.assign(existing,w);else state.workspaces.push(w);
+    });
+    if(!state.workspaces.some(w=>w.id===activeWorkspaceId&&w.status!=="inactive"))activeWorkspaceId=state.assistant.personalWorkspaceId;
+  }
+  function assistantRemapPersonalWorkspace(remote){
+    if(!remote?.id)return;
+    const oldId=personalWorkspaceId(),next=normalizeRemoteWorkspace(remote);next.kind="personal";next.role="owner";
+    state.tasks.forEach(t=>{if((t.workspaceId||oldId)===oldId){t.workspaceId=next.id;t.syncState="pending"}});
+    state.notes.forEach(n=>{if((n.workspaceId||oldId)===oldId){n.workspaceId=next.id;n.syncState="pending"}});
+    state.workspaces=state.workspaces.filter(w=>w.id!==oldId&&w.id!==next.id);
+    state.workspaces.unshift(next);
+    state.assistant.personalWorkspaceId=next.id;
+    if(activeWorkspaceId===oldId||!activeWorkspaceId)activeWorkspaceId=next.id;
+  }
+  function scheduleAssistantSync(delay=600){
+    if(!assistantConfigured())return;
+    clearTimeout(assistantSyncTimer);
+    assistantSyncTimer=setTimeout(()=>assistantSync(false,true),Math.max(100,Number(delay)||600));
+  }
+  function assistantApplyRemoteChange(change){
+    const type=change?.entityType==="note"?"note":change?.entityType==="task"?"task":"";
+    if(!type||!change?.payload)return;
+    const arr=type==="task"?state.tasks:state.notes,payload={...change.payload,workspaceId:String(change.workspaceId||change.payload.workspaceId||""),syncState:"synced"};
+    if(!payload.id)return;
+    const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId);
+    if(existing){
+      if(existing.syncState==="pending"&&Number(existing.updatedAt||0)>Number(payload.updatedAt||0))return;
+      Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
+      Object.assign(existing,payload,{syncState:"synced"});
+    }else arr.push(payload);
+  }
+  function assistantMarkAccepted(rows){
+    (Array.isArray(rows)?rows:[]).forEach(a=>{
+      const arr=a.entityType==="note"?state.notes:state.tasks;
+      const item=arr.find(x=>x.id===a.entityId&&String(x.workspaceId||personalWorkspaceId())===String(a.workspaceId||""));
+      if(item&&Number(item.updatedAt||0)<=Number(a.updatedAt||0)){item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
+    });
+  }
+  async function assistantSync(full=false,silent=false){
+    if(!assistantConfigured()||assistantSyncing)return false;
+    assistantSyncing=true;
+    if(!silent)setStatus("Sincronizando…","warn");
+    try{
+      const pending=[];
+      state.tasks.filter(t=>t.syncState==="pending").forEach(t=>pending.push({workspaceId:t.workspaceId||personalWorkspaceId(),entityType:"task",entityId:t.id,payload:t,rev:t.rev,updatedAt:t.updatedAt,deletedAt:t.deletedAt||null}));
+      state.notes.filter(n=>n.syncState==="pending").forEach(n=>pending.push({workspaceId:n.workspaceId||personalWorkspaceId(),entityType:"note",entityId:n.id,payload:n,rev:n.rev,updatedAt:n.updatedAt,deletedAt:n.deletedAt||null}));
+      if(pending.length){
+        const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
+        assistantMarkAccepted(pushed.accepted);
+        (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload}));
+        if(Number(pushed.cursor)>Number(state.assistant.cursor||0))state.assistant.cursor=Number(pushed.cursor);
+      }
+      const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+(full?"&full=1":"");
+      const pulled=await assistantRequest("/v1/sync"+suffix);
+      mergeAssistantWorkspaces(pulled.workspaces);
+      (pulled.changes||[]).forEach(assistantApplyRemoteChange);
+      state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
+      state.assistant.lastSyncAt=now();
+      assistantApplyingRemote=true;
+      scheduleSave();
+      setTimeout(()=>{assistantApplyingRemote=false},500);
+      render();
+      renderAssistantSummary();
+      if(!silent)showToast("Asistente sincronizado");
+      setStatus("Nube","ok");
+      return true;
+    }catch(error){
+      setStatus("Sin conexión","warn");
+      if(!silent)showToast("Sync: "+String(error?.message||error));
+      return false;
+    }finally{
+      assistantSyncing=false;
+    }
+  }
+  async function assistantRegisterDevice(){
+    const server=$("assistantServerUrl").value.trim().replace(/\/+$/,""),displayName=$("assistantDisplayName").value.trim();
+    if(!server||!displayName){showToast("Indica Worker y nombre");return}
+    try{
+      setStatus("Registrando…","warn");
+      const data=await assistantRequest("/v1/auth/register",{auth:false,serverUrl:server,method:"POST",body:{displayName,deviceId:assistantDeviceId(),deviceLabel:"Nottas Android"}});
+      state.assistant.serverUrl=server;state.assistant.userId=String(data.user?.id||"");state.assistant.displayName=String(data.user?.displayName||displayName);
+      assistantRemapPersonalWorkspace(data.personalWorkspace);
+      saveAssistantAuth({sessionToken:String(data.sessionToken||"")});
+      try{if(window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(server,String(data.sessionToken||""))}catch(_){}
+      scheduleSave();render();renderAssistantSettings();await assistantRegisterPushToken();await assistantSync(true,true);showToast("Dispositivo registrado");
+    }catch(error){showToast("Registro: "+String(error?.message||error))}
+  }
+  async function assistantCreateWorkspace(){
+    const name=$("assistantWorkspaceName").value.trim()||"Asistente";
+    try{
+      const data=await assistantRequest("/v1/workspaces",{method:"POST",body:{name}});
+      mergeAssistantWorkspaces([data.workspace]);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Espacio creado");
+    }catch(error){showToast("Crear espacio: "+String(error?.message||error))}
+  }
+  async function assistantJoinWorkspace(){
+    const inviteCode=$("assistantInviteInput").value.trim().toUpperCase();
+    if(!inviteCode){showToast("Escribe el código de invitación");return}
+    try{
+      const data=await assistantRequest("/v1/workspaces/join",{method:"POST",body:{inviteCode}});
+      mergeAssistantWorkspaces([data.workspace]);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();await assistantSync(true,true);render();renderAssistantSettings();showToast("Espacio conectado");
+    }catch(error){showToast("Unirse: "+String(error?.message||error))}
+  }
+  async function assistantConfigurePush(){
+    const config={projectId:$("assistantFirebaseProject").value.trim(),senderId:$("assistantFirebaseSender").value.trim(),appId:$("assistantFirebaseAppId").value.trim(),apiKey:$("assistantFirebaseApiKey").value.trim()};
+    if(Object.values(config).some(v=>!v)){showToast("Completa los cuatro datos de Firebase");return}
+    state.assistant.firebase=config;scheduleSave();
+    try{
+      if(!window.NottasNative||!NottasNative.configureAssistantPush){showToast("Disponible solo en Android");return}
+      const result=JSON.parse(NottasNative.configureAssistantPush(JSON.stringify(config))||"{}");
+      if(result.error)showToast("Push: "+result.error);else showToast("Push configurado");
+      setTimeout(()=>{assistantRegisterPushToken();renderAssistantSettings()},1600);
+    }catch(error){showToast("Push: "+String(error?.message||error))}
+  }
+  async function assistantRegisterPushToken(){
+    if(!assistantConfigured())return false;
+    const status=assistantNativePushStatus();
+    if(!status.fcmToken){
+      try{if(window.NottasNative&&NottasNative.refreshAssistantPushToken)NottasNative.refreshAssistantPushToken()}catch(_){}
+      return false;
+    }
+    try{
+      await assistantRequest("/v1/devices/push-token",{method:"POST",body:{fcmToken:status.fcmToken,deviceLabel:"Nottas Android"}});
+      state.assistant.pushRegisteredAt=now();scheduleSave();return true;
+    }catch(_){return false}
+  }
+  async function assistantCall(){
+    const ws=currentWorkspace();
+    if(!ws||ws.kind!=="assistant"||ws.role!=="owner"){showToast("Abre un espacio donde seas jefe");return}
+    try{
+      await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/call",{method:"POST",body:{}});
+      showToast("Llamada enviada");
+    }catch(error){showToast("Llamada: "+String(error?.message||error))}
+  }
+  function assistantPreviewCall(){
+    try{
+      if(window.NottasNative&&NottasNative.previewAssistantCall){
+        NottasNative.previewAssistantCall(state.assistant.displayName||"Jefe de prueba",currentWorkspace()?.name||"Asistente");return;
+      }
+    }catch(_){}
+    showToast("La prueba de pantalla completa requiere Android");
+  }
+  function assistantResponseLabel(value){return value==="coming"?"Voy":value==="five_min"?"En 5 min":value==="unavailable"?"No disponible":String(value||"Respuesta")}
+  async function consumeAssistantNativeEvents(){
+    let events=[];try{if(window.NottasNative&&NottasNative.consumeAssistantEvents)events=JSON.parse(NottasNative.consumeAssistantEvents()||"[]")}catch(_){}
+    let needsSync=false;
+    for(const event of events){
+      if(event.type==="push_token")assistantRegisterPushToken();
+      else if(event.type==="sync")needsSync=true;
+      else if(event.type==="assistant_call_response")showToast((event.fromName||"Asistente")+": "+assistantResponseLabel(event.response));
+      else if(event.type==="call_response_pending"&&assistantConfigured()){
+        try{await assistantRequest("/v1/calls/"+encodeURIComponent(event.callId)+"/respond",{method:"POST",body:{response:event.response}})}catch(_){}
+      }
+    }
+    if(needsSync)assistantSync(false,true);
+  }
+  function renderAssistantSummary(){
+    const el=$("assistantSummaryDesc");if(!el||!state)return;
+    const ws=currentWorkspace(),connected=assistantConfigured();
+    el.textContent=connected?((ws?.kind==="assistant"?(ws.name+" · "+(ws.role==="owner"?"Jefe":"Asistente")):"Cuenta conectada")+" · "+(state.assistant.lastSyncAt?"sync "+new Date(state.assistant.lastSyncAt).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}):"sin sincronizar")):"No configurado. Los datos siguen solo en este dispositivo.";
+  }
+  function renderAssistantSettings(){
+    if(!state)return;
+    const a=state.assistant||{},f=a.firebase||{},auth=assistantAuth(),ws=currentWorkspace(),push=assistantNativePushStatus(),connected=assistantConfigured();
+    $("assistantServerUrl").value=a.serverUrl||$("assistantServerUrl").value||"";
+    $("assistantDisplayName").value=a.displayName||$("assistantDisplayName").value||"";
+    $("assistantFirebaseProject").value=f.projectId||"";
+    $("assistantFirebaseSender").value=f.senderId||"";
+    $("assistantFirebaseAppId").value=f.appId||"";
+    $("assistantFirebaseApiKey").value=f.apiKey||"";
+    $("assistantStatusTitle").textContent=connected?(a.displayName||"Cuenta conectada"):"Sin configurar";
+    $("assistantConnectionBadge").textContent=connected?"Conectado":"Local";$("assistantConnectionBadge").classList.toggle("ok",connected);
+    $("assistantStatusDesc").textContent=connected?("Dispositivo "+assistantDeviceId()+" · "+(a.lastSyncAt?"último sync "+new Date(a.lastSyncAt).toLocaleString("es"):"pendiente de primer sync")):"Registra este dispositivo para crear o unirte a espacios compartidos.";
+    $("assistantRegisterBtn").textContent=auth.sessionToken?"Registrar de nuevo":"Registrar dispositivo";
+    $("assistantCreateWorkspaceBtn").disabled=!connected;$("assistantJoinWorkspaceBtn").disabled=!connected;$("assistantSyncBtn").disabled=!connected;
+    const ownerShared=ws?.kind==="assistant"&&ws?.role==="owner";$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
+    $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
+    $("assistantPushDesc").textContent=push.fcmToken?("Push listo · token "+String(push.fcmToken).slice(0,12)+"…"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
+    renderAssistantSummary();
+  }
+  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay")}
+  window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true);return true}
 
   function activeCategories(){return state.categories.filter(c=>!c.deletedAt)}
   function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt)||state.categories.find(c=>c.id==="inbox")}
