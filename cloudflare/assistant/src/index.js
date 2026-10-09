@@ -48,6 +48,11 @@ async function route(request, env) {
     return workspaceActivity(decodeURIComponent(activityWorkspace[1]), auth, env);
   }
 
+  const availabilityWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/availability$/);
+  if (availabilityWorkspace && request.method === "GET") {
+    return workspaceAvailability(url, decodeURIComponent(availabilityWorkspace[1]), auth, env);
+  }
+
   const callWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/call$/);
   if (callWorkspace && request.method === "POST") {
     return createAssistantCall(request, decodeURIComponent(callWorkspace[1]), auth, env);
@@ -322,11 +327,61 @@ async function pushSync(request, auth, env) {
 
   for (const workspaceId of touchedWorkspaces) {
     await env.DB.prepare("UPDATE workspaces SET updated_at=? WHERE id=?").bind(Date.now(), workspaceId).run();
-    await pushWorkspaceSync(workspaceId, auth.userId, env);
+    const workspace = await env.DB.prepare("SELECT kind,owner_user_id FROM workspaces WHERE id=?").bind(workspaceId).first();
+    if (workspace?.kind === "personal" && workspace.owner_user_id === auth.userId) {
+      await pushAvailabilityChanged(auth.userId, env);
+    } else {
+      await pushWorkspaceSync(workspaceId, auth.userId, env);
+    }
   }
 
   const latest = await env.DB.prepare("SELECT COALESCE(MAX(seq),0) AS seq FROM changes").first();
   return json({ ok: true, accepted, conflicts, cursor: Number(latest?.seq || 0) });
+}
+
+async function workspaceAvailability(url, workspaceId, auth, env) {
+  const member = await membership(workspaceId, auth.userId, env);
+  if (!member) return json({ error: "workspace_forbidden" }, 403);
+
+  const workspace = await env.DB.prepare(
+    "SELECT owner_user_id,kind FROM workspaces WHERE id=?"
+  ).bind(workspaceId).first();
+  if (!workspace || workspace.kind !== "assistant") return json({ error: "assistant_workspace_required" }, 400);
+
+  const start = textValue(url.searchParams.get("start"), 10);
+  const end = textValue(url.searchParams.get("end"), 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end) || end < start) {
+    return json({ error: "valid_start_and_end_required" }, 400);
+  }
+  const startDate = new Date(start + "T12:00:00Z");
+  const endDate = new Date(end + "T12:00:00Z");
+  if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime()) || endDate - startDate > 31 * 86400000) {
+    return json({ error: "availability_range_too_large" }, 400);
+  }
+
+  const personal = await env.DB.prepare(
+    "SELECT id FROM workspaces WHERE owner_user_id=? AND kind='personal' ORDER BY created_at LIMIT 1"
+  ).bind(workspace.owner_user_id).first();
+  if (!personal) return json({ start, end, busy: [] });
+
+  const result = await env.DB.prepare(
+    "SELECT payload_json FROM items WHERE workspace_id=? AND entity_type='task' AND deleted_at IS NULL ORDER BY updated_at DESC LIMIT 5000"
+  ).bind(personal.id).all();
+
+  const busy = [];
+  for (const row of (result.results || [])) {
+    const payload = safeJson(row.payload_json, {});
+    const date = String(payload.dueDate || "");
+    const dueTime = String(payload.dueTime || "");
+    if (payload.done || !dueTime || date < start || date > end) continue;
+    const startMinute = timeMinutes(dueTime);
+    if (startMinute === null) continue;
+    let endMinute = timeMinutes(String(payload.endTime || ""));
+    if (endMinute === null || endMinute <= startMinute) endMinute = Math.min(1439, startMinute + 60);
+    busy.push({ date, start: minutesTime(startMinute), end: minutesTime(endMinute) });
+  }
+  busy.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+  return json({ start, end, busy });
 }
 
 async function workspaceActivity(workspaceId, auth, env) {
@@ -479,6 +534,16 @@ async function memberWorkspaceRoles(userId, env) {
   return new Map((result.results || []).map(r => [r.workspace_id, r.role]));
 }
 
+async function pushAvailabilityChanged(ownerUserId, env) {
+  const result = await env.DB.prepare(
+    "SELECT m.user_id,w.id AS workspace_id FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id WHERE w.kind='assistant' AND w.owner_user_id=? AND m.role='assistant' AND m.status='active'"
+  ).bind(ownerUserId).all();
+  await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
+    type: "availability_changed",
+    workspaceId: r.workspace_id
+  }, env)));
+}
+
 async function pushWorkspaceSync(workspaceId, actorUserId, env) {
   const result = await env.DB.prepare(
     "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
@@ -605,6 +670,19 @@ function randomInviteCode() {
 
 async function bodyJson(request) {
   try { return await request.json(); } catch (_) { return {}; }
+}
+
+function timeMinutes(value) {
+  const match = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hour = Number(match[1]), minute = Number(match[2]);
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+function minutesTime(value) {
+  const safe = Math.max(0, Math.min(1439, Number(value) || 0));
+  return String(Math.floor(safe / 60)).padStart(2, "0") + ":" + String(safe % 60).padStart(2, "0");
 }
 
 function textValue(value, max = 200) {
