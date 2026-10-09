@@ -2331,7 +2331,7 @@ html[data-theme="dark"] .calendarTimeColumns{
           <label class="checkHit"><input class="check" type="checkbox" ${t.done?"checked":""} aria-label="Completar"></label>
           <div class="content taskOpen">
             <div class="cardHeader"><div class="taskTitle">${sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text))}</div><button class="miniBtn pin ${t.pinned?"active":""} pinItem pinTask" type="button" aria-label="${t.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>${t.body?`<div class="preview">${esc(t.body)}</div>`:""}
-            <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.items?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${tagsMeta(t.tags)}</div>
+            <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.items?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${assistantTaskMetaHtml(t)}${tagsMeta(t.tags)}</div>
           </div>
         </div>
       </div>`;
@@ -3661,8 +3661,8 @@ html[data-theme="dark"] .calendarTimeColumns{
       setTimeout(()=>{if(Date.now()>emptyTrashConfirmUntil){btn.textContent="Vaciar";btn.classList.remove("armed")}},3600);
       return;
     }
-    state.tasks=state.tasks.filter(t=>!t.deletedAt);
-    state.notes=state.notes.filter(n=>!n.deletedAt);
+    state.tasks=state.tasks.filter(t=>!itemInActiveWorkspace(t)||!t.deletedAt);
+    state.notes=state.notes.filter(n=>!itemInActiveWorkspace(n)||!n.deletedAt);
     emptyTrashConfirmUntil=0;
     btn.textContent="Vaciar";btn.classList.remove("armed");
     scheduleSave();render();showToast("Papelera vaciada");
@@ -3745,7 +3745,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("noteFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
   $("noteFormatClose").addEventListener("click",()=>setRichToolbar("note",false));
   $("noteInsertChecklist").addEventListener("click",()=>{hideNotePanels();addNoteBlockOfType("checklist")});
-  $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,titleHtml:snap.titleHtml,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
+  $("noteDuplicateBtn").addEventListener("click",()=>{const snap=noteSnapshot();if(!snap.title&&!snap.body)return;const stamp=now();state.notes.push({id:makeId("n"),title:snap.title,titleHtml:snap.titleHtml,body:snap.body,blocks:cloneNoteBlocks(snap.blocks),...(editingNoteId?(state.notes.find(x=>x.id===editingNoteId)?{workspaceId:state.notes.find(x=>x.id===editingNoteId).workspaceId,createdBy:currentUserId(),updatedBy:currentUserId()}:newItemWorkspaceFields("note")):newItemWorkspaceFields("note")),category:snap.category,tags:snap.tags.slice(),pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});scheduleSave();render();hideNotePanels();showToast("Copia creada")});
   $("addSubtaskBtn").addEventListener("click",addEditorSubtask);
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
@@ -3803,6 +3803,7 @@ html[data-theme="dark"] .calendarTimeColumns{
       state=normalize(parsed);
       activeCategory="all";
       activeTag="";
+      activeWorkspaceId=state.assistant.personalWorkspaceId;
       trash=false;
       render();
       await saveNow();
