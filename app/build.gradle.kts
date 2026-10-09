@@ -37,3 +37,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+
+dependencies {
+    implementation("com.google.firebase:firebase-messaging:26.0.0")
+}
