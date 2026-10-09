@@ -186,8 +186,33 @@ async function registerPushToken(request, auth, env) {
 
 async function pullSync(url, auth, env) {
   const since = Math.max(0, Number(url.searchParams.get("since") || 0) || 0);
+  const full = url.searchParams.get("full") === "1";
   const memberships = await memberWorkspaceIds(auth.userId, env);
   if (!memberships.size) return json({ cursor: since, changes: [], workspaces: [] });
+
+  const latest = await env.DB.prepare("SELECT COALESCE(MAX(seq),0) AS seq FROM changes").first();
+  const latestCursor = Number(latest?.seq || 0);
+
+  if (full) {
+    const items = await env.DB.prepare(
+      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items ORDER BY updated_at ASC LIMIT 5000"
+    ).all();
+    const snapshot = [];
+    for (const row of (items.results || [])) {
+      if (!memberships.has(row.workspace_id)) continue;
+      snapshot.push({
+        seq: 0,
+        workspaceId: row.workspace_id,
+        entityType: row.entity_type,
+        entityId: row.id,
+        op: "snapshot",
+        payload: safeJson(row.payload_json, {}),
+        createdAt: row.updated_at,
+        actorUserId: row.updated_by
+      });
+    }
+    return json({ cursor: latestCursor, changes: snapshot, workspaces: await workspaceRows(auth.userId, env), full: true });
+  }
 
   const result = await env.DB.prepare(
     "SELECT seq,workspace_id,entity_type,entity_id,op,payload_json,created_at,actor_user_id FROM changes WHERE seq>? ORDER BY seq ASC LIMIT 500"
@@ -208,8 +233,7 @@ async function pullSync(url, auth, env) {
       actorUserId: row.actor_user_id
     });
   }
-  const latest = await env.DB.prepare("SELECT COALESCE(MAX(seq),0) AS seq FROM changes").first();
-  cursor = Math.max(cursor, Number(latest?.seq || 0));
+  cursor = Math.max(cursor, latestCursor);
   return json({ cursor, changes, workspaces: await workspaceRows(auth.userId, env) });
 }
 
