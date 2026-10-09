@@ -1358,13 +1358,14 @@ html[data-theme="dark"] .calendarTimeColumns{
     let personal=workspaces.find(w=>w.id===personalId&&w.kind==="personal")||workspaces.find(w=>w.kind==="personal");
     if(!personal){personal={id:personalId||"personal_local",name:"Personal",kind:"personal",ownerUserId:String(assistantRaw.userId||""),inviteCode:"",role:"owner",status:"active",updatedAt:stamp};workspaces.unshift(personal)}
     personalId=personal.id;
+    o.categories=o.categories.map(c=>({...c,workspaceId:c.id==="inbox"?"*":String(c.workspaceId||personalId),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||"")}));
     o.workspaces=workspaces;
     o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
     o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false,calendarMonthShowWeekends:prefs.calendarMonthShowWeekends!==false,calendarAgendaShowCompleted:prefs.calendarAgendaShowCompleted!==false};
-    o.schemaVersion=11;o.version=11;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
+    o.schemaVersion=12;o.version=12;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
   }
 
   function applyTheme(){
@@ -1509,6 +1510,7 @@ html[data-theme="dark"] .calendarTimeColumns{
     const oldId=personalWorkspaceId(),next=normalizeRemoteWorkspace(remote);next.kind="personal";next.role="owner";
     state.tasks.forEach(t=>{if((t.workspaceId||oldId)===oldId){t.workspaceId=next.id;t.syncState="pending"}});
     state.notes.forEach(n=>{if((n.workspaceId||oldId)===oldId){n.workspaceId=next.id;n.syncState="pending"}});
+    state.categories.forEach(c=>{if(c.id!=="inbox"&&String(c.workspaceId||oldId)===oldId){c.workspaceId=next.id;c.syncState="pending"}});
     state.workspaces=state.workspaces.filter(w=>w.id!==oldId&&w.id!==next.id);
     state.workspaces.unshift(next);
     state.assistant.personalWorkspaceId=next.id;
@@ -1520,9 +1522,9 @@ html[data-theme="dark"] .calendarTimeColumns{
     assistantSyncTimer=setTimeout(()=>assistantSync(false,true),Math.max(100,Number(delay)||600));
   }
   function assistantApplyRemoteChange(change){
-    const type=change?.entityType==="note"?"note":change?.entityType==="task"?"task":"";
+    const type=change?.entityType==="note"?"note":change?.entityType==="task"?"task":change?.entityType==="category"?"category":"";
     if(!type||!change?.payload)return;
-    const arr=type==="task"?state.tasks:state.notes,payload={...change.payload,workspaceId:String(change.workspaceId||change.payload.workspaceId||""),syncState:"synced"};
+    const arr=type==="task"?state.tasks:type==="note"?state.notes:state.categories,payload={...change.payload,workspaceId:String(change.workspaceId||change.payload.workspaceId||""),syncState:"synced"};
     if(!payload.id)return;
     const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId);
     if(existing){
@@ -1533,9 +1535,9 @@ html[data-theme="dark"] .calendarTimeColumns{
   }
   function assistantMarkAccepted(rows){
     (Array.isArray(rows)?rows:[]).forEach(a=>{
-      const arr=a.entityType==="note"?state.notes:state.tasks;
+      const arr=a.entityType==="note"?state.notes:a.entityType==="category"?state.categories:state.tasks;
       const item=arr.find(x=>x.id===a.entityId&&String(x.workspaceId||personalWorkspaceId())===String(a.workspaceId||""));
-      if(item&&Number(item.updatedAt||0)<=Number(a.updatedAt||0)){item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
+      if(item&&Number(item.updatedAt||0)<=Number(a.updatedAt||0)){if(a.payload&&typeof a.payload==="object")Object.assign(item,a.payload);item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
     });
   }
   async function assistantSync(full=false,silent=false){
@@ -1546,11 +1548,11 @@ html[data-theme="dark"] .calendarTimeColumns{
       const pending=[];
       state.tasks.filter(t=>t.syncState==="pending").forEach(t=>pending.push({workspaceId:t.workspaceId||personalWorkspaceId(),entityType:"task",entityId:t.id,payload:t,rev:t.rev,updatedAt:t.updatedAt,deletedAt:t.deletedAt||null}));
       state.notes.filter(n=>n.syncState==="pending").forEach(n=>pending.push({workspaceId:n.workspaceId||personalWorkspaceId(),entityType:"note",entityId:n.id,payload:n,rev:n.rev,updatedAt:n.updatedAt,deletedAt:n.deletedAt||null}));
+      state.categories.filter(c=>c.id!=="inbox"&&c.syncState==="pending").forEach(c=>pending.push({workspaceId:c.workspaceId||personalWorkspaceId(),entityType:"category",entityId:c.id,payload:c,rev:c.rev,updatedAt:c.updatedAt,deletedAt:c.deletedAt||null}));
       if(pending.length){
         const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
         assistantMarkAccepted(pushed.accepted);
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload}));
-        if(Number(pushed.cursor)>Number(state.assistant.cursor||0))state.assistant.cursor=Number(pushed.cursor);
       }
       const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+(full?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
@@ -1682,8 +1684,8 @@ html[data-theme="dark"] .calendarTimeColumns{
   function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay")}
   window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true);return true}
 
-  function activeCategories(){return state.categories.filter(c=>!c.deletedAt)}
-  function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt)||state.categories.find(c=>c.id==="inbox")}
+  function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
+  function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))||state.categories.find(c=>c.id==="inbox")}
   function catName(id){const c=cat(id);return c?c.name:"Sin categoría"}
   function catColor(id){const c=cat(id);return c?c.color:"#8e8e93"}
   function categoryByName(name){const n=String(name||"").trim().toLowerCase();return activeCategories().find(c=>c.name.trim().toLowerCase()===n)||null}
@@ -3805,8 +3807,8 @@ html[data-theme="dark"] .calendarTimeColumns{
   });
   $("openTrashBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");trash=true;render()});
   $("addCategoryBtn").addEventListener("click",()=>openCategory(null));$("categoryClose").addEventListener("click",closeCategory);$("categoryOverlay").addEventListener("click",e=>{if(e.target===$("categoryOverlay"))closeCategory()});
-  $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
-  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();showToast("Categoría eliminada")});
+  $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,workspaceId:currentWorkspaceId(),createdBy:currentUserId(),updatedBy:currentUserId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
+  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(itemInActiveWorkspace(t)&&t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(itemInActiveWorkspace(n)&&n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();showToast("Categoría eliminada")});
 
   window.NottasImportData=async function(input){
     try{
