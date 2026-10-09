@@ -10,6 +10,31 @@ import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * Delivers queued Assistant events to the existing WebView when it is resumed.
+ * Background events remain in AssistantEventStore until the next resume.
+ */
+object AssistantForegroundBridge {
+    @Volatile private var resumedActivity: MainActivity? = null
+
+    fun attach(activity: MainActivity) {
+        resumedActivity = activity
+    }
+
+    fun detach(activity: MainActivity) {
+        if (resumedActivity === activity) resumedActivity = null
+    }
+
+    fun isForeground(): Boolean = resumedActivity != null
+
+    fun notifyQueuedEvent() {
+        val activity = resumedActivity ?: return
+        activity.runOnUiThread {
+            if (resumedActivity === activity) activity.onAssistantNativeEvent()
+        }
+    }
+}
+
 object AssistantPush {
     private const val PREFS = "nottas_assistant"
     private const val KEY_API_KEY = "firebase_api_key"
@@ -208,6 +233,7 @@ object AssistantEventStore {
         queue.put(event.put("receivedAt", System.currentTimeMillis()))
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putString(KEY_QUEUE, queue.toString()).apply()
+        AssistantForegroundBridge.notifyQueuedEvent()
     }
 
     @Synchronized

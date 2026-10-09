@@ -1187,7 +1187,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   let state=null;
   let mode="tasks",taskFilter="pending",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false;
-  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantApplyingRemote=false;
+  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
 
   function setNativeSearchKeyboardMode(active){
     try{
@@ -1528,8 +1528,9 @@ html[data-theme="dark"] .calendarTimeColumns{
   }
   function scheduleAssistantSync(delay=600){
     if(!assistantConfigured())return;
+    if(assistantSyncing){assistantSyncQueued=true;return}
     clearTimeout(assistantSyncTimer);
-    assistantSyncTimer=setTimeout(()=>assistantSync(false,true),Math.max(100,Number(delay)||600));
+    assistantSyncTimer=setTimeout(()=>{assistantSyncTimer=null;assistantSync(false,true)},Math.max(100,Number(delay)||600));
   }
   function assistantApplyRemoteChange(change){
     const type=change?.entityType==="note"?"note":change?.entityType==="task"?"task":change?.entityType==="category"?"category":"";
@@ -1551,7 +1552,8 @@ html[data-theme="dark"] .calendarTimeColumns{
     });
   }
   async function assistantSync(full=false,silent=false){
-    if(!assistantConfigured()||assistantSyncing)return false;
+    if(!assistantConfigured())return false;
+    if(assistantSyncing){assistantSyncQueued=true;return false}
     assistantSyncing=true;
     if(!silent)setStatus("Sincronizando…","warn");
     try{
@@ -1585,6 +1587,7 @@ html[data-theme="dark"] .calendarTimeColumns{
       return false;
     }finally{
       assistantSyncing=false;
+      if(assistantSyncQueued){assistantSyncQueued=false;scheduleAssistantSync(200)}
     }
   }
   async function assistantRegisterDevice(){
@@ -1666,7 +1669,7 @@ html[data-theme="dark"] .calendarTimeColumns{
         try{await assistantRequest("/v1/calls/"+encodeURIComponent(event.callId)+"/respond",{method:"POST",body:{response:event.response}})}catch(_){}
       }
     }
-    if(needsSync)assistantSync(false,true);
+    if(needsSync)scheduleAssistantSync(250);
   }
   function renderAssistantSummary(){
     const el=$("assistantSummaryDesc");if(!el||!state)return;
@@ -1716,7 +1719,8 @@ html[data-theme="dark"] .calendarTimeColumns{
     renderAssistantSummary();
   }
   function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true)}
-  window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true);return true}
+  window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
+  window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200);return true}
 
   function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
   function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))||state.categories.find(c=>c.id==="inbox")}
@@ -3875,8 +3879,8 @@ html[data-theme="dark"] .calendarTimeColumns{
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
-  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true)});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())assistantSync(false,true)}});
+  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)}});
 
   window.NottasHandleBack=function(){
     const active=document.activeElement;
@@ -3952,7 +3956,7 @@ html[data-theme="dark"] .calendarTimeColumns{
   initSheetGestures();
   initActionPanelGestures();
   load();
-  setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();assistantSync(false,true)}},350);
+  setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
 })();
 </script>
 </body>

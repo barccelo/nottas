@@ -45,20 +45,24 @@ class AssistantMessagingService : FirebaseMessagingService() {
                     "unavailable" -> "No disponible"
                     else -> "Respondió"
                 }
-                AssistantNotification.show(
-                    this,
-                    "Respuesta de " + who,
-                    response,
-                    ("call_response_" + data["callId"].orEmpty()).hashCode()
-                )
+                if (!AssistantForegroundBridge.isForeground()) {
+                    AssistantNotification.show(
+                        this,
+                        "Respuesta de " + who,
+                        response,
+                        ("call_response_" + data["callId"].orEmpty()).hashCode()
+                    )
+                }
             }
             "sync" -> {
-                AssistantNotification.show(
-                    this,
-                    "Cambios en Asistente",
-                    "Hay información nueva para sincronizar.",
-                    ("assistant_sync_" + data["workspaceId"].orEmpty()).hashCode()
-                )
+                if (!AssistantForegroundBridge.isForeground()) {
+                    AssistantNotification.show(
+                        this,
+                        "Cambios en Asistente",
+                        "Hay información nueva para sincronizar.",
+                        ("assistant_sync_" + data["workspaceId"].orEmpty()).hashCode()
+                    )
+                }
             }
         }
     }

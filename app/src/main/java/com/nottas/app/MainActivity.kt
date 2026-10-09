@@ -74,6 +74,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        AssistantForegroundBridge.attach(this)
         if (::webView.isInitialized) {
             webView.evaluateJavascript(
                 "window.NottasAssistantResume && window.NottasAssistantResume()",
@@ -90,6 +91,20 @@ class MainActivity : Activity() {
         if (intent?.getBooleanExtra(EXTRA_OPEN_IMPORT, false) == true) {
             intent.removeExtra(EXTRA_OPEN_IMPORT)
             openImportPicker()
+        }
+    }
+
+    override fun onPause() {
+        AssistantForegroundBridge.detach(this)
+        super.onPause()
+    }
+
+    fun onAssistantNativeEvent() {
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript(
+                "window.NottasAssistantPushArrived && window.NottasAssistantPushArrived()",
+                null
+            )
         }
     }
 
@@ -231,6 +246,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        AssistantForegroundBridge.detach(this)
         webView.removeJavascriptInterface("NottasNative")
         webView.destroy()
         super.onDestroy()
