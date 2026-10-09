@@ -74,6 +74,12 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript(
+                "window.NottasAssistantResume && window.NottasAssistantResume()",
+                null
+            )
+        }
         if (Settings.canDrawOverlays(this)) {
             startOverlayService()
         } else if (!overlayPromptShown) {
