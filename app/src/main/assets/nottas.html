@@ -567,6 +567,47 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
 .timePartInput:focus{background:rgba(118,118,128,.09)!important}
 #assistantTaskStatus,#assistantTaskStatus:disabled{border:0!important;outline:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;background-clip:padding-box;-webkit-tap-highlight-color:transparent;line-height:1.2;font-size:11px;font-weight:700}
 #assistantTaskStatus:focus-visible{box-shadow:0 0 0 2px rgba(0,122,255,.35)!important}
+
+/* Task editor dock + keyboard-safe content */
+#editorOverlay.taskEditorMode .editorSheet{
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+#editorOverlay.taskEditorMode .sheetHeader{flex:0 0 auto}
+#editorOverlay.taskEditorMode #taskForm{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+#editorOverlay.taskEditorMode #taskForm>.card{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain;
+  padding-bottom:14px!important;
+  scroll-padding-bottom:18px;
+}
+#editorOverlay.taskEditorMode #taskBottomBar{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  width:calc(100% + 36px)!important;
+  margin:0 -18px calc(-1 * env(safe-area-inset-bottom))!important;
+  flex:0 0 calc(58px + env(safe-area-inset-bottom));
+  z-index:70;
+}
+body.imeVisible #editorOverlay.taskEditorMode .editorSheet{
+  height:var(--keyboard-available-height,100vh)!important;
+  max-height:var(--keyboard-available-height,100vh)!important;
+}
+body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
+  bottom:auto!important;
+}
 </style>
 </head>
 <body>
@@ -1819,7 +1860,7 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
     const existing=categoryByName(name);
     if(existing){setCategoryPicker(picker,existing.id);return existing.id}
     const stamp=now(),id=makeId("c"),color=palette[activeCategories().length%palette.length];
-    state.categories.push({id,name,color,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+    state.categories.push({id,name,color,workspaceId:currentWorkspaceId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
     setCategoryPicker(picker,id);
     scheduleSave();
     renderCategories();
@@ -3207,11 +3248,32 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
     for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),other=d.getMonth()!==m;out+='<button type="button" data-inline-date="'+iso+'" class="'+(other?"other ":"")+(iso===today?"today ":"")+(iso===selected?"selected":"")+'">'+d.getDate()+'</button>'}
     host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{setTaskInlineDate(btn.dataset.inlineDate);setTaskInlinePanel("")}));
   }
+  function commitTaskInlineCategory(){
+    const field=$("taskInlineCategory");if(!field)return;
+    const name=String(field.value||"").trim();
+    commitTaskHistory();
+    if(!name){
+      setCategoryPicker("taskCategory","inbox");
+    }else{
+      const existing=categoryByName(name);
+      if(existing){
+        setCategoryPicker("taskCategory",existing.id);
+      }else{
+        const picker=$("taskCategory"),input=picker?.querySelector(".categoryPickerInput");
+        if(input){
+          input.value=name;
+          createInlineCategory(picker);
+        }
+      }
+    }
+    syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory();
+    if(editingTaskId)persistOpenTask(false);
+  }
   function syncTaskInlineForm(){
     const date=$("taskDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
     $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartTabValue").textContent=start||"09:00";$("taskInlineEndTabValue").textContent=end||"10:00";
     const reminderOn=$("taskTimeButton").dataset.reminderActive==="1";$("taskInlineReminderToggle").checked=reminderOn;$("taskInlineReminderOptions").classList.toggle("hidden",!reminderOn);$("taskInlineReminderSelect").value=$("taskReminder").value||"at";$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
-    const cat=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=cat==="inbox"?"":cat;$("taskInlineTags").value=$("taskTags").value||"";
+    const categoryId=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=categoryId==="inbox"?"":catName(categoryId);$("taskInlineTags").value=$("taskTags").value||"";
     const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
   }
   function assistantStatusLabel(status){
@@ -3866,7 +3928,10 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
   $("taskInlineReminderSelect").addEventListener("change",()=>{commitTaskHistory();$("taskReminder").value=$("taskInlineReminderSelect").value;$("taskTimeButton").dataset.reminderActive="1";syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
   $("taskInlineRecurrence").addEventListener("change",()=>{commitTaskHistory();$("taskRecurrence").value=$("taskInlineRecurrence").value;commitTaskHistory()});
   $("taskInlinePriority").addEventListener("change",()=>{commitTaskHistory();$("taskPriority").value=$("taskInlinePriority").value;commitTaskHistory()});
-  $("taskInlineCategory").addEventListener("change",()=>{commitTaskHistory();setCategoryPicker("taskCategory",$("taskInlineCategory").value.trim()||"inbox");commitTaskHistory()});
+  $("taskInlineCategory").addEventListener("change",commitTaskInlineCategory);
+  $("taskInlineCategory").addEventListener("blur",commitTaskInlineCategory);
+  $("taskInlineCategory").addEventListener("paste",()=>setTimeout(commitTaskInlineCategory,0));
+  $("taskInlineCategory").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitTaskInlineCategory();e.currentTarget.blur()}});
   $("taskInlineTags").addEventListener("change",()=>{commitTaskHistory();$("taskTags").value=$("taskInlineTags").value;commitTaskHistory()});
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
   $("assistantTaskStatus").addEventListener("click",()=>{
