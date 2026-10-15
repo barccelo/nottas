@@ -568,45 +568,44 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
 #assistantTaskStatus,#assistantTaskStatus:disabled{border:0!important;outline:0!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;background-clip:padding-box;-webkit-tap-highlight-color:transparent;line-height:1.2;font-size:11px;font-weight:700}
 #assistantTaskStatus:focus-visible{box-shadow:0 0 0 2px rgba(0,122,255,.35)!important}
 
-/* Task editor dock + keyboard-safe content */
+/* Task editor bottom bar: pinned to screen, lifted only by the IME */
 #editorOverlay.taskEditorMode .editorSheet{
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-}
-#editorOverlay.taskEditorMode .sheetHeader{flex:0 0 auto}
-#editorOverlay.taskEditorMode #taskForm{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  height:auto!important;
-  overflow:hidden!important;
-}
-#editorOverlay.taskEditorMode #taskForm>.card{
-  flex:1 1 auto!important;
-  min-height:0!important;
+  display:block!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
-  overscroll-behavior:contain;
-  padding-bottom:14px!important;
-  scroll-padding-bottom:18px;
+  height:var(--vv-height,100vh)!important;
+  max-height:var(--vv-height,100vh)!important;
+}
+#editorOverlay.taskEditorMode #taskForm{
+  display:block!important;
+  min-height:calc(var(--vv-height,100vh) - 145px)!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+#editorOverlay.taskEditorMode #taskForm>.card{
+  overflow:visible!important;
+  min-height:0!important;
+  padding-bottom:calc(76px + var(--ime-offset,0px))!important;
+  scroll-margin-bottom:calc(76px + var(--ime-offset,0px));
 }
 #editorOverlay.taskEditorMode #taskBottomBar{
-  position:relative!important;
-  left:auto!important;
+  position:fixed!important;
+  left:50%!important;
   right:auto!important;
-  bottom:auto!important;
-  transform:none!important;
-  width:calc(100% + 36px)!important;
-  margin:0 -18px calc(-1 * env(safe-area-inset-bottom))!important;
-  flex:0 0 calc(58px + env(safe-area-inset-bottom));
-  z-index:70;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:min(760px,100%)!important;
+  margin:0!important;
+  height:calc(58px + env(safe-area-inset-bottom))!important;
+  flex:none!important;
+  z-index:90!important;
 }
 body.imeVisible #editorOverlay.taskEditorMode .editorSheet{
-  height:var(--keyboard-available-height,100vh)!important;
-  max-height:var(--keyboard-available-height,100vh)!important;
+  height:var(--vv-height,100vh)!important;
+  max-height:var(--vv-height,100vh)!important;
 }
 body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
-  bottom:auto!important;
+  bottom:var(--ime-offset,0px)!important;
 }
 </style>
 </head>
@@ -1289,8 +1288,14 @@ body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
     document.documentElement.style.setProperty("--ime-offset",value+"px");
     const availableHeight=Math.max(180,stableViewportHeight-Math.min(cssPx,stableViewportHeight-180));
     document.documentElement.style.setProperty("--keyboard-available-height",availableHeight+"px");
-    if(value>0&&($("quickOverlay")?.classList.contains("show")||$("timeOverlay")?.classList.contains("show"))){
-      setTimeout(()=>{const focused=document.activeElement;if(focused?.matches?.("input,textarea"))focused.scrollIntoView?.({block:"nearest"})},90);
+    if(value>0&&($("quickOverlay")?.classList.contains("show")||$("timeOverlay")?.classList.contains("show")||$("editorOverlay")?.classList.contains("show"))){
+      setTimeout(()=>{
+        const focused=document.activeElement;
+        if(focused?.matches?.("input,textarea,[contenteditable='true']")){
+          const visibleBottom=stableViewportHeight-value-68,r=focused.getBoundingClientRect();
+          if(r.bottom>visibleBottom||r.top<0)focused.scrollIntoView?.({block:"center",behavior:"smooth"});
+        }
+      },90);
     }
     document.body.classList.toggle("imeVisible",value>0);
     document.body.classList.remove("keyboardOpen");
