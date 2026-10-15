@@ -23,59 +23,56 @@ object ReminderScheduler {
         return try {
             val previous = readItems(context)
             val input = JSONArray(json)
-            val activeIds = mutableSetOf<String>()
+            val activeTaskIds = mutableSetOf<String>()
 
             for (i in 0 until input.length()) {
                 val item = input.optJSONObject(i) ?: continue
-                val id = item.optString("id").trim()
-                if (id.isNotEmpty()) activeIds.add(id)
+                val taskId = item.optString("id").trim()
+                if (taskId.isNotEmpty()) activeTaskIds.add(taskId)
             }
 
-            val previousKeys = previous.keys()
-            while (previousKeys.hasNext()) {
-                cancelAlarm(context, previousKeys.next())
-            }
+            val previousKeys = mutableListOf<String>()
+            previous.keys().forEach { previousKeys.add(it) }
+            previousKeys.forEach { cancelAlarm(context, it) }
 
             val stored = JSONObject()
             val now = System.currentTimeMillis()
 
             for (i in 0 until input.length()) {
                 val item = input.optJSONObject(i) ?: continue
-                val id = item.optString("id").trim()
+                val taskId = item.optString("id").trim()
+                val alarmId = item.optString("alarmId").trim().ifEmpty { taskId }
                 val text = item.optString("text").trim()
                 val at = item.optLong("at", 0L)
-                if (id.isEmpty() || text.isEmpty()) continue
+                if (taskId.isEmpty() || alarmId.isEmpty() || text.isEmpty() || at <= now) continue
 
-                val old = previous.optJSONObject(id)
-                val snoozedAt = if (old?.optBoolean("snoozed", false) == true) {
-                    old.optLong("at", 0L)
-                } else {
-                    0L
-                }
-
-                val targetAt = when {
-                    snoozedAt > now -> snoozedAt
-                    at > now -> at
-                    else -> 0L
-                }
-                if (targetAt <= now) continue
-
-                val snoozed = snoozedAt > now
                 stored.put(
-                    id,
+                    alarmId,
                     JSONObject()
+                        .put("taskId", taskId)
                         .put("text", text)
-                        .put("at", targetAt)
-                        .put("snoozed", snoozed)
+                        .put("at", at)
+                        .put("snoozed", false)
                 )
-                scheduleAlarm(context, id, text, targetAt)
+                scheduleAlarm(context, alarmId, taskId, text, at)
             }
 
-            // Any item no longer present in the live task set is intentionally discarded.
-            val staleKeys = previous.keys()
-            while (staleKeys.hasNext()) {
-                val id = staleKeys.next()
-                if (!activeIds.contains(id)) cancelNotification(context, id)
+            // A snoozed reminder is independent from the event's other future alerts.
+            previousKeys.forEach { alarmId ->
+                val old = previous.optJSONObject(alarmId) ?: return@forEach
+                if (!old.optBoolean("snoozed", false)) return@forEach
+                val taskId = old.optString("taskId", alarmId.substringBefore("::")).trim()
+                val text = old.optString("text").trim()
+                val at = old.optLong("at", 0L)
+                if (taskId.isEmpty() || text.isEmpty() || at <= now || !activeTaskIds.contains(taskId)) return@forEach
+                stored.put(alarmId, old)
+                scheduleAlarm(context, alarmId, taskId, text, at)
+            }
+
+            previousKeys.forEach { alarmId ->
+                val old = previous.optJSONObject(alarmId)
+                val taskId = old?.optString("taskId", alarmId.substringBefore("::"))?.trim().orEmpty()
+                if (taskId.isNotEmpty() && !activeTaskIds.contains(taskId)) cancelNotification(context, taskId)
             }
 
             saveItems(context, stored)
@@ -90,98 +87,108 @@ object ReminderScheduler {
             val items = readItems(context)
             val now = System.currentTimeMillis()
             val cleaned = JSONObject()
-            val keys = items.keys()
+            val keys = mutableListOf<String>()
+            items.keys().forEach { keys.add(it) }
 
-            while (keys.hasNext()) {
-                val id = keys.next()
-                val item = items.optJSONObject(id) ?: continue
+            keys.forEach { alarmId ->
+                val item = items.optJSONObject(alarmId) ?: return@forEach
+                val taskId = item.optString("taskId", alarmId.substringBefore("::")).trim()
                 val text = item.optString("text").trim()
                 val at = item.optLong("at", 0L)
-                if (text.isNotEmpty() && at > now) {
-                    cleaned.put(id, item)
-                    scheduleAlarm(context, id, text, at)
+                if (taskId.isNotEmpty() && text.isNotEmpty() && at > now) {
+                    cleaned.put(alarmId, item)
+                    scheduleAlarm(context, alarmId, taskId, text, at)
                 }
             }
-
             saveItems(context, cleaned)
         } catch (_: Throwable) {
         }
     }
 
     @Synchronized
-    fun claimDueGroup(context: Context, triggerId: String): JSONArray {
+    fun claimDueGroup(context: Context, triggerAlarmId: String): JSONArray {
         val items = readItems(context)
-        val trigger = items.optJSONObject(triggerId) ?: return JSONArray()
+        val trigger = items.optJSONObject(triggerAlarmId) ?: return JSONArray()
         val triggerAt = trigger.optLong("at", 0L)
         if (triggerAt <= 0L) return JSONArray()
 
         val group = JSONArray()
-        val claimedIds = mutableListOf<String>()
-        val keys = items.keys()
+        val claimedAlarmIds = mutableListOf<String>()
+        val keys = mutableListOf<String>()
+        items.keys().forEach { keys.add(it) }
 
-        while (keys.hasNext()) {
-            val id = keys.next()
-            val item = items.optJSONObject(id) ?: continue
+        keys.forEach { alarmId ->
+            val item = items.optJSONObject(alarmId) ?: return@forEach
             val at = item.optLong("at", 0L)
-            if (abs(at - triggerAt) > 1_000L) continue
-
+            if (abs(at - triggerAt) > 1_000L) return@forEach
+            val taskId = item.optString("taskId", alarmId.substringBefore("::")).trim()
             val text = item.optString("text").trim()
-            if (text.isEmpty()) continue
-
+            if (taskId.isEmpty() || text.isEmpty()) return@forEach
             group.put(
                 JSONObject()
-                    .put("id", id)
+                    .put("id", taskId)
+                    .put("alarmId", alarmId)
                     .put("text", text)
                     .put("at", at)
                     .put("snoozed", item.optBoolean("snoozed", false))
             )
-            claimedIds.add(id)
+            claimedAlarmIds.add(alarmId)
         }
 
-        if (claimedIds.isEmpty()) return JSONArray()
-
-        claimedIds.forEach { id ->
-            cancelAlarm(context, id)
-            items.remove(id)
+        if (claimedAlarmIds.isEmpty()) return JSONArray()
+        claimedAlarmIds.forEach { alarmId ->
+            cancelAlarm(context, alarmId)
+            items.remove(alarmId)
         }
         saveItems(context, items)
         return group
     }
 
-    fun snooze(context: Context, id: String, text: String, minutes: Int) {
+    fun snooze(context: Context, taskId: String, text: String, minutes: Int) {
         try {
             val safeMinutes = minutes.coerceIn(1, 120)
             val at = System.currentTimeMillis() + safeMinutes * 60_000L
-            cancelAlarm(context, id)
-            cancelNotification(context, id)
+            val alarmId = taskId + "::snooze"
+            cancelAlarm(context, alarmId)
+            cancelNotification(context, taskId)
 
             val items = readItems(context)
             items.put(
-                id,
+                alarmId,
                 JSONObject()
+                    .put("taskId", taskId)
                     .put("text", text)
                     .put("at", at)
                     .put("snoozed", true)
             )
             saveItems(context, items)
-            scheduleAlarm(context, id, text, at)
+            scheduleAlarm(context, alarmId, taskId, text, at)
         } catch (_: Throwable) {
         }
     }
 
-    fun remove(context: Context, id: String) {
+    fun remove(context: Context, taskId: String) {
         try {
-            cancelAlarm(context, id)
             val items = readItems(context)
-            items.remove(id)
+            val keys = mutableListOf<String>()
+            items.keys().forEach { keys.add(it) }
+            keys.forEach { alarmId ->
+                val item = items.optJSONObject(alarmId)
+                val storedTaskId = item?.optString("taskId", alarmId.substringBefore("::"))?.trim().orEmpty()
+                if (storedTaskId == taskId || alarmId == taskId) {
+                    cancelAlarm(context, alarmId)
+                    items.remove(alarmId)
+                }
+            }
             saveItems(context, items)
+            cancelNotification(context, taskId)
         } catch (_: Throwable) {
         }
     }
 
-    fun cancelNotification(context: Context, id: String) {
+    fun cancelNotification(context: Context, taskId: String) {
         try {
-            context.getSystemService(NotificationManager::class.java).cancel(id.hashCode())
+            context.getSystemService(NotificationManager::class.java).cancel(taskId.hashCode())
         } catch (_: Throwable) {
         }
     }
@@ -204,63 +211,38 @@ object ReminderScheduler {
         }
     }
 
-    private fun scheduleAlarm(context: Context, id: String, text: String, at: Long) {
+    private fun scheduleAlarm(context: Context, alarmId: String, taskId: String, text: String, at: Long) {
         val manager = context.getSystemService(AlarmManager::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            id.hashCode(),
+            alarmId.hashCode(),
             Intent(context, ReminderReceiver::class.java)
                 .setAction(ACTION_REMINDER)
-                .putExtra("task_id", id)
+                .putExtra("alarm_id", alarmId)
+                .putExtra("task_id", taskId)
                 .putExtra("task_text", text),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         try {
             when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                    manager.canScheduleExactAlarms() -> {
-                    manager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        at,
-                        pendingIntent
-                    )
-                }
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                    manager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        at,
-                        pendingIntent
-                    )
-                }
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
-                    manager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        at,
-                        pendingIntent
-                    )
-                }
-                else -> {
-                    manager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        at,
-                        pendingIntent
-                    )
-                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && manager.canScheduleExactAlarms() ->
+                    manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+                    manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
+                    manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
+                else -> manager.setExact(AlarmManager.RTC_WAKEUP, at, pendingIntent)
             }
         } catch (_: SecurityException) {
-            manager.setAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                at,
-                pendingIntent
-            )
+            manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pendingIntent)
         }
     }
 
-    private fun cancelAlarm(context: Context, id: String) {
+    private fun cancelAlarm(context: Context, alarmId: String) {
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            id.hashCode(),
+            alarmId.hashCode(),
             Intent(context, ReminderReceiver::class.java).setAction(ACTION_REMINDER),
             PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
         ) ?: return
@@ -341,8 +323,8 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != ReminderScheduler.ACTION_REMINDER) return
 
-        val triggerId = intent.getStringExtra("task_id") ?: return
-        val group = ReminderScheduler.claimDueGroup(context, triggerId)
+        val triggerAlarmId = intent.getStringExtra("alarm_id") ?: intent.getStringExtra("task_id") ?: return
+        val group = ReminderScheduler.claimDueGroup(context, triggerAlarmId)
         if (group.length() == 0) return
 
         try {
