@@ -615,6 +615,48 @@ body.imeVisible #editorOverlay.taskEditorMode #taskForm{
 body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
   bottom:0!important;
 }
+
+/* Keep-style editor toolbar: viewport anchored, independent from the transformed sheet */
+#editorOverlay.taskEditorMode,
+#editorOverlay.noteEditorMode,
+body.imeVisible #editorOverlay.taskEditorMode,
+body.imeVisible #editorOverlay.noteEditorMode{
+  height:var(--vv-height,100vh)!important;
+  max-height:var(--vv-height,100vh)!important;
+}
+#editorOverlay.taskEditorMode .editorSheet,
+#editorOverlay.noteEditorMode .editorSheet,
+body.imeVisible #editorOverlay.taskEditorMode .editorSheet,
+body.imeVisible #editorOverlay.noteEditorMode .editorSheet{
+  height:var(--vv-height,100vh)!important;
+  max-height:var(--vv-height,100vh)!important;
+}
+#editorOverlay #taskBottomBar,
+#editorOverlay #noteBottomBar{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  transform:translateX(-50%)!important;
+  width:min(760px,100%)!important;
+  margin:0!important;
+  z-index:120!important;
+  transition:bottom .16s cubic-bezier(.2,.8,.2,1)!important;
+}
+#editorOverlay:not(.taskEditorMode) #taskBottomBar{display:none!important}
+#editorOverlay:not(.noteEditorMode) #noteBottomBar{display:none!important}
+body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar,
+body.imeVisible #editorOverlay.noteEditorMode #noteBottomBar{
+  bottom:var(--ime-offset,0px)!important;
+}
+#editorOverlay.taskEditorMode .editorSheet,
+#editorOverlay.noteEditorMode .editorSheet{
+  scroll-padding-bottom:calc(84px + var(--ime-offset,0px))!important;
+}
+#editorOverlay.taskEditorMode #taskForm>.card,
+#editorOverlay.noteEditorMode #noteForm>.card{
+  padding-bottom:84px!important;
+}
 </style>
 </head>
 <body>
@@ -1269,6 +1311,11 @@ body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
   const UI_KEY="miniapp_ui_v4";
   const ASSISTANT_AUTH_KEY="nottas_assistant_auth_v1";
   const $=id=>document.getElementById(id);
+  function mountEditorBottomBars(){
+    const overlay=$("editorOverlay");if(!overlay)return;
+    ["taskBottomBar","noteBottomBar"].forEach(id=>{const bar=$(id);if(bar&&bar.parentElement!==overlay)overlay.appendChild(bar)});
+  }
+  mountEditorBottomBars();
   const palette=["#8e8e93","#1677ff","#7c4dff","#00897b","#ef6c00","#c62828","#6d4c41","#ad1457","#2e7d32"];
   const iconTrash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>';
   const iconEdit='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>';
@@ -1300,7 +1347,7 @@ body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
       setTimeout(()=>{
         const focused=document.activeElement;
         if(focused?.matches?.("input,textarea,[contenteditable='true']")){
-          const vv=window.visualViewport,visibleBottom=(vv?.height||window.innerHeight||stableViewportHeight)-68,r=focused.getBoundingClientRect();
+          const visibleBottom=stableViewportHeight-value-76,r=focused.getBoundingClientRect();
           if(r.bottom>visibleBottom||r.top<0)focused.scrollIntoView?.({block:"nearest",behavior:"smooth"});
         }
       },90);

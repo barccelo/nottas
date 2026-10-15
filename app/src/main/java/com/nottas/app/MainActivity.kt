@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
+import android.view.WindowInsetsAnimation
 import android.view.WindowManager
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -138,6 +139,29 @@ class MainActivity : Activity() {
                 )
             }
             insets
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            root.setWindowInsetsAnimationCallback(
+                object : WindowInsetsAnimation.Callback(
+                    WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE
+                ) {
+                    override fun onProgress(
+                        insets: WindowInsets,
+                        runningAnimations: MutableList<WindowInsetsAnimation>
+                    ): WindowInsets {
+                        val bars = insets.getInsets(WindowInsets.Type.systemBars())
+                        val ime = insets.getInsets(WindowInsets.Type.ime())
+                        val imeOffset = (ime.bottom - bars.bottom).coerceAtLeast(0)
+                        if (::webView.isInitialized) {
+                            webView.evaluateJavascript(
+                                "window.NottasSetImeOffset && window.NottasSetImeOffset(" + imeOffset + ")",
+                                null
+                            )
+                        }
+                        return insets
+                    }
+                }
+            )
         }
         root.requestApplyInsets()
     }
