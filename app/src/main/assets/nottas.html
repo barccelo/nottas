@@ -600,9 +600,17 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
   flex:none!important;
   z-index:90!important;
 }
+body.imeVisible #editorOverlay.taskEditorMode{
+  height:var(--keyboard-available-height,100vh)!important;
+  max-height:var(--keyboard-available-height,100vh)!important;
+}
 body.imeVisible #editorOverlay.taskEditorMode .editorSheet{
-  height:var(--vv-height,100vh)!important;
-  max-height:var(--vv-height,100vh)!important;
+  height:100%!important;
+  max-height:100%!important;
+  min-height:0!important;
+}
+body.imeVisible #editorOverlay.taskEditorMode #taskForm{
+  min-height:0!important;
 }
 body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
   bottom:0!important;
