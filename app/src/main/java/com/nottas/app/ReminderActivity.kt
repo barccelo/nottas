@@ -117,6 +117,21 @@ class ReminderActivity : Activity() {
             )
         )
 
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val back = TextView(this).apply {
+            text = "‹"
+            textSize = 42f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(29, 29, 31))
+            contentDescription = "Volver sin realizar ninguna acción"
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { finishQuietly() }
+        }
+        header.addView(back, LinearLayout.LayoutParams(dp(44), dp(46)))
         val brand = TextView(this).apply {
             text = "Nottas"
             textSize = 17f
@@ -124,8 +139,9 @@ class ReminderActivity : Activity() {
             typeface = Typeface.create("sans", Typeface.BOLD)
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
         }
+        header.addView(brand, LinearLayout.LayoutParams(0, dp(46), 1f))
         content.addView(
-            brand,
+            header,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(46)
@@ -556,6 +572,21 @@ class ReminderActivity : Activity() {
             )
         )
 
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val back = TextView(this).apply {
+            text = "‹"
+            textSize = 42f
+            gravity = Gravity.CENTER
+            setTextColor(Color.rgb(29, 29, 31))
+            contentDescription = "Volver sin realizar ninguna acción"
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { finishQuietly() }
+        }
+        header.addView(back, LinearLayout.LayoutParams(dp(44), dp(54)))
         val brand = TextView(this).apply {
             text = "Nottas"
             textSize = 17f
@@ -563,8 +594,9 @@ class ReminderActivity : Activity() {
             gravity = Gravity.START or Gravity.CENTER_VERTICAL
             typeface = Typeface.create("sans", Typeface.BOLD)
         }
+        header.addView(brand, LinearLayout.LayoutParams(0, dp(54), 1f))
         content.addView(
-            brand,
+            header,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(54)
@@ -619,6 +651,34 @@ class ReminderActivity : Activity() {
             )
         )
 
+        fun gestureHint(text: String, gravityValue: Int, width: Int, height: Int, margin: Int = 0): TextView {
+            return TextView(this).apply {
+                this.text = text
+                textSize = 12f
+                gravity = Gravity.CENTER
+                setTextColor(Color.rgb(142, 142, 147))
+                alpha = 0f
+                visibility = View.VISIBLE
+                typeface = Typeface.create("sans", Typeface.NORMAL)
+                gestureHost.addView(
+                    this,
+                    FrameLayout.LayoutParams(dp(width), dp(height), gravityValue).apply {
+                        when {
+                            gravityValue and Gravity.TOP == Gravity.TOP -> topMargin = dp(margin)
+                            gravityValue and Gravity.BOTTOM == Gravity.BOTTOM -> bottomMargin = dp(margin)
+                            gravityValue and Gravity.START == Gravity.START -> marginStart = dp(margin)
+                            gravityValue and Gravity.END == Gravity.END -> marginEnd = dp(margin)
+                        }
+                    }
+                )
+            }
+        }
+
+        val topHint = gestureHint("↑  Completar", Gravity.TOP or Gravity.CENTER_HORIZONTAL, 118, 30, 2)
+        val bottomHint = gestureHint("↓  Posponer", Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 118, 30, 2)
+        val leftHint = gestureHint("←  Completar", Gravity.START or Gravity.CENTER_VERTICAL, 104, 30, 0)
+        val rightHint = gestureHint("Completar  →", Gravity.END or Gravity.CENTER_VERTICAL, 104, 30, 0)
+
         val knob = FrameLayout(this).apply {
             background = circularBackground(Color.WHITE, Color.rgb(209, 209, 214), dp(1))
             elevation = dp(7).toFloat()
@@ -655,7 +715,7 @@ class ReminderActivity : Activity() {
             FrameLayout.LayoutParams(knobSize, knobSize, Gravity.CENTER)
         )
 
-        bindActionGesture(knob, knobSymbol, knobIcon)
+        bindActionGesture(knob, knobSymbol, knobIcon, listOf(topHint, bottomHint, leftHint, rightHint))
 
         val snoozeRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -732,7 +792,8 @@ class ReminderActivity : Activity() {
     private fun bindActionGesture(
         knob: FrameLayout,
         symbol: TextView,
-        snoozeIcon: ImageView
+        snoozeIcon: ImageView,
+        hints: List<TextView>
     ) {
         fun dp(value: Int): Int =
             (value * resources.displayMetrics.density).roundToInt()
@@ -764,6 +825,23 @@ class ReminderActivity : Activity() {
             snoozeIcon.visibility = View.VISIBLE
         }
 
+        fun showHints(selected: Int = 0) {
+            hints.forEachIndexed { index, hint ->
+                hint.animate().cancel()
+                hint.animate()
+                    .alpha(if (selected == 0) 0.46f else if (selected == index + 1) 0.92f else 0.22f)
+                    .setDuration(80)
+                    .start()
+            }
+        }
+
+        fun hideHints() {
+            hints.forEach { hint ->
+                hint.animate().cancel()
+                hint.animate().alpha(0f).setDuration(110).start()
+            }
+        }
+
         fun resetPosition(view: View) {
             view.animate()
                 .translationX(0f)
@@ -771,6 +849,7 @@ class ReminderActivity : Activity() {
                 .setDuration(150)
                 .start()
             showDefaultIcon()
+            hideHints()
         }
 
         knob.setOnTouchListener { view, event ->
@@ -781,6 +860,7 @@ class ReminderActivity : Activity() {
                     direction = 0
                     view.animate().cancel()
                     showDefaultIcon()
+                    showHints()
                     true
                 }
 
@@ -798,6 +878,14 @@ class ReminderActivity : Activity() {
                         }
 
                         if (direction == 2) showSnoozeIcon() else showCompleteIcon()
+                        val hintIndex = when (direction) {
+                            1 -> 1
+                            2 -> 2
+                            3 -> 3
+                            4 -> 4
+                            else -> 0
+                        }
+                        showHints(hintIndex)
                         view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     }
 
@@ -952,6 +1040,6 @@ class ReminderActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // A reminder must be completed or snoozed; Back intentionally does nothing.
+        finishQuietly()
     }
 }

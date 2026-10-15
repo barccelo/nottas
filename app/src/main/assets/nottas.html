@@ -681,6 +681,26 @@ html[data-theme="dark"] .taskReminderChoice{color:#f5f5f7;border-color:#38383a}
 html[data-theme="dark"] .taskCustomReminderPanel{border-color:#38383a}
 html[data-theme="dark"] .taskCustomReminderSelection{background:rgba(118,118,128,.20)}
 html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
+
+/* Refined task/event icons and category suggestions */
+.taskInlineIcon{width:22px;height:22px;flex:0 0 22px;display:grid;place-items:center;color:#8e8e93}
+.taskInlineIcon svg,.taskInlineArrow svg,.taskInlineMiniBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.taskInlineArrow{display:grid;place-items:center;color:#8e8e93}
+.taskInlineArrow svg{width:17px;height:17px}
+.taskInlineMiniBtn{display:grid;place-items:center}
+.taskInlineMiniBtn svg{width:17px;height:17px}
+.taskInlineCategoryRow{overflow:visible;position:relative;z-index:6}
+.taskInlineCategoryEntry{position:relative;min-width:0;max-width:62%;width:62%;display:flex;justify-content:flex-end}
+.taskInlineCategoryEntry .taskInlineText{width:100%;max-width:none}
+.taskInlineCategorySuggestions{position:absolute;top:39px;right:0;width:min(260px,78vw);max-height:210px;overflow:auto;background:rgba(255,255,255,.98);border:1px solid #e5e5ea;border-radius:13px;box-shadow:0 10px 28px rgba(0,0,0,.12);padding:5px;z-index:40;text-align:left}
+.taskInlineCategorySuggestion{width:100%;min-height:38px;border:0;background:transparent;color:#1d1d1f;border-radius:9px;display:flex;align-items:center;gap:9px;padding:7px 9px;text-align:left;font:inherit;font-size:12px}
+.taskInlineCategorySuggestion:active{background:#f2f2f7}
+.taskInlineCategorySuggestionDot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.taskInlineCategorySuggestionCreate{color:#007aff}
+.taskInlineCategoryHint{padding:6px 9px 4px;color:#8e8e93;font-size:10px}
+html[data-theme="dark"] .taskInlineCategorySuggestions{background:rgba(36,36,38,.98);border-color:#38383a;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+html[data-theme="dark"] .taskInlineCategorySuggestion{color:#f5f5f7}
+html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
 </style>
 </head>
 <body>
@@ -944,17 +964,17 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
 
         <div id="taskInlineForm" class="taskInlineForm">
           <div class="taskInlineRow taskInlineToggleRow">
-            <div class="taskInlineRowMain"><span class="taskInlineIcon">◷</span><span>Todo el día</span></div>
+            <div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.3"></circle><path d="M12 7.2v5l3.2 1.9"></path></svg></span><span>Todo el día</span></div>
             <label class="iosSwitch"><input id="taskAllDayToggle" type="checkbox"><span aria-hidden="true"></span></label>
           </div>
           <div class="taskInlineSchedule">
             <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Fecha</span><strong id="taskInlineDateText">Sin fecha</strong></button>
             <button id="taskInlineStartBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Inicio</span><strong id="taskInlineStartText">Sin hora</strong></button>
-            <span class="taskInlineArrow">→</span>
+            <span class="taskInlineArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h13M14 8l4 4-4 4"></path></svg></span>
             <button id="taskInlineEndBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Fin</span><strong id="taskInlineEndText">—</strong></button>
           </div>
           <div id="taskInlineDatePanel" class="taskInlineExpand hidden">
-            <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior">‹</button><strong id="taskInlineMonthLabel"></strong><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente">›</button></div>
+            <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"></path></svg></button><strong id="taskInlineMonthLabel"></strong><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"></path></svg></button></div>
             <div class="taskInlineWeekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
             <div id="taskInlineCalendarGrid" class="taskInlineCalendarGrid"></div>
             <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button></div>
@@ -973,7 +993,7 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
             <div class="taskInlineQuickRow"><button type="button" data-inline-duration="30">30 min</button><button type="button" data-inline-duration="60">1 h</button><button type="button" data-inline-duration="90">1 h 30</button><button type="button" data-inline-duration="120">2 h</button></div>
           </div>
           <button id="taskInlineReminderRow" class="taskInlineRow taskInlineButtonRow" type="button">
-            <div class="taskInlineRowMain"><span class="taskInlineIcon">◉</span><span>Recordatorio</span></div>
+            <div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 16.5h9.6l-1.1-1.8V10a3.7 3.7 0 0 0-7.4 0v4.7l-1.1 1.8Z"></path><path d="M10.2 18.2a1.9 1.9 0 0 0 3.6 0"></path></svg></span><span>Recordatorio</span></div>
             <span id="taskInlineReminderSummary" class="taskInlineValue">Sin recordatorio</span>
           </button>
           <div id="taskInlineReminderOptions" class="taskInlineExpand taskReminderPicker hidden">
@@ -995,11 +1015,11 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
               <button id="taskCustomReminderAdd" class="taskCustomReminderAdd" type="button">Añadir alerta</button>
             </div>
           </div>
-          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">↻</span><span>Repetir</span></div><select id="taskInlineRecurrence" class="taskInlineInlineSelect"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></label>
-          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">!</span><span>Prioridad</span></div><select id="taskInlinePriority" class="taskInlineInlineSelect"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></label>
-          <div class="taskInlineRow taskInlineFieldRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">●</span><span>Categoría</span></div><input id="taskInlineCategory" class="taskInlineText" type="text" maxlength="40" placeholder="Sin categoría" autocomplete="off"></div>
-          <div class="taskInlineRow taskInlineFieldRow"><div class="taskInlineRowMain"><span class="taskInlineIcon">#</span><span>Tags</span></div><input id="taskInlineTags" class="taskInlineText" type="text" maxlength="240" placeholder="Añadir"></div>
-          <button id="taskInlineSubtasksToggle" class="taskInlineRow taskInlineButtonRow" type="button"><div class="taskInlineRowMain"><span class="taskInlineIcon">☑</span><span>Subtareas</span></div><span id="taskInlineSubtasksSummary" class="taskInlineValue">Añadir</span></button>
+          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 7H8.8a4.3 4.3 0 0 0-4.1 3"></path><path d="m15.2 4.7 2.3 2.3-2.3 2.3"></path><path d="M6.5 17h8.7a4.3 4.3 0 0 0 4.1-3"></path><path d="m8.8 19.3-2.3-2.3 2.3-2.3"></path></svg></span><span>Repetir</span></div><select id="taskInlineRecurrence" class="taskInlineInlineSelect"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></label>
+          <label class="taskInlineRow"><div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 20V5.3"></path><path d="M6.5 6h9.8l-1.8 3.2 1.8 3.2H6.5"></path></svg></span><span>Prioridad</span></div><select id="taskInlinePriority" class="taskInlineInlineSelect"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></label>
+          <div class="taskInlineRow taskInlineFieldRow taskInlineCategoryRow"><div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.8 7.5h6l1.8 2h8.6v8.2a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2V7.5Z"></path><path d="M3.8 7.5V6.3a2 2 0 0 1 2-2h3.3l1.7 2h7.4a2 2 0 0 1 2 2v1.2"></path></svg></span><span>Categoría</span></div><div class="taskInlineCategoryEntry"><input id="taskInlineCategory" class="taskInlineText" type="text" maxlength="40" placeholder="Sin categoría" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="taskInlineCategorySuggestions"><div id="taskInlineCategorySuggestions" class="taskInlineCategorySuggestions hidden" role="listbox"></div></div></div>
+          <div class="taskInlineRow taskInlineFieldRow"><div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5v5.8L13 19.8l6.8-6.8-8.5-8.5H5.5a1 1 0 0 0-1 1Z"></path><circle cx="8.4" cy="8.4" r="1.1"></circle></svg></span><span>Tags</span></div><input id="taskInlineTags" class="taskInlineText" type="text" maxlength="240" placeholder="Añadir"></div>
+          <button id="taskInlineSubtasksToggle" class="taskInlineRow taskInlineButtonRow" type="button"><div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="5.2" width="4.2" height="4.2" rx="1"></rect><path d="m5.4 7.3 1 1 1.6-1.9"></path><path d="M11.2 7.3h8"></path><rect x="4.2" y="14.6" width="4.2" height="4.2" rx="1"></rect><path d="M11.2 16.7h8"></path></svg></span><span>Subtareas</span></div><span id="taskInlineSubtasksSummary" class="taskInlineValue">Añadir</span></button>
         </div>
 
         <div class="taskContentArea">
@@ -3379,6 +3399,31 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
     for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),other=d.getMonth()!==m;out+='<button type="button" data-inline-date="'+iso+'" class="'+(other?"other ":"")+(iso===today?"today ":"")+(iso===selected?"selected":"")+'">'+d.getDate()+'</button>'}
     host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{setTaskInlineDate(btn.dataset.inlineDate);setTaskInlinePanel("")}));
   }
+  function hideTaskInlineCategorySuggestions(){
+    const host=$("taskInlineCategorySuggestions"),field=$("taskInlineCategory");if(!host||!field)return;
+    host.classList.add("hidden");field.setAttribute("aria-expanded","false");
+  }
+  function renderTaskInlineCategorySuggestions(){
+    const host=$("taskInlineCategorySuggestions"),field=$("taskInlineCategory");if(!host||!field)return;
+    const q=String(field.value||"").trim().toLocaleLowerCase("es");
+    const current=getCategoryPickerValue("taskCategory");
+    let cats=activeCategories().filter(c=>c.id!=="inbox");
+    cats=cats.filter(c=>!q||String(c.name||"").toLocaleLowerCase("es").includes(q)).slice(0,7);
+    const exact=q&&activeCategories().some(c=>String(c.name||"").toLocaleLowerCase("es")===q);
+    let out='<div class="taskInlineCategoryHint">'+(q?"Sugerencias":"Elige una categoría")+'</div>';
+    out+=cats.map(c=>'<button class="taskInlineCategorySuggestion" type="button" role="option" data-task-category-suggestion="'+esc(c.id)+'"><span class="taskInlineCategorySuggestionDot" style="background:'+esc(c.color||"#8e8e93")+'"></span><span>'+esc(c.name)+'</span>'+(c.id===current?'<span style="margin-left:auto;color:#8e8e93">✓</span>':'')+'</button>').join("");
+    if(q&&!exact)out+='<button class="taskInlineCategorySuggestion taskInlineCategorySuggestionCreate" type="button" data-task-category-create="1"><span>＋</span><span>Crear “'+esc(String(field.value||"").trim())+'”</span></button>';
+    if(!cats.length&&!q)out+='<div class="taskInlineCategoryHint">Escribe para crear una nueva.</div>';
+    host.innerHTML=out;
+    host.classList.remove("hidden");field.setAttribute("aria-expanded","true");
+    host.querySelectorAll("[data-task-category-suggestion]").forEach(btn=>btn.addEventListener("pointerdown",e=>e.preventDefault()));
+    host.querySelectorAll("[data-task-category-suggestion]").forEach(btn=>btn.addEventListener("click",()=>{
+      const c=state.categories.find(x=>x.id===btn.dataset.taskCategorySuggestion);if(!c)return;
+      field.value=c.name;setCategoryPicker("taskCategory",c.id);hideTaskInlineCategorySuggestions();syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory();if(editingTaskId)persistOpenTask(false);
+    }));
+    const create=host.querySelector("[data-task-category-create]");
+    if(create){create.addEventListener("pointerdown",e=>e.preventDefault());create.addEventListener("click",()=>{commitTaskInlineCategory();hideTaskInlineCategorySuggestions()})}
+  }
   function commitTaskInlineCategory(){
     const field=$("taskInlineCategory");if(!field)return;
     const name=String(field.value||"").trim();
@@ -3397,7 +3442,7 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
         }
       }
     }
-    syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory();
+    hideTaskInlineCategorySuggestions();syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory();
     if(editingTaskId)persistOpenTask(false);
   }
   const CUSTOM_REMINDER_ROW=44;
@@ -4105,10 +4150,12 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
   $("taskCustomReminderAdd").addEventListener("click",()=>{const minutes=Math.max(1,customReminderAmount)*Math.max(1,customReminderUnit);if(!editorTaskReminders.includes(minutes))setEditorTaskReminders([...editorTaskReminders,minutes]);$("taskCustomReminderPanel").classList.add("hidden");commitTaskHistory()});
   $("taskInlineRecurrence").addEventListener("change",()=>{commitTaskHistory();$("taskRecurrence").value=$("taskInlineRecurrence").value;commitTaskHistory()});
   $("taskInlinePriority").addEventListener("change",()=>{commitTaskHistory();$("taskPriority").value=$("taskInlinePriority").value;commitTaskHistory()});
+  $("taskInlineCategory").addEventListener("focus",renderTaskInlineCategorySuggestions);
+  $("taskInlineCategory").addEventListener("input",renderTaskInlineCategorySuggestions);
   $("taskInlineCategory").addEventListener("change",commitTaskInlineCategory);
-  $("taskInlineCategory").addEventListener("blur",commitTaskInlineCategory);
-  $("taskInlineCategory").addEventListener("paste",()=>setTimeout(commitTaskInlineCategory,0));
-  $("taskInlineCategory").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();commitTaskInlineCategory();e.currentTarget.blur()}});
+  $("taskInlineCategory").addEventListener("blur",()=>setTimeout(()=>{commitTaskInlineCategory();hideTaskInlineCategorySuggestions()},120));
+  $("taskInlineCategory").addEventListener("paste",()=>setTimeout(renderTaskInlineCategorySuggestions,0));
+  $("taskInlineCategory").addEventListener("keydown",e=>{if(e.key==="Escape"){hideTaskInlineCategorySuggestions();e.currentTarget.blur()}else if(e.key==="Enter"){e.preventDefault();commitTaskInlineCategory();e.currentTarget.blur()}});
   $("taskInlineTags").addEventListener("change",()=>{commitTaskHistory();$("taskTags").value=$("taskInlineTags").value;commitTaskHistory()});
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
   $("assistantTaskStatus").addEventListener("click",()=>{
