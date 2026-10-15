@@ -585,8 +585,8 @@ html[data-theme="dark"] .taskInlineWheelEdit{background:transparent;color:#f5f5f
 #editorOverlay.taskEditorMode #taskForm>.card{
   overflow:visible!important;
   min-height:0!important;
-  padding-bottom:calc(76px + var(--ime-offset,0px))!important;
-  scroll-margin-bottom:calc(76px + var(--ime-offset,0px));
+  padding-bottom:76px!important;
+  scroll-margin-bottom:76px;
 }
 #editorOverlay.taskEditorMode #taskBottomBar{
   position:fixed!important;
@@ -605,7 +605,7 @@ body.imeVisible #editorOverlay.taskEditorMode .editorSheet{
   max-height:var(--vv-height,100vh)!important;
 }
 body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
-  bottom:var(--ime-offset,0px)!important;
+  bottom:0!important;
 }
 </style>
 </head>
@@ -1292,8 +1292,8 @@ body.imeVisible #editorOverlay.taskEditorMode #taskBottomBar{
       setTimeout(()=>{
         const focused=document.activeElement;
         if(focused?.matches?.("input,textarea,[contenteditable='true']")){
-          const visibleBottom=stableViewportHeight-value-68,r=focused.getBoundingClientRect();
-          if(r.bottom>visibleBottom||r.top<0)focused.scrollIntoView?.({block:"center",behavior:"smooth"});
+          const vv=window.visualViewport,visibleBottom=(vv?.height||window.innerHeight||stableViewportHeight)-68,r=focused.getBoundingClientRect();
+          if(r.bottom>visibleBottom||r.top<0)focused.scrollIntoView?.({block:"nearest",behavior:"smooth"});
         }
       },90);
     }
