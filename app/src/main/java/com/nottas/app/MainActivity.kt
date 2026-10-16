@@ -255,15 +255,23 @@ class MainActivity : Activity() {
         try {
             val json = contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
                 ?: error("Archivo vacío")
+
+            // Check the exported Nottas structure before handing it to the WebView.
+            // A Promise returned by NottasImportData cannot be checked synchronously
+            // via evaluateJavascript: its callback receives the Promise, not its result.
+            val parsed = org.json.JSONObject(json)
+            if (
+                parsed.optJSONArray("tasks") == null ||
+                parsed.optJSONArray("notes") == null ||
+                parsed.optJSONArray("categories") == null
+            ) {
+                error("El archivo no contiene una copia de Nottas")
+            }
+
             val quoted = org.json.JSONObject.quote(json)
-            webView.evaluateJavascript(
-                "(async()=>{try{return await window.NottasImportData($quoted)}catch(e){return false}})()",
-                { ok ->
-                    if (ok != "true") {
-                        Toast.makeText(this, "El archivo no es válido", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
+            // NottasImportData displays the definitive success/error message after
+            // its asynchronous save finishes. Do not show a premature error toast.
+            webView.evaluateJavascript("window.NottasImportData($quoted);", null)
         } catch (_: Throwable) {
             Toast.makeText(this, "El archivo no es válido", Toast.LENGTH_SHORT).show()
         }

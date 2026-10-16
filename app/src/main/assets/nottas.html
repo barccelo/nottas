@@ -4284,6 +4284,10 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   window.NottasImportData=async function(input){
     try{
       const parsed=typeof input==="string"?JSON.parse(input):input;
+      if(!parsed||typeof parsed!=="object"||Array.isArray(parsed)||
+         !Array.isArray(parsed.tasks)||!Array.isArray(parsed.notes)||!Array.isArray(parsed.categories)){
+        throw new Error("Estructura de respaldo incompatible");
+      }
       state=normalize(parsed);
       activeCategory="all";
       activeTag="";
