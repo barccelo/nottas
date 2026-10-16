@@ -1,0 +1,27 @@
+# Local Android and Gradle output
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+.cxx/
+.externalNativeBuild/
+
+# Signing material must never be committed
+.local-signing/
+signing/
+keystore/
+*.jks
+*.keystore
+*.p12
+*.pfx
+signing.properties
+keystore.properties
+key.properties
+.env
+.env.*
+!.env.example
+
+# Generated APKs
+*.apk
+*.aab

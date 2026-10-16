@@ -27,6 +27,20 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
+      - name: Require private signing secrets
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.NOTTAS_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.NOTTAS_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.NOTTAS_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.NOTTAS_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$KEYSTORE_B64" || -z "$STORE_PASSWORD" || -z "$KEY_ALIAS" || -z "$KEY_PASSWORD" ]]; then
+            echo "::error::Missing Nottas signing secrets. See SIGNING.md; no APK will be published."
+            exit 1
+          fi
+
       - name: Install Android SDK
         shell: bash
         run: |
@@ -35,18 +49,46 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Build debug APK with existing stable signing key
-        run: gradle :app:assembleDebug --stacktrace
+      - name: Build unsigned release APK
+        run: gradle :app:assembleRelease --stacktrace
 
-      - name: Verify APK signature
+      - name: Sign APK with private key and verify certificate
+        shell: bash
+        env:
+          NOTTAS_KEYSTORE_BASE64: ${{ secrets.NOTTAS_KEYSTORE_BASE64 }}
+          NOTTAS_KEYSTORE_PASSWORD: ${{ secrets.NOTTAS_KEYSTORE_PASSWORD }}
+          NOTTAS_KEY_ALIAS: ${{ secrets.NOTTAS_KEY_ALIAS }}
+          NOTTAS_KEY_PASSWORD: ${{ secrets.NOTTAS_KEY_PASSWORD }}
         run: |
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/nottas-signing"
+          KEYSTORE="$RUNNER_TEMP/nottas-signing/nottas-release.jks"
+          ALIGNED="$RUNNER_TEMP/nottas-aligned.apk"
+          SIGNED="app/build/outputs/apk/release/Nottas-release-signed.apk"
+          UNSIGNED="app/build/outputs/apk/release/app-release-unsigned.apk"
+          trap 'rm -f "$KEYSTORE" "$ALIGNED"' EXIT
 
-      - name: Upload APK to Actions
+          test -f "$UNSIGNED"
+          printf '%s' "$NOTTAS_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+          test -s "$KEYSTORE"
+
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f -p 4 "$UNSIGNED" "$ALIGNED"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-key-alias "$NOTTAS_KEY_ALIAS" \
+            --ks-pass env:NOTTAS_KEYSTORE_PASSWORD \
+            --key-pass env:NOTTAS_KEY_PASSWORD \
+            --out "$SIGNED" \
+            "$ALIGNED"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$SIGNED"
+
+      - name: Upload signed APK to Actions
         uses: actions/upload-artifact@v4
         with:
-          name: Nottas-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Nottas-release-signed-apk
+          path: app/build/outputs/apk/release/Nottas-release-signed.apk
+          if-no-files-found: error
 
       - name: Read Android app version
         id: version
@@ -61,7 +103,7 @@ jobs:
           echo "code=$version_code" >> "$GITHUB_OUTPUT"
           echo "tag=v$version_name" >> "$GITHUB_OUTPUT"
 
-      - name: Publish new version for Obtainium
+      - name: Publish private-signed APK for Obtainium
         if: github.ref == 'refs/heads/main'
         shell: bash
         env:
@@ -76,10 +118,10 @@ jobs:
             exit 0
           fi
           apk="$RUNNER_TEMP/Nottas-$RELEASE_TAG.apk"
-          cp app/build/outputs/apk/debug/app-debug.apk "$apk"
+          cp app/build/outputs/apk/release/Nottas-release-signed.apk "$apk"
           gh release create "$RELEASE_TAG" "$apk" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "Nottas $VERSION_NAME" \
             --latest \
-            --notes "Nottas $VERSION_NAME (versionCode $VERSION_CODE). APK firmado con la clave estable del proyecto. Para actualizar una instalación existente, ambos APK deben compartir el mismo certificado."
+            --notes "Nottas $VERSION_NAME (versionCode $VERSION_CODE). APK con firma privada permanente. Para instalaciones anteriores a v0.27.3, exporta los datos, reinstala e importa el respaldo."

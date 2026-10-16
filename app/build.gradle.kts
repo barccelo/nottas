@@ -6,27 +6,18 @@ android {
     namespace = "com.nottas.app"
     compileSdk = 36
 
-    signingConfigs {
-        create("stableDebug") {
-            storeFile = rootProject.file("keystore/nottas-debug.keystore")
-            storePassword = "nottasdebug"
-            keyAlias = "nottasdebug"
-            keyPassword = "nottasdebug"
-        }
-    }
-
     defaultConfig {
         applicationId = "com.nottas.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 83
-        versionName = "0.27.2"
+        versionCode = 84
+        versionName = "0.27.3"
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("stableDebug")
-        }
+        // Android Studio uses its local debug keystore. Never commit a signing key.
+        debug {}
+        // CI builds an unsigned release and signs it separately with GitHub Secrets.
         release {
             isMinifyEnabled = false
         }
@@ -37,7 +28,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
-
 
 dependencies {
     implementation("com.google.firebase:firebase-messaging:26.0.0")
