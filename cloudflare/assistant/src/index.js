@@ -57,6 +57,11 @@ async function route(request, env) {
     return restoreWorkspaceOwner(request, decodeURIComponent(recoveryWorkspace[1]), auth, env);
   }
 
+  const removeMemberRoute = path.match(/^\/v1\/workspaces\/([^/]+)\/members\/([^/]+)\/remove$/);
+  if (removeMemberRoute && request.method === "POST") {
+    return removeAssistantMember(decodeURIComponent(removeMemberRoute[1]), decodeURIComponent(removeMemberRoute[2]), auth, env);
+  }
+
   const activityWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/activity$/);
   if (activityWorkspace && request.method === "GET") {
     return workspaceActivity(decodeURIComponent(activityWorkspace[1]), auth, env);
@@ -235,11 +240,33 @@ async function restoreWorkspaceOwner(request, workspaceId, auth, env) {
   return json({ workspace: { id: workspaceId, name: workspace.name, kind: "assistant", role: "owner" }, restored: true });
 }
 
+async function removeAssistantMember(workspaceId, userId, auth, env) {
+  const actor = await membership(workspaceId, auth.userId, env);
+  if (actor?.role !== "owner") return json({ error: "owner_required" }, 403);
+  const member = await membership(workspaceId, userId, env);
+  if (!member || member.role !== "assistant" || userId === auth.userId) {
+    return json({ error: "only_assistants_can_be_removed" }, 400);
+  }
+  const result = await env.DB.prepare(
+    "UPDATE workspace_members SET status='inactive' " +
+    "WHERE workspace_id=? AND user_id=? AND role='assistant' AND status='active'"
+  ).bind(workspaceId, userId).run();
+  if (!result.meta?.changes) return json({ error: "member_already_inactive" }, 409);
+  await env.DB.prepare("UPDATE workspaces SET updated_at=? WHERE id=?").bind(Date.now(),workspaceId).run();
+  await pushWorkspaceSync(workspaceId, auth.userId, env);
+  return json({ ok: true, removedUserId: userId });
+}
+
 async function registerPushToken(request, auth, env) {
   const body = await bodyJson(request);
   const fcmToken = textValue(body.fcmToken, 4096);
   const label = textValue(body.deviceLabel || "Android", 80);
   if (!fcmToken) return json({ error: "fcm_token_required" }, 400);
+  // After reinstallation the native device ID can change. A Firebase token may
+  // not belong to two user sessions simultaneously; transfer the token safely.
+  await env.DB.prepare(
+    "UPDATE devices SET fcm_token=NULL WHERE fcm_token=? AND id<>?"
+  ).bind(fcmToken, auth.deviceId).run();
   await env.DB.prepare(
     "INSERT INTO devices(id,user_id,label,fcm_token,platform,updated_at) VALUES(?,?,?,?,?,?) " +
     "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,fcm_token=excluded.fcm_token,platform=excluded.platform,updated_at=excluded.updated_at"
@@ -458,7 +485,11 @@ async function workspaceActivity(workspaceId, auth, env) {
   if (!member) return json({ error: "workspace_forbidden" }, 403);
 
   const membersResult = await env.DB.prepare(
-    "SELECT m.user_id,m.role,m.joined_at,u.display_name FROM workspace_members m JOIN users u ON u.id=m.user_id WHERE m.workspace_id=? AND m.status='active' ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,m.joined_at"
+    "SELECT m.user_id,m.role,m.joined_at,u.display_name," +
+    "(SELECT MAX(d.updated_at) FROM devices d WHERE d.user_id=m.user_id AND d.fcm_token IS NOT NULL AND d.fcm_token<>'') AS last_push_at," +
+    "(SELECT COUNT(*) FROM devices d WHERE d.user_id=m.user_id AND d.fcm_token IS NOT NULL AND d.fcm_token<>'') AS push_devices " +
+    "FROM workspace_members m JOIN users u ON u.id=m.user_id WHERE m.workspace_id=? AND m.status='active' " +
+    "ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,m.joined_at"
   ).bind(workspaceId).all();
 
   const changesResult = await env.DB.prepare(
@@ -503,7 +534,9 @@ async function workspaceActivity(workspaceId, auth, env) {
       userId: r.user_id,
       displayName: r.display_name,
       role: r.role,
-      joinedAt: r.joined_at
+      joinedAt: r.joined_at,
+      lastPushAt: Number(r.last_push_at) || null,
+      pushDeviceCount: Number(r.push_devices) || 0
     })),
     activity: activity.slice(0, 50)
   });
@@ -514,33 +547,83 @@ async function createAssistantCall(request, workspaceId, auth, env) {
   if (!callerMembership || callerMembership.role !== "owner") return json({ error: "owner_required" }, 403);
 
   const body = await bodyJson(request);
-  let toUserId = textValue(body.toUserId, 100);
-  if (!toUserId) {
-    const target = await env.DB.prepare(
-      "SELECT user_id FROM workspace_members WHERE workspace_id=? AND role='assistant' AND status='active' ORDER BY joined_at LIMIT 1"
-    ).bind(workspaceId).first();
-    toUserId = target?.user_id || "";
+  const requestedId = textValue(body.toUserId, 100);
+  // New registrations create new identities. Pick the assistant with the most
+  // recently registered FCM device, not the first member ever invited.
+  const candidates = await env.DB.prepare(
+    "SELECT m.user_id,u.display_name,MAX(d.updated_at) AS last_push_at " +
+    "FROM workspace_members m JOIN users u ON u.id=m.user_id " +
+    "LEFT JOIN devices d ON d.user_id=m.user_id AND d.fcm_token IS NOT NULL AND d.fcm_token<>'' " +
+    "WHERE m.workspace_id=? AND m.role='assistant' AND m.status='active' " +
+    "GROUP BY m.user_id,u.display_name,m.joined_at " +
+    "ORDER BY CASE WHEN MAX(d.updated_at) IS NULL THEN 1 ELSE 0 END," +
+    "MAX(d.updated_at) DESC,m.joined_at DESC LIMIT 20"
+  ).bind(workspaceId).all();
+  const members = (candidates.results || []);
+  if (!members.length) return json({ error: "assistant_not_connected", message: "No hay ningún asistente vinculado a este espacio." }, 409);
+  const eligible = requestedId ? members.filter(x => x.user_id === requestedId) : members;
+  if (!eligible.length) return json({ error: "invalid_target" }, 400);
+  const ready = eligible.filter(x => x.last_push_at != null);
+  if (!ready.length) {
+    return json({
+      error: "assistant_push_not_registered",
+      message: "El asistente está unido, pero ningún dispositivo tiene el token push registrado en el servidor. Abre Nottas en el segundo teléfono y actualiza su push."
+    }, 409);
   }
-  if (!toUserId) return json({ error: "assistant_not_connected" }, 409);
-  const targetMembership = await membership(workspaceId, toUserId, env);
-  if (!targetMembership || targetMembership.role !== "assistant") return json({ error: "invalid_target" }, 400);
 
-  const callId = crypto.randomUUID();
-  const now = Date.now();
+  const callId = crypto.randomUUID(), now = Date.now();
+  const workspace = await env.DB.prepare("SELECT name FROM workspaces WHERE id=?").bind(workspaceId).first();
   await env.DB.prepare(
     "INSERT INTO assistant_calls(id,workspace_id,from_user_id,to_user_id,status,created_at) VALUES(?,?,?,?,?,?)"
-  ).bind(callId, workspaceId, auth.userId, toUserId, "sent", now).run();
+  ).bind(callId, workspaceId, auth.userId, ready[0].user_id, "sent", now).run();
 
-  const workspace = await env.DB.prepare("SELECT name FROM workspaces WHERE id=?").bind(workspaceId).first();
-  await sendPushToUser(toUserId, {
-    type: "assistant_call",
-    callId,
-    workspaceId,
-    workspaceName: workspace?.name || "Asistente",
-    callerName: auth.displayName
-  }, env);
+  for (const candidate of ready) {
+    if (candidate.user_id !== ready[0].user_id) {
+      await env.DB.prepare("UPDATE assistant_calls SET to_user_id=? WHERE id=?").bind(candidate.user_id, callId).run();
+    }
+    const push = await sendAssistantCallPush(candidate.user_id, {
+      type: "assistant_call",
+      callId,
+      workspaceId,
+      workspaceName: workspace?.name || "Asistente",
+      callerName: auth.displayName
+    }, env);
+    if (push.accepted > 0) {
+      return json({
+        call: { id: callId, workspaceId, fromUserId: auth.userId, toUserId: candidate.user_id, status: "sent", createdAt: now },
+        recipientName: candidate.display_name,
+        pushAccepted: true,
+        acceptedDevices: push.accepted
+      }, 201);
+    }
+  }
+  await env.DB.prepare("UPDATE assistant_calls SET status='failed' WHERE id=?").bind(callId).run();
+  return json({
+    error: "assistant_push_delivery_failed",
+    message: "Firebase rechazó la entrega a los dispositivos registrados. Comprueba la configuración push del asistente."
+  }, 502);
+}
 
-  return json({ call: { id: callId, workspaceId, fromUserId: auth.userId, toUserId, status: "sent", createdAt: now } }, 201);
+// Unlike ordinary sync pushes, calls must report whether Firebase accepted them.
+async function sendAssistantCallPush(userId, payload, env) {
+  const rows = await env.DB.prepare(
+    "SELECT id,fcm_token FROM devices WHERE user_id=? AND fcm_token IS NOT NULL AND fcm_token<>'' ORDER BY updated_at DESC LIMIT 12"
+  ).bind(userId).all();
+  let accepted = 0;
+  await Promise.all((rows.results || []).map(async device => {
+    try {
+      await sendFcm(device.fcm_token, payload, env);
+      accepted++;
+    } catch (error) {
+      console.error("Assistant call FCM delivery failed", String(error?.message || error).slice(0,180));
+      // Only definitive 404/410 token failures justify removing a stale token.
+      if (error?.fcmStatus === 404 || error?.fcmStatus === 410) {
+        await env.DB.prepare("UPDATE devices SET fcm_token=NULL WHERE id=? AND fcm_token=?")
+          .bind(device.id, device.fcm_token).run();
+      }
+    }
+  }));
+  return { accepted };
 }
 
 async function respondAssistantCall(request, callId, auth, env) {
@@ -634,9 +717,9 @@ async function sendPushToUser(userId, data, env) {
 }
 
 async function sendFcm(token, data, env) {
-  if (!env.FCM_SERVICE_ACCOUNT_JSON) return;
+  if (!env.FCM_SERVICE_ACCOUNT_JSON) throw new Error("fcm_credentials_missing");
   const serviceAccount = safeJson(env.FCM_SERVICE_ACCOUNT_JSON, null);
-  if (!serviceAccount?.project_id || !serviceAccount?.client_email || !serviceAccount?.private_key) return;
+  if (!serviceAccount?.project_id || !serviceAccount?.client_email || !serviceAccount?.private_key) throw new Error("fcm_credentials_invalid");
   const accessToken = await googleAccessToken(serviceAccount);
   const stringData = {};
   for (const [key, value] of Object.entries(data || {})) stringData[key] = String(value ?? "");
@@ -658,7 +741,12 @@ async function sendFcm(token, data, env) {
       })
     }
   );
-  if (!response.ok) throw new Error("FCM " + response.status + ": " + (await response.text()));
+  if (!response.ok) {
+    const error = new Error("FCM HTTP " + response.status);
+    error.fcmStatus = response.status;
+    throw error;
+  }
+  return true;
 }
 
 async function googleAccessToken(serviceAccount) {

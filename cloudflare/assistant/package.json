@@ -1,0 +1,8 @@
+{
+  "name": "nottas-assistant-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test src/call-delivery.test.mjs"
+  }
+}

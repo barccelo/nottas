@@ -1350,6 +1350,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     </div>
     <div class="assistantActions">
       <button id="assistantConfigurePushBtn" class="btn secondary" type="button">Configurar push</button>
+      <button id="assistantRetryPushBtn" class="btn secondary" type="button">Actualizar registro push</button>
       <button id="assistantPreviewCallBtn" class="btn secondary" type="button">Probar llamada en este teléfono</button>
     </div>
     <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
@@ -1384,6 +1385,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     <div class="sectionTitle">Llamar</div>
     <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
     <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
+    <div id="assistantLastCallStatus" class="assistantSectionHint" aria-live="polite"></div>
 
     <div class="sectionTitle" style="margin-top:16px">Equipo y actividad <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
     <div id="assistantMembers" class="assistantMembers"></div>
@@ -1429,6 +1431,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
+  let assistantMemberRemoveConfirmation=null;
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -1893,7 +1896,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     if(!inviteCode){showToast("Escribe el código de invitación");return}
     try{
       const data=await assistantRequest("/v1/workspaces/join",{method:"POST",body:{inviteCode}});
-      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();await assistantSync(true,true);render();renderAssistantSettings();showToast("Espacio conectado");
+      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();const pushLinked=await assistantRegisterPushToken();await assistantSync(true,true);render();renderAssistantSettings();await assistantLoadActivity(true);showToast(pushLinked?"Espacio conectado y push registrado":"Espacio conectado; verifica el registro push");
     }catch(error){showToast("Unirse: "+String(error?.message||error))}
   }
   async function assistantConfigurePush(){
@@ -1919,13 +1922,23 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       state.assistant.pushRegisteredAt=now();scheduleSave();return true;
     }catch(_){return false}
   }
-  async function assistantCall(){
+  async function assistantCall(targetUserId=""){
     const ws=currentWorkspace();
     if(!assistantWorkspaceIsOwner(ws)){showToast("Propiedad no verificada en el servidor. Recupera primero el espacio.");return}
+    const status=$("assistantLastCallStatus"),button=$("assistantCallBtn");
+    status.textContent="Solicitando entrega de la llamada…";button.disabled=true;
     try{
-      await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/call",{method:"POST",body:{}});
-      showToast("Llamada enviada");
-    }catch(error){showToast("Llamada: "+String(error?.message||error))}
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/call",{method:"POST",body:{toUserId:targetUserId}});
+      if(!result.pushAccepted)throw new Error("Firebase no confirmó la recepción de la solicitud");
+      status.textContent="Firebase aceptó la llamada para "+(result.recipientName||"el asistente")+" ("+(result.acceptedDevices||1)+" dispositivo(s)). Esperando respuesta.";
+      showToast("Notificación enviada a Firebase");
+    }catch(error){
+      status.textContent="No se confirmó el envío: "+String(error?.message||error);
+      showToast("No se entregó la llamada");
+    }finally{
+      button.disabled=false;
+      if(ws.id===currentWorkspaceId())await assistantLoadActivity(true);
+    }
   }
   function assistantPreviewCall(){
     try{
@@ -1956,7 +1969,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   }
   function assistantActivityText(row){
     if(row.kind==="call"){
-      const result=row.status==="responded"&&row.response?(" · "+assistantResponseLabel(row.response)):"";
+      const result=row.status==="responded"&&row.response?(" · "+assistantResponseLabel(row.response)):row.status==="failed"?" · entrega fallida":row.status==="sent"?" · enviada, pendiente de respuesta":"";
       return (row.fromName||"Jefe")+" llamó a "+(row.toName||"Asistente")+result;
     }
     const action=row.op==="create"?"creó":row.op==="delete"?"eliminó":"actualizó";
@@ -1966,7 +1979,51 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   function renderAssistantActivity(data=null){
     const members=$("assistantMembers"),activity=$("assistantActivity");if(!members||!activity)return;
     const rows=data?.members||[],events=data?.activity||[];
-    members.innerHTML=rows.map(m=>'<div class="assistantMember"><strong>'+esc(m.displayName||"Usuario")+'</strong><span class="assistantMemberRole">'+esc(m.role==="owner"?"Jefe":"Asistente")+'</span></div>').join("");
+    members.replaceChildren();
+    if(!rows.length){members.textContent="No hay miembros disponibles.";}
+    rows.forEach(m=>{
+      const entry=document.createElement("div");entry.className="assistantMember";
+      entry.style.flexWrap="wrap";entry.style.gap="6px";
+      const title=document.createElement("strong");title.textContent=m.displayName||"Usuario";
+      const role=document.createElement("span");role.className="assistantMemberRole";role.textContent=m.role==="owner"?"Jefe":"Asistente";
+      entry.append(title,role);
+      const info=document.createElement("div");
+      info.className="assistantSectionHint";info.style.width="100%";info.style.margin="0";
+      const code=String(m.userId||"").slice(-8);
+      const joined=new Date(Number(m.joinedAt)||0).toLocaleDateString("es");
+      const pushed=m.lastPushAt?("Push registrado · "+new Date(Number(m.lastPushAt)).toLocaleString("es")):"Sin push registrado en Cloudflare";
+      info.textContent="Cuenta …"+code+" · unido "+joined+" · "+pushed;
+      entry.appendChild(info);
+      if(assistantWorkspaceIsOwner(currentWorkspace())&&m.role==="assistant"&&m.userId){
+        if(m.pushDeviceCount>0){
+          const call=document.createElement("button");call.type="button";call.className="btn secondary";
+          call.style.fontSize="12px";call.style.padding="6px 10px";call.textContent="Llamar a esta cuenta";
+          call.addEventListener("click",()=>assistantCall(m.userId));
+          entry.appendChild(call);
+        }
+        const remove=document.createElement("button");remove.type="button";remove.className="btn secondary";
+        remove.style.fontSize="12px";remove.style.padding="6px 10px";
+        remove.textContent="Desvincular";
+        remove.addEventListener("click",async()=>{
+          const ws=currentWorkspace();if(!assistantWorkspaceIsOwner(ws))return;
+          const key=ws.id+":"+m.userId;
+          if(!assistantMemberRemoveConfirmation||assistantMemberRemoveConfirmation.key!==key||assistantMemberRemoveConfirmation.until<Date.now()){
+            assistantMemberRemoveConfirmation={key,until:Date.now()+10000};
+            remove.textContent="Confirmar desvinculación";
+            return;
+          }
+          assistantMemberRemoveConfirmation=null;
+          remove.disabled=true;
+          try{
+            await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/members/"+encodeURIComponent(m.userId)+"/remove",{method:"POST",body:{}});
+            showToast("Miembro antiguo desvinculado");
+            await assistantLoadActivity(true);
+          }catch(error){remove.disabled=false;remove.textContent="Desvincular";showToast("Miembro: "+String(error?.message||error))}
+        });
+        entry.appendChild(remove);
+      }
+      members.appendChild(entry);
+    });
     activity.innerHTML=events.length?events.slice(0,30).map(row=>'<div class="assistantActivityRow"><div class="assistantActivityMain">'+esc(assistantActivityText(row))+'</div><div class="assistantActivityMeta">'+new Date(Number(row.createdAt)||Date.now()).toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})+'</div></div>').join(""):'<div class="assistantActivityEmpty">Todavía no hay actividad compartida.</div>';
   }
   async function assistantLoadActivity(silent=false){
@@ -1974,7 +2031,12 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     try{
       const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/activity");
       renderAssistantActivity(data);return true;
-    }catch(error){if(!silent)showToast("Actividad: "+String(error?.message||error));return false}
+    }catch(error){
+      const area=$("assistantActivity");
+      if(area)area.textContent="No se pudo consultar la actividad del servidor: "+String(error?.message||error);
+      if(!silent)showToast("Actividad: "+String(error?.message||error));
+      return false;
+    }
   }
 
   function renderAssistantHiddenWorkspaces(){
@@ -2045,7 +2107,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("assistantGoogleConnectBtn").disabled=!connected||!ownerShared;
     $("assistantGoogleDiscoverBtn").classList.add("hidden");$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
-    $("assistantPushDesc").textContent=push.fcmToken?("Push listo · token "+String(push.fcmToken).slice(0,12)+"…"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
+    $("assistantPushDesc").textContent=push.fcmToken?("Token Firebase disponible · "+String(push.fcmToken).slice(0,12)+"… · comprueba el registro en Equipo y actividad"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
     renderAssistantSummary();
   }
   async function assistantGoogleRefresh(){
@@ -4418,8 +4480,20 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   $("assistantCreateWorkspaceBtn").addEventListener("click",assistantCreateWorkspace);
   $("assistantJoinWorkspaceBtn").addEventListener("click",assistantJoinWorkspace);
   $("assistantConfigurePushBtn").addEventListener("click",()=>{try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}assistantConfigurePush()});
+  $("assistantRetryPushBtn").addEventListener("click",async()=>{
+    if(!assistantConfigured()){showToast("Registra el dispositivo primero");return}
+    const btn=$("assistantRetryPushBtn");btn.disabled=true;
+    try{
+      if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission();
+      if(window.NottasNative&&NottasNative.refreshAssistantPushToken)NottasNative.refreshAssistantPushToken();
+      const ok=await assistantRegisterPushToken();
+      renderAssistantSettings();
+      showToast(ok?"Push registrado en Cloudflare":"Actualizando Firebase; vuelve a comprobar en unos segundos");
+      if(ok)await assistantLoadActivity(true);
+    }finally{btn.disabled=false}
+  });
   $("assistantPreviewCallBtn").addEventListener("click",assistantPreviewCall);
-  $("assistantCallBtn").addEventListener("click",assistantCall);
+  $("assistantCallBtn").addEventListener("click",()=>assistantCall());
   $("assistantActivityRefresh").addEventListener("click",()=>assistantLoadActivity(false));
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   document.querySelectorAll("[data-default-reminder]").forEach(input=>input.addEventListener("change",()=>{
