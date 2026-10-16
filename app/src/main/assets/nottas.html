@@ -1354,6 +1354,18 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     </div>
     <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
 
+    <div id="assistantGoogleSection" class="hidden">
+      <div class="sectionTitle">Google Calendar</div>
+      <div class="assistantSectionHint">Conexión de solo lectura con calendario@losroblesenlinea.com.ve. Por ahora permite autorizar la cuenta y descubrir sus calendarios.</div>
+      <div id="assistantGoogleStatus" class="assistantSectionHint">Comprueba la conexión.</div>
+      <div class="assistantActions">
+        <button id="assistantGoogleConnectBtn" class="btn secondary" type="button">Conectar cuenta Google</button>
+        <button id="assistantGoogleRefreshBtn" class="btn secondary" type="button">Comprobar</button>
+        <button id="assistantGoogleDiscoverBtn" class="btn secondary hidden" type="button">Actualizar lista</button>
+      </div>
+      <div id="assistantGoogleCalendars" class="assistantSectionHint" aria-live="polite"></div>
+    </div>
+
     <div class="sectionTitle">Llamar</div>
     <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
     <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
@@ -1938,12 +1950,53 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("assistantStatusDesc").textContent=connected?("Dispositivo "+assistantDeviceId()+" · "+(a.lastSyncAt?"último sync "+new Date(a.lastSyncAt).toLocaleString("es"):"pendiente de primer sync")):"Registra este dispositivo para crear o unirte a espacios compartidos.";
     $("assistantRegisterBtn").textContent=auth.sessionToken?"Registrar de nuevo":"Registrar dispositivo";
     $("assistantCreateWorkspaceBtn").disabled=!connected;$("assistantJoinWorkspaceBtn").disabled=!connected;$("assistantSyncBtn").disabled=!connected;
-    const ownerShared=ws?.kind==="assistant"&&ws?.role==="owner";$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
+    const ownerShared=ws?.kind==="assistant"&&ws?.role==="owner";
+    $("assistantGoogleSection").classList.toggle("hidden",ws?.kind!=="assistant");
+    $("assistantGoogleConnectBtn").classList.toggle("hidden",!ownerShared);
+    $("assistantGoogleConnectBtn").disabled=!connected||!ownerShared;
+    $("assistantGoogleDiscoverBtn").classList.add("hidden");$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
     $("assistantPushDesc").textContent=push.fcmToken?("Push listo · token "+String(push.fcmToken).slice(0,12)+"…"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
     renderAssistantSummary();
   }
-  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true)}
+  async function assistantGoogleRefresh(){
+    const ws=currentWorkspace(),status=$("assistantGoogleStatus"),list=$("assistantGoogleCalendars");
+    if(ws?.kind!=="assistant"||!assistantConfigured()){status.textContent="Selecciona un espacio compartido y conecta el dispositivo.";list.textContent="";return}
+    status.textContent="Consultando calendarios…";
+    try {
+      const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/calendars");
+      if(ws.id!==currentWorkspaceId())return;
+      if(!data.connected){
+        status.textContent="Cuenta de Google aún no conectada.";
+        list.textContent="";
+        $("assistantGoogleDiscoverBtn").classList.add("hidden");
+        return;
+      }
+      status.textContent="Cuenta autorizada: "+(data.accountEmail||"Google Calendar");
+      const calendars=Array.isArray(data.calendars)?data.calendars:[];
+      list.textContent=calendars.length?calendars.length+" calendarios encontrados: "+calendars.map(x=>x.name).join(" · "):"No se encontraron calendarios.";
+      $("assistantGoogleDiscoverBtn").classList.toggle("hidden",currentWorkspaceRole()!=="owner");
+    }catch(error){status.textContent="Conexión pendiente: "+String(error?.message||error);list.textContent="";}
+  }
+  async function assistantGoogleConnect(){
+    const ws=currentWorkspace();
+    if(!ws||ws.kind!=="assistant"||ws.role!=="owner"||!assistantConfigured())return;
+    if(!(window.NottasNative&&NottasNative.openGoogleCalendarOAuth)){showToast("Abre esta función en la aplicación Android");return}
+    const btn=$("assistantGoogleConnectBtn");btn.disabled=true;
+    try {
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/connect",{method:"POST"});
+      if(!result.authorizationUrl)throw new Error("Enlace de Google no disponible");
+      NottasNative.openGoogleCalendarOAuth(result.authorizationUrl);
+      $("assistantGoogleStatus").textContent="Completa la autorización en el navegador y regresa a Nottas; después pulsa Comprobar.";
+    }catch(error){showToast("Google Calendar: "+String(error?.message||error).slice(0,90))}
+    finally{btn.disabled=false}
+  }
+  async function assistantGoogleDiscover(){
+    const ws=currentWorkspace();if(!ws||ws.role!=="owner"||ws.kind!=="assistant")return;
+    try{await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/discover",{method:"POST"});await assistantGoogleRefresh()}
+    catch(error){showToast("Google Calendar: "+String(error?.message||error).slice(0,90))}
+  }
+  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true);assistantGoogleRefresh()}
   window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
   window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200);return true}
 
@@ -4259,6 +4312,9 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   $("assistantOverlay").addEventListener("click",e=>{if(e.target===$("assistantOverlay"))closeOverlay("assistantOverlay")});
   $("assistantRegisterBtn").addEventListener("click",assistantRegisterDevice);
   $("assistantSyncBtn").addEventListener("click",()=>assistantSync(false,false));
+  $("assistantGoogleConnectBtn").addEventListener("click",assistantGoogleConnect);
+  $("assistantGoogleRefreshBtn").addEventListener("click",assistantGoogleRefresh);
+  $("assistantGoogleDiscoverBtn").addEventListener("click",assistantGoogleDiscover);
   $("assistantCreateWorkspaceBtn").addEventListener("click",assistantCreateWorkspace);
   $("assistantJoinWorkspaceBtn").addEventListener("click",assistantJoinWorkspace);
   $("assistantConfigurePushBtn").addEventListener("click",()=>{try{if(window.NottasNative&&NottasNative.requestNotificationPermission)NottasNative.requestNotificationPermission()}catch(_){}assistantConfigurePush()});

@@ -1,3 +1,5 @@
+import { callback as googleCallback, routes as googleCalendarRoutes } from "./google-calendar.js";
+
 let cachedGoogleToken = null;
 let cachedGoogleTokenUntil = 0;
 
@@ -30,9 +32,16 @@ async function route(request, env) {
   if (path === "/v1/auth/register" && request.method === "POST") {
     return register(request, env);
   }
+  // Google redirects from the system browser; callback validation uses a single-use state.
+  if (path === "/v1/google/oauth/callback" && request.method === "GET") {
+    return googleCallback(request, env);
+  }
 
   const auth = await authenticate(request, env);
   if (!auth) return json({ error: "unauthorized" }, 401);
+
+  const calendarResponse = await googleCalendarRoutes(request, url, auth, env);
+  if (calendarResponse) return calendarResponse;
 
   if (path === "/v1/me" && request.method === "GET") return me(auth, env);
   if (path === "/v1/workspaces" && request.method === "GET") return listWorkspaces(auth, env);

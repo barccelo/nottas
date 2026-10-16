@@ -93,6 +93,23 @@ object NottasWeb {
     ) {
         private val mainHandler = Handler(Looper.getMainLooper())
 
+        // Google OAuth must run in the system browser, never inside Android WebView.
+        @JavascriptInterface
+        fun openGoogleCalendarOAuth(authUrl: String) {
+            val uri = try { Uri.parse(authUrl) } catch (_: Throwable) { return }
+            if (uri.scheme != "https" || uri.host != "accounts.google.com" || uri.path != "/o/oauth2/v2/auth") return
+            mainHandler.post {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (_: Throwable) {
+                    // Leave the app unchanged if there is no browser to handle OAuth.
+                }
+            }
+        }
+
         @JavascriptInterface
         fun isWakeEnabled(): Boolean = context
             .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
