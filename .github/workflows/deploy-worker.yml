@@ -1,9 +1,14 @@
 name: Deploy Nottas Assistant Worker
 
-# Deliberately manual until the Cloudflare deploy credentials have been installed.
+# Auto-publish Worker updates from main after deployment secrets are configured.
 # No OAuth secrets are copied to GitHub: they remain in Cloudflare Worker Secrets.
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'cloudflare/assistant/**'
+      - '.github/workflows/deploy-worker.yml'
 
 permissions:
   contents: read
