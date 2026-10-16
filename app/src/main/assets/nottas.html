@@ -1368,6 +1368,22 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
         <button id="assistantHideWorkspaceBtn" class="btn secondary" type="button">Ocultar en este teléfono</button>
       </div>
     </div>
+    <div id="assistantDeleteSection" class="hidden" style="margin-top:12px">
+      <div class="sectionTitle">Eliminar espacio de Cloudflare</div>
+      <div class="assistantSectionHint">Solo el propietario puede eliminar un espacio compartido del servidor. Esta operación es definitiva y borra sus tareas compartidas, notas, historial de llamadas y, si lo tiene, la conexión Google Calendar. No afecta a otros espacios.</div>
+      <button id="assistantDeletePreviewBtn" class="btn secondary" type="button">Revisar eliminación de este espacio</button>
+      <div id="assistantDeleteConfirmArea" class="hidden" style="margin-top:12px">
+        <div id="assistantDeleteSummary" class="assistantSectionHint" aria-live="polite"></div>
+        <div class="assistantGrid">
+          <div class="field wide"><div class="label">Escribe ELIMINAR para confirmar</div><input id="assistantDeleteConfirmText" class="assistantInput" type="text" autocomplete="off" autocapitalize="characters" maxlength="12" placeholder="ELIMINAR"></div>
+        </div>
+        <label class="assistantSectionHint" style="display:flex;align-items:flex-start;gap:8px;margin:9px 2px">
+          <input id="assistantDeleteBackupCheck" type="checkbox" style="width:18px;height:18px;flex-shrink:0">
+          Entiendo que los datos de este espacio se borrarán definitivamente de Cloudflare. He guardado una copia JSON si necesito conservarlos.
+        </label>
+        <button id="assistantDeleteExecuteBtn" class="btn danger" type="button">Eliminar definitivamente de Cloudflare</button>
+      </div>
+    </div>
     <div id="assistantHiddenWorkspaces" class="assistantSectionHint"></div>
 
     <div id="assistantGoogleSection" class="hidden">
@@ -1431,7 +1447,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
-  let assistantMemberRemoveConfirmation=null;
+  let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -2080,6 +2096,53 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     saveUI();scheduleSave();render();renderAssistantSettings();
     showToast("Espacio oculto aquí, datos conservados");
   }
+  async function assistantPreviewWorkspaceDeletion(){
+    const ws=currentWorkspace();
+    if(!assistantWorkspaceIsOwner(ws))return;
+    const btn=$("assistantDeletePreviewBtn"),area=$("assistantDeleteConfirmArea"),summary=$("assistantDeleteSummary");
+    area.classList.add("hidden");assistantDeletionPrepared=null;btn.disabled=true;
+    try{
+      const p=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/deletion-preview");
+      if(currentWorkspaceId()!==ws.id)return;
+      assistantDeletionPrepared={id:ws.id,name:p.name};
+      $("assistantDeleteConfirmText").value="";
+      $("assistantDeleteBackupCheck").checked=false;
+      summary.textContent="Espacio seleccionado: "+p.name+" · ID: "+p.workspaceId+
+        ". En Cloudflare contiene "+p.contentCount+" elementos ("+p.noteCount+" notas), "+
+        p.memberCount+" miembros, "+p.callCount+" llamadas y "+p.changeCount+" registros de cambios."+
+        (p.googleConnected?" También se eliminará su conexión Google Calendar.":"")+
+        " Solo continúa si este es el espacio de prueba que quieres borrar. Exporta un respaldo JSON antes.";
+      area.classList.remove("hidden");
+    }catch(error){summary.textContent="No se pudo comprobar el espacio: "+String(error?.message||error);area.classList.remove("hidden")}
+    finally{btn.disabled=false}
+  }
+  async function assistantDeleteWorkspace(){
+    const ws=currentWorkspace(),prepared=assistantDeletionPrepared;
+    if(!assistantWorkspaceIsOwner(ws)||!prepared||prepared.id!==ws.id){showToast("Revisa el espacio primero");return}
+    if($("assistantDeleteConfirmText").value.trim()!=="ELIMINAR"||!$("assistantDeleteBackupCheck").checked){
+      showToast("Escribe ELIMINAR y confirma el respaldo");return;
+    }
+    const btn=$("assistantDeleteExecuteBtn");btn.disabled=true;
+    try{
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id),{
+        method:"DELETE",
+        body:{workspaceId:ws.id,workspaceName:prepared.name,confirmation:"ELIMINAR",backupAcknowledged:true}
+      });
+      if(result.deletedWorkspaceId!==ws.id)throw new Error("Respuesta de borrado inesperada");
+      const local=state.workspaces.find(w=>w.id===ws.id);
+      if(local)local.status="inactive";
+      assistantAuthorizedIds.delete(ws.id);
+      assistantDeletionPrepared=null;
+      $("assistantDeleteConfirmArea").classList.add("hidden");
+      activeWorkspaceId=personalWorkspaceId();activeCategory="all";activeTag="";
+      saveUI();scheduleSave();render();renderAssistantSettings();
+      showToast("Espacio eliminado en Cloudflare");
+      await assistantSync(false,true);
+    }catch(error){
+      $("assistantDeleteSummary").textContent="No se eliminó: "+String(error?.message||error);
+      showToast("No se pudo eliminar el espacio");
+    }finally{btn.disabled=false}
+  }
   function renderAssistantSettings(){
     if(!state)return;
     const a=state.assistant||{},f=a.firebase||{},auth=assistantAuth(),ws=currentWorkspace(),push=assistantNativePushStatus(),connected=assistantConfigured();
@@ -2101,6 +2164,11 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("assistantRecoveryStatus").textContent=restoredShared?"Espacio restaurado, pero sin acceso confirmado en Cloudflare. El rol del JSON no concede permisos.":(ws?.kind==="assistant"?(ownerShared?"Propiedad verificada en Cloudflare.":"Miembro verificado sin permiso de jefe."):"");
     $("assistantRecoverBtn").classList.toggle("hidden",ownerShared);
     $("assistantHideWorkspaceBtn").classList.toggle("hidden",ws?.kind!=="assistant");
+    $("assistantDeleteSection").classList.toggle("hidden",!ownerShared);
+    if(!ownerShared||assistantDeletionPrepared?.id!==ws?.id){
+      assistantDeletionPrepared=null;
+      $("assistantDeleteConfirmArea").classList.add("hidden");
+    }
     renderAssistantHiddenWorkspaces();
     $("assistantGoogleSection").classList.toggle("hidden",ws?.kind!=="assistant");
     $("assistantGoogleConnectBtn").classList.toggle("hidden",!ownerShared);
@@ -2889,7 +2957,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
-    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&ws?.role==="owner"&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter==="today"?taskTodayOnly:b.dataset.filter===taskFilter;b.classList.toggle("active",active);b.setAttribute("aria-pressed",active?"true":"false")});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter==="today"?taskTodayOnly:b.dataset.filter===taskFilter;b.classList.toggle("active",active);b.setAttribute("aria-pressed",active?"true":"false")});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -4259,7 +4327,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   },true);
   $("sidebarBtn").addEventListener("click",openSidebar);
   $("workspaceContextBtn").addEventListener("click",openSidebar);
-  $("assistantCallQuickBtn").addEventListener("click",assistantCall);
+  $("assistantCallQuickBtn").addEventListener("click",()=>assistantCall());
   $("sidebarClose").addEventListener("click",closeSidebar);
   $("sidebarBackdrop").addEventListener("click",e=>{if(e.target===$("sidebarBackdrop"))closeSidebar()});
   document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.addEventListener("click",()=>{mode="tasks";trash=false;activeTag="";if(b.dataset.sidebarTaskFilter==="today"){taskTodayOnly=true;if(!["pending","all"].includes(taskFilter))taskFilter="pending"}else{taskFilter=b.dataset.sidebarTaskFilter;taskTodayOnly=false}saveUI();closeSidebar();render()}));
@@ -4474,6 +4542,8 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     catch(_){showToast("Mantén pulsado el ID para copiarlo")}
   });
   $("assistantHideWorkspaceBtn").addEventListener("click",assistantHideWorkspace);
+  $("assistantDeletePreviewBtn").addEventListener("click",assistantPreviewWorkspaceDeletion);
+  $("assistantDeleteExecuteBtn").addEventListener("click",assistantDeleteWorkspace);
   $("assistantGoogleConnectBtn").addEventListener("click",assistantGoogleConnect);
   $("assistantGoogleRefreshBtn").addEventListener("click",assistantGoogleRefresh);
   $("assistantGoogleDiscoverBtn").addEventListener("click",assistantGoogleDiscover);

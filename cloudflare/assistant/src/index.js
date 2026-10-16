@@ -6,7 +6,7 @@ let cachedGoogleTokenUntil = 0;
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, content-type",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+  "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS"
 };
 
 export default {
@@ -51,6 +51,15 @@ async function route(request, env) {
   if (path === "/v1/sync" && request.method === "GET") return pullSync(url, auth, env);
   if (path === "/v1/sync" && request.method === "POST") return pushSync(request, auth, env);
   if (path === "/v1/calls/pending" && request.method === "GET") return pendingCalls(auth, env);
+
+  const workspaceDeletePreview = path.match(/^\/v1\/workspaces\/([^/]+)\/deletion-preview$/);
+  if (workspaceDeletePreview && request.method === "GET") {
+    return previewWorkspaceDeletion(decodeURIComponent(workspaceDeletePreview[1]), auth, env);
+  }
+  const workspaceDelete = path.match(/^\/v1\/workspaces\/([^/]+)$/);
+  if (workspaceDelete && request.method === "DELETE") {
+    return deleteAssistantWorkspace(request, decodeURIComponent(workspaceDelete[1]), auth, env);
+  }
 
   const recoveryWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/restore-owner$/);
   if (recoveryWorkspace && request.method === "POST") {
@@ -255,6 +264,75 @@ async function removeAssistantMember(workspaceId, userId, auth, env) {
   await env.DB.prepare("UPDATE workspaces SET updated_at=? WHERE id=?").bind(Date.now(),workspaceId).run();
   await pushWorkspaceSync(workspaceId, auth.userId, env);
   return json({ ok: true, removedUserId: userId });
+}
+
+// Administrator-free cleanup for workspace owners. Only explicit deletion can
+// cascade shared tasks, notes, calls and Calendar OAuth data. No personal
+// workspace can ever be deleted through these routes.
+async function workspaceDeletionPermission(workspaceId, auth, env) {
+  const ws = await env.DB.prepare(
+    "SELECT id,name,kind,owner_user_id FROM workspaces WHERE id=?"
+  ).bind(workspaceId).first();
+  if (!ws) return { error: json({ error: "workspace_not_found" }, 404) };
+  if (ws.kind !== "assistant") return { error: json({ error: "personal_workspace_protected" }, 403) };
+  const member = await membership(workspaceId, auth.userId, env);
+  if (ws.owner_user_id !== auth.userId || member?.role !== "owner") {
+    return { error: json({ error: "owner_required" }, 403) };
+  }
+  return { ws };
+}
+
+async function previewWorkspaceDeletion(workspaceId, auth, env) {
+  const permission = await workspaceDeletionPermission(workspaceId, auth, env);
+  if (permission.error) return permission.error;
+  const [items, notes, changes, calls, members, google] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) AS n FROM items WHERE workspace_id=?").bind(workspaceId).first(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM items WHERE workspace_id=? AND entity_type='note'").bind(workspaceId).first(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM changes WHERE workspace_id=?").bind(workspaceId).first(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM assistant_calls WHERE workspace_id=?").bind(workspaceId).first(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM workspace_members WHERE workspace_id=? AND status='active'").bind(workspaceId).first(),
+    env.DB.prepare("SELECT COUNT(*) AS n FROM google_calendar_connections WHERE workspace_id=?").bind(workspaceId).first()
+  ]);
+  return json({
+    workspaceId, name: permission.ws.name,
+    contentCount: Number(items?.n||0),
+    noteCount: Number(notes?.n||0),
+    changeCount: Number(changes?.n||0),
+    callCount: Number(calls?.n||0),
+    memberCount: Number(members?.n||0),
+    googleConnected: Number(google?.n||0)>0
+  });
+}
+
+async function deleteAssistantWorkspace(request, workspaceId, auth, env) {
+  const permission = await workspaceDeletionPermission(workspaceId, auth, env);
+  if (permission.error) return permission.error;
+  const body = await bodyJson(request);
+  if (body.workspaceId !== workspaceId ||
+      body.workspaceName !== permission.ws.name ||
+      body.confirmation !== "ELIMINAR" ||
+      body.backupAcknowledged !== true) {
+    return json({ error: "workspace_deletion_confirmation_required" }, 400);
+  }
+  // Members, unlike the workspace, are not destroyed as user accounts.
+  const members = await env.DB.prepare(
+    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active'"
+  ).bind(workspaceId).all();
+  // The D1 schema enforces cascading FKs for the workspace-owned records:
+  // items, changes, memberships, calls, calendars, refresh tokens and codes.
+  const result = await env.DB.prepare(
+    "DELETE FROM workspaces WHERE id=? AND owner_user_id=? AND kind='assistant'"
+  ).bind(workspaceId, auth.userId).run();
+  if (!result.meta?.changes) return json({ error: "workspace_not_found" }, 404);
+  await Promise.all((members.results||[])
+    .filter(m=>m.user_id!==auth.userId)
+    .map(m=>sendPushToUser(m.user_id,{
+      type: "sync",
+      workspaceId,
+      changedBy: auth.userId,
+      workspaceDeleted: "true"
+    },env).catch(e=>console.error("Deleted workspace push",String(e?.message||e)))));
+  return json({ ok: true, deletedWorkspaceId: workspaceId });
 }
 
 async function registerPushToken(request, auth, env) {

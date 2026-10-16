@@ -43,7 +43,7 @@ jobs:
           node --version
           node --check cloudflare/assistant/src/index.js
           node --check cloudflare/assistant/src/google-calendar.js
-          node --test cloudflare/assistant/src/call-delivery.test.mjs
+          node --test cloudflare/assistant/src/*.test.mjs
 
       - name: Deploy exact repository Worker to Cloudflare
         uses: cloudflare/wrangler-action@v3
