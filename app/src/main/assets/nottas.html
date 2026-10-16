@@ -1354,6 +1354,21 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     </div>
     <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
 
+    <div class="sectionTitle">Espacios de trabajo</div>
+    <div class="assistantSectionHint">Los espacios restaurados del JSON conservan sus datos, pero su acceso se verifica en Cloudflare. Ocultar un espacio en este dispositivo no borra tareas ni datos del servidor.</div>
+    <div id="assistantRecoverySection" class="hidden">
+      <div id="assistantRecoveryStatus" class="assistantSectionHint"></div>
+      <div class="assistantGrid">
+        <div class="field wide"><div class="label">ID del espacio seleccionado (solo lectura)</div><input id="assistantRecoveryWorkspaceId" class="assistantInput" type="text" readonly><button id="assistantCopyWorkspaceIdBtn" class="btn secondary" type="button" style="margin-top:6px">Copiar ID del espacio</button></div>
+        <div class="field wide"><div class="label">Código de recuperación de Cloudflare</div><input id="assistantRecoveryCode" class="assistantInput" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="48" placeholder="Código temporal de 48 caracteres"></div>
+      </div>
+      <div class="assistantActions">
+        <button id="assistantRecoverBtn" class="btn secondary" type="button">Restaurar propiedad</button>
+        <button id="assistantHideWorkspaceBtn" class="btn secondary" type="button">Ocultar en este teléfono</button>
+      </div>
+    </div>
+    <div id="assistantHiddenWorkspaces" class="assistantSectionHint"></div>
+
     <div id="assistantGoogleSection" class="hidden">
       <div class="sectionTitle">Google Calendar</div>
       <div class="assistantSectionHint">Conexión de solo lectura con calendario@losroblesenlinea.com.ve. Por ahora permite autorizar la cuenta y descubrir sus calendarios.</div>
@@ -1414,6 +1429,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
+  let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
 
   function setNativeSearchKeyboardMode(active){
     try{
@@ -1478,7 +1494,10 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   function personalWorkspaceId(){return String(state?.assistant?.personalWorkspaceId||"personal_local")}
   function currentWorkspace(){return state?.workspaces?.find(w=>w.id===activeWorkspaceId)||state?.workspaces?.find(w=>w.id===personalWorkspaceId())||state?.workspaces?.[0]||null}
   function currentWorkspaceId(){return currentWorkspace()?.id||personalWorkspaceId()}
-  function currentWorkspaceRole(){return currentWorkspace()?.role||"owner"}
+  function currentWorkspaceRole(){const ws=currentWorkspace();return ws?.kind==="assistant"&&!assistantAuthorizedIds.has(ws.id)?"unverified":ws?.role||"owner"}
+  function assistantWorkspaceAuthorized(ws){return !!ws&&assistantAuthorizedIds.has(ws.id)}
+  function assistantWorkspaceIsOwner(ws){return !!ws&&ws.kind==="assistant"&&ws.role==="owner"&&assistantWorkspaceAuthorized(ws)}
+  function assistantWorkspaceHidden(ws){return (state?.assistant?.hiddenWorkspaceIds||[]).includes(ws.id)}
   function isSharedWorkspace(){return currentWorkspace()?.kind==="assistant"}
   function itemInActiveWorkspace(item){return String(item?.workspaceId||personalWorkspaceId())===currentWorkspaceId()}
   function newItemWorkspaceFields(type="task"){
@@ -1607,7 +1626,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     personalId=personal.id;
     o.categories=o.categories.map(c=>({...c,workspaceId:c.id==="inbox"?"*":String(c.workspaceId||personalId),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||"")}));
     o.workspaces=workspaces;
-    o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
+    o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,hiddenWorkspaceIds:Array.isArray(assistantRaw.hiddenWorkspaceIds)?assistantRaw.hiddenWorkspaceIds.filter(x=>typeof x==="string").slice(0,100):[],firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
     o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
@@ -1660,6 +1679,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     }
 
     state=loaded||normalize({});
+    assistantAuthorizedIds=new Set();assistantMembershipChecked=false;
     try{const auth=assistantAuth();if(state.assistant.serverUrl&&auth.sessionToken&&window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(state.assistant.serverUrl,auth.sessionToken)}catch(_){}
     if(!activeWorkspaceId||!state.workspaces.some(w=>w.id===activeWorkspaceId&&w.status!=="inactive"))activeWorkspaceId=state.assistant.personalWorkspaceId;
     syncNativeWorkHours();
@@ -1794,10 +1814,22 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     assistantSyncing=true;
     if(!silent)setStatus("Sincronizando…","warn");
     try{
+      // Reconcile the authenticated identity and server-side memberships before pushing.
+      // A JSON backup may contain workspaces from a different (now-lost) session.
+      const identity=await assistantRequest("/v1/me");
+      if(identity.user?.id&&String(identity.user.id)!==state.assistant.userId){
+        state.assistant.userId=String(identity.user.id);
+        state.assistant.cursor=0;
+      }
+      const remotePersonal=(identity.workspaces||[]).find(w=>w.kind==="personal"&&w.role==="owner");
+      if(remotePersonal&&remotePersonal.id!==personalWorkspaceId())assistantRemapPersonalWorkspace(remotePersonal);
+      assistantAuthorizedIds=new Set((identity.workspaces||[]).map(w=>w.id));
+      assistantMembershipChecked=true;
+      mergeAssistantWorkspaces(identity.workspaces);
       const pending=[];
-      state.tasks.filter(t=>t.syncState==="pending").forEach(t=>pending.push({workspaceId:t.workspaceId||personalWorkspaceId(),entityType:"task",entityId:t.id,payload:t,rev:t.rev,updatedAt:t.updatedAt,deletedAt:t.deletedAt||null}));
-      state.notes.filter(n=>n.syncState==="pending").forEach(n=>pending.push({workspaceId:n.workspaceId||personalWorkspaceId(),entityType:"note",entityId:n.id,payload:n,rev:n.rev,updatedAt:n.updatedAt,deletedAt:n.deletedAt||null}));
-      state.categories.filter(c=>c.id!=="inbox"&&c.syncState==="pending").forEach(c=>pending.push({workspaceId:c.workspaceId||personalWorkspaceId(),entityType:"category",entityId:c.id,payload:c,rev:c.rev,updatedAt:c.updatedAt,deletedAt:c.deletedAt||null}));
+      state.tasks.filter(t=>t.syncState==="pending"&&assistantAuthorizedIds.has(t.workspaceId||personalWorkspaceId())).forEach(t=>pending.push({workspaceId:t.workspaceId||personalWorkspaceId(),entityType:"task",entityId:t.id,payload:t,rev:t.rev,updatedAt:t.updatedAt,deletedAt:t.deletedAt||null}));
+      state.notes.filter(n=>n.syncState==="pending"&&assistantAuthorizedIds.has(n.workspaceId||personalWorkspaceId())).forEach(n=>pending.push({workspaceId:n.workspaceId||personalWorkspaceId(),entityType:"note",entityId:n.id,payload:n,rev:n.rev,updatedAt:n.updatedAt,deletedAt:n.deletedAt||null}));
+      state.categories.filter(c=>c.id!=="inbox"&&c.syncState==="pending"&&assistantAuthorizedIds.has(c.workspaceId||personalWorkspaceId())).forEach(c=>pending.push({workspaceId:c.workspaceId||personalWorkspaceId(),entityType:"category",entityId:c.id,payload:c,rev:c.rev,updatedAt:c.updatedAt,deletedAt:c.deletedAt||null}));
       if(pending.length){
         const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
         assistantMarkAccepted(pushed.accepted);
@@ -1805,6 +1837,8 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       }
       const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+(full?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
+      assistantAuthorizedIds=new Set((pulled.workspaces||[]).map(w=>w.id));
+      assistantMembershipChecked=true;
       mergeAssistantWorkspaces(pulled.workspaces);
       (pulled.changes||[]).forEach(assistantApplyRemoteChange);
       state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
@@ -1814,7 +1848,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       setTimeout(()=>{assistantApplyingRemote=false},500);
       render();
       renderAssistantSummary();
-      if($("assistantOverlay")?.classList.contains("show"))assistantLoadActivity(true);
+      if($("assistantOverlay")?.classList.contains("show")){renderAssistantSettings();assistantLoadActivity(true)}
       if(!silent)showToast("Asistente sincronizado");
       setStatus("Nube","ok");
       return true;
@@ -1830,10 +1864,17 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   async function assistantRegisterDevice(){
     const server=$("assistantServerUrl").value.trim().replace(/\/+$/,""),displayName=$("assistantDisplayName").value.trim();
     if(!server||!displayName){showToast("Indica Worker y nombre");return}
+    if(assistantConfigured()&&Date.now()>assistantRegistrationConfirmUntil){
+      assistantRegistrationConfirmUntil=Date.now()+8000;
+      showToast("Registrar de nuevo crea otra identidad. Pulsa otra vez para confirmar.");
+      return;
+    }
+    assistantRegistrationConfirmUntil=0;
     try{
       setStatus("Registrando…","warn");
       const data=await assistantRequest("/v1/auth/register",{auth:false,serverUrl:server,method:"POST",body:{displayName,deviceId:assistantDeviceId(),deviceLabel:"Nottas Android"}});
       state.assistant.serverUrl=server;state.assistant.userId=String(data.user?.id||"");state.assistant.displayName=String(data.user?.displayName||displayName);
+      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;state.assistant.cursor=0;
       assistantRemapPersonalWorkspace(data.personalWorkspace);
       saveAssistantAuth({sessionToken:String(data.sessionToken||"")});
       try{if(window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(server,String(data.sessionToken||""))}catch(_){}
@@ -1844,7 +1885,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     const name=$("assistantWorkspaceName").value.trim()||"Asistente";
     try{
       const data=await assistantRequest("/v1/workspaces",{method:"POST",body:{name}});
-      mergeAssistantWorkspaces([data.workspace]);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Espacio creado");
+      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Espacio creado");
     }catch(error){showToast("Crear espacio: "+String(error?.message||error))}
   }
   async function assistantJoinWorkspace(){
@@ -1852,7 +1893,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     if(!inviteCode){showToast("Escribe el código de invitación");return}
     try{
       const data=await assistantRequest("/v1/workspaces/join",{method:"POST",body:{inviteCode}});
-      mergeAssistantWorkspaces([data.workspace]);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();await assistantSync(true,true);render();renderAssistantSettings();showToast("Espacio conectado");
+      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();await assistantSync(true,true);render();renderAssistantSettings();showToast("Espacio conectado");
     }catch(error){showToast("Unirse: "+String(error?.message||error))}
   }
   async function assistantConfigurePush(){
@@ -1880,7 +1921,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   }
   async function assistantCall(){
     const ws=currentWorkspace();
-    if(!ws||ws.kind!=="assistant"||ws.role!=="owner"){showToast("Abre un espacio donde seas jefe");return}
+    if(!assistantWorkspaceIsOwner(ws)){showToast("Propiedad no verificada en el servidor. Recupera primero el espacio.");return}
     try{
       await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/call",{method:"POST",body:{}});
       showToast("Llamada enviada");
@@ -1936,6 +1977,47 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     }catch(error){if(!silent)showToast("Actividad: "+String(error?.message||error));return false}
   }
 
+  function renderAssistantHiddenWorkspaces(){
+    const target=$("assistantHiddenWorkspaces");if(!target)return;
+    target.replaceChildren();
+    const hidden=state.workspaces.filter(w=>w.kind==="assistant"&&assistantWorkspaceHidden(w));
+    if(!hidden.length)return;
+    const title=document.createElement("div");title.textContent="Espacios ocultos (sus datos se conservan):";target.appendChild(title);
+    hidden.forEach(w=>{
+      const btn=document.createElement("button");
+      btn.type="button";btn.className="btn secondary";btn.style.margin="6px 6px 0 0";
+      btn.textContent="Mostrar "+w.name;
+      btn.addEventListener("click",()=>{
+        state.assistant.hiddenWorkspaceIds=state.assistant.hiddenWorkspaceIds.filter(id=>id!==w.id);
+        activeWorkspaceId=w.id;saveUI();scheduleSave();render();renderAssistantSettings();
+        if(assistantConfigured())assistantSync(false,true);
+      });
+      target.appendChild(btn);
+    });
+  }
+  async function assistantRecoverOwner(){
+    const ws=currentWorkspace(),code=$("assistantRecoveryCode").value.trim().toLowerCase();
+    if(!assistantConfigured()||ws?.kind!=="assistant")return;
+    if(!/^[a-f0-9]{48}$/.test(code)){showToast("Introduce el código temporal completo de Cloudflare");return}
+    const btn=$("assistantRecoverBtn");btn.disabled=true;
+    try{
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/restore-owner",{method:"POST",body:{recoveryCode:code}});
+      $("assistantRecoveryCode").value="";
+      assistantAuthorizedIds.add(ws.id);
+      mergeAssistantWorkspaces([result.workspace]);
+      await assistantSync(true,true);
+      render();renderAssistantSettings();showToast("Propiedad recuperada en Cloudflare");
+    }catch(error){showToast("Recuperar: "+String(error?.message||error).slice(0,90))}
+    finally{btn.disabled=false}
+  }
+  function assistantHideWorkspace(){
+    const ws=currentWorkspace();if(ws?.kind!=="assistant")return;
+    const hidden=state.assistant.hiddenWorkspaceIds||[];
+    if(!hidden.includes(ws.id))state.assistant.hiddenWorkspaceIds=[...hidden,ws.id];
+    activeWorkspaceId=personalWorkspaceId();activeCategory="all";activeTag="";
+    saveUI();scheduleSave();render();renderAssistantSettings();
+    showToast("Espacio oculto aquí, datos conservados");
+  }
   function renderAssistantSettings(){
     if(!state)return;
     const a=state.assistant||{},f=a.firebase||{},auth=assistantAuth(),ws=currentWorkspace(),push=assistantNativePushStatus(),connected=assistantConfigured();
@@ -1945,12 +2027,19 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("assistantFirebaseSender").value=f.senderId||"";
     $("assistantFirebaseAppId").value=f.appId||"";
     $("assistantFirebaseApiKey").value=f.apiKey||"";
-    $("assistantStatusTitle").textContent=connected?(a.displayName||"Cuenta conectada"):"Sin configurar";
+    $("assistantStatusTitle").textContent=connected?(a.displayName||"Dispositivo registrado"):"Sin configurar";
     $("assistantConnectionBadge").textContent=connected?"Conectado":"Local";$("assistantConnectionBadge").classList.toggle("ok",connected);
-    $("assistantStatusDesc").textContent=connected?("Dispositivo "+assistantDeviceId()+" · "+(a.lastSyncAt?"último sync "+new Date(a.lastSyncAt).toLocaleString("es"):"pendiente de primer sync")):"Registra este dispositivo para crear o unirte a espacios compartidos.";
+    $("assistantStatusDesc").textContent=connected?("Sesión del dispositivo · "+(a.lastSyncAt?"último sync "+new Date(a.lastSyncAt).toLocaleString("es"):"pendiente de primer sync")+". El acceso a cada espacio se verifica por separado."):"Registra este dispositivo para crear o unirte a espacios compartidos.";
     $("assistantRegisterBtn").textContent=auth.sessionToken?"Registrar de nuevo":"Registrar dispositivo";
     $("assistantCreateWorkspaceBtn").disabled=!connected;$("assistantJoinWorkspaceBtn").disabled=!connected;$("assistantSyncBtn").disabled=!connected;
-    const ownerShared=ws?.kind==="assistant"&&ws?.role==="owner";
+    const ownerShared=assistantWorkspaceIsOwner(ws);
+    const restoredShared=ws?.kind==="assistant"&&!assistantWorkspaceAuthorized(ws);
+    $("assistantRecoverySection").classList.toggle("hidden",ws?.kind!=="assistant");
+    $("assistantRecoveryWorkspaceId").value=ws?.kind==="assistant"?ws.id:"";
+    $("assistantRecoveryStatus").textContent=restoredShared?"Espacio restaurado, pero sin acceso confirmado en Cloudflare. El rol del JSON no concede permisos.":(ws?.kind==="assistant"?(ownerShared?"Propiedad verificada en Cloudflare.":"Miembro verificado sin permiso de jefe."):"");
+    $("assistantRecoverBtn").classList.toggle("hidden",ownerShared);
+    $("assistantHideWorkspaceBtn").classList.toggle("hidden",ws?.kind!=="assistant");
+    renderAssistantHiddenWorkspaces();
     $("assistantGoogleSection").classList.toggle("hidden",ws?.kind!=="assistant");
     $("assistantGoogleConnectBtn").classList.toggle("hidden",!ownerShared);
     $("assistantGoogleConnectBtn").disabled=!connected||!ownerShared;
@@ -1962,6 +2051,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   async function assistantGoogleRefresh(){
     const ws=currentWorkspace(),status=$("assistantGoogleStatus"),list=$("assistantGoogleCalendars");
     if(ws?.kind!=="assistant"||!assistantConfigured()){status.textContent="Selecciona un espacio compartido y conecta el dispositivo.";list.textContent="";return}
+    if(!assistantWorkspaceAuthorized(ws)){status.textContent="Primero verifica o recupera el acceso a este espacio en Cloudflare.";list.textContent="";return}
     status.textContent="Consultando calendarios…";
     try {
       const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/calendars");
@@ -1980,7 +2070,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   }
   async function assistantGoogleConnect(){
     const ws=currentWorkspace();
-    if(!ws||ws.kind!=="assistant"||ws.role!=="owner"||!assistantConfigured())return;
+    if(!assistantWorkspaceIsOwner(ws)||!assistantConfigured())return;
     if(!(window.NottasNative&&NottasNative.openGoogleCalendarOAuth)){showToast("Abre esta función en la aplicación Android");return}
     const btn=$("assistantGoogleConnectBtn");btn.disabled=true;
     try {
@@ -1996,7 +2086,10 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     try{await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/discover",{method:"POST"});await assistantGoogleRefresh()}
     catch(error){showToast("Google Calendar: "+String(error?.message||error).slice(0,90))}
   }
-  function openAssistantSettings(){renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true);assistantGoogleRefresh()}
+  function openAssistantSettings(){
+    renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true);assistantGoogleRefresh();
+    if(assistantConfigured()&&!assistantMembershipChecked)assistantSync(false,true).then(()=>{renderAssistantSettings();assistantGoogleRefresh()});
+  }
   window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
   window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200);return true}
 
@@ -2255,9 +2348,9 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     if(!state)return;
     const liveTasks=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt),liveNotes=state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt);
     const wsBox=$("sidebarWorkspaces");wsBox.innerHTML="";
-    state.workspaces.filter(w=>w.status!=="inactive").forEach(w=>{
+    state.workspaces.filter(w=>w.status!=="inactive"&&!assistantWorkspaceHidden(w)).forEach(w=>{
       const b=document.createElement("button");b.type="button";b.className="sideItem"+(w.id===currentWorkspaceId()?" active":"");
-      b.innerHTML='<span class="workspaceSideIcon '+(w.kind==="assistant"?"shared":"")+'">'+(w.kind==="assistant"?"A":"P")+'</span><span>'+esc(w.name)+'</span><span class="workspaceRole">'+esc(w.kind==="assistant"?(w.role==="owner"?"Jefe":"Asistente"):"Privado")+'</span>';
+      b.innerHTML='<span class="workspaceSideIcon '+(w.kind==="assistant"?"shared":"")+'">'+(w.kind==="assistant"?"A":"P")+'</span><span>'+esc(w.name)+'</span><span class="workspaceRole">'+esc(w.kind==="assistant"?(assistantWorkspaceAuthorized(w)?(w.role==="owner"?"Jefe":"Asistente"):(assistantMembershipChecked?"Sin acceso":"Sin verificar")):"Privado")+'</span>';
       b.addEventListener("click",()=>{activeWorkspaceId=w.id;activeCategory="all";activeTag="";trash=false;saveUI();closeSidebar();render()});wsBox.appendChild(b);
     });
     const counts={
@@ -4312,6 +4405,13 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   $("assistantOverlay").addEventListener("click",e=>{if(e.target===$("assistantOverlay"))closeOverlay("assistantOverlay")});
   $("assistantRegisterBtn").addEventListener("click",assistantRegisterDevice);
   $("assistantSyncBtn").addEventListener("click",()=>assistantSync(false,false));
+  $("assistantRecoverBtn").addEventListener("click",assistantRecoverOwner);
+  $("assistantCopyWorkspaceIdBtn").addEventListener("click",()=>{
+    const input=$("assistantRecoveryWorkspaceId");input.select();
+    try{if(document.execCommand("copy"))showToast("ID copiado");else showToast("Mantén pulsado el ID para copiarlo")}
+    catch(_){showToast("Mantén pulsado el ID para copiarlo")}
+  });
+  $("assistantHideWorkspaceBtn").addEventListener("click",assistantHideWorkspace);
   $("assistantGoogleConnectBtn").addEventListener("click",assistantGoogleConnect);
   $("assistantGoogleRefreshBtn").addEventListener("click",assistantGoogleRefresh);
   $("assistantGoogleDiscoverBtn").addEventListener("click",assistantGoogleDiscover);
@@ -4345,6 +4445,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
         throw new Error("Estructura de respaldo incompatible");
       }
       state=normalize(parsed);
+      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;
       activeCategory="all";
       activeTag="";
       activeWorkspaceId=state.assistant.personalWorkspaceId;

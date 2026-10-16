@@ -52,6 +52,11 @@ async function route(request, env) {
   if (path === "/v1/sync" && request.method === "POST") return pushSync(request, auth, env);
   if (path === "/v1/calls/pending" && request.method === "GET") return pendingCalls(auth, env);
 
+  const recoveryWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/restore-owner$/);
+  if (recoveryWorkspace && request.method === "POST") {
+    return restoreWorkspaceOwner(request, decodeURIComponent(recoveryWorkspace[1]), auth, env);
+  }
+
   const activityWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/activity$/);
   if (activityWorkspace && request.method === "GET") {
     return workspaceActivity(decodeURIComponent(activityWorkspace[1]), auth, env);
@@ -189,6 +194,45 @@ async function joinWorkspace(request, auth, env) {
   await env.DB.prepare("UPDATE workspaces SET updated_at=? WHERE id=?").bind(now, workspace.id).run();
   await pushWorkspaceSync(workspace.id, auth.userId, env);
   return json({ workspace: { id: workspace.id, name: workspace.name, kind: workspace.kind, role: "assistant" } });
+}
+
+// Recovery is a deliberate, audited ownership transfer, not a backup/import claim.
+// Codes are generated only through the Cloudflare D1 administrator console; never from the app.
+async function restoreWorkspaceOwner(request, workspaceId, auth, env) {
+  const body = await bodyJson(request);
+  const recoveryCode = textValue(body.recoveryCode, 100).toLowerCase();
+  if (!/^[0-9a-f]{48}$/.test(recoveryCode)) return json({ error: "recovery_code_invalid" }, 400);
+
+  const workspace = await env.DB.prepare(
+    "SELECT id,kind,owner_user_id,name FROM workspaces WHERE id=? AND kind='assistant'"
+  ).bind(workspaceId).first();
+  if (!workspace) return json({ error: "workspace_not_found" }, 404);
+
+  const already = await membership(workspaceId, auth.userId, env);
+  if (workspace.owner_user_id === auth.userId && already?.role === "owner") {
+    return json({ error: "already_owner" }, 409);
+  }
+  // One-time use is atomic; secrets expire 15 minutes after issue.
+  const claimed = await env.DB.prepare(
+    "UPDATE workspace_recovery_codes SET used_at=? " +
+    "WHERE workspace_id=? AND code=? AND used_at IS NULL AND expires_at>? " +
+    "RETURNING workspace_id"
+  ).bind(Date.now(), workspaceId, recoveryCode, Date.now()).first();
+  if (!claimed) return json({ error: "recovery_code_invalid_or_expired" }, 403);
+
+  const when = Date.now();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE workspace_members SET status='inactive' WHERE workspace_id=? AND role='owner' AND user_id<>?")
+      .bind(workspaceId, auth.userId),
+    env.DB.prepare(
+      "INSERT INTO workspace_members(workspace_id,user_id,role,status,joined_at) VALUES(?,?,?,?,?) " +
+      "ON CONFLICT(workspace_id,user_id) DO UPDATE SET role='owner',status='active'"
+    ).bind(workspaceId, auth.userId, "owner", "active", when),
+    env.DB.prepare("UPDATE workspaces SET owner_user_id=?,updated_at=? WHERE id=?")
+      .bind(auth.userId, when, workspaceId)
+  ]);
+  await pushWorkspaceSync(workspaceId, auth.userId, env);
+  return json({ workspace: { id: workspaceId, name: workspace.name, kind: "assistant", role: "owner" }, restored: true });
 }
 
 async function registerPushToken(request, auth, env) {
