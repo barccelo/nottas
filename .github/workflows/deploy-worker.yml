@@ -1,0 +1,60 @@
+name: Deploy Nottas Assistant Worker
+
+# Deliberately manual until the Cloudflare deploy credentials have been installed.
+# No OAuth secrets are copied to GitHub: they remain in Cloudflare Worker Secrets.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nottas-assistant-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Publish Cloudflare Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout approved code
+        uses: actions/checkout@v4
+
+      - name: Check deployment credentials
+        shell: bash
+        env:
+          DEPLOY_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          DEPLOY_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [[ -z "$DEPLOY_TOKEN" || -z "$DEPLOY_ACCOUNT" ]]; then
+            echo "::error::Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID in GitHub repository Actions secrets before deployment."
+            exit 1
+          fi
+
+      - name: Deploy exact repository Worker to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare/assistant
+          command: deploy
+          wranglerVersion: "4"
+
+      - name: Verify deployed Google OAuth callback and health
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="https://nottas-assistant-api.losrobles.workers.dev"
+          for try in 1 2 3 4 5; do
+            health="$(curl --silent --show-error --max-time 15 --output /dev/null --write-out '%{http_code}' "$base/health")"
+            callback="$(curl --silent --show-error --max-time 15 --output /dev/null --write-out '%{http_code}' "$base/v1/google/oauth/callback")"
+            if [[ "$health" == "200" && "$callback" == "400" ]]; then
+              echo "Worker deployed and Google Calendar OAuth route available."
+              exit 0
+            fi
+            echo "Waiting for deployment: health=$health callback=$callback"
+            sleep 3
+          done
+          echo "::error::Deployment validation failed: expected health 200 and OAuth callback 400 for missing parameters."
+          exit 1

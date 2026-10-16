@@ -51,3 +51,19 @@ El Worker almacena las listas por espacio compartido. Los miembros de ese espaci
 ### Protección de datos
 
 Solicita únicamente `calendar.calendarlist.readonly` y `calendar.events.readonly`. No modifica eventos de Google. La autorización es exclusiva del espacio compartido y no altera tareas, notificaciones Firebase ni la sincronización existente.
+
+## Despliegue desde GitHub Actions (recomendado)
+
+El repositorio contiene `.github/workflows/deploy-worker.yml` para publicar **exactamente el código de `cloudflare/assistant`** mediante Wrangler, sin copiar el secreto OAuth de Google a GitHub.
+
+1. En Cloudflare → Mi perfil → API Tokens, crea un token de API con permisos para implementar el Worker existente en la cuenta correcta (la plantilla **Edit Cloudflare Workers** es una opción). Copia el token **solo una vez**, sin pegarlo en el chat ni en el código fuente.
+2. Localiza tu **Account ID** de Cloudflare en el panel de esa cuenta; es distinto del Project ID de Google Cloud.
+3. En GitHub → repositorio `barccelo/nottas` → **Settings → Secrets and variables → Actions**, añade estos secretos de repositorio:
+   - `CLOUDFLARE_API_TOKEN`: el token nuevo de despliegue de Cloudflare.
+   - `CLOUDFLARE_ACCOUNT_ID`: el identificador de cuenta de Cloudflare.
+4. Verifica que las tablas de `google-calendar-schema.sql` ya estén creadas en **D1 remoto**. Si no, ejecútalo desde la consola D1 de Cloudflare antes de hacer el despliegue.
+5. Abre **Actions → Deploy Nottas Assistant Worker → Run workflow** con la rama `main`.
+6. Espera al estado **success**. La acción comprueba `/health` (HTTP 200) y la nueva ruta OAuth con parámetros ausentes (HTTP 400).
+7. Actualiza Nottas desde Obtainium a v0.27.5 o superior y sigue la prueba de conexión indicada arriba.
+
+No selecciones `Secrets` en la configuración de Wrangler Action para las credenciales de Google: estas variables ya están cifradas y configuradas en el Worker de Cloudflare; Wrangler conserva sus secretos durante un deploy normal. Este workflow se ejecuta manualmente para evitar despliegues accidentales mientras se configura la primera conexión.
