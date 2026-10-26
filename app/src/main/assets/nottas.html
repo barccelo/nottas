@@ -494,13 +494,10 @@ html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="da
 .calendarBody.calendarViewSwiping{transition:none}
 .calendarGrid{grid-template-columns:repeat(var(--calendar-month-cols,7),1fr)}
 .calendarTimeViewport.workHoursOnly{flex:0 1 auto!important;min-height:0!important;height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important;max-height:min(var(--calendar-grid-height),calc(var(--vv-height,100vh) - 330px))!important}
-.taskInlineTimeTabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-.taskInlineTimeTabs button{height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#636366;display:flex;align-items:center;justify-content:space-between;padding:0 11px;font-size:11px}
-.taskInlineTimeTabs button strong{font-size:15px;color:#1d1d1f}.taskInlineTimeTabs button.active{background:#e4efff;color:#007aff}
 .taskInlineWheelWrap{position:relative;display:grid;grid-template-columns:1fr 24px 1fr;align-items:center;height:176px;max-width:320px;margin:0 auto}
 .taskInlineWheelColumn{height:176px;min-width:0;position:relative;z-index:2}.taskInlineWheel{height:176px;overflow-y:auto;scroll-snap-type:y mandatory;padding:66px 0;scrollbar-width:none;overscroll-behavior:contain}.taskInlineWheel::-webkit-scrollbar{display:none}
 .taskInlineWheelItem{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:21px;color:#a1a1a6;user-select:none}.taskInlineWheelColon{text-align:center;font-size:27px;font-weight:700;color:#1d1d1f;z-index:3}.taskInlineWheelSelection{position:absolute;left:0;right:0;top:66px;height:44px;border-radius:11px;background:rgba(118,118,128,.10);pointer-events:none;z-index:1}
-html[data-theme="dark"] .taskInlineTimeTabs button{background:#2c2c2e;color:#a1a1a6}html[data-theme="dark"] .taskInlineTimeTabs button strong,html[data-theme="dark"] .taskInlineWheelColon{color:#f5f5f7}html[data-theme="dark"] .taskInlineTimeTabs button.active{background:#19344f;color:#64a9ff}html[data-theme="dark"] .taskInlineWheelSelection{background:rgba(118,118,128,.20)}
+html[data-theme="dark"] .taskInlineWheelColon{color:#f5f5f7}html[data-theme="dark"] .taskInlineWheelSelection{background:rgba(118,118,128,.20)}
 
 /* Fit work-hour timelines to the available screen height */
 .calendarTimeColumns{
@@ -1037,10 +1034,6 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
             <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button><button id="taskInlineSingleDay" type="button">Solo un día</button></div>
           </div>
           <div id="taskInlineTimePanel" class="taskInlineExpand hidden">
-            <div class="taskInlineTimeTabs">
-              <button id="taskInlineStartTab" class="active" type="button" data-inline-time-target="start"><span>Inicio</span><strong id="taskInlineStartTabValue">09:00</strong></button>
-              <button id="taskInlineEndTab" type="button" data-inline-time-target="end"><span>Fin</span><strong id="taskInlineEndTabValue">10:00</strong></button>
-            </div>
             <div class="taskInlineWheelWrap">
               <div class="taskInlineWheelColumn"><div id="taskInlineHourWheel" class="taskInlineWheel" aria-label="Hora"></div><input id="taskInlineHourEdit" class="taskInlineWheelEdit hidden" type="text" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="Editar las horas seleccionadas"></div>
               <div class="taskInlineWheelColon">:</div>
@@ -1049,7 +1042,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
             </div>
             <div class="taskInlineQuickRow"><button type="button" data-inline-duration="30">30 min</button><button type="button" data-inline-duration="60">1 h</button><button type="button" data-inline-duration="90">1 h 30</button><button type="button" data-inline-duration="120">2 h</button></div>
           </div>
-          <label class="taskInlineLocation"><span class="taskInlineLocationIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><input id="taskLocation" type="text" maxlength="200" placeholder="Añadir lugar (opcional)" aria-label="Lugar, texto libre" autocomplete="off"></label>
+          <label class="taskInlineLocation"><span class="taskInlineLocationIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span><input id="taskLocation" type="text" maxlength="200" placeholder="Añadir lugar" aria-label="Lugar, texto libre" autocomplete="off"></label>
           <button id="taskInlineReminderRow" class="taskInlineRow taskInlineButtonRow" type="button">
             <div class="taskInlineRowMain"><span class="taskInlineIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 16.5h9.6l-1.1-1.8V10a3.7 3.7 0 0 0-7.4 0v4.7l-1.1 1.8Z"></path><path d="M10.2 18.2a1.9 1.9 0 0 0 3.6 0"></path></svg></span><span>Recordatorio</span></div>
             <span id="taskInlineReminderSummary" class="taskInlineValue">Sin recordatorio</span>
@@ -3918,7 +3911,6 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   function positionTaskInlineTimeWheels(smooth=false){
     buildTaskInlineTimeWheels();const v=currentTaskInlineTime();taskInlineWheelMute=true;
     $("taskInlineHourWheel").scrollTo({top:v.h*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});$("taskInlineMinuteWheel").scrollTo({top:v.m*INLINE_TIME_ROW,behavior:smooth?"smooth":"auto"});
-    $("taskInlineStartTab").classList.toggle("active",taskInlineTimeTarget==="start");$("taskInlineEndTab").classList.toggle("active",taskInlineTimeTarget==="end");
     setTimeout(()=>{taskInlineWheelMute=false},smooth?260:80);
   }
   function setTaskInlineTimeTarget(target){finishInlineWheelEdit();taskInlineTimeTarget=target==="end"?"end":"start";syncTaskInlineForm();requestAnimationFrame(()=>positionTaskInlineTimeWheels(false))}
@@ -4075,7 +4067,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     $("taskInlineEndDateBtn").classList.toggle("isPickerActive",taskInlineOpenPanel==="date"&&taskInlineDateTarget==="end");
     $("taskInlineStartBtn").classList.toggle("isPickerActive",taskInlineOpenPanel==="time"&&taskInlineTimeTarget==="start");
     $("taskInlineEndBtn").classList.toggle("isPickerActive",taskInlineOpenPanel==="time"&&taskInlineTimeTarget==="end");
-    $("taskInlineStartTabValue").textContent=start||"09:00";$("taskInlineEndTabValue").textContent=end||"10:00";
+
     renderTaskReminderPicker();$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
     const categoryId=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=categoryId==="inbox"?"":catName(categoryId);$("taskInlineTags").value=$("taskTags").value||"";
     const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
@@ -4722,7 +4714,6 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   }
   $("taskInlineStartBtn").addEventListener("click",()=>toggleInlineTimePanelFor("start"));
   $("taskInlineEndBtn").addEventListener("click",()=>toggleInlineTimePanelFor("end"));
-  document.querySelectorAll("[data-inline-time-target]").forEach(btn=>btn.addEventListener("click",()=>setTaskInlineTimeTarget(btn.dataset.inlineTimeTarget)));
   $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
   $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
   ["hour","minute"].forEach((name,part)=>{
