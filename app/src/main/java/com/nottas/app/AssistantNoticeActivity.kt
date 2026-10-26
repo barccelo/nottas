@@ -60,7 +60,7 @@ class AssistantNoticeActivity : Activity() {
 
         val density = resources.displayMetrics.density
         fun dp(i: Int) = (i * density).roundToInt()
-        val background = Color.rgb(245,245,247)
+        val pageBackground = Color.rgb(245,245,247)
         val ink = Color.rgb(29,29,31)
         val gray = Color.rgb(99,99,102)
         val blue = Color.rgb(22,119,255)
@@ -69,7 +69,7 @@ class AssistantNoticeActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             setPadding(dp(24), dp(35), dp(24), dp(28))
-            setBackgroundColor(background)
+            setBackgroundColor(pageBackground)
         }
         root.addView(TextView(this).apply {
             text = "Nottas · Aviso"
