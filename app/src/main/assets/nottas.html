@@ -393,9 +393,36 @@ html[data-theme="dark"] .calendarWeekOptionsPopover{background:#242426}
 html[data-theme="dark"] .calendarWeekOptionRow{color:#f5f5f7}
 html[data-theme="dark"] .calendarWeekOptionRow:active{background:#2c2c2e}
 
+/* Calendar source visibility — compact panel anchored below the eye button. */
+.calendarEyeBtn{width:36px;height:36px;border:0;border-radius:10px;background:transparent;color:#636366;display:grid;place-items:center;padding:0;cursor:pointer}
+.calendarEyeBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.calendarEyeBtn[aria-expanded="true"]{background:#e5e5ea;color:#1677ff}
+.calendarEyeBtn:active{background:rgba(118,118,128,.15)}
+.calendarEyePopover{position:absolute;z-index:32;right:14px;width:min(340px,calc(100% - 28px));max-height:min(440px,60vh);overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid rgba(60,60,67,.12);border-radius:17px;padding:12px;box-shadow:0 14px 42px rgba(0,0,0,.19);color:#1d1d1f}
+.calendarEyePopoverHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 6px}
+.calendarEyePopoverHead strong{font-size:15px;font-weight:700}
+.calendarEyeClose{width:28px;height:28px;display:grid;place-items:center;background:#f2f2f7;border:0;border-radius:50%;color:#636366;font-size:20px;cursor:pointer}
+.calendarEyeHint{font-size:11px;line-height:1.45;color:#8e8e93;margin-bottom:6px}
+.calendarEyeSection{margin-top:10px}
+.calendarEyeSectionTitle{color:#8e8e93;font-size:11px;font-weight:650;margin:0 4px 5px;display:flex;justify-content:space-between}
+.calendarEyeSource{width:100%;border:0;border-radius:10px;min-height:43px;background:transparent;display:flex;align-items:center;gap:9px;text-align:left;padding:7px 8px;color:inherit;font-size:13px;cursor:pointer}
+.calendarEyeSource:active{background:#f2f2f7}
+.calendarEyeSource:disabled{cursor:default;opacity:.70}
+.calendarEyeSourceDot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+.calendarEyeSourceName{flex:1;min-width:0;overflow-wrap:anywhere}
+.calendarEyeSourceCheck{width:19px;height:19px;flex:0 0 19px;border-radius:6px;border:1.5px solid #c7c7cc;display:grid;place-items:center;color:transparent;font-size:13px}
+.calendarEyeSource.selected .calendarEyeSourceCheck{border-color:#1677ff;background:#1677ff;color:#fff}
+.calendarEyeEmpty{padding:14px 6px;color:#8e8e93;font-size:12px;line-height:1.5}
+html[data-theme="dark"] .calendarEyeBtn{color:#d1d1d6}
+html[data-theme="dark"] .calendarEyeBtn[aria-expanded="true"]{background:#2c2c2e;color:#64a9ff}
+html[data-theme="dark"] .calendarEyePopover{background:#242426;border-color:#38383a;color:#f5f5f7}
+html[data-theme="dark"] .calendarEyeClose{background:#38383a;color:#d1d1d6}
+html[data-theme="dark"] .calendarEyeSource:active{background:#38383a}
+html[data-theme="dark"] .calendarEyeSourceCheck{border-color:#636366}
+
 /* Compact week controls + readable event titles + tap peek */
 .calendarSheet{position:relative}
-.calendarNav{grid-template-columns:44px minmax(0,1fr) auto auto 44px}
+.calendarNav{grid-template-columns:44px minmax(0,1fr) auto 36px auto 44px}
 .calendarWeekControls{position:relative;display:block;margin:0;flex:0 0 auto}
 .calendarWeekOptionsBtn{width:36px;height:36px;padding:0;border-radius:10px;justify-content:center}
 .calendarWeekOptionsBtn svg{width:18px;height:18px}
@@ -907,6 +934,9 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
       <button id="calendarPrev" class="calendarNavBtn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
       <div id="calendarPeriod" class="calendarPeriod"></div>
       <button id="calendarToday" class="calendarToday" type="button">Hoy</button>
+      <button id="calendarEyeBtn" class="calendarEyeBtn hidden" type="button" aria-label="Mostrar u ocultar calendarios" aria-expanded="false" aria-controls="calendarEyePopover" title="Calendarios visibles">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.4 12s3.6-6.5 9.6-6.5 9.6 6.5 9.6 6.5-3.6 6.5-9.6 6.5S2.4 12 2.4 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      </button>
       <div id="calendarWeekOptions" class="calendarWeekControls">
         <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-label="Opciones de esta vista" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M14 5v4M4 17h2M10 17h10M8 15v4M4 12h5M13 12h7M11 10v4"></path></svg>
@@ -927,6 +957,10 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
         </div>
       </div>
       <button id="calendarNext" class="calendarNavBtn" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
+    </div>
+    <div id="calendarEyePopover" class="calendarEyePopover hidden" role="dialog" aria-label="Visibilidad de calendarios">
+      <div class="calendarEyePopoverHead"><strong>Calendarios</strong><button id="calendarEyeClose" class="calendarEyeClose" type="button" aria-label="Cerrar">×</button></div>
+      <div id="calendarEyeContents" aria-live="polite"></div>
     </div>
     <div id="calendarGoogleStatus" class="calendarGoogleStatus hidden" aria-live="polite"></div>
     <button id="calendarGoogleReloadBtn" class="calendarGoogleReload hidden" type="button">Actualizar Google Calendar</button>
@@ -1500,6 +1534,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
+  let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="";
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -2681,6 +2716,86 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     }
     for(const items of googleCalendarByDay.values())items.sort((a,b)=>a.allDay===b.allDay?(a.startTime||"").localeCompare(b.startTime||"")||a.title.localeCompare(b.title):a.allDay?-1:1);
   }
+  function closeCalendarEye(){
+    const panel=$("calendarEyePopover");if(!panel)return;
+    panel.classList.add("hidden");$("calendarEyeBtn").setAttribute("aria-expanded","false");
+    calendarEyeLoadSeq++;
+  }
+  function renderCalendarEyeSources(){
+    const target=$("calendarEyeContents");target.replaceChildren();
+    const hint=document.createElement("div");hint.className="calendarEyeHint";
+    const owner=assistantWorkspaceIsOwner(currentWorkspace());
+    if(calendarEyeLoading){hint.textContent="Consultando calendarios…";target.appendChild(hint);return}
+    if(calendarEyeMessage){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent=calendarEyeMessage;target.appendChild(empty);return}
+    const count=calendarEyeSources.filter(c=>c.selected).length;
+    hint.textContent=count+" de "+calendarEyeSources.length+" activos · máximo "+googleCalendarSelectionLimit+(owner?"":" · solo el propietario puede cambiarlos");
+    target.appendChild(hint);
+    if(!calendarEyeSources.length){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent="No hay calendarios disponibles. Comprueba la conexión en Ajustes → Asistente.";target.appendChild(empty);return}
+    for(const selected of [true,false]){
+      const sources=calendarEyeSources.filter(c=>c.selected===selected).sort((a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base"}));
+      if(!sources.length)continue;
+      const section=document.createElement("div");section.className="calendarEyeSection";
+      const title=document.createElement("div");title.className="calendarEyeSectionTitle";title.textContent=(selected?"Activos":"Inactivos")+" · "+sources.length;section.appendChild(title);
+      for(const calendar of sources){
+        const button=document.createElement("button");button.type="button";button.className="calendarEyeSource"+(calendar.selected?" selected":"");
+        button.setAttribute("aria-pressed",calendar.selected?"true":"false");
+        button.setAttribute("aria-label",(calendar.selected?"Ocultar ":"Mostrar ")+calendar.name);
+        button.disabled=!owner||calendarEyeSaving;
+        const dot=document.createElement("i");dot.className="calendarEyeSourceDot";dot.style.background=/^#[0-9a-fA-F]{6}$/.test(calendar.color)?calendar.color:"#4f90e8";
+        const name=document.createElement("span");name.className="calendarEyeSourceName";name.textContent=calendar.name;
+        const check=document.createElement("span");check.className="calendarEyeSourceCheck";check.textContent="✓";
+        button.append(dot,name,check);
+        button.addEventListener("click",()=>toggleCalendarEyeSource(calendar.id));
+        section.appendChild(button);
+      }
+      target.appendChild(section);
+    }
+  }
+  async function openCalendarEye(){
+    const ws=currentWorkspace();if(!assistantConfigured()||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws))return;
+    const panel=$("calendarEyePopover");
+    if(!panel.classList.contains("hidden")){closeCalendarEye();return}
+    $("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
+    closeCalendarPeek();
+    panel.classList.remove("hidden");$("calendarEyeBtn").setAttribute("aria-expanded","true");
+    const sheet=$("calendarOverlay").querySelector(".calendarSheet");
+    const pos=$("calendarEyeBtn").getBoundingClientRect(),container=sheet.getBoundingClientRect();
+    panel.style.top=Math.max(0,Math.round(pos.bottom-container.top+5))+"px";
+    calendarEyeWorkspace=ws.id;calendarEyeLoading=true;calendarEyeMessage="";renderCalendarEyeSources();
+    const seq=++calendarEyeLoadSeq;
+    try{
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/calendars");
+      if(seq!==calendarEyeLoadSeq||ws.id!==currentWorkspaceId())return;
+      calendarEyeSources=(Array.isArray(result.calendars)?result.calendars:[]).filter(c=>c?.id).map(c=>({id:String(c.id),name:String(c.name||c.id),selected:!!c.selected,color:String(c.color||"")}));
+      if(!result.connected)calendarEyeMessage="Conecta Google Calendar desde Ajustes → Asistente.";
+    }catch(error){
+      if(seq!==calendarEyeLoadSeq)return;
+      calendarEyeSources=[];calendarEyeMessage="No se pudieron consultar los calendarios: "+String(error?.message||error);
+    }finally{
+      if(seq===calendarEyeLoadSeq){calendarEyeLoading=false;renderCalendarEyeSources()}
+    }
+  }
+  async function toggleCalendarEyeSource(id){
+    const ws=currentWorkspace();if(calendarEyeSaving||!assistantWorkspaceIsOwner(ws)||ws?.id!==calendarEyeWorkspace)return;
+    const source=calendarEyeSources.find(c=>c.id===id);if(!source)return;
+    const next=!source.selected;
+    if(next&&calendarEyeSources.filter(c=>c.selected).length>=googleCalendarSelectionLimit){showToast("Máximo "+googleCalendarSelectionLimit+" calendarios");return}
+    source.selected=next;calendarEyeSaving=true;renderCalendarEyeSources();
+    try{
+      const ids=calendarEyeSources.filter(c=>c.selected).map(c=>c.id);
+      await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/selection",{method:"POST",body:{calendarIds:ids}});
+      if(ws.id===currentWorkspaceId()){
+        resetGoogleCalendarEvents();
+        renderCalendar(); // Fetch selected events and update all four views.
+      }
+    }catch(error){
+      source.selected=!next;
+      showToast("No se pudo actualizar: "+String(error?.message||error).slice(0,85));
+    }finally{
+      calendarEyeSaving=false;
+      if(ws.id===currentWorkspaceId()&&!$("calendarEyePopover").classList.contains("hidden"))renderCalendarEyeSources();
+    }
+  }
   function calendarGoogleStatus(){
     const ws=currentWorkspace(),status=$("calendarGoogleStatus"),reload=$("calendarGoogleReloadBtn");
     const show=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured();
@@ -3094,6 +3209,9 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     if(!state)return;
     closeCalendarPeek();
     $("calendarBody").dataset.calendarBodyView=calendarView;
+    const ws=currentWorkspace(),eyeVisible=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured();
+    $("calendarEyeBtn").classList.toggle("hidden",!eyeVisible);
+    if(!eyeVisible||calendarEyeWorkspace&&ws?.id!==calendarEyeWorkspace)closeCalendarEye();
     $("calendarPeriod").textContent=calendarPeriodText();
     $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
     $("calendarWeekOptions").classList.remove("hidden");
@@ -3129,7 +3247,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     $("taskTime").value=defaults.start;$("taskEndTime").value=defaults.end;
     syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO($("taskDate").value);
   }
-  function openCalendar(){calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
+  function openCalendar(){closeCalendarEye();calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
   function shiftCalendar(dir){
     if(calendarMoveTaskId)return;
     if(calendarView==="day")calendarDate=addCalendarDays(calendarDate,dir);
@@ -4626,6 +4744,9 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   $("calendarPrev").addEventListener("click",()=>shiftCalendar(-1));
   $("calendarNext").addEventListener("click",()=>shiftCalendar(1));
   $("calendarToday").addEventListener("click",()=>{calendarDate=localDateISO();renderCalendar()});
+  $("calendarEyeBtn").addEventListener("click",e=>{e.stopPropagation();openCalendarEye()});
+  $("calendarEyeClose").addEventListener("click",closeCalendarEye);
+  $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
   $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
@@ -4633,13 +4754,17 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
   $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform=""}});
   document.querySelectorAll("[data-calendar-view]").forEach(b=>b.addEventListener("click",()=>{calendarView=b.dataset.calendarView;renderCalendar()}));
-  $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();closeCalendarPeek();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
+  $("calendarWeekOptionsBtn").addEventListener("click",e=>{e.stopPropagation();closeCalendarEye();closeCalendarPeek();const p=$("calendarWeekOptionsPopover"),open=p.classList.toggle("hidden")===false;$("calendarWeekOptionsBtn").setAttribute("aria-expanded",open?"true":"false")});
   $("calendarWeekOptionsPopover").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
   $("calendarGoogleReloadBtn").addEventListener("click",()=>scheduleGoogleCalendarFetch(true));
   $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t)return;closeCalendarPeek();closeOverlay("calendarOverlay");openTask(t)});
-  $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task],[data-google-event-key]"))closeCalendarPeek()});
+  $("calendarOverlay").addEventListener("click",e=>{
+    if(!e.target.closest("#calendarEyePopover,#calendarEyeBtn"))closeCalendarEye();
+    if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}
+    if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task],[data-google-event-key]"))closeCalendarPeek()
+  });
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
