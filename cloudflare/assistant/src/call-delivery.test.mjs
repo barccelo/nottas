@@ -29,6 +29,7 @@ function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "bos
                 return null;
               }
               if (sql.includes("SELECT name FROM workspaces")) return { name: "Oficina" };
+              if (sql.includes("SELECT w.owner_user_id AS user_id")) return { user_id: "boss" };
               return null;
             },
             async all() {
@@ -144,5 +145,44 @@ test("owner can revoke stale assistant membership without deleting content", asy
     assert.equal(response.status, 200);
     assert.ok(f.statements.some(x => x.sql.includes("UPDATE workspace_members SET status='inactive'")));
     assert.equal(f.statements.some(x => x.sql.includes("DELETE FROM items") || x.sql.includes("DELETE FROM users")), false);
+  } finally { f.restore(); }
+});
+
+test("assistant notice reaches workspace owner only and confirms FCM acceptance", async () => {
+  const f = fixture({
+    actor: "assistant-new",
+    devices: { boss: [{ id: "boss-phone", fcm_token: "boss-token" }] }
+  });
+  try {
+    const response = await worker.fetch(call({ message: "Hay alguien que quiere verte" }, "/v1/workspaces/ws/notice"), f.env);
+    const json = await response.json();
+    assert.equal(response.status, 201);
+    assert.equal(json.pushAccepted, true);
+    const request = f.requests.find(r => r.url.includes("fcm.googleapis.com"));
+    assert.ok(request);
+    const message = JSON.parse(request.body).message;
+    assert.equal(message.token, "boss-token");
+    assert.equal(message.data.type, "assistant_notice");
+    assert.equal(message.data.message, "Hay alguien que quiere verte");
+  } finally { f.restore(); }
+});
+
+test("only workspace assistants can send boss notices", async () => {
+  const f = fixture({ actor: "boss", devices: { boss: [{ id: "own-phone", fcm_token: "boss-token" }] } });
+  try {
+    const response = await worker.fetch(call({ message: "No autorizado" }, "/v1/workspaces/ws/notice"), f.env);
+    assert.equal(response.status, 403);
+    assert.equal(f.requests.filter(r => r.url.includes("fcm.googleapis.com")).length, 0);
+  } finally { f.restore(); }
+});
+
+test("notices reject empty messages and never claim FCM failures are delivered", async () => {
+  const f = fixture({ actor: "assistant-new", devices: { boss: [{ id: "boss-phone", fcm_token: "blocked" }] }, fcmStatuses: { blocked: 401 } });
+  try {
+    const invalid = await worker.fetch(call({ message: "  " }, "/v1/workspaces/ws/notice"), f.env);
+    assert.equal(invalid.status, 400);
+    const blocked = await worker.fetch(call({ message: "Por favor llama a recepción" }, "/v1/workspaces/ws/notice"), f.env);
+    assert.equal(blocked.status, 502);
+    assert.equal((await blocked.json()).error, "notice_not_delivered");
   } finally { f.restore(); }
 });

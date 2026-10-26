@@ -38,6 +38,14 @@ class AssistantMessagingService : FirebaseMessagingService() {
                     data["workspaceName"].orEmpty().ifBlank { "Asistente" }
                 )
             }
+            "assistant_notice" -> {
+                AssistantNoticeNotifier.show(
+                    this,
+                    data["noticeId"].orEmpty(),
+                    data["fromName"].orEmpty().ifBlank { "Asistente" },
+                    data["message"].orEmpty()
+                )
+            }
             "assistant_call_response" -> {
                 val callId = data["callId"].orEmpty()
                 val who = data["fromName"].orEmpty().ifBlank { "Asistente" }
@@ -237,6 +245,74 @@ object AssistantResponseNotifier {
             ).apply {
                 description = "Respuestas a las llamadas del jefe, con vista de pantalla completa."
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                setShowBadge(true)
+            }
+        )
+    }
+}
+
+/**
+ * Full-screen, best-effort delivery with a high-priority notification fallback.
+ * Android may restrict background full-screen intents for ordinary messages.
+ */
+object AssistantNoticeNotifier {
+    private const val CHANNEL_ID = "assistant_notices_v1"
+
+    fun notificationId(noticeId: String): Int = ("assistant_notice_" + noticeId).hashCode()
+
+    fun show(context: Context, noticeId: String, fromName: String, message: String) {
+        if (noticeId.isBlank() || message.isBlank()) return
+        ensureChannel(context)
+        val intent = Intent(context, AssistantNoticeActivity::class.java).apply {
+            putExtra(AssistantNoticeActivity.EXTRA_NOTICE_ID, noticeId)
+            putExtra(AssistantNoticeActivity.EXTRA_FROM_NAME, fromName)
+            putExtra(AssistantNoticeActivity.EXTRA_MESSAGE, message.take(280))
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            )
+        }
+        val pending = PendingIntent.getActivity(
+            context, notificationId(noticeId), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(context, CHANNEL_ID)
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(context)
+        }
+        val notification = builder
+            .setSmallIcon(R.drawable.ic_nottas)
+            .setContentTitle("Aviso de " + fromName)
+            .setContentText(message)
+            .setStyle(Notification.BigTextStyle().bigText(message))
+            .setContentIntent(pending)
+            .setFullScreenIntent(pending, true)
+            .setCategory(Notification.CATEGORY_MESSAGE)
+            .setPriority(Notification.PRIORITY_HIGH)
+            .setVisibility(Notification.VISIBILITY_PRIVATE)
+            .setAutoCancel(true)
+            .build()
+        context.getSystemService(NotificationManager::class.java)
+            .notify(notificationId(noticeId), notification)
+        try {
+            context.startActivity(intent)
+        } catch (_: Throwable) {
+            // Android may block launches from the background.
+            // The notification still opens AssistantNoticeActivity when tapped.
+        }
+    }
+
+    private fun ensureChannel(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        context.getSystemService(NotificationManager::class.java).createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID, "Asistente · Avisos al jefe", NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Mensajes breves del asistente con pantalla de aviso."
+                lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 setShowBadge(true)
             }
         )
