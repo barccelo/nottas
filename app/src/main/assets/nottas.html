@@ -440,6 +440,12 @@ html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
 .taskInlineScheduleBtn{border:0;background:#f2f2f7;color:#1d1d1f;border-radius:11px;min-height:48px;padding:7px 9px;text-align:left;min-width:0}.taskInlineScheduleBtn:disabled{opacity:.42}.taskInlineScheduleBtn strong{display:block;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.taskInlineScheduleLabel{display:block;color:#8e8e93;font-size:9px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}.taskInlineArrow{text-align:center;color:#8e8e93}
 .taskInlineExpand{padding:10px 0 12px;border-bottom:1px solid #ececf0}.taskInlinePanelHead{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;text-align:center;margin-bottom:8px}.taskInlineMiniBtn{height:34px;border:0;border-radius:9px;background:#f2f2f7;color:#1d1d1f;font-size:24px;line-height:1}.taskInlinePanelHead strong{font-size:13px}.taskInlineWeekdays,.taskInlineCalendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.taskInlineWeekdays{margin-bottom:4px;color:#8e8e93;font-size:9px;text-align:center}
 .taskInlineCalendarGrid button{aspect-ratio:1;border:0;border-radius:9px;background:transparent;color:#1d1d1f;font-size:11px}.taskInlineCalendarGrid button.other{color:#c7c7cc}.taskInlineCalendarGrid button.today{outline:1px solid #0a84ff}.taskInlineCalendarGrid button.selected{background:#1677ff;color:#fff;outline:0}
+.taskInlineCalendarGrid button.inRange{background:rgba(22,119,255,.13);border-radius:3px}
+.taskInlineCalendarGrid button.rangeStart,.taskInlineCalendarGrid button.rangeEnd{background:#1677ff;color:#fff;border-radius:9px}
+.taskInlineDateHint{font-size:11px;color:#8e8e93;margin:2px 0 9px}
+.taskInlineEndDateRow .taskInlineValue{max-width:50%;overflow:hidden;text-overflow:ellipsis}
+html[data-theme="dark"] .taskInlineCalendarGrid button.inRange{background:rgba(70,150,255,.25)}
+html[data-theme="dark"] .taskInlineCalendarGrid button.rangeStart,html[data-theme="dark"] .taskInlineCalendarGrid button.rangeEnd{background:#1677ff;color:#fff}
 .taskInlineQuickRow{display:flex;gap:6px;overflow-x:auto;margin-top:9px;scrollbar-width:none}.taskInlineQuickRow::-webkit-scrollbar{display:none}.taskInlineQuickRow button{height:31px;flex:0 0 auto;border:0;border-radius:9px;background:#f2f2f7;color:#1d1d1f;padding:0 10px;font-size:11px;font-weight:600}
 .taskInlineTimeGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.taskInlineTimeGrid label{display:flex;flex-direction:column;gap:4px;color:#8e8e93;font-size:9px;text-transform:uppercase}.taskInlineTimeGrid input{height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 11px;font-size:16px;font-weight:650;outline:none}.taskInlineSelect{width:100%;height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 10px}
 .taskInlineInlineSelect{max-width:48%;border:0;background:transparent;color:#636366;text-align:right;font-size:12px;outline:none}.taskInlineText{min-width:0;max-width:58%;height:36px;border:0;background:transparent;color:#1d1d1f;text-align:right;outline:none;font-size:12px}.taskInlineText::placeholder{color:#8e8e93}.taskInlineSectionLabel{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#8e8e93;margin:8px 2px 4px}
@@ -996,11 +1002,12 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
             <span class="taskInlineArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h13M14 8l4 4-4 4"></path></svg></span>
             <button id="taskInlineEndBtn" class="taskInlineScheduleBtn" type="button"><span class="taskInlineScheduleLabel">Fin</span><strong id="taskInlineEndText">—</strong></button>
           </div>
-          <div id="taskInlineDatePanel" class="taskInlineExpand hidden">
+          <button id="taskInlineEndDateBtn" class="taskInlineRow taskInlineButtonRow taskInlineEndDateRow hidden" type="button"><div class="taskInlineRowMain"><span class="taskInlineIcon">▦</span><span>Último día</span></div><span id="taskInlineEndDateText" class="taskInlineValue">El mismo día</span></button>
+          <div id="taskInlineDatePanel" class="taskInlineExpand hidden"><div id="taskInlineDateHint" class="taskInlineDateHint">Selecciona el primer día</div>
             <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"></path></svg></button><strong id="taskInlineMonthLabel"></strong><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"></path></svg></button></div>
             <div class="taskInlineWeekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
             <div id="taskInlineCalendarGrid" class="taskInlineCalendarGrid"></div>
-            <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button></div>
+            <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button><button id="taskInlineSingleDay" type="button">Solo un día</button></div>
           </div>
           <div id="taskInlineTimePanel" class="taskInlineExpand hidden">
             <div class="taskInlineTimeTabs">
@@ -1104,7 +1111,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
             </div>
           </div>
           <div class="field taskMoreWide"><div class="noteActionLabel">Etiquetas</div><input id="taskTags" class="textInput" type="text" maxlength="240" placeholder="trabajo, urgente" autocomplete="off"></div>
-          <div class="field"><div class="noteActionLabel">Fecha</div><input id="taskDate" class="dateInput" type="date"></div>
+          <div class="field"><div class="noteActionLabel">Fecha</div><input id="taskDate" class="dateInput" type="date"><input id="taskEndDate" type="hidden"></div>
           <div class="field"><div class="noteActionLabel">Prioridad</div><select id="taskPriority" class="select"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></div>
           <div class="field taskMoreWide"><div class="noteActionLabel">Inicio y recordatorio</div><button id="taskTimeButton" class="timeFieldButton" type="button"><span class="timeFieldText"><span id="taskTimeValue" class="timeFieldValue">Sin hora</span><span id="taskTimeReminderText" class="timeFieldReminder">Sin recordatorio</span></span><svg viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button><input id="taskTime" type="hidden" value=""></div>
           <div class="field"><div class="noteActionLabel">Fin</div><input id="taskEndTime" class="timeInput" type="time" step="900"></div>
@@ -1468,7 +1475,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
 
   let state=null;
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
@@ -1675,7 +1682,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     o.categories=o.categories.map(c=>({...c,workspaceId:c.id==="inbox"?"*":String(c.workspaceId||personalId),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||"")}));
     o.workspaces=workspaces;
     o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,hiddenWorkspaceIds:Array.isArray(assistantRaw.hiddenWorkspaceIds)?assistantRaw.hiddenWorkspaceIds.filter(x=>typeof x==="string").slice(0,100):[],firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
-    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
+    o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),endDate:String(t.endDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
     o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false,calendarMonthShowWeekends:prefs.calendarMonthShowWeekends!==false,calendarAgendaShowCompleted:prefs.calendarAgendaShowCompleted!==false,defaultReminderMinutes:normalizeReminderMinutes(prefs.defaultReminderMinutes)};
@@ -2414,7 +2421,11 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   }
   function hapticTick(){try{if(window.NottasNative&&NottasNative.hapticTick)NottasNative.hapticTick()}catch(_){}}
   function matchesText(...parts){if(!query)return true;return parts.join(" ").toLowerCase().includes(query)}
-  function isOverdue(t){return !!t.dueDate&&!t.done&&t.dueDate<localDateISO()}
+  function taskRangeEnd(t){return t?.dueDate&&String(t.endDate||"")>t.dueDate?t.endDate:(t?.dueDate||"")}
+  function taskOccursOn(t,date){return !!t?.dueDate&&t.dueDate<=date&&date<=taskRangeEnd(t)}
+  function taskDaysBetween(a,b){const x=Date.parse(a+"T12:00:00Z"),y=Date.parse(b+"T12:00:00Z");return Number.isFinite(x)&&Number.isFinite(y)?Math.round((y-x)/86400000):0}
+  function moveTaskStartDate(t,date){const span=Math.max(0,taskDaysBetween(t.dueDate,taskRangeEnd(t)));t.dueDate=date;t.endDate=span?addCalendarDays(date,span):""}
+  function isOverdue(t){return !!t.dueDate&&!t.done&&taskRangeEnd(t)<localDateISO()}
   function dueLabel(t){
     if(!t.dueDate)return "";
     const todayDate=new Date(),today=localDateISO(todayDate),tomorrowDate=new Date(todayDate);
@@ -2427,6 +2438,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       const d=new Date(t.dueDate+"T12:00:00");
       label=d.toLocaleDateString("es",{day:"numeric",month:"short",...(d.getFullYear()!==todayDate.getFullYear()?{year:"numeric"}:{})});
     }
+    if(taskRangeEnd(t)>t.dueDate)label+=" – "+dateFromISO(taskRangeEnd(t)).toLocaleDateString("es",{day:"numeric",month:"short"});
     if(isOverdue(t))label="Vencida · "+label;
     if(t.dueTime)label+=" · "+t.dueTime+(t.endTime?"–"+t.endTime:"");
     return label;
@@ -2461,9 +2473,17 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   }
   function reminderLabel(r){const m=legacyReminderToMinutes(r);return m===null?"":reminderMinutesLabel(m)}
   function taskReminderTimes(t){
-    if(!t||!t.dueDate||!t.dueTime)return [];
-    const due=new Date(t.dueDate+"T"+t.dueTime+":00").getTime();if(!Number.isFinite(due))return [];
-    return taskReminderOffsets(t).map(minutes=>({minutes,at:due-minutes*60000})).filter(x=>x.at>0);
+    if(!t?.dueDate)return [];
+    const offsets=taskReminderOffsets(t);if(!offsets.length)return [];
+    // All-day events notify at 09:00; timed events retain their start time.
+    const time=t.dueTime||"09:00",last=taskRangeEnd(t),rows=[];
+    const earliest=addCalendarDays(localDateISO(),-Math.ceil(Math.max(...offsets)/1440)-1);
+    let day=t.dueDate;if(day<earliest)day=earliest;
+    for(let n=0;day<=last&&n<366;n++,day=addCalendarDays(day,1)){
+      const due=new Date(day+"T"+time+":00").getTime();if(!Number.isFinite(due))continue;
+      offsets.forEach(minutes=>{const at=due-minutes*60000;if(at>0)rows.push({minutes,at,date:day})});
+    }
+    return rows;
   }
   function taskReminderAt(t){return taskReminderTimes(t)[0]?.at||0}
   function syncNativeReminders(){
@@ -2471,7 +2491,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       if(!window.NottasNative||!NottasNative.syncReminders||!state)return;
       const rows=[];
       state.tasks.filter(t=>!t.deletedAt&&!t.done).forEach(t=>{
-        taskReminderTimes(t).forEach(r=>rows.push({id:t.id,alarmId:t.id+"::r"+r.minutes,text:t.text,at:r.at,offsetMinutes:r.minutes}));
+        taskReminderTimes(t).forEach(r=>rows.push({id:t.id,alarmId:t.id+"::"+r.date+"::r"+r.minutes,text:t.text,at:r.at,offsetMinutes:r.minutes}));
       });
       NottasNative.syncReminders(JSON.stringify(rows));
     }catch(_){}
@@ -2509,7 +2529,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     if(!t||!t.recurrence||t.recurrence==="none")return null;
     if(state.tasks.some(x=>x.recurrenceFrom===t.id))return null;
     const stamp=now();
-    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[],true);const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||currentUserId(),updatedBy:currentUserId()||t.updatedBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||"",category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),dueTime:t.dueTime||"",endTime:t.endTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",reminders:taskReminderOffsets(t),recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+    const items=cloneTaskItems(t.items||[],true),blocks=cloneNoteBlocks(t.blocks||[],true);const nextDue=nextRecurrenceDate(t.dueDate||localDateISO(),t.recurrence),nextEnd=taskRangeEnd(t)>t.dueDate?addCalendarDays(nextDue,taskDaysBetween(t.dueDate,taskRangeEnd(t))):"";const next={id:makeId("t"),text:t.text,body:t.body||"",blocks,workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||currentUserId(),updatedBy:currentUserId()||t.updatedBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||"",category:t.category,tags:normalizeTags(t.tags),done:false,pinned:t.pinned,dueDate:nextDue,endDate:nextEnd,dueTime:t.dueTime||"",endTime:t.endTime||"",priority:t.priority||"normal",recurrence:t.recurrence,reminder:t.reminder||"none",reminders:taskReminderOffsets(t),recurrenceFrom:t.id,items,subtasks:legacySubtasksFromItems(items),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
     state.tasks.push(next);
     return next;
   }
@@ -2526,13 +2546,13 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     touch(t);scheduleSave();render();
   }
 
-  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&t.dueDate!==localDateISO())return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,catName(t.category),tagsText(t.tags),t.dueDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
+  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
   function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
   function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
 
   function updateCounts(){
     const live=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt),notes=state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt);const today=localDateISO();
-    $("countToday").textContent=live.filter(t=>t.dueDate===today&&(taskFilter==="all"||!t.done)).length||"";$("countPending").textContent=live.filter(t=>!t.done).length||"";$("countPinnedTasks").textContent=live.filter(t=>t.pinned).length||"";$("countAll").textContent=live.length||"";$("countDone").textContent=live.filter(t=>t.done).length||"";$("countNotes").textContent=notes.length||"";$("countPinned").textContent=notes.filter(n=>n.pinned).length||"";
+    $("countToday").textContent=live.filter(t=>taskOccursOn(t,today)&&(taskFilter==="all"||!t.done)).length||"";$("countPending").textContent=live.filter(t=>!t.done).length||"";$("countPinnedTasks").textContent=live.filter(t=>t.pinned).length||"";$("countAll").textContent=live.length||"";$("countDone").textContent=live.filter(t=>t.done).length||"";$("countNotes").textContent=notes.length||"";$("countPinned").textContent=notes.filter(n=>n.pinned).length||"";
   }
 
   function renderCategories(){
@@ -2554,7 +2574,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       b.addEventListener("click",()=>{activeWorkspaceId=w.id;activeCategory="all";activeTag="";trash=false;saveUI();closeSidebar();render()});wsBox.appendChild(b);
     });
     const counts={
-      today:liveTasks.filter(t=>t.dueDate===localDateISO()&&(taskFilter==="all"||!t.done)).length,
+      today:liveTasks.filter(t=>taskOccursOn(t,localDateISO())&&(taskFilter==="all"||!t.done)).length,
       pending:liveTasks.filter(t=>!t.done).length,
       pinned:liveTasks.filter(t=>t.pinned).length,
       all:liveTasks.length,
@@ -2706,7 +2726,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       node.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showGoogleCalendarPeek(event,node)}});
     });
   }
-  function calendarTasksFor(value){return state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.dueDate===value).slice().sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")||String(a.text).localeCompare(String(b.text)))}
+  function calendarTasksFor(value){return state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&taskOccursOn(t,value)).slice().sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")||String(a.text).localeCompare(String(b.text)))}
   function calendarDateLabel(value,opts){return dateFromISO(value).toLocaleDateString("es",{...opts})}
   function calendarMoveNotice(){
     if(!calendarMoveTaskId)return "";
@@ -2725,7 +2745,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   function cancelCalendarMove(){calendarMoveTaskId=null;renderCalendar()}
   function moveCalendarTaskTo(date){
     const t=state.tasks.find(x=>x.id===calendarMoveTaskId&&!x.deletedAt);if(!t){calendarMoveTaskId=null;renderCalendar();return}
-    const old=t.dueDate||"";t.dueDate=date;touch(t);calendarMoveTaskId=null;calendarDate=date;scheduleSave();renderCalendar();render();
+    const old=t.dueDate||"";moveTaskStartDate(t,date);touch(t);calendarMoveTaskId=null;calendarDate=date;scheduleSave();renderCalendar();render();
     showToast(old===date?"La tarea ya estaba en esa fecha":"Tarea reprogramada");
   }
   function bindCalendarMoveCancel(){
@@ -2748,7 +2768,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     const finish=e=>{
       clearTimeout(timer);timer=null;if(!active)return;e.preventDefault();suppressClickUntil=Date.now()+480;
       const date=targetDate;cleanup();if(!date)return;
-      const old=t.dueDate||"";t.dueDate=date;calendarDate=date;touch(t);scheduleSave();renderCalendar();render();showToast(old===date?"La tarea ya estaba en esa fecha":"Tarea reprogramada");
+      const old=t.dueDate||"";moveTaskStartDate(t,date);calendarDate=date;touch(t);scheduleSave();renderCalendar();render();showToast(old===date?"La tarea ya estaba en esa fecha":"Tarea reprogramada");
     };
     handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",cleanup);
   }
@@ -2769,7 +2789,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     const peek=$("calendarPeek"),sheet=document.querySelector("#calendarOverlay .calendarSheet");if(!peek||!sheet)return;
     $("calendarPeekTitle").textContent=t.text||"Sin título";
     const bits=[];
-    if(t.dueDate)bits.push(calendarDateLabel(t.dueDate,{weekday:"short",day:"numeric",month:"short"}));
+    if(t.dueDate)bits.push(calendarDateLabel(t.dueDate,{weekday:"short",day:"numeric",month:"short"})+(taskRangeEnd(t)>t.dueDate?" – "+calendarDateLabel(taskRangeEnd(t),{weekday:"short",day:"numeric",month:"short"}):""));
     if(t.dueTime)bits.push(calendarTaskRangeLabel(t));
     const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
     $("calendarPeekMeta").textContent=bits.join(" · ");
@@ -2971,7 +2991,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       const date=targetDate,minute=targetMinute,duration=taskDurationMinutes(t);
       cleanup();
       if(!date||minute===null)return;
-      t.dueDate=date;t.dueTime=minutesToTime(minute);
+      moveTaskStartDate(t,date);t.dueTime=minutesToTime(minute);
       if(duration!==null)t.endTime=minutesToTime(Math.min(1439,minute+duration));
       touch(t);calendarDate=date;scheduleSave();renderCalendar();render();showToast("Tarea movida a "+t.dueTime);
     };
@@ -3035,11 +3055,16 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   }
   function renderCalendarAgenda(){
     const start=dateFromISO(calendarDate),end=new Date(start);end.setDate(end.getDate()+60);
-    const tasks=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end&&(state.preferences.calendarAgendaShowCompleted!==false||!t.done)).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
+    const startIso=localDateISO(start),endIso=localDateISO(end);
+    const tasks=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.dueDate&&t.dueDate<=endIso&&taskRangeEnd(t)>=startIso&&(state.preferences.calendarAgendaShowCompleted!==false||!t.done));
     let html=calendarMoveNotice();
     const googleDates=[...googleCalendarByDay.keys()].filter(date=>date>=localDateISO(start)&&date<=localDateISO(end));
     if(!tasks.length&&!googleDates.length){$("calendarBody").innerHTML=html+'<div class="calendarEmpty">No hay tareas ni eventos en los próximos 60 días.</div>';bindCalendarMoveCancel();return}
-    const groups={};tasks.forEach(t=>(groups[t.dueDate]||(groups[t.dueDate]=[])).push(t));
+    const groups={};tasks.forEach(t=>{
+      let day=t.dueDate<startIso?startIso:t.dueDate;
+      const last=taskRangeEnd(t)<endIso?taskRangeEnd(t):endIso;
+      for(let n=0;day<=last&&n<=60;n++,day=addCalendarDays(day,1))(groups[day]||(groups[day]=[])).push(t);
+    });Object.values(groups).forEach(rows=>rows.sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")));
     html+=[...new Set([...Object.keys(groups),...googleDates])].sort().map(date=>'<div class="agendaGroup"><button class="agendaGroupTitle" type="button" data-calendar-date="'+date+'">'+calendarDateLabel(date,{weekday:"long",day:"numeric",month:"long"})+'</button>'+calendarCombinedRows(date,groups[date]||[])+'</div>').join("");
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarGoogleEvents();
   }
@@ -3071,7 +3096,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     closeOverlay("calendarOverlay");
     mode="tasks";trash=false;saveUI();
     openTask(null);
-    $("taskDate").value=date;
+    $("taskDate").value=date;$("taskEndDate").value="";
     syncTaskEditorMeta();
   }
   function openCalendar(){calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
@@ -3718,7 +3743,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   function captureTaskEditorState(){
     return {
       text:inlineHtmlToText($("taskText")?.innerHTML||""),textHtml:sanitizeInlineHtml($("taskText")?.innerHTML||""),category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
-      dueDate:$("taskDate")?.value||"",dueTime:$("taskTime")?.value||"",endTime:$("taskEndTime")?.value||"",priority:$("taskPriority")?.value||"normal",
+      dueDate:$("taskDate")?.value||"",endDate:$("taskEndDate")?.value||"",dueTime:$("taskTime")?.value||"",endTime:$("taskEndTime")?.value||"",priority:$("taskPriority")?.value||"normal",
       recurrence:$("taskRecurrence")?.value||"none",reminder:$("taskReminder")?.value||"at",
       reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,
       blocks:cloneSerializable(editorTaskBlocks||[]),items:cloneSerializable(editorSubtasks||[])
@@ -3742,7 +3767,7 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   function applyTaskHistoryState(snap){
     if(!snap)return;taskHistoryApplying=true;
     $("taskText").innerHTML=sanitizeInlineHtml(snap.textHtml||plainToInlineHtml(snap.text||""));setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
-    $("taskDate").value=snap.dueDate||"";$("taskTime").value=snap.dueTime||"";$("taskEndTime").value=snap.endTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
+    $("taskDate").value=snap.dueDate||"";$("taskEndDate").value=snap.endDate||"";$("taskTime").value=snap.dueTime||"";$("taskEndTime").value=snap.endTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
     editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
     renderTaskBlocks();renderEditorSubtasks();syncTaskTimeButton();syncTaskEditorMeta();syncEditorPin();taskHistoryApplying=false;
   }
@@ -3793,9 +3818,9 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     input.classList.toggle("done",!!editorTaskDone);
   }
   function syncTaskEditorMeta(){
-    const date=$("taskDate")?.value||"",time=$("taskTime")?.value||"",end=$("taskEndTime")?.value||"";
+    const date=$("taskDate")?.value||"",dateEnd=$("taskEndDate")?.value||"",time=$("taskTime")?.value||"",end=$("taskEndTime")?.value||"";
     const dateChip=$("taskDateChip"),timeChip=$("taskTimeChip"),wrap=$("taskMetaChips");
-    if(dateChip){dateChip.classList.toggle("hidden",!date);$("taskDateChipText").textContent=taskDateText(date)}
+    if(dateChip){dateChip.classList.toggle("hidden",!date);$("taskDateChipText").textContent=taskDateText(date)+(dateEnd>date?" – "+taskDateText(dateEnd):"")}
     if(timeChip){timeChip.classList.toggle("hidden",!time);$("taskTimeChipText").textContent=time?(time+(end?"–"+end:"")):""}
     if(wrap)wrap.classList.toggle("hidden",!date&&!time);
     $("taskDateBtn")?.classList.toggle("active",!!date);$("taskTimeQuickBtn")?.classList.toggle("active",!!time);
@@ -3876,14 +3901,39 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
   }
-  function setTaskInlineDate(value){$("taskDate").value=value||"";if(value)taskInlineMonth=dateFromISO(value);syncTaskEditorMeta();commitTaskHistory()}
+  function setTaskInlineDate(value){
+    $("taskDate").value=value||"";
+    if(!value||$("taskEndDate").value<=value)$("taskEndDate").value="";
+    if(value)taskInlineMonth=dateFromISO(value);
+    syncTaskEditorMeta();commitTaskHistory();
+  }
+  function setTaskInlineEndDate(value){
+    const start=$("taskDate").value;
+    if(!start){showToast("Selecciona primero el día de inicio");return false}
+    if(value<start){showToast("El último día no puede ser anterior al inicio");return false}
+    if(taskDaysBetween(start,value)>365){showToast("Máximo 366 días por evento");return false}
+    $("taskEndDate").value=value===start?"":value;
+    if(value>start&&!editorTaskReminders.length)setEditorTaskReminders([0],false);
+    syncTaskEditorMeta();commitTaskHistory();return true;
+  }
   function renderTaskInlineCalendar(){
     const host=$("taskInlineCalendarGrid");if(!host)return;
     const y=taskInlineMonth.getFullYear(),m=taskInlineMonth.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);
     $("taskInlineMonthLabel").textContent=new Date(y,m,1).toLocaleDateString("es",{month:"long",year:"numeric"});
-    const selected=$("taskDate").value,today=localDateISO();let out="";
-    for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),other=d.getMonth()!==m;out+='<button type="button" data-inline-date="'+iso+'" class="'+(other?"other ":"")+(iso===today?"today ":"")+(iso===selected?"selected":"")+'">'+d.getDate()+'</button>'}
-    host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{setTaskInlineDate(btn.dataset.inlineDate);setTaskInlinePanel("")}));
+    const selected=$("taskDate").value,last=$("taskEndDate").value,today=localDateISO();
+    $("taskInlineDateHint").textContent=taskInlineDateTarget==="end"?"Selecciona el último día (incluido)":"Selecciona el primer día";
+    $("taskInlineSingleDay").classList.toggle("hidden",!last);
+    $("taskInlineClearDate").classList.toggle("hidden",taskInlineDateTarget==="end");
+    let out="";
+    for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const iso=localDateISO(d),other=d.getMonth()!==m;
+      const range=last&&iso>=selected&&iso<=last,inRange=range&&iso!==selected&&iso!==last;
+      out+='<button type="button" data-inline-date="'+iso+'" class="'+(other?"other ":"")+(iso===today?"today ":"")+(iso===selected?"rangeStart selected ":"")+(iso===last?"rangeEnd selected ":"")+(inRange?"inRange ":"")+'">'+d.getDate()+'</button>';
+    }
+    host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{
+      if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(btn.dataset.inlineDate))return}
+      else setTaskInlineDate(btn.dataset.inlineDate);
+      setTaskInlinePanel("");
+    }));
   }
   function hideTaskInlineCategorySuggestions(){
     const host=$("taskInlineCategorySuggestions"),field=$("taskInlineCategory");if(!host||!field)return;
@@ -3970,14 +4020,16 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   }
   function renderTaskReminderPicker(){
     const reminders=normalizeReminderMinutes(editorTaskReminders),set=new Set(reminders),preset=new Set([0,5,10,60,1440,1]);
-    $("taskInlineReminderSummary").textContent=!reminders.length?"Sin recordatorio":reminders.length===1?reminderMinutesLabel(reminders[0]):reminders.length+" alertas";
+    const span=$("taskEndDate").value>$("taskDate").value;
+    $("taskInlineReminderSummary").textContent=!reminders.length?"Sin recordatorio":span?(reminders.length===1?("Cada día · "+($("taskTime").value||"09:00")):(reminders.length+" alertas/día")):(reminders.length===1?reminderMinutesLabel(reminders[0]):reminders.length+" alertas");
     document.querySelectorAll("[data-reminder-minutes]").forEach(btn=>btn.classList.toggle("selected",set.has(Number(btn.dataset.reminderMinutes))));
     const custom=$("taskCustomReminderRows");custom.innerHTML=reminders.filter(m=>!preset.has(m)).map(m=>'<button class="taskReminderChoice selected" type="button" data-custom-reminder-remove="'+m+'"><span class="taskReminderCheck"></span><span>'+esc(reminderMinutesLabel(m))+'</span></button>').join("");
     custom.querySelectorAll("[data-custom-reminder-remove]").forEach(btn=>btn.addEventListener("click",()=>toggleTaskReminder(Number(btn.dataset.customReminderRemove))));
     $("taskInlineReminderOptions").classList.toggle("hidden",!taskReminderPanelOpen);
   }
   function syncTaskInlineForm(){
-    const date=$("taskDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
+    const date=$("taskDate").value||"",dateEnd=$("taskEndDate").value||"",start=$("taskTime").value||"",end=$("taskEndTime").value||"",allDay=!!date&&!start;
+    $("taskInlineEndDateBtn").classList.toggle("hidden",!date);$("taskInlineEndDateText").textContent=dateEnd>date?formatTaskInlineDate(dateEnd):"El mismo día";
     $("taskAllDayToggle").checked=allDay;$("taskInlineDateText").textContent=formatTaskInlineDate(date);$("taskInlineStartText").textContent=allDay?"Todo el día":(start||"Sin hora");$("taskInlineEndText").textContent=allDay?"":(end||"—");$("taskInlineStartBtn").disabled=allDay;$("taskInlineEndBtn").disabled=allDay;$("taskInlineStartTabValue").textContent=start||"09:00";$("taskInlineEndTabValue").textContent=end||"10:00";
     renderTaskReminderPicker();$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
     const categoryId=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=categoryId==="inbox"?"":catName(categoryId);$("taskInlineTags").value=$("taskTags").value||"";
@@ -4028,26 +4080,26 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     $("taskBody").value=body;
     let items=normalizeTaskItems(editorSubtasks,[]);syncTaskTreeDone(items);
     if(editorTaskDone){items.forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(items)}
-    const dueDate=$("taskDate").value||"",dueTime=$("taskTime").value||"",endTime=normalizeTaskEndTime(dueTime,$("taskEndTime").value||"");
-    const reminders=dueDate&&dueTime?normalizeReminderMinutes(editorTaskReminders):[],reminder=reminders.length?reminderMinutesToLegacy(reminders[0]):"none";
-    return {text,textHtml,body,blocks,workspaceId:editorTaskWorkspaceId||currentWorkspaceId(),createdBy:editorTaskCreatedBy||currentUserId(),approvalStatus:editorTaskApprovalStatus||"confirmed",requiresApproval:!!editorTaskRequiresApproval,assignedTo:editorTaskAssignedTo||"",proposalMessage:editorTaskProposalMessage||"",category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,dueTime,endTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,reminders,items,subtasks:legacySubtasksFromItems(items)};
+    const dueDate=$("taskDate").value||"",endDate=$("taskEndDate").value>dueDate?$("taskEndDate").value:"",dueTime=$("taskTime").value||"",endTime=normalizeTaskEndTime(dueTime,$("taskEndTime").value||"");
+    const reminders=dueDate?normalizeReminderMinutes(editorTaskReminders):[],reminder=reminders.length?reminderMinutesToLegacy(reminders[0]):"none";
+    return {text,textHtml,body,blocks,workspaceId:editorTaskWorkspaceId||currentWorkspaceId(),createdBy:editorTaskCreatedBy||currentUserId(),approvalStatus:editorTaskApprovalStatus||"confirmed",requiresApproval:!!editorTaskRequiresApproval,assignedTo:editorTaskAssignedTo||"",proposalMessage:editorTaskProposalMessage||"",category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,endDate,dueTime,endTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,reminders,items,subtasks:legacySubtasksFromItems(items)};
   }
   function persistOpenTask(showSaved=false){
     if($("taskForm").classList.contains("hidden"))return false;
     const snap=taskSnapshot();if(!snap.text)return false;
     const existing=editingTaskId?state.tasks.find(x=>x.id===editingTaskId):null;
-    if(existing&&isSharedWorkspace()&&currentWorkspaceRole()==="assistant"&&(existing.approvalStatus||"confirmed")==="confirmed"&&(existing.dueDate!==snap.dueDate||existing.dueTime!==snap.dueTime||(existing.endTime||"")!==snap.endTime)){snap.approvalStatus="proposed";snap.requiresApproval=true;editorTaskApprovalStatus="proposed";editorTaskRequiresApproval=true;syncAssistantTaskStrip()}
+    if(existing&&isSharedWorkspace()&&currentWorkspaceRole()==="assistant"&&(existing.approvalStatus||"confirmed")==="confirmed"&&(existing.dueDate!==snap.dueDate||(existing.endDate||"")!==snap.endDate||existing.dueTime!==snap.dueTime||(existing.endTime||"")!==snap.endTime)){snap.approvalStatus="proposed";snap.requiresApproval=true;editorTaskApprovalStatus="proposed";editorTaskRequiresApproval=true;syncAssistantTaskStrip()}
     let changed=false,target=existing;
     if(existing){
       const wasDone=!!existing.done;
-      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&existing.workspaceId===snap.workspaceId&&(existing.createdBy||"")===snap.createdBy&&(existing.approvalStatus||"confirmed")===snap.approvalStatus&&!!existing.requiresApproval===!!snap.requiresApproval&&(existing.assignedTo||"")===snap.assignedTo&&(existing.proposalMessage||"")===snap.proposalMessage&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&existing.dueTime===snap.dueTime&&(existing.endTime||"")===snap.endTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(taskReminderOffsets(existing))===JSON.stringify(snap.reminders)&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
+      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&existing.workspaceId===snap.workspaceId&&(existing.createdBy||"")===snap.createdBy&&(existing.approvalStatus||"confirmed")===snap.approvalStatus&&!!existing.requiresApproval===!!snap.requiresApproval&&(existing.assignedTo||"")===snap.assignedTo&&(existing.proposalMessage||"")===snap.proposalMessage&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&(existing.endDate||"")===snap.endDate&&existing.dueTime===snap.dueTime&&(existing.endTime||"")===snap.endTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(taskReminderOffsets(existing))===JSON.stringify(snap.reminders)&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
       if(!same){
-        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.workspaceId=snap.workspaceId;existing.createdBy=snap.createdBy;existing.approvalStatus=snap.approvalStatus;existing.requiresApproval=snap.requiresApproval;existing.assignedTo=snap.assignedTo;existing.proposalMessage=snap.proposalMessage;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.dueTime=snap.dueTime;existing.endTime=snap.endTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.reminders=snap.reminders;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
+        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.workspaceId=snap.workspaceId;existing.createdBy=snap.createdBy;existing.approvalStatus=snap.approvalStatus;existing.requiresApproval=snap.requiresApproval;existing.assignedTo=snap.assignedTo;existing.proposalMessage=snap.proposalMessage;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.endDate=snap.endDate;existing.dueTime=snap.dueTime;existing.endTime=snap.endTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.reminders=snap.reminders;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
         if(existing.done&&!wasDone)createNextOccurrence(existing);
       }
     }else{
       const stamp=now(),id=makeId("t");
-      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,workspaceId:snap.workspaceId,createdBy:snap.createdBy,updatedBy:currentUserId(),approvalStatus:snap.approvalStatus,requiresApproval:snap.requiresApproval,assignedTo:snap.assignedTo,proposalMessage:snap.proposalMessage,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,reminders:snap.reminders,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,workspaceId:snap.workspaceId,createdBy:snap.createdBy,updatedBy:currentUserId(),approvalStatus:snap.approvalStatus,requiresApproval:snap.requiresApproval,assignedTo:snap.assignedTo,proposalMessage:snap.proposalMessage,category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,endDate:snap.endDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,reminders:snap.reminders,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
       state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskBtn").classList.remove("hidden");
       if(target.done)createNextOccurrence(target);
     }
@@ -4119,9 +4171,9 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
     editorTaskWorkspaceId=collab.workspaceId;editorTaskCreatedBy=collab.createdBy;editorTaskApprovalStatus=collab.approvalStatus||"confirmed";editorTaskRequiresApproval=!!collab.requiresApproval;editorTaskAssignedTo=collab.assignedTo||"";editorTaskProposalMessage=collab.proposalMessage||"";editorTaskReminders=t?taskReminderOffsets(t):defaultTaskReminderOffsets();taskReminderPanelOpen=false;$("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
+    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskEndDate").value=t?t.endDate||"":"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -4610,7 +4662,13 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
-  $("taskInlineDateBtn").addEventListener("click",()=>setTaskInlinePanel("date"));
+  $("taskInlineDateBtn").addEventListener("click",()=>{taskInlineDateTarget="start";setTaskInlinePanel("date")});
+  $("taskInlineEndDateBtn").addEventListener("click",()=>{
+    if(!$("taskDate").value){showToast("Selecciona primero el día de inicio");return}
+    taskInlineDateTarget="end";taskInlineMonth=dateFromISO($("taskEndDate").value||$("taskDate").value);
+    if(taskInlineOpenPanel==="date"){renderTaskInlineCalendar();return}
+    setTaskInlinePanel("date");
+  });
   function toggleInlineTimePanelFor(target){
     const next=target==="end"?"end":"start";
     if(taskInlineOpenPanel==="time"&&taskInlineTimeTarget===next){setTaskInlinePanel("");return}
@@ -4631,12 +4689,13 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
       if(e.key==="Escape"){e.preventDefault();finishInlineWheelEdit(false)}
     });
   });
-  $("taskInlineToday").addEventListener("click",()=>{setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
-  $("taskInlineTomorrow").addEventListener("click",()=>{setTaskInlineDate(addCalendarDays(localDateISO(),1));setTaskInlinePanel("")});
-  $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
+  $("taskInlineToday").addEventListener("click",()=>{if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(localDateISO()))return}else setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
+  $("taskInlineTomorrow").addEventListener("click",()=>{const d=addCalendarDays(localDateISO(),1);if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(d))return}else setTaskInlineDate(d);setTaskInlinePanel("")});
+  $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskEndDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
+  $("taskInlineSingleDay").addEventListener("click",()=>{$("taskEndDate").value="";syncTaskEditorMeta();commitTaskHistory();setTaskInlinePanel("")});
   $("taskAllDayToggle").addEventListener("change",()=>{commitTaskHistory();if($("taskAllDayToggle").checked){if(!$("taskDate").value)$("taskDate").value=localDateISO();$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0"}else{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
   document.querySelectorAll("[data-inline-duration]").forEach(btn=>btn.addEventListener("click",()=>{commitTaskHistory();let start=timeToMinutes($("taskTime").value);if(start===null){$("taskTime").value="09:00";start=540}const d=Number(btn.dataset.inlineDuration)||60;$("taskEndTime").value=minutesToTime(Math.min(1439,start+d));syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()}));
-  $("taskInlineReminderRow").addEventListener("click",()=>{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00";taskReminderPanelOpen=!taskReminderPanelOpen;syncTaskEditorMeta();syncTaskInlineForm();if(taskReminderPanelOpen)setTimeout(()=>$("taskInlineReminderOptions").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
+  $("taskInlineReminderRow").addEventListener("click",()=>{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskAllDayToggle").checked){if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00"}taskReminderPanelOpen=!taskReminderPanelOpen;syncTaskEditorMeta();syncTaskInlineForm();if(taskReminderPanelOpen)setTimeout(()=>$("taskInlineReminderOptions").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
   document.querySelectorAll("[data-reminder-minutes]").forEach(btn=>btn.addEventListener("click",()=>toggleTaskReminder(Number(btn.dataset.reminderMinutes))));
   $("taskCustomReminderBtn").addEventListener("click",()=>{$("taskCustomReminderPanel").classList.toggle("hidden");if(!$("taskCustomReminderPanel").classList.contains("hidden"))requestAnimationFrame(positionCustomReminderWheels)});
   $("taskCustomReminderAdd").addEventListener("click",()=>{const minutes=Math.max(1,customReminderAmount)*Math.max(1,customReminderUnit);if(!editorTaskReminders.includes(minutes))setEditorTaskReminders([...editorTaskReminders,minutes]);$("taskCustomReminderPanel").classList.add("hidden");commitTaskHistory()});
@@ -4658,8 +4717,8 @@ html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
   });
   $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask();setTimeout(()=>$("subtasksEditor").scrollIntoView({block:"nearest",behavior:"smooth"}),30)});
-  $("taskDateBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");setTaskInlinePanel("date")});
-  $("taskDateChip").addEventListener("click",()=>setTaskInlinePanel("date"));
+  $("taskDateBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");taskInlineDateTarget="start";setTaskInlinePanel("date")});
+  $("taskDateChip").addEventListener("click",()=>{taskInlineDateTarget="start";setTaskInlinePanel("date")});
   $("taskTimeQuickBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");setTaskInlinePanel("time")});
   $("taskTimeChip").addEventListener("click",()=>setTaskInlinePanel("time"));
   $("taskFormatBtn").addEventListener("pointerdown",e=>{rememberRichSelection();e.preventDefault()});

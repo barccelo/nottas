@@ -444,6 +444,7 @@ async function pushSync(request, auth, env) {
       const requestsProposal = requestedStatus === "proposed" && assistantIsAuthor;
       const scheduleChanged = !!currentPayload && (
         String(currentPayload.dueDate || "") !== String(payload.dueDate || "") ||
+        String(currentPayload.endDate || "") !== String(payload.endDate || "") ||
         String(currentPayload.dueTime || "") !== String(payload.dueTime || "") ||
         String(currentPayload.endTime || "") !== String(payload.endTime || "")
       );
@@ -546,13 +547,20 @@ async function workspaceAvailability(url, workspaceId, auth, env) {
   for (const row of (result.results || [])) {
     const payload = safeJson(row.payload_json, {});
     const date = String(payload.dueDate || "");
+    const last = String(payload.endDate || "") > date ? String(payload.endDate) : date;
     const dueTime = String(payload.dueTime || "");
-    if (payload.done || !dueTime || date < start || date > end) continue;
+    if (payload.done || !dueTime || date > end || last < start) continue;
     const startMinute = timeMinutes(dueTime);
     if (startMinute === null) continue;
     let endMinute = timeMinutes(String(payload.endTime || ""));
     if (endMinute === null || endMinute <= startMinute) endMinute = Math.min(1439, startMinute + 60);
-    busy.push({ date, start: minutesTime(startMinute), end: minutesTime(endMinute) });
+    const from = date > start ? date : start;
+    const until = last < end ? last : end;
+    for (let day = from; day <= until;) {
+      busy.push({ date: day, start: minutesTime(startMinute), end: minutesTime(endMinute) });
+      const d = new Date(day + "T12:00:00Z");d.setUTCDate(d.getUTCDate() + 1);
+      day = d.toISOString().slice(0, 10);
+    }
   }
   busy.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
   return json({ start, end, busy });
