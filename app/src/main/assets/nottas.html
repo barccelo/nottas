@@ -28,7 +28,27 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 #taskFilters{display:flex!important;gap:7px;padding:1px 0 11px;overflow-x:auto}
 #taskFilters.hidden{display:none!important}
 #taskFilters [data-filter="pinned"],#taskFilters [data-filter="done"]{display:none!important}
-#taskFilters [data-filter="today"]{margin-right:auto}
+#taskFilters [data-filter="today"]{margin-right:0}
+#taskGroupToggle{flex:0 0 36px;width:36px;height:36px;padding:0;border:1px solid #d5d5da;border-radius:50%;background:#fff;color:#636366;display:grid;place-items:center;margin-right:auto;cursor:pointer}
+#taskGroupToggle svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+#taskGroupToggle[aria-pressed="true"]{background:#1677ff;border-color:#1677ff;color:#fff}
+#taskGroupToggle:active{transform:scale(.96)}
+.taskGroupDayHeader{display:flex;align-items:center;gap:10px;margin:17px 1px 5px;padding:10px 12px;border-radius:11px;background:#e7e9ef;color:#28282b}
+.taskGroupDayHeader:first-child{margin-top:1px}
+.taskGroupDayHeader strong{font-size:14px;font-weight:700;flex:1;min-width:0;line-height:1.3;text-transform:capitalize}
+.taskGroupDayHeader .taskGroupCount{font-size:11px;font-weight:550;color:#6e6e73;white-space:nowrap}
+.taskGroupHourHeader{display:flex;align-items:center;gap:9px;min-height:29px;margin:9px 4px 1px;letter-spacing:.01em}
+.taskGroupHourHeader strong{font-size:16px;font-weight:700;color:#1677ff;font-variant-numeric:tabular-nums;white-space:nowrap}
+.taskGroupHourHeader .taskGroupHourLine{height:1px;flex:1;background:#d5d5da}
+.taskGroupHourHeader .taskGroupHourCount{font-size:11px;color:#8e8e93;font-variant-numeric:tabular-nums}
+.taskGroupHourHeader.isUntimed strong{font-size:12px;color:#8e8e93;font-weight:650}
+html[data-theme="dark"] #taskGroupToggle{background:#2c2c2e;border-color:#48484a;color:#d1d1d6}
+html[data-theme="dark"] #taskGroupToggle[aria-pressed="true"]{background:#1677ff;border-color:#1677ff;color:#fff}
+html[data-theme="dark"] .taskGroupDayHeader{background:#303036;color:#f5f5f7}
+html[data-theme="dark"] .taskGroupDayHeader .taskGroupCount{color:#a1a1a6}
+html[data-theme="dark"] .taskGroupHourHeader .taskGroupHourLine{background:#48484a}
+html[data-theme="dark"] .taskGroupHourHeader strong{color:#67aaff}
+html[data-theme="dark"] .taskGroupHourHeader.isUntimed strong{color:#a1a1a6}
 .sidebarBackdrop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .18s}.sidebarBackdrop.show{opacity:1;pointer-events:auto}.sidebarPanel{width:min(330px,86vw);height:100%;background:#f5f5f7;box-shadow:12px 0 34px rgba(0,0,0,.18);transform:translateX(-102%);transition:transform .22s cubic-bezier(.2,.8,.2,1);padding:calc(16px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom));overflow:auto}.sidebarBackdrop.show .sidebarPanel{transform:translateX(0)}.sidebarHeader{display:flex;align-items:center;justify-content:space-between;padding:0 8px 10px}.sidebarHeader strong{font-size:22px;letter-spacing:-.03em}.sidebarSection{margin:7px 0 14px}.sidebarSectionTitle{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#8e8e93;padding:5px 13px}.sideItem{width:100%;min-height:46px;border:0;border-radius:12px;background:transparent;color:#1d1d1f;display:flex;align-items:center;gap:11px;padding:9px 12px;text-align:left;font-size:15px}.sideItem:active{background:rgba(118,118,128,.11)}.sideItem.active{background:#e5e5ea;font-weight:650}.sideItem svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.sideItem .sideCount{margin-left:auto;color:#8e8e93;font-size:12px;font-weight:500}.sideDot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
 .calendarOverlay{z-index:88}.calendarSheet{height:calc(var(--vv-height,100vh) - 4px);max-height:calc(var(--vv-height,100vh) - 4px);display:flex;flex-direction:column;overflow:hidden}.calendarSheet .sheetHeader{margin-bottom:8px}.calendarTopActions{display:flex;align-items:center;gap:2px}.calendarModes{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#e5e5ea;border-radius:12px;padding:3px;margin-bottom:10px;flex:0 0 auto}.calendarMode{height:36px;border:0;border-radius:9px;background:transparent;color:#636366;font-size:13px;font-weight:620}.calendarMode.active{background:#fff;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,.09)}.calendarNav{display:grid;grid-template-columns:44px 1fr auto 44px;align-items:center;gap:4px;margin-bottom:9px;flex:0 0 auto}.calendarNavBtn{width:40px;height:40px;border:0;border-radius:50%;background:transparent;color:#007aff;display:grid;place-items:center;padding:0}.calendarNavBtn:active{background:rgba(118,118,128,.11)}.calendarNavBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.calendarPeriod{font-size:17px;font-weight:680;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.calendarToday{height:36px;border:0;border-radius:10px;background:#e5e5ea;color:#1d1d1f;padding:0 11px;font-size:13px;font-weight:620}.calendarBody{min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:24px}.calendarGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.calendarDow{text-align:center;font-size:10px;color:#8e8e93;padding:5px 0 7px;text-transform:uppercase}.calendarDay{position:relative;min-height:58px;border:0;border-radius:10px;background:transparent;color:#1d1d1f;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:5px}.calendarDay:active{background:rgba(118,118,128,.10)}.calendarDay.outside{color:#c7c7cc}.calendarDay.selected{background:#e8f2ff}.calendarDay.today .calendarDayNum{background:#1677ff;color:#fff}.calendarDayNum{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px}.calendarDots{height:7px;display:flex;gap:2px;justify-content:center}.calendarDots i{width:5px;height:5px;border-radius:50%;display:block}.calendarSelectedTitle{font-size:12px;color:#8e8e93;margin:14px 3px 7px}.calendarAgenda{display:flex;flex-direction:column;gap:7px}.calendarTaskRow{width:100%;border:0;border-radius:14px;background:#fff;color:#1d1d1f;padding:11px 12px;display:grid;grid-template-columns:30px 1fr;gap:8px;text-align:left}.calendarTaskRow:active{transform:scale(.99)}.calendarTaskCheck{width:20px;height:20px;margin:1px 0 0 2px;accent-color:#1677ff}.calendarTaskMain{min-width:0}.calendarTaskTitle{font-size:15px;line-height:1.3}.calendarTaskMeta{font-size:11px;color:#8e8e93;margin-top:4px;display:flex;gap:7px;flex-wrap:wrap}.calendarEmpty{padding:26px 12px;text-align:center;color:#8e8e93;font-size:13px}.calendarWeekStrip{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.calendarWeekDay{border:0;border-radius:11px;background:#fff;color:#1d1d1f;padding:7px 2px;min-width:0}.calendarWeekDay.selected{background:#e8f2ff}.calendarWeekDay.today .weekNum{color:#1677ff;font-weight:750}.weekDow{font-size:9px;color:#8e8e93;text-transform:uppercase}.weekNum{font-size:15px;margin-top:3px}.weekCount{font-size:9px;color:#8e8e93;margin-top:4px}.agendaGroup{margin-bottom:14px}.agendaGroupTitle{position:sticky;top:0;background:#f5f5f7;padding:7px 2px 5px;font-size:12px;font-weight:650;color:#636366;z-index:2}
 .backbar{display:none;min-height:50px;margin-bottom:18px}.backbar.show{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}.navBackBtn{justify-self:start;border:0;background:transparent;color:#007aff;display:flex;align-items:center;gap:1px;padding:8px 6px 8px 0;font-size:16px;font-weight:450;min-height:44px}.navBackBtn:active{opacity:.55}.navBackBtn svg{width:16px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.backbar strong{font-size:17px;font-weight:650;letter-spacing:-.01em}.navSpacer{justify-self:end;width:44px;height:44px}.trashEmptyBtn{justify-self:end;min-width:44px;min-height:44px;border:0;background:transparent;color:#ff3b30;padding:0 2px;font-size:15px;font-weight:560}.trashEmptyBtn.armed{font-weight:700}
@@ -838,6 +858,9 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
 
   <div id="taskFilters" class="scroller">
     <button class="chip" data-filter="today" type="button">Hoy <span class="count" id="countToday"></span></button>
+    <button id="taskGroupToggle" type="button" aria-label="Agrupar por fecha y hora" aria-pressed="false" title="Agrupar por fecha y hora">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="5.5"></circle><path d="M9 4.7v3.6l2.4 1.6M17 6h5M17 12h5M14 18h8"></path></svg>
+    </button>
     <button class="chip active" data-filter="pending" type="button">Pendientes <span class="count" id="countPending"></span></button>
     <button class="chip" data-filter="pinned" type="button">Destacadas <span class="count" id="countPinnedTasks"></span></button>
     <button class="chip" data-filter="all" type="button">Todas <span class="count" id="countAll"></span></button>
@@ -1560,7 +1583,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
-  let mode="tasks",taskFilter="pending",taskTodayOnly=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
+  let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
@@ -1782,8 +1805,8 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     const toggle=$("themeDarkToggle");if(toggle)toggle.checked=dark;
     try{if(window.NottasNative&&NottasNative.setDarkMode)NottasNative.setDarkMode(dark)}catch(_){}
   }
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme}catch(_){}applyTheme()}
-  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme}))}catch(_){}}
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme}catch(_){}applyTheme()}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskGroupedByTime,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
     try{
@@ -3373,13 +3396,61 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     renderCalendar();
   }
 
+  // Chronological presentation only: task identities and interactions are unchanged.
+  function taskGroupDate(t){return taskTodayOnly&&t.dueDate?localDateISO():(t.dueDate||"")}
+  function taskGroupHour(t){const time=String(t.dueTime||"");return /^[0-2][0-9]:[0-5][0-9]$/.test(time)?time:""}
+  function sortTasksByDateTime(a,b){
+    const ad=taskGroupDate(a),bd=taskGroupDate(b);
+    if(ad!==bd)return ad?bd?ad.localeCompare(bd):-1:1;
+    const at=taskGroupHour(a),bt=taskGroupHour(b);
+    if(at!==bt)return at?bt?at.localeCompare(bt):-1:1;
+    if(a.done!==b.done)return Number(a.done)-Number(b.done);
+    if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
+    const w={high:0,normal:1,low:2};
+    if(w[a.priority]!==w[b.priority])return (w[a.priority]??1)-(w[b.priority]??1);
+    return String(b.updatedAt).localeCompare(String(a.updatedAt));
+  }
+  function taskGroupDateLabel(date){
+    if(!date)return "Sin fecha";
+    const today=localDateISO(),tomorrow=addCalendarDays(today,1),yesterday=addCalendarDays(today,-1);
+    const value=dateFromISO(date),prefix=date===today?"Hoy":date===tomorrow?"Mañana":date===yesterday?"Ayer":"";
+    const title=value.toLocaleDateString("es",{weekday:"long",day:"numeric",month:"long",...(value.getFullYear()!==new Date().getFullYear()?{year:"numeric"}:{})});
+    return prefix?prefix+" · "+title:title;
+  }
+  function taskGroupDayHeader(date,count){
+    return '<div class="taskGroupDayHeader"><strong>'+esc(taskGroupDateLabel(date))+'</strong><span class="taskGroupCount">'+count+' '+(count===1?"tarea":"tareas")+'</span></div>';
+  }
+  function taskGroupHourHeader(hour,count){
+    return '<div class="taskGroupHourHeader'+(hour?"":" isUntimed")+'"><strong>'+esc(hour||"Sin hora")+'</strong><span class="taskGroupHourLine"></span>'+(count>1?'<span class="taskGroupHourCount">'+count+'</span>':"")+'</div>';
+  }
   function renderTasks(){
-    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(sortTasks);
+    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(taskGroupedByTime&&!trash?sortTasksByDateTime:sortTasks);
+    const groupEnabled=taskGroupedByTime&&!trash;
+    const dayCounts=new Map(),hourCounts=new Map();
+    if(groupEnabled)rows.forEach(t=>{
+      const day=taskGroupDate(t),hour=taskGroupHour(t);
+      dayCounts.set(day,(dayCounts.get(day)||0)+1);
+      const key=day+"|"+hour;hourCounts.set(key,(hourCounts.get(key)||0)+1);
+    });
+    const showDateHeaders=groupEnabled&&(dayCounts.size>1||dayCounts.has(""));
+    let lastDay=null,lastHour=null;
     if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay tareas eliminadas.":taskTodayOnly?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
     list.innerHTML=rows.map(t=>{
       const d=dueLabel(t),p=priorityLabel(t.priority);
+      let groupHtml="";
+      if(groupEnabled){
+        const day=taskGroupDate(t),hour=taskGroupHour(t);
+        if(day!==lastDay){
+          if(showDateHeaders)groupHtml+=taskGroupDayHeader(day,dayCounts.get(day)||0);
+          lastDay=day;lastHour=null;
+        }
+        if(hour!==lastHour){
+          groupHtml+=taskGroupHourHeader(hour,hourCounts.get(day+"|"+hour)||0);
+          lastHour=hour;
+        }
+      }
       if(trash)return `<div class="item ${t.done?"done":""}" data-task="${esc(t.id)}"><div class="content"><div class="taskTitle">${sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text))}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span></div></div><div class="rowActions"><button class="miniBtn restore restoreTask" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
-      return `<div class="swipeRow" data-swipe-task="${esc(t.id)}">
+      return groupHtml+`<div class="swipeRow" data-swipe-task="${esc(t.id)}">
         <button class="swipeAction swipeEdit" type="button" aria-label="Editar tarea">${iconEdit}</button>
         <button class="swipeAction swipeDelete" type="button" aria-label="Eliminar tarea">${iconTrash}</button>
         <div class="item swipeCard ${t.done?"done":""} ${isOverdue(t)?"overdue":""}" data-task="${esc(t.id)}">
@@ -3443,7 +3514,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
-    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter==="today"?taskTodayOnly:b.dataset.filter===taskFilter;b.classList.toggle("active",active);b.setAttribute("aria-pressed",active?"true":"false")});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-pressed",taskGroupedByTime?"true":"false");$("taskGroupToggle").title=taskGroupedByTime?"Desactivar agrupación":"Agrupar por fecha y hora";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter==="today"?taskTodayOnly:b.dataset.filter===taskFilter;b.classList.toggle("active",active);b.setAttribute("aria-pressed",active?"true":"false")});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -4900,6 +4971,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
+  $("taskGroupToggle").addEventListener("click",()=>{taskGroupedByTime=!taskGroupedByTime;saveUI();render()});
   document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.filter==="today"){taskTodayOnly=!taskTodayOnly;if(!["pending","all"].includes(taskFilter))taskFilter="pending"}else taskFilter=b.dataset.filter;saveUI();render()}));
   document.querySelectorAll("[data-nfilter]").forEach(b=>b.addEventListener("click",()=>{noteFilter=b.dataset.nfilter;saveUI();render()}));
   $("fab").addEventListener("click",()=>{if(mode==="notes"&&!trash)openNote(null);else openQuickCapture()});
