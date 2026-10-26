@@ -2094,7 +2094,11 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
     for(const event of events){
       if(event.type==="push_token")assistantRegisterPushToken();
       else if(event.type==="sync")needsSync=true;
-      else if(event.type==="assistant_call_response")showToast((event.fromName||"Asistente")+": "+assistantResponseLabel(event.response));
+      else if(event.type==="assistant_call_response"){
+        // Android presents this reply in AssistantResponseActivity (full screen).
+        // The queue is retained for refreshing shared activity, never a duplicate toast.
+        if($("assistantOverlay").classList.contains("show"))assistantLoadActivity(true);
+      }
       else if(event.type==="call_response_pending"&&assistantConfigured()){
         try{await assistantRequest("/v1/calls/"+encodeURIComponent(event.callId)+"/respond",{method:"POST",body:{response:event.response}})}catch(_){}
       }

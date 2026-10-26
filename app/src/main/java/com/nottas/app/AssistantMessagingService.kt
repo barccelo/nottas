@@ -39,20 +39,10 @@ class AssistantMessagingService : FirebaseMessagingService() {
                 )
             }
             "assistant_call_response" -> {
+                val callId = data["callId"].orEmpty()
                 val who = data["fromName"].orEmpty().ifBlank { "Asistente" }
-                val response = when (data["response"]) {
-                    "coming" -> "Voy"
-                    "five_min" -> "En 5 min"
-                    "unavailable" -> "No disponible"
-                    else -> "Respondió"
-                }
-                if (!AssistantForegroundBridge.isForeground()) {
-                    AssistantNotification.show(
-                        this,
-                        "Respuesta de " + who,
-                        response,
-                        ("call_response_" + data["callId"].orEmpty()).hashCode()
-                    )
+                if (callId.isNotBlank()) {
+                    AssistantResponseNotifier.show(this, callId, who, data["response"].orEmpty())
                 }
             }
             "sync" -> {
@@ -170,6 +160,82 @@ object AssistantCallNotifier {
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = "Llamadas urgentes entre jefe y asistente."
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                setShowBadge(true)
+            }
+        )
+    }
+}
+
+/**
+ * Send the boss's reply through a full-screen Android activity, not only a toast.
+ * A heads-up notification is the fallback if Android disallows background starts
+ * or full-screen intents on this device.
+ */
+object AssistantResponseNotifier {
+    private const val CHANNEL_ID = "assistant_responses_v1"
+
+    fun notificationId(callId: String): Int = ("call_response_" + callId).hashCode()
+
+    fun show(context: Context, callId: String, fromName: String, response: String) {
+        if (callId.isBlank()) return
+        val label = when (response) {
+            "coming" -> "Voy"
+            "five_min" -> "En 5 min"
+            "unavailable" -> "No disponible"
+            else -> "Respondió"
+        }
+        ensureChannel(context)
+        val intent = Intent(context, AssistantResponseActivity::class.java).apply {
+            putExtra(AssistantResponseActivity.EXTRA_CALL_ID, callId)
+            putExtra(AssistantResponseActivity.EXTRA_FROM_NAME, fromName)
+            putExtra(AssistantResponseActivity.EXTRA_RESPONSE, response)
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+            )
+        }
+        val pending = PendingIntent.getActivity(
+            context, notificationId(callId), intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(context, CHANNEL_ID)
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(context)
+        }
+        val notification = builder
+            .setSmallIcon(R.drawable.ic_nottas)
+            .setContentTitle("Respuesta de " + fromName)
+            .setContentText(label)
+            .setContentIntent(pending)
+            .setFullScreenIntent(pending, true)
+            .setCategory(Notification.CATEGORY_MESSAGE)
+            .setPriority(Notification.PRIORITY_HIGH)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+            .build()
+        context.getSystemService(NotificationManager::class.java)
+            .notify(notificationId(callId), notification)
+
+        try {
+            context.startActivity(intent)
+        } catch (_: Throwable) {
+            // Android can block automatic background activity launches.
+            // The high-priority notification still opens the reply screen.
+        }
+    }
+
+    private fun ensureChannel(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ID, "Asistente · Respuestas", NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Respuestas a las llamadas del jefe, con vista de pantalla completa."
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 setShowBadge(true)
             }
