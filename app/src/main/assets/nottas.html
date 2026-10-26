@@ -4853,7 +4853,12 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   $("sidebarSettings").addEventListener("click",()=>{closeSidebar();renderSettingsSummary();openOverlay("settingsOverlay")});
   $("calendarBtn").addEventListener("click",openCalendar);
   $("calendarCreateBtn").addEventListener("click",createTaskOnCalendarDate);
-  $("calendarClose").addEventListener("click",()=>closeOverlay("calendarOverlay"));
+  $("calendarClose").addEventListener("click",()=>{
+    closeCalendarDayPanel();closeCalendarEye();closeCalendarPeek();
+    $("calendarWeekOptionsPopover").classList.add("hidden");
+    $("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
+    closeOverlay("calendarOverlay");
+  });
   $("calendarOverlay").addEventListener("click",e=>{if(e.target===$("calendarOverlay"))closeOverlay("calendarOverlay")});
   $("calendarPrev").addEventListener("click",()=>shiftCalendar(-1));
   $("calendarNext").addEventListener("click",()=>shiftCalendar(1));
@@ -4863,7 +4868,10 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   $("calendarDayBackdrop").addEventListener("click",closeCalendarDayPanel);
   $("calendarDayPanel").addEventListener("click",e=>e.stopPropagation());
   $("calendarDayAdd").addEventListener("click",()=>{closeCalendarDayPanel();createTaskOnCalendarDate()});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("calendarDayPanel").classList.contains("hidden")){e.preventDefault();closeCalendarDayPanel()}});
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Escape"||!$("calendarOverlay").classList.contains("show")||e.defaultPrevented)return;
+    e.preventDefault();handleCalendarBack();
+  });
   $("calendarEyeClose").addEventListener("click",closeCalendarEye);
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
@@ -5157,6 +5165,26 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
   window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)}});
 
+  // Close the uppermost calendar layer before leaving its date and view.
+  // This is also used by Android's native Back dispatcher.
+  function handleCalendarBack(){
+    if(!$("calendarDayPanel").classList.contains("hidden")){
+      closeCalendarDayPanel();return true;
+    }
+    if(!$("calendarEyePopover").classList.contains("hidden")){
+      closeCalendarEye();return true;
+    }
+    if(!$("calendarWeekOptionsPopover").classList.contains("hidden")){
+      $("calendarWeekOptionsPopover").classList.add("hidden");
+      $("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
+      return true;
+    }
+    if(closeCalendarPeek())return true;
+    if(calendarMoveTaskId){cancelCalendarMove();return true}
+    closeOverlay("calendarOverlay");
+    return true;
+  }
+
   window.NottasHandleBack=function(){
     const active=document.activeElement;
     if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
@@ -5176,9 +5204,7 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
       return true;
     }
     if($("calendarOverlay").classList.contains("show")){
-      if(closeCalendarPeek())return true;
-      closeOverlay("calendarOverlay");
-      return true;
+      return handleCalendarBack();
     }
     if($("quickOverlay").classList.contains("show")){
       closeQuickCapture();
