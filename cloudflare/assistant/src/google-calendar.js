@@ -1,3 +1,4 @@
+import { getCalendarEvents, calendarSelectionLimit } from "./google-events.js";
 // Google Calendar OAuth bootstrap. All credentials and refresh tokens stay server-side.
 const REDIRECT = "https://nottas-assistant-api.losrobles.workers.dev/v1/google/oauth/callback";
 const ACCOUNT_EMAIL = "calendario@losroblesenlinea.com.ve";
@@ -64,7 +65,7 @@ export async function callback(request,env){
 }
 export async function routes(request,url,auth,env){
   const path=url.pathname;
-  const match=path.match(/^\/v1\/workspaces\/([^/]+)\/google(?:\/(connect|calendars|discover))?$/);
+  const match=path.match(/^\/v1\/workspaces\/([^/]+)\/google(?:\/(connect|calendars|discover|selection|events))?$/);
   if(!match)return null;
   const workspaceId=decodeURIComponent(match[1]),action=match[2]||"";
   if(!await member(workspaceId,auth,env))return send({error:"workspace_forbidden"},403);
@@ -86,6 +87,34 @@ export async function routes(request,url,auth,env){
     if(!connection)return send({connected:false,calendars:[]});
     const list=await env.DB.prepare("SELECT calendar_id,summary,background_color,access_role,selected,updated_at FROM google_calendar_sources WHERE workspace_id=? ORDER BY summary").bind(workspaceId).all();
     return send({connected:true,accountEmail:connection.account_email,calendars:(list.results||[]).map(x=>({id:x.calendar_id,name:x.summary,color:x.background_color,accessRole:x.access_role,selected:!!x.selected,lastDiscoveredAt:x.updated_at}))});
+  }
+  if(action==="selection"&&request.method==="POST"){
+    if(!await owner(workspaceId,auth,env))return send({error:"owner_required"},403);
+    let payload={};try{payload=await request.json()}catch(_){return send({error:"invalid_json"},400)}
+    const chosen=payload?.calendarIds;
+    if(!Array.isArray(chosen)||chosen.some(id=>typeof id!=="string")||new Set(chosen).size!==chosen.length||chosen.length>calendarSelectionLimit()){
+      return send({error:"invalid_calendar_selection",maxCalendars:calendarSelectionLimit()},400);
+    }
+    const existing=await env.DB.prepare("SELECT calendar_id FROM google_calendar_sources WHERE workspace_id=?").bind(workspaceId).all();
+    const validIds=new Set((existing.results||[]).map(row=>row.calendar_id));
+    if(chosen.some(cid=>!validIds.has(cid)))return send({error:"unknown_calendar_id"},400);
+    await env.DB.batch([
+      env.DB.prepare("UPDATE google_calendar_sources SET selected=0 WHERE workspace_id=?").bind(workspaceId),
+      ...chosen.map(cid=>env.DB.prepare(
+        "UPDATE google_calendar_sources SET selected=1 WHERE workspace_id=? AND calendar_id=?"
+      ).bind(workspaceId,cid))
+    ]);
+    return send({ok:true,selectedCount:chosen.length});
+  }
+  if(action==="events"&&request.method==="GET"){
+    try{
+      const effectiveUrl=new URL(url.toString());
+      if(effectiveUrl.searchParams.get("refresh")==="1"&&!await owner(workspaceId,auth,env))effectiveUrl.searchParams.delete("refresh");
+      return await getCalendarEvents(workspaceId,effectiveUrl,env,accessToken);
+    }catch(error){
+      console.error("Google Calendar event cache",String(error?.message||error));
+      return send({error:"calendar_events_unavailable"},503);
+    }
   }
   if(action==="discover"&&request.method==="POST"){
     if(!await owner(workspaceId,auth,env))return send({error:"owner_required"},403);

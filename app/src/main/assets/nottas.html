@@ -701,6 +701,25 @@ html[data-theme="dark"] .taskCustomReminderType strong{color:#f5f5f7}
 html[data-theme="dark"] .taskInlineCategorySuggestions{background:rgba(36,36,38,.98);border-color:#38383a;box-shadow:0 10px 28px rgba(0,0,0,.35)}
 html[data-theme="dark"] .taskInlineCategorySuggestion{color:#f5f5f7}
 html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
+
+.calendarGoogleStatus{flex:0 0 auto;font-size:11px;color:#566b80;padding:3px 8px 8px;min-height:22px}
+.calendarGoogleStatus.error{color:#b42318}
+.calendarGoogleReload{align-self:flex-start;border:0;background:transparent;color:#1677ff;font-size:11px;margin:0 5px 4px;padding:2px 6px;cursor:pointer}
+.calendarGoogleRow{grid-template-columns:30px 1fr;border-left:3px solid var(--gcal-color,#4285f4);cursor:pointer}
+.calendarGoogleMarker{display:grid;place-items:center;font-size:16px;color:#8e8e93}
+.calendarGoogleBlock{background:color-mix(in srgb,var(--task-color,#4285f4) 19%,#fff);cursor:pointer;touch-action:manipulation;user-select:text}
+.calendarGoogleBlock .calendarBlockCheck,.calendarGoogleBlock .calendarResizeHandle{display:none}
+.calendarGoogleAllDay{border-left:3px solid var(--gcal-color,#4285f4);cursor:pointer}
+.assistantGoogleCalendars{margin:6px 0}
+.assistantGoogleSources{max-height:230px;overflow:auto;border:1px solid rgba(120,120,130,.17);border-radius:12px}
+.assistantGoogleSource{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;border-bottom:1px solid rgba(120,120,130,.12)}
+.assistantGoogleSource:last-child{border-bottom:0}
+.assistantGoogleSource input{width:17px;height:17px;accent-color:#1677ff}
+.assistantGoogleSource span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.assistantGoogleDot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+html[data-theme="dark"] .calendarGoogleStatus{color:#b4cce7}
+html[data-theme="dark"] .calendarGoogleBlock{background:color-mix(in srgb,var(--task-color,#4285f4) 32%,#1c1c1e);color:#f5f5f7}
+html[data-theme="dark"] .assistantGoogleSources{border-color:#38383a}
 </style>
 </head>
 <body>
@@ -881,6 +900,8 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       </div>
       <button id="calendarNext" class="calendarNavBtn" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></button>
     </div>
+    <div id="calendarGoogleStatus" class="calendarGoogleStatus hidden" aria-live="polite"></div>
+    <button id="calendarGoogleReloadBtn" class="calendarGoogleReload hidden" type="button">Actualizar Google Calendar</button>
     <div id="calendarBody" class="calendarBody"></div>
     <div id="calendarPeek" class="calendarPeek hidden" role="dialog" aria-modal="false" aria-label="Vista previa del evento">
       <button id="calendarPeekClose" class="calendarPeekClose" type="button" aria-label="Cerrar vista previa">×</button>
@@ -1395,7 +1416,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
         <button id="assistantGoogleRefreshBtn" class="btn secondary" type="button">Comprobar</button>
         <button id="assistantGoogleDiscoverBtn" class="btn secondary hidden" type="button">Actualizar lista</button>
       </div>
-      <div id="assistantGoogleCalendars" class="assistantSectionHint" aria-live="polite"></div>
+      <div id="assistantGoogleCalendars" class="assistantGoogleCalendars" aria-live="polite"></div>
     </div>
 
     <div class="sectionTitle">Llamar</div>
@@ -1448,6 +1469,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
+  let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
 
   function setNativeSearchKeyboardMode(active){
@@ -1517,6 +1539,11 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   function assistantWorkspaceAuthorized(ws){return !!ws&&assistantAuthorizedIds.has(ws.id)}
   function assistantWorkspaceIsOwner(ws){return !!ws&&ws.kind==="assistant"&&ws.role==="owner"&&assistantWorkspaceAuthorized(ws)}
   function assistantWorkspaceHidden(ws){return (state?.assistant?.hiddenWorkspaceIds||[]).includes(ws.id)}
+  function resetGoogleCalendarEvents(){
+    googleCalendarItems=[];googleCalendarByDay=new Map();googleCalendarByKey=new Map();
+    googleCalendarRequestKey="";googleCalendarLoadedAt=0;googleCalendarLoading=false;googleCalendarError="";googleCalendarSelected=0;
+    googleCalendarFetchSeq++;
+  }
   function isSharedWorkspace(){return currentWorkspace()?.kind==="assistant"}
   function itemInActiveWorkspace(item){return String(item?.workspaceId||personalWorkspaceId())===currentWorkspaceId()}
   function newItemWorkspaceFields(type="task"){
@@ -1698,7 +1725,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     }
 
     state=loaded||normalize({});
-    assistantAuthorizedIds=new Set();assistantMembershipChecked=false;
+    assistantAuthorizedIds=new Set();assistantMembershipChecked=false;resetGoogleCalendarEvents();
     try{const auth=assistantAuth();if(state.assistant.serverUrl&&auth.sessionToken&&window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(state.assistant.serverUrl,auth.sessionToken)}catch(_){}
     if(!activeWorkspaceId||!state.workspaces.some(w=>w.id===activeWorkspaceId&&w.status!=="inactive"))activeWorkspaceId=state.assistant.personalWorkspaceId;
     syncNativeWorkHours();
@@ -1893,7 +1920,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       setStatus("Registrando…","warn");
       const data=await assistantRequest("/v1/auth/register",{auth:false,serverUrl:server,method:"POST",body:{displayName,deviceId:assistantDeviceId(),deviceLabel:"Nottas Android"}});
       state.assistant.serverUrl=server;state.assistant.userId=String(data.user?.id||"");state.assistant.displayName=String(data.user?.displayName||displayName);
-      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;state.assistant.cursor=0;
+      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;state.assistant.cursor=0;resetGoogleCalendarEvents();
       assistantRemapPersonalWorkspace(data.personalWorkspace);
       saveAssistantAuth({sessionToken:String(data.sessionToken||"")});
       try{if(window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(server,String(data.sessionToken||""))}catch(_){}
@@ -2178,25 +2205,66 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("assistantPushDesc").textContent=push.fcmToken?("Token Firebase disponible · "+String(push.fcmToken).slice(0,12)+"… · comprueba el registro en Equipo y actividad"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
     renderAssistantSummary();
   }
+  function assistantGoogleCalendarSelector(calendars,canEdit){
+    const target=$("assistantGoogleCalendars");target.replaceChildren();
+    const heading=document.createElement("div");
+    heading.className="assistantSectionHint";
+    heading.textContent=calendars.filter(x=>x.selected).length+" de "+calendars.length+" calendarios visibles en Nottas · selección máxima: "+googleCalendarSelectionLimit;
+    target.appendChild(heading);
+    if(!calendars.length)return;
+    const list=document.createElement("div");list.className="assistantGoogleSources";
+    for(const calendar of calendars){
+      const label=document.createElement("label");label.className="assistantGoogleSource";
+      const input=document.createElement("input");input.type="checkbox";input.checked=!!calendar.selected;input.value=String(calendar.id||"");input.disabled=!canEdit;
+      const dot=document.createElement("i");const color=/^#[0-9a-fA-F]{6}$/.test(calendar.color||"")?calendar.color:"#4f90e8";
+      dot.style.background=color;dot.className="assistantGoogleDot";
+      const name=document.createElement("span");name.textContent=calendar.name||calendar.id;
+      label.append(input,dot,name);list.appendChild(label);
+    }
+    target.appendChild(list);
+    if(!canEdit)return;
+    const actions=document.createElement("div");actions.className="assistantActions";actions.style.marginTop="8px";
+    const all=document.createElement("button");all.className="btn secondary";all.type="button";all.textContent="Seleccionar todos";
+    const none=document.createElement("button");none.className="btn secondary";none.type="button";none.textContent="Ninguno";
+    const save=document.createElement("button");save.className="btn primary";save.type="button";save.textContent="Guardar selección";
+    const inputs=()=>[...list.querySelectorAll("input")];
+    all.addEventListener("click",()=>{inputs().forEach((x,i)=>x.checked=i<googleCalendarSelectionLimit)});
+    none.addEventListener("click",()=>inputs().forEach(x=>x.checked=false));
+    save.addEventListener("click",async()=>{
+      const ws=currentWorkspace();if(!assistantWorkspaceIsOwner(ws))return;
+      const ids=inputs().filter(x=>x.checked).map(x=>x.value);
+      if(ids.length>googleCalendarSelectionLimit){showToast("Máximo "+googleCalendarSelectionLimit+" calendarios");return}
+      save.disabled=true;
+      try{
+        await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/selection",{method:"POST",body:{calendarIds:ids}});
+        resetGoogleCalendarEvents();
+        if($("calendarOverlay").classList.contains("show")){renderCalendar();scheduleGoogleCalendarFetch(true)}
+        await assistantGoogleRefresh();
+        showToast("Calendarios seleccionados: "+ids.length);
+      }catch(error){showToast("Selección Google: "+String(error?.message||error))}
+      finally{save.disabled=false}
+    });
+    actions.append(all,none,save);target.appendChild(actions);
+  }
   async function assistantGoogleRefresh(){
     const ws=currentWorkspace(),status=$("assistantGoogleStatus"),list=$("assistantGoogleCalendars");
-    if(ws?.kind!=="assistant"||!assistantConfigured()){status.textContent="Selecciona un espacio compartido y conecta el dispositivo.";list.textContent="";return}
-    if(!assistantWorkspaceAuthorized(ws)){status.textContent="Primero verifica o recupera el acceso a este espacio en Cloudflare.";list.textContent="";return}
+    if(ws?.kind!=="assistant"||!assistantConfigured()){status.textContent="Selecciona un espacio compartido y conecta el dispositivo.";list.replaceChildren();return}
+    if(!assistantWorkspaceAuthorized(ws)){status.textContent="Primero verifica o recupera el acceso a este espacio en Cloudflare.";list.replaceChildren();return}
     status.textContent="Consultando calendarios…";
     try {
       const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/calendars");
       if(ws.id!==currentWorkspaceId())return;
       if(!data.connected){
         status.textContent="Cuenta de Google aún no conectada.";
-        list.textContent="";
+        list.replaceChildren();
         $("assistantGoogleDiscoverBtn").classList.add("hidden");
         return;
       }
-      status.textContent="Cuenta autorizada: "+(data.accountEmail||"Google Calendar");
       const calendars=Array.isArray(data.calendars)?data.calendars:[];
-      list.textContent=calendars.length?calendars.length+" calendarios encontrados: "+calendars.map(x=>x.name).join(" · "):"No se encontraron calendarios.";
-      $("assistantGoogleDiscoverBtn").classList.toggle("hidden",currentWorkspaceRole()!=="owner");
-    }catch(error){status.textContent="Conexión pendiente: "+String(error?.message||error);list.textContent="";}
+      status.textContent="Cuenta autorizada: "+(data.accountEmail||"Google Calendar")+". Elige qué calendarios mostrar.";
+      assistantGoogleCalendarSelector(calendars,assistantWorkspaceIsOwner(ws));
+      $("assistantGoogleDiscoverBtn").classList.toggle("hidden",!assistantWorkspaceIsOwner(ws));
+    }catch(error){status.textContent="Conexión pendiente: "+String(error?.message||error);list.replaceChildren()}
   }
   async function assistantGoogleConnect(){
     const ws=currentWorkspace();
@@ -2213,7 +2281,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   }
   async function assistantGoogleDiscover(){
     const ws=currentWorkspace();if(!ws||ws.role!=="owner"||ws.kind!=="assistant")return;
-    try{await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/discover",{method:"POST"});await assistantGoogleRefresh()}
+    try{await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/discover",{method:"POST"});resetGoogleCalendarEvents();await assistantGoogleRefresh()}
     catch(error){showToast("Google Calendar: "+String(error?.message||error).slice(0,90))}
   }
   function openAssistantSettings(){
@@ -2523,6 +2591,119 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   function addCalendarDays(value,days){const d=dateFromISO(value);d.setDate(d.getDate()+days);return localDateISO(d)}
   function addCalendarMonths(value,months){const d=dateFromISO(value),day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+months);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return localDateISO(d)}
   function mondayOf(value){const d=dateFromISO(value),dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);return localDateISO(d)}
+  // Google Calendar events are intentionally separate from local tasks:
+  // they cannot be checked, moved, resized, edited, or included in JSON backups.
+  function calendarGoogleRange(){
+    const d=dateFromISO(calendarDate);
+    const start=new Date(d.getFullYear(),d.getMonth()-(calendarView==="agenda"?0:1),1,12);
+    const end=new Date(d.getFullYear(),d.getMonth()+(calendarView==="agenda"?4:2),1,12);
+    return {start:localDateISO(start),end:localDateISO(end)};
+  }
+  function calendarGoogleFor(date){
+    return googleCalendarRequestKey.startsWith(currentWorkspaceId()+"|")?(googleCalendarByDay.get(date)||[]):[];
+  }
+  function calendarGoogleColor(event){return /^#[0-9a-fA-F]{6}$/.test(event?.color||"")?event.color:"#4285f4"}
+  function calendarGoogleTimeLabel(event){
+    if(event.allDay)return "Todo el día";
+    return event.startTime+(event.endTime?"–"+event.endTime:"");
+  }
+  function calendarGoogleRows(events){
+    if(!events.length)return "";
+    return '<div class="calendarAgenda">'+events.map(g=>'<div class="calendarTaskRow calendarGoogleRow" role="button" tabindex="0" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'"><span class="calendarGoogleMarker" aria-hidden="true">•</span><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(g.title)+'</span><span class="calendarTaskMeta"><span>'+esc(calendarGoogleTimeLabel(g))+'</span><span><i class="sideDot" style="display:inline-block;background:'+calendarGoogleColor(g)+'"></i> '+esc(g.calendarName||"Google Calendar")+'</span><span>Google · solo lectura</span></span></span></div>').join("")+'</div>';
+  }
+  function calendarCombinedRows(date,tasks){
+    const google=calendarGoogleFor(date),own=tasks.length?calendarTaskRows(tasks):"";
+    return own+calendarGoogleRows(google)||'<div class="calendarEmpty">No hay tareas ni eventos para esta fecha.</div>';
+  }
+  function indexGoogleCalendarEvents(rows,range){
+    googleCalendarItems=Array.isArray(rows)?rows:[];
+    googleCalendarByDay=new Map();googleCalendarByKey=new Map();
+    for(const item of googleCalendarItems){
+      if(!item?.id||!item?.calendarId||!item.start||!item.end)continue;
+      const allDay=!!item.allDay;
+      const a=allDay?item.start:localDateISO(new Date(item.start));
+      const b=allDay?addCalendarDays(item.end,-1):localDateISO(new Date(Date.parse(item.end)-1));
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(a)||!/^\d{4}-\d{2}-\d{2}$/.test(b)||b<a)continue;
+      const first=a<range.start?range.start:a,last=b>=range.end?addCalendarDays(range.end,-1):b;
+      let i=0;
+      for(let date=first;date<=last&&i++<130;date=addCalendarDays(date,1)){
+        const timeOf=val=>new Date(val).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit",hour12:false});
+        const startTime=allDay?"":date===a?timeOf(item.start):"00:00";
+        const endTime=allDay?"":date===b?timeOf(item.end):"24:00";
+        const event={...item,date,allDay,startTime,endTime,key:item.calendarId+"|"+item.id+"|"+date};
+        if(!googleCalendarByDay.has(date))googleCalendarByDay.set(date,[]);
+        googleCalendarByDay.get(date).push(event);
+        googleCalendarByKey.set(event.key,event);
+      }
+    }
+    for(const items of googleCalendarByDay.values())items.sort((a,b)=>a.allDay===b.allDay?(a.startTime||"").localeCompare(b.startTime||"")||a.title.localeCompare(b.title):a.allDay?-1:1);
+  }
+  function calendarGoogleStatus(){
+    const ws=currentWorkspace(),status=$("calendarGoogleStatus"),reload=$("calendarGoogleReloadBtn");
+    const show=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured();
+    status.classList.toggle("hidden",!show);reload.classList.toggle("hidden",!show||!assistantWorkspaceIsOwner(ws));
+    if(!show)return;
+    status.classList.toggle("error",!!googleCalendarError);
+    if(googleCalendarLoading){status.textContent="Google Calendar · cargando eventos…";return}
+    if(googleCalendarError){status.textContent="Google Calendar · "+googleCalendarError;return}
+    status.textContent=googleCalendarSelected?("Google Calendar · "+googleCalendarSelected+" calendarios · "+googleCalendarItems.length+" eventos (solo lectura)"):"Google Calendar · conecta la cuenta y elige calendarios en Ajustes → Asistente";
+  }
+  async function scheduleGoogleCalendarFetch(force=false){
+    const ws=currentWorkspace();
+    if(!assistantConfigured()||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws)){
+      if(googleCalendarRequestKey)resetGoogleCalendarEvents();
+      return;
+    }
+    const range=calendarGoogleRange(),key=ws.id+"|"+range.start+"|"+range.end;
+    if(!force&&key===googleCalendarRequestKey&&(googleCalendarLoading||(Date.now()-googleCalendarLoadedAt)<7*60*1000))return;
+    const seq=++googleCalendarFetchSeq;
+    googleCalendarRequestKey=key;googleCalendarLoading=true;googleCalendarError="";
+    calendarGoogleStatus();
+    try{
+      const query="?start="+encodeURIComponent(range.start)+"&end="+encodeURIComponent(range.end)+(force?"&refresh=1":"");
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/events"+query);
+      if(seq!==googleCalendarFetchSeq||ws.id!==currentWorkspaceId())return;
+      googleCalendarSelected=Number(result.selectedCount)||0;
+      indexGoogleCalendarEvents(result.events,range);
+      googleCalendarLoadedAt=Date.now();
+      if(result.partial)googleCalendarError="Algunos calendarios no se pudieron actualizar";
+      else if(result.needsSelection)googleCalendarError="Elige los calendarios desde Ajustes → Asistente";
+    }catch(error){
+      if(seq!==googleCalendarFetchSeq)return;
+      googleCalendarError=String(error?.message||error);
+      googleCalendarLoadedAt=Date.now();
+      googleCalendarItems=[];googleCalendarByDay=new Map();googleCalendarByKey=new Map();
+    }finally{
+      if(seq===googleCalendarFetchSeq){
+        googleCalendarLoading=false;
+        if($("calendarOverlay").classList.contains("show"))renderCalendar();
+      }
+    }
+  }
+  function showGoogleCalendarPeek(item,anchor){
+    const peek=$("calendarPeek"),sheet=document.querySelector("#calendarOverlay .calendarSheet");if(!peek||!sheet)return;
+    $("calendarPeekTitle").textContent=item.title||"Ocupado";
+    const parts=[item.calendarName||"Google Calendar",calendarDateLabel(item.date,{weekday:"short",day:"numeric",month:"short"}),calendarGoogleTimeLabel(item)];
+    if(item.location)parts.push(item.location);
+    parts.push("Solo lectura");
+    $("calendarPeekMeta").textContent=parts.join(" · ");
+    $("calendarPeekOpen").classList.add("hidden");
+    peek.dataset.taskId="";peek.classList.remove("hidden");
+    requestAnimationFrame(()=>{
+      const sr=sheet.getBoundingClientRect(),ar=anchor.getBoundingClientRect(),width=Math.min(286,Math.max(220,sr.width-28));
+      peek.style.width=width+"px";const ph=peek.offsetHeight;
+      let left=ar.left-sr.left+(ar.width-width)/2;left=Math.max(12,Math.min(sr.width-width-12,left));
+      let top=ar.bottom-sr.top+8;if(top+ph>sr.height-14)top=ar.top-sr.top-ph-8;
+      top=Math.max(12,Math.min(sr.height-ph-12,top));peek.style.left=left+"px";peek.style.top=top+"px";
+    });
+  }
+  function bindCalendarGoogleEvents(){
+    $("calendarBody").querySelectorAll("[data-google-event-key]").forEach(node=>{
+      const event=googleCalendarByKey.get(node.dataset.googleEventKey);if(!event)return;
+      node.addEventListener("click",e=>{e.stopPropagation();if(Date.now()<suppressClickUntil)return;showGoogleCalendarPeek(event,node)});
+      node.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showGoogleCalendarPeek(event,node)}});
+    });
+  }
   function calendarTasksFor(value){return state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.dueDate===value).slice().sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")||String(a.text).localeCompare(String(b.text)))}
   function calendarDateLabel(value,opts){return dateFromISO(value).toLocaleDateString("es",{...opts})}
   function calendarMoveNotice(){
@@ -2590,7 +2771,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     if(t.dueTime)bits.push(calendarTaskRangeLabel(t));
     const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
     $("calendarPeekMeta").textContent=bits.join(" · ");
-    peek.dataset.taskId=t.id;peek.classList.remove("hidden");
+    peek.dataset.taskId=t.id;peek.classList.remove("hidden");$("calendarPeekOpen").classList.remove("hidden");
     requestAnimationFrame(()=>{
       const sr=sheet.getBoundingClientRect(),ar=anchor.getBoundingClientRect(),width=Math.min(286,Math.max(220,sr.width-28));
       peek.style.width=width+"px";
@@ -2634,11 +2815,13 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     for(let i=0;i<42;i++){
       const d=new Date(start);d.setDate(start.getDate()+i);if(!showWeekends&&(d.getDay()===0||d.getDay()===6))continue;
       const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
-      const dots=tasks.slice(0,3).map(t=>'<i style="background:'+esc(catColor(t.category))+'"></i>').join("");
+      const google=calendarGoogleFor(iso);
+      const dotColors=tasks.slice(0,google.length?2:3).map(t=>catColor(t.category)).concat(google.slice(0,2).map(calendarGoogleColor)).slice(0,4);
+      const dots=dotColors.map(color=>'<i style="background:'+esc(color)+'"></i>').join("");
       html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
     }
-    html+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarTaskRows(calendarTasksFor(calendarDate));
-    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();
+    html+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarCombinedRows(calendarDate,calendarTasksFor(calendarDate));
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarGoogleEvents();
   }
   const CAL_HOUR_PX=48,CAL_SNAP_MINUTES=15;
   function calendarTaskStartMinutes(t){const start=timeToMinutes(t?.dueTime);return start===null?null:start}
@@ -2680,7 +2863,15 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
       const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*hourPx,height=Math.max(24,(visibleEnd-start)/60*hourPx),lines=height>=54?3:height>=31?2:1,compact=height<44;
       return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(t.done?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
     }).join("");
-    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+'</div>';
+    const googleBlocks=calendarGoogleFor(date).filter(e=>!e.allDay).map(event=>{
+      const start=timeToMinutes(event.startTime),end=event.endTime==="24:00"?1440:timeToMinutes(event.endTime);
+      if(start===null||start>=rangeEnd)return "";
+      const from=Math.max(rangeStart,start),to=Math.min(rangeEnd,end===null?start+60:end);
+      if(to<=from)return "";
+      const top=(from-rangeStart)/60*hourPx,height=Math.max(24,(to-from)/60*hourPx),color=calendarGoogleColor(event);
+      return '<div class="calendarTimeBlock calendarGoogleBlock" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(height<44?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+color+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarGoogleTimeLabel(event))+'</div></div>';
+    }).join("");
+    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+googleBlocks+'</div>';
   }
   function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440,hourPx=calendarHourPxForRange(rangeStart,rangeEnd)){
     const height=Math.max(hourPx,(rangeEnd-rangeStart)/60*hourPx);
@@ -2690,8 +2881,8 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   function scrollCalendarTimeViewport(){
     const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
     let tasks=[];
-    if(calendarView==="day")tasks=calendarTasksFor(calendarDate).filter(t=>t.dueTime);
-    else if(calendarView==="week"){const start=mondayOf(calendarDate);for(let i=0;i<7;i++)tasks.push(...calendarTasksFor(addCalendarDays(start,i)).filter(t=>t.dueTime))}
+    if(calendarView==="day")tasks=calendarTasksFor(calendarDate).filter(t=>t.dueTime).concat(calendarGoogleFor(calendarDate).filter(e=>!e.allDay).map(e=>({dueTime:e.startTime})));
+    else if(calendarView==="week"){const start=mondayOf(calendarDate);for(let i=0;i<7;i++){const date=addCalendarDays(start,i);tasks.push(...calendarTasksFor(date).filter(t=>t.dueTime),...calendarGoogleFor(date).filter(e=>!e.allDay).map(e=>({dueTime:e.startTime})))}}
     const col=viewport.querySelector(".calendarTimeColumn"),rangeStart=Number(col?.dataset.calendarStartMinute)||0,hourPx=Number(col?.dataset.calendarHourPx)||CAL_HOUR_PX;
     const starts=tasks.map(t=>calendarTaskStartMinutes(t)).filter(x=>x!==null&&x>=rangeStart),first=starts.length?Math.min(...starts):Math.max(rangeStart,new Date().getHours()*60-60);
     viewport.scrollTop=Math.max(0,(first-rangeStart)/60*hourPx-28);
@@ -2820,34 +3011,35 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   }
   function renderCalendarWeek(){
     const start=mondayOf(calendarDate),allDates=Array.from({length:7},(_,i)=>addCalendarDays(start,i)),dates=state.preferences.calendarWeekShowWeekends?allDates:allDates.slice(0,5),range=calendarVisibleRange();
-    const allDayByDate=dates.map(iso=>calendarTasksFor(iso).filter(t=>!t.dueTime)),hasAllDay=allDayByDate.some(rows=>rows.length);
+    const allDayByDate=dates.map(iso=>calendarTasksFor(iso).filter(t=>!t.dueTime)),googleAllDayByDate=dates.map(iso=>calendarGoogleFor(iso).filter(e=>e.allDay)),hasAllDay=allDayByDate.some(rows=>rows.length)||googleAllDayByDate.some(rows=>rows.length);
     let html=calendarMoveNotice()+'<div class="calendarWeekStrip" style="--week-cols:'+dates.length+'"><div class="calendarWeekAxisSpacer" aria-hidden="true"></div>';
-    dates.forEach(iso=>{const d=dateFromISO(iso),count=calendarTasksFor(iso).length;html+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count:"")+'</div></button>'});
+    dates.forEach(iso=>{const d=dateFromISO(iso),count=calendarTasksFor(iso).length+calendarGoogleFor(iso).length;html+='<button class="calendarWeekDay '+(iso===calendarDate?"selected ":"")+(iso===localDateISO()?"today ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><div class="weekDow">'+d.toLocaleDateString("es",{weekday:"short"}).slice(0,2)+'</div><div class="weekNum">'+d.getDate()+'</div><div class="weekCount">'+(count?count:"")+'</div></button>'});
     html+='</div>';
     if(hasAllDay){
       html+='<div class="calendarWeekAllDayWrap"><div class="calendarWeekAllDayLabel">Sin<br>hora</div><div class="calendarWeekAllDay" style="--week-cols:'+dates.length+'">';
-      allDayByDate.forEach(rows=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+'</div>'});
+      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
       html+='</div></div>';
     }
     const hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
     html+='<div class="calendarTimeViewport calendarWeekTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px;--calendar-hour-px:'+hourPx+'px">'+calendarTimeGridHtml(dates,range.start,range.end,hourPx)+'</div>';
-    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarTimeGrid();bindCalendarGoogleEvents();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarDay(){
-    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),range=calendarVisibleRange(),hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
+    const tasks=calendarTasksFor(calendarDate),allDay=tasks.filter(t=>!t.dueTime),googleAllDay=calendarGoogleFor(calendarDate).filter(e=>e.allDay),range=calendarVisibleRange(),hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
     let html=calendarMoveNotice()+'<div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long",year:"numeric"})+'</div>';
-    if(allDay.length)html+='<div class="calendarAllDay"><div class="calendarAllDayTitle">Sin hora</div>'+calendarTaskRows(allDay)+'</div>';
+    if(allDay.length||googleAllDay.length)html+='<div class="calendarAllDay"><div class="calendarAllDayTitle">Todo el día / Sin hora</div>'+(allDay.length?calendarTaskRows(allDay):"")+calendarGoogleRows(googleAllDay)+'</div>';
     html+='<div class="calendarTimeViewport '+(state.preferences.calendarWeekWorkHoursOnly?"workHoursOnly":"")+'" style="--calendar-grid-height:'+gridHeight+'px;--calendar-hour-px:'+hourPx+'px">'+calendarTimeGridHtml([calendarDate],range.start,range.end,hourPx)+'</div>';
-    $("calendarBody").innerHTML=html;bindCalendarTasks();bindCalendarTimeGrid();requestAnimationFrame(scrollCalendarTimeViewport);
+    $("calendarBody").innerHTML=html;bindCalendarTasks();bindCalendarTimeGrid();bindCalendarGoogleEvents();requestAnimationFrame(scrollCalendarTimeViewport);
   }
   function renderCalendarAgenda(){
     const start=dateFromISO(calendarDate),end=new Date(start);end.setDate(end.getDate()+60);
-    const tasks=state.tasks.filter(t=>!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end&&(state.preferences.calendarAgendaShowCompleted!==false||!t.done)).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
+    const tasks=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.dueDate&&dateFromISO(t.dueDate)>=start&&dateFromISO(t.dueDate)<=end&&(state.preferences.calendarAgendaShowCompleted!==false||!t.done)).slice().sort((a,b)=>a.dueDate.localeCompare(b.dueDate)||(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99"));
     let html=calendarMoveNotice();
-    if(!tasks.length){$("calendarBody").innerHTML=html+'<div class="calendarEmpty">No hay tareas con fecha en los próximos 60 días.</div>';bindCalendarMoveCancel();return}
+    const googleDates=[...googleCalendarByDay.keys()].filter(date=>date>=localDateISO(start)&&date<=localDateISO(end));
+    if(!tasks.length&&!googleDates.length){$("calendarBody").innerHTML=html+'<div class="calendarEmpty">No hay tareas ni eventos en los próximos 60 días.</div>';bindCalendarMoveCancel();return}
     const groups={};tasks.forEach(t=>(groups[t.dueDate]||(groups[t.dueDate]=[])).push(t));
-    html+=Object.keys(groups).sort().map(date=>'<div class="agendaGroup"><button class="agendaGroupTitle" type="button" data-calendar-date="'+date+'">'+calendarDateLabel(date,{weekday:"long",day:"numeric",month:"long"})+'</button>'+calendarTaskRows(groups[date])+'</div>').join("");
-    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();
+    html+=[...new Set([...Object.keys(groups),...googleDates])].sort().map(date=>'<div class="agendaGroup"><button class="agendaGroupTitle" type="button" data-calendar-date="'+date+'">'+calendarDateLabel(date,{weekday:"long",day:"numeric",month:"long"})+'</button>'+calendarCombinedRows(date,groups[date]||[])+'</div>').join("");
+    $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarGoogleEvents();
   }
   function renderCalendar(){
     if(!state)return;
@@ -2869,6 +3061,8 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("calendarWeekOptionsBtn").title=showWork?(state.preferences.calendarWeekWorkHoursOnly?"Horario laboral":"24 horas"):showWeekend?(($("calendarWeekWeekendToggle").checked)?"Con fines de semana":"Sin fines de semana"):(state.preferences.calendarAgendaShowCompleted!==false?"Con completadas":"Sin completadas");
     document.querySelectorAll("[data-calendar-view]").forEach(b=>{b.classList.toggle("active",b.dataset.calendarView===calendarView);b.disabled=!!calendarMoveTaskId&&b.dataset.calendarView!=="month"});$("calendarPrev").disabled=!!calendarMoveTaskId;$("calendarNext").disabled=!!calendarMoveTaskId;
     if(calendarView==="day")renderCalendarDay();else if(calendarView==="week")renderCalendarWeek();else if(calendarView==="agenda")renderCalendarAgenda();else renderCalendarMonth();
+    calendarGoogleStatus();
+    if($("calendarOverlay").classList.contains("show"))scheduleGoogleCalendarFetch();
   }
   function createTaskOnCalendarDate(){
     const date=calendarDate||localDateISO();calendarMoveTaskId=null;
@@ -2878,7 +3072,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
     $("taskDate").value=date;
     syncTaskEditorMeta();
   }
-  function openCalendar(){calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true)}
+  function openCalendar(){calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
   function shiftCalendar(dir){
     if(calendarMoveTaskId)return;
     if(calendarView==="day")calendarDate=addCalendarDays(calendarDate,dir);
@@ -4352,8 +4546,9 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
   $("calendarWeekOptionsPopover").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
+  $("calendarGoogleReloadBtn").addEventListener("click",()=>scheduleGoogleCalendarFetch(true));
   $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t)return;closeCalendarPeek();closeOverlay("calendarOverlay");openTask(t)});
-  $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task]"))closeCalendarPeek()});
+  $("calendarOverlay").addEventListener("click",e=>{if(!e.target.closest("#calendarWeekOptions")){$("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false")}if(!e.target.closest("#calendarPeek,.calendarTimeBlock,[data-calendar-task],[data-google-event-key]"))closeCalendarPeek()});
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
@@ -4589,7 +4784,7 @@ html[data-theme="dark"] .taskInlineCategorySuggestion:active{background:#3a3a3c}
         throw new Error("Estructura de respaldo incompatible");
       }
       state=normalize(parsed);
-      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;
+      assistantAuthorizedIds=new Set();assistantMembershipChecked=false;resetGoogleCalendarEvents();
       activeCategory="all";
       activeTag="";
       activeWorkspaceId=state.assistant.personalWorkspaceId;
