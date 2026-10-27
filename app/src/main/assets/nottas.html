@@ -3027,9 +3027,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     if(!t)return;
     if(meetingIsTracked(t)){
       const ws=state.workspaces.find(w=>w.id===t.workspaceId);
-      if(!assistantWorkspaceIsOwner(ws)||["proposed","changes_requested","rejected","cancelled"].includes(t.approvalStatus)){
-        showToast("Solo el director puede cerrar reuniones confirmadas");return;
-      }
+      if(!assistantWorkspaceAuthorized(ws)||["proposed","changes_requested","rejected","cancelled"].includes(t.approvalStatus)){
+         showToast("Esta reunión aún no puede marcarse como realizada.");return;
+       }
       if(!!t.done!==!!done||t.meetingStatus!==(done?"realized":"scheduled")){
         const from=meetingScheduleSnapshot(t);
         t.meetingStatus=done?"realized":"scheduled";
