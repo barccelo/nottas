@@ -564,7 +564,7 @@ async function pushSync(request, auth, env) {
       await pushAvailabilityChanged(auth.userId, env);
     } else {
       const proposal=proposalSignals.get(workspaceId);
-      await pushWorkspaceSync(workspaceId, auth.userId, env,proposal?workspace.owner_user_id:"");
+      await pushWorkspaceSync(workspaceId, auth.userId, env);
       if(proposal&&workspace.kind==="assistant"&&workspace.owner_user_id!==auth.userId) {
         await sendPushToUser(workspace.owner_user_id,{
           type:"director_proposal",workspaceId,proposalId:proposal.id,title:proposal.title
