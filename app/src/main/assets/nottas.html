@@ -5869,8 +5869,6 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 
   // Foreground reconciliation only: not a scheduled task or calendar reminder.
   setInterval(()=>{if(!document.hidden&&assistantConfigured()&&directorOwnedSpaces().length)refreshDirectorProposals(true)},120000);
-  // Push is primary; reconcile shared changes in foreground if an FCM signal is delayed or lost.
-  setInterval(()=>{if(!document.hidden&&assistantConfigured()&&!assistantSyncing)scheduleAssistantSync(200)},15000);
   window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)}});
 
