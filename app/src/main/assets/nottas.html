@@ -14,7 +14,7 @@ label{ -webkit-tap-highlight-color:transparent }
 button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .app{max-width:760px;min-height:100vh;margin:0 auto;padding:14px 16px 102px}
 .header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;margin-bottom:18px}
-.headerTitle{min-width:0}.headerTitle h1{font-size:28px;line-height:1.08;margin:0;font-weight:700;letter-spacing:-.035em}.headerTitleRow{display:flex;align-items:center;gap:4px}.menuBtn{margin-left:-9px}
+.headerTitle{min-width:0}.headerTitle h1{font-size:28px;line-height:1.08;margin:0;font-weight:700;letter-spacing:-.035em}.headerTitleRow{display:flex;align-items:center;gap:4px}.headerTitleRow #workspaceContextBtn{margin-left:7px}.menuBtn{margin-left:-9px}
 .headerActions{display:flex;gap:4px;align-items:center}.iconBtn{width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:#1d1d1f;display:grid;place-items:center;padding:0}.iconBtn:active{background:rgba(118,118,128,.12)}.iconBtn svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .statusPill{display:none}.statusDot{width:7px;height:7px;border-radius:50%;background:#34c759}.statusPill.warn .statusDot{background:#ff9f0a}.statusPill.err .statusDot{background:#ff3b30}
 .bottomDock{position:fixed;left:14px;right:20px;bottom:max(18px,env(safe-area-inset-bottom));max-width:726px;margin:0 auto;z-index:30;display:flex;align-items:flex-end;gap:10px;pointer-events:none;transform:translate3d(0,0,0);transition:transform .16s ease-out}.searchKeyboard .bottomDock{transform:translate3d(0,calc(0px - var(--ime-offset,0px)),0)}.swipeLayer{display:none}.searchWrap{position:relative;flex:1;min-width:0;pointer-events:auto}.searchIcon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:#8e8e93;stroke-width:2;pointer-events:none}.search{width:100%;height:50px;border:1px solid #dedee3;background:rgba(245,245,247,.97);color:#1d1d1f;border-radius:16px;padding:0 48px 0 41px;font-size:16px;outline:none;box-shadow:0 5px 20px rgba(0,0,0,.09);backdrop-filter:blur(12px)}.search:focus{background:#fff;border-color:#b9d5ff}.searchClear{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:#8e8e93;display:grid;place-items:center;padding:0}.searchClear:active{background:rgba(118,118,128,.12)}.searchClear svg{position:static;transform:none;width:18px;height:18px;fill:#c7c7cc;stroke:none}.timeFieldButton{width:100%;min-height:62px;border:1px solid #d1d1d6;background:#fff;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:12px;text-align:left;color:#1d1d1f}.timeFieldButton:active{background:#f2f2f7}.timeFieldText{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.timeFieldValue{font-size:17px;font-weight:520}.timeFieldReminder{font-size:12px;color:#8e8e93}.timeFieldButton svg{width:8px;height:14px;fill:none;stroke:#c7c7cc;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.timePickerOverlay{z-index:78}.timePickerSheet{max-width:520px}.timeWheelWrap{display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;max-width:330px;margin:6px auto 10px;height:192px}.timeWheelColumn{position:relative;height:192px;min-width:0}.timeWheel{height:192px;overflow-y:auto;scroll-snap-type:y mandatory;padding:72px 0;scrollbar-width:none;overscroll-behavior:contain}.timeWheel::-webkit-scrollbar{display:none}.timeWheelItem{height:48px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:22px;color:#a1a1a6;user-select:none}.timeWheelColon{font-size:29px;font-weight:650;text-align:center;z-index:4;color:#1d1d1f}.timePartButton,.timePartInput{position:absolute;left:8px;right:8px;top:72px;height:48px;z-index:4;border-radius:12px;text-align:center;font-size:28px;font-weight:650;line-height:48px}.timePartButton{border:0;background:#f2f2f7;color:#1d1d1f;padding:0}.timePartButton:active{background:#e5e5ea}.timePartInput{width:calc(100% - 16px);border:2px solid #007aff;background:#fff;color:#1d1d1f;padding:0 6px;outline:none}.timePartHint{font-size:11px;color:#8e8e93;text-align:center;margin-top:-2px}.timeReminderBox{margin-top:12px;background:#fff;border-radius:14px;border:1px solid #e5e5ea;overflow:hidden}.timeReminderRow{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px}.timeReminderOptions{padding:0 13px 13px}.timePickerActions{display:flex;align-items:center;gap:8px;margin-top:14px}.timePickerActions .clear{margin-right:auto;background:transparent;color:#ff3b30}.timePickerActions .btn{min-width:92px}.hidden{display:none!important}
@@ -4828,7 +4828,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function canManageMeetingInEditor(){
     const ws=state?.workspaces?.find(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId()));
-    return !!(editorMeetingTracked&&ws?.kind==="assistant"&&assistantWorkspaceIsOwner(ws)&&
+    return !!(editorMeetingTracked&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&
       !["proposed","changes_requested","rejected","cancelled"].includes(editorTaskApprovalStatus));
   }
   function closeTaskMeetingMenu(){
@@ -4967,7 +4967,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     // A deferred meeting can only become scheduled again after the owner
     // sets a date (and, when appropriate, approves the assistant's proposal).
     if(existing&&existing.meetingStatus==="deferred"&&snap.meetingTracked&&snap.dueDate&&
-       currentWorkspaceRole()==="owner"&&["confirmed","scheduled"].includes(snap.approvalStatus)){
+       ["owner","assistant"].includes(currentWorkspaceRole())&&["confirmed","scheduled"].includes(snap.approvalStatus)){
       snap.meetingStatus="scheduled";editorMeetingStatus="scheduled";
     }
     let changed=false,target=existing;
@@ -5705,7 +5705,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return}
     if(editorMeetingTracked&&state.workspaces.some(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId())&&w.kind==="assistant")){
       if(!canManageMeetingInEditor()){
-        showToast("Solo el director puede cerrar una reunión confirmada.");return;
+        showToast("Esta reunión aún no puede marcarse como realizada.");return;
       }
       const action=editorTaskDone?"scheduled":"realized";
       setEditorMeetingStatus(action);return;
