@@ -298,6 +298,11 @@ object NottasWeb {
         fun syncReminders(json: String): Boolean = ReminderScheduler.sync(context, json)
 
         @JavascriptInterface
+        fun syncDirectorProposals(count: Int) {
+            DirectorProposalNotifier.sync(context, count.coerceIn(0, 999))
+        }
+
+        @JavascriptInterface
         fun closeOverlay() {
             mainHandler.post { onCloseOverlay?.invoke() }
         }

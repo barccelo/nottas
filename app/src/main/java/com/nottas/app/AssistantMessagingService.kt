@@ -38,6 +38,9 @@ class AssistantMessagingService : FirebaseMessagingService() {
                     data["workspaceName"].orEmpty().ifBlank { "Asistente" }
                 )
             }
+            "director_proposal" -> {
+                DirectorProposalNotifier.incoming(this, data["title"].orEmpty())
+            }
             "assistant_notice" -> {
                 AssistantNoticeNotifier.show(
                     this,

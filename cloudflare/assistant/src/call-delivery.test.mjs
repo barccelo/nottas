@@ -13,7 +13,7 @@ const envConfig = {
   })
 };
 
-function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "boss" } = {}) {
+function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "boss", proposals = [] } = {}) {
   const statements = [];
   const requests = [];
   const db = {
@@ -29,6 +29,7 @@ function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "bos
                 return null;
               }
               if (sql.includes("SELECT name FROM workspaces")) return { name: "Oficina" };
+              if (sql.includes("SELECT kind FROM workspaces WHERE id=? AND owner_user_id=?")) return { kind: "assistant" };
               if (sql.includes("SELECT w.owner_user_id AS user_id")) return { user_id: "boss" };
               return null;
             },
@@ -36,6 +37,7 @@ function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "bos
               if (sql.includes("MAX(d.updated_at) AS last_push_at")) return { results: candidates };
               if (sql.includes("SELECT id,fcm_token FROM devices")) return { results: devices[params[0]] || [] };
               if (sql.includes("SELECT user_id FROM workspace_members")) return { results: [] };
+              if (sql.includes("json_extract(payload_json")) return { results: proposals.filter(p=>p.approvalStatus==="proposed").map(p=>({ id:p.id, payload_json:JSON.stringify(p), updated_at:p.updatedAt||0 })) };
               return { results: [] };
             },
             async run() {
@@ -185,4 +187,32 @@ test("notices reject empty messages and never claim FCM failures are delivered",
     assert.equal(blocked.status, 502);
     assert.equal((await blocked.json()).error, "notice_not_delivered");
   } finally { f.restore(); }
+});
+
+test("director sees durable pending proposals from D1 and never approved tasks", async () => {
+  const f = fixture({ actor:"boss", proposals:[
+    {id:"task-1",text:"Reunión de las 12",approvalStatus:"proposed",dueDate:"2026-10-28",dueTime:"12:00",updatedAt:123},
+    {id:"task-2",text:"Consulta",approvalStatus:"confirmed",dueDate:"2026-10-29",updatedAt:99}
+  ] });
+  try {
+    const request = new Request("https://example.invalid/v1/workspaces/ws/pending-proposals", {
+      headers:{ Authorization:"Bearer test-session" }
+    });
+    const response = await worker.fetch(request,f.env);
+    assert.equal(response.status,200);
+    const body=await response.json();
+    assert.equal(body.pending.length,1);
+    assert.equal(body.pending[0].id,"task-1");
+    assert.equal(body.pending[0].dueTime,"12:00");
+  } finally { f.restore(); }
+});
+
+test("assistant cannot read director's approval inbox", async () => {
+  const f=fixture({actor:"assistant-new"});
+  try{
+    const response=await worker.fetch(new Request("https://example.invalid/v1/workspaces/ws/pending-proposals",{
+      headers:{Authorization:"Bearer test-session"}
+    }),f.env);
+    assert.equal(response.status,403);
+  }finally{f.restore()}
 });

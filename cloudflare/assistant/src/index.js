@@ -71,6 +71,11 @@ async function route(request, env) {
     return removeAssistantMember(decodeURIComponent(removeMemberRoute[1]), decodeURIComponent(removeMemberRoute[2]), auth, env);
   }
 
+  const proposalsWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/pending-proposals$/);
+  if (proposalsWorkspace && request.method === "GET") {
+    return pendingAssistantProposals(decodeURIComponent(proposalsWorkspace[1]), auth, env);
+  }
+
   const activityWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/activity$/);
   if (activityWorkspace && request.method === "GET") {
     return workspaceActivity(decodeURIComponent(activityWorkspace[1]), auth, env);
@@ -418,6 +423,7 @@ async function pushSync(request, auth, env) {
   const accepted = [];
   const conflicts = [];
   const touchedWorkspaces = new Set();
+  const proposalSignals = new Map();
 
   for (const change of changes) {
     const workspaceId = textValue(change.workspaceId, 100);
@@ -503,6 +509,15 @@ async function pushSync(request, auth, env) {
     ).bind(workspaceId, entityType, entityId, op, JSON.stringify(payload), Date.now(), auth.userId).first();
     accepted.push({ workspaceId, entityType, entityId, rev: nextRev, updatedAt: incomingUpdatedAt, seq: inserted?.seq || 0, payload });
     touchedWorkspaces.add(workspaceId);
+    if(entityType==="task" && membershipRoles.get(workspaceId)==="assistant" &&
+       !deletedAt && payload.approvalStatus==="proposed" &&
+       (!current || safeJson(current.payload_json, {}).approvalStatus!=="proposed" ||
+        String(safeJson(current.payload_json, {}).dueDate||"")!==String(payload.dueDate||"") ||
+        String(safeJson(current.payload_json, {}).dueTime||"")!==String(payload.dueTime||""))) {
+      proposalSignals.set(workspaceId, {
+        id: entityId, title: textValue(payload.text||"Nueva propuesta",120)
+      });
+    }
   }
 
   for (const workspaceId of touchedWorkspaces) {
@@ -511,7 +526,13 @@ async function pushSync(request, auth, env) {
     if (workspace?.kind === "personal" && workspace.owner_user_id === auth.userId) {
       await pushAvailabilityChanged(auth.userId, env);
     } else {
-      await pushWorkspaceSync(workspaceId, auth.userId, env);
+      const proposal=proposalSignals.get(workspaceId);
+      await pushWorkspaceSync(workspaceId, auth.userId, env,proposal?workspace.owner_user_id:"");
+      if(proposal&&workspace.kind==="assistant"&&workspace.owner_user_id!==auth.userId) {
+        await sendPushToUser(workspace.owner_user_id,{
+          type:"director_proposal",workspaceId,proposalId:proposal.id,title:proposal.title
+        },env);
+      }
     }
   }
 
@@ -569,6 +590,33 @@ async function workspaceAvailability(url, workspaceId, auth, env) {
   }
   busy.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
   return json({ start, end, busy });
+}
+
+// Durable inbox: derive pending notifications from D1 task approval state.
+async function pendingAssistantProposals(workspaceId, auth, env) {
+  const member = await membership(workspaceId, auth.userId, env);
+  if (!member || member.role !== "owner") return json({ error: "owner_required" }, 403);
+  const workspace = await env.DB.prepare(
+    "SELECT kind FROM workspaces WHERE id=? AND owner_user_id=?"
+  ).bind(workspaceId, auth.userId).first();
+  if (workspace?.kind !== "assistant") return json({ error: "assistant_workspace_required" }, 400);
+  const result = await env.DB.prepare(
+    "SELECT id,payload_json,updated_at FROM items WHERE workspace_id=? AND entity_type='task' AND deleted_at IS NULL " +
+    "AND json_extract(payload_json,'$.approvalStatus')='proposed' ORDER BY updated_at DESC LIMIT 250"
+  ).bind(workspaceId).all();
+  const proposals = (result.results || []).map(row => {
+    const p = safeJson(row.payload_json, {});
+    return {
+      id: row.id, title: textValue(p.text || "Sin título", 160),
+      dueDate: textValue(p.dueDate, 10), endDate: textValue(p.endDate, 10),
+      dueTime: textValue(p.dueTime, 5), endTime: textValue(p.endTime, 5),
+      locationText: textValue(p.locationText, 160),
+      message: textValue(p.proposalMessage, 280),
+      createdBy: textValue(p.createdBy, 120),
+      updatedAt: Number(row.updated_at) || 0
+    };
+  });
+  return json({ workspaceId, pending: proposals, count: proposals.length });
 }
 
 async function workspaceActivity(workspaceId, auth, env) {
@@ -823,14 +871,12 @@ async function pushAvailabilityChanged(ownerUserId, env) {
   }, env)));
 }
 
-async function pushWorkspaceSync(workspaceId, actorUserId, env) {
+async function pushWorkspaceSync(workspaceId, actorUserId, env, skipUserId="") {
   const result = await env.DB.prepare(
     "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
   ).bind(workspaceId, actorUserId).all();
-  await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
-    type: "sync",
-    workspaceId,
-    changedBy: actorUserId
+  await Promise.all((result.results || []).filter(r=>r.user_id!==skipUserId).map(r => sendPushToUser(r.user_id, {
+    type: "sync", workspaceId, changedBy: actorUserId
   }, env)));
 }
 
