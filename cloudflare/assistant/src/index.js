@@ -459,6 +459,35 @@ async function pushSync(request, auth, env) {
         String(currentPayload.dueTime || "") !== String(payload.dueTime || "") ||
         String(currentPayload.endTime || "") !== String(payload.endTime || "")
       );
+      // Only the owner can close, cancel, or defer meetings. An assistant can
+      // propose a different date, but cannot forge completed states or history.
+      if (currentPayload) {
+        const oldHistory = Array.isArray(currentPayload.meetingHistory)
+          ? currentPayload.meetingHistory.slice(-49) : [];
+        payload.meetingTracked = typeof currentPayload.meetingTracked === "boolean" ? currentPayload.meetingTracked : !!(currentPayload.dueDate && currentPayload.dueTime);
+        payload.meetingStatus = currentPayload.meetingStatus || "scheduled";
+        payload.meetingNote = String(currentPayload.meetingNote || "").slice(0,500);
+        payload.meetingHistory = oldHistory;
+        if (scheduleChanged && payload.meetingTracked) {
+          payload.meetingHistory = [...oldHistory, {
+            at: Date.now(), by: auth.userId, action: "Horario propuesto",
+            from: {
+              dueDate: String(currentPayload.dueDate || ""), endDate: String(currentPayload.endDate || ""),
+              dueTime: String(currentPayload.dueTime || ""), endTime: String(currentPayload.endTime || ""),
+              status: String(currentPayload.meetingStatus || "scheduled")
+            },
+            to: {
+              dueDate: String(payload.dueDate || ""), endDate: String(payload.endDate || ""),
+              dueTime: String(payload.dueTime || ""), endTime: String(payload.endTime || ""),
+              status: String(currentPayload.meetingStatus || "scheduled")
+            },
+            note: String(currentPayload.meetingNote || "").slice(0,500)
+          }];
+        }
+      } else {
+        payload.meetingStatus = "scheduled";
+        payload.meetingHistory = [];
+      }
       if (!currentPayload) {
         // An assistant may explicitly schedule a new task without approval.
         payload.approvalStatus = requestsDirectScheduling ? "scheduled" : "proposed";

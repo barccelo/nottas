@@ -45,9 +45,9 @@ object DirectorProposalNotifier {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val header = if (count > 0) {
-            if (count == 1) "1 propuesta por agendar" else "$count propuestas por agendar"
+            if (count == 1) "1 asunto de agenda pendiente" else "$count asuntos de agenda pendientes"
         } else "Nueva propuesta por agendar"
-        val text = if (title.isNotBlank()) title else "Abre Nottas y revisa la campanita para decidir."
+        val text = if (title.isNotBlank()) title else "Abre Nottas para revisar propuestas, reuniones diferidas y sin cerrar."
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(context, CHANNEL_ID)
         } else {
@@ -79,10 +79,10 @@ object DirectorProposalNotifier {
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
-                "Dirección · Propuestas pendientes",
+                "Dirección · Seguimiento de agenda",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Estado persistente de las propuestas del asistente pendientes de aprobación."
+                description = "Estado persistente de propuestas y reuniones que necesitan seguimiento."
                 lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 setShowBadge(true)
             }
