@@ -459,18 +459,23 @@ async function pushSync(request, auth, env) {
         String(currentPayload.dueTime || "") !== String(payload.dueTime || "") ||
         String(currentPayload.endTime || "") !== String(payload.endTime || "")
       );
-      // Only the owner can close, cancel, or defer meetings. An assistant can
-      // propose a different date, but cannot forge completed states or history.
+      // Authorized members may update meeting outcomes; approval remains protected.
       if (currentPayload) {
         const oldHistory = Array.isArray(currentPayload.meetingHistory)
           ? currentPayload.meetingHistory.slice(-49) : [];
         payload.meetingTracked = typeof currentPayload.meetingTracked === "boolean" ? currentPayload.meetingTracked : !!(currentPayload.dueDate && currentPayload.dueTime);
-        payload.meetingStatus = currentPayload.meetingStatus || "scheduled";
-        // Completing a tracked meeting has the same authorization as setting
-        // its follow-up status. Assistants may still complete ordinary tasks.
-        if (payload.meetingTracked) payload.done = !!currentPayload.done;
-        payload.meetingNote = String(currentPayload.meetingNote || "").slice(0,500);
-        payload.meetingHistory = oldHistory;
+        payload.meetingStatus = ["scheduled", "deferred", "realized", "cancelled"].includes(payload.meetingStatus)
+          ? payload.meetingStatus : (currentPayload.meetingStatus || "scheduled");
+        payload.meetingNote = String(payload.meetingNote || "").slice(0,500);
+        const proposedHistory = Array.isArray(payload.meetingHistory) ? payload.meetingHistory : [];
+        const prefixValid = oldHistory.every((entry, index) =>
+          JSON.stringify(entry) === JSON.stringify(proposedHistory[index]));
+        const extraEntries = prefixValid ? proposedHistory.slice(oldHistory.length, oldHistory.length + 10) : [];
+        payload.meetingHistory = [...oldHistory, ...extraEntries.map(entry => ({
+          at: Date.now(), by: auth.userId, action: textValue(entry?.action || "Cambio", 100),
+          from: entry?.from || null, to: entry?.to || null,
+          note: textValue(entry?.note || "", 500)
+        }))].slice(-50);
         if (scheduleChanged && payload.meetingTracked) {
           payload.meetingHistory = [...oldHistory, {
             at: Date.now(), by: auth.userId, action: "Horario propuesto",
@@ -488,9 +493,8 @@ async function pushSync(request, auth, env) {
           }];
         }
       } else {
-        payload.meetingStatus = "scheduled";
+        payload.meetingStatus = ["scheduled", "deferred", "realized", "cancelled"].includes(payload.meetingStatus) ? payload.meetingStatus : "scheduled";
         payload.meetingHistory = [];
-        if (payload.meetingTracked) payload.done = false;
       }
       if (!currentPayload) {
         // An assistant may explicitly schedule a new task without approval.
