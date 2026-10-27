@@ -463,7 +463,9 @@ html[data-theme="dark"] .calendarDayEvent,html[data-theme="dark"] .calendarDayPa
 html[data-theme="dark"] .calendarDayEvent:active{background:#48484a}
 /* Compact week controls + readable event titles + tap peek */
 .calendarSheet{position:relative}
-.calendarNav{grid-template-columns:44px 36px minmax(0,1fr) auto auto 44px}
+.calendarNav{grid-template-columns:40px minmax(0,1fr) 30px auto 36px 40px;column-gap:3px}
+.calendarNav .calendarEyeBtn{width:30px;height:36px;justify-self:end}
+.calendarNav .calendarToday{justify-self:start}
 .calendarWeekControls{position:relative;display:block;margin:0;flex:0 0 auto}
 .calendarWeekOptionsBtn{width:36px;height:36px;padding:0;border-radius:10px;justify-content:center}
 .calendarWeekOptionsBtn svg{width:18px;height:18px}
@@ -999,11 +1001,11 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
       <button class="calendarMode" type="button" data-calendar-view="agenda">Agenda</button>
     </div>
     <div class="calendarNav">
+      <button id="calendarPrev" class="calendarNavBtn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
+      <div id="calendarPeriod" class="calendarPeriod"></div>
       <button id="calendarEyeBtn" class="calendarEyeBtn hidden" type="button" aria-label="Mostrar u ocultar calendarios" aria-expanded="false" aria-controls="calendarEyePopover" title="Calendarios visibles">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.4 12s3.6-6.5 9.6-6.5 9.6 6.5 9.6 6.5-3.6 6.5-9.6 6.5S2.4 12 2.4 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
       </button>
-      <button id="calendarPrev" class="calendarNavBtn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"></path></svg></button>
-      <div id="calendarPeriod" class="calendarPeriod"></div>
       <button id="calendarToday" class="calendarToday" type="button">Hoy</button>
       <div id="calendarWeekOptions" class="calendarWeekControls">
         <button id="calendarWeekOptionsBtn" class="calendarWeekOptionsBtn" type="button" aria-label="Opciones de esta vista" aria-expanded="false" aria-controls="calendarWeekOptionsPopover">
