@@ -3025,20 +3025,6 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function completeTask(t,done){
     if(!t)return;
-    if(meetingIsTracked(t)){
-      const ws=state.workspaces.find(w=>w.id===t.workspaceId);
-      if(!assistantWorkspaceAuthorized(ws)||["proposed","changes_requested","rejected","cancelled"].includes(t.approvalStatus)){
-         showToast("Esta reunión aún no puede marcarse como realizada.");return;
-       }
-      if(!!t.done!==!!done||t.meetingStatus!==(done?"realized":"scheduled")){
-        const from=meetingScheduleSnapshot(t);
-        t.meetingStatus=done?"realized":"scheduled";
-        t.meetingHistory=[...(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49),{
-          at:now(),by:currentUserId(),action:done?"Realizada":"Programada",
-          from,to:meetingScheduleSnapshot(t),note:""
-        }];
-      }
-    }
     const wasDone=!!t.done;
     t.done=!!done;
     if(t.done&&!wasDone){
@@ -4828,8 +4814,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function canManageMeetingInEditor(){
     const ws=state?.workspaces?.find(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId()));
-    return !!(editorMeetingTracked&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&
-      !["proposed","changes_requested","rejected","cancelled"].includes(editorTaskApprovalStatus));
+    return !!(editorMeetingTracked&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws));
   }
   function closeTaskMeetingMenu(){
     editorMeetingMenuOpen=false;
