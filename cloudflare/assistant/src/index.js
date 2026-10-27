@@ -466,6 +466,9 @@ async function pushSync(request, auth, env) {
           ? currentPayload.meetingHistory.slice(-49) : [];
         payload.meetingTracked = typeof currentPayload.meetingTracked === "boolean" ? currentPayload.meetingTracked : !!(currentPayload.dueDate && currentPayload.dueTime);
         payload.meetingStatus = currentPayload.meetingStatus || "scheduled";
+        // Completing a tracked meeting has the same authorization as setting
+        // its follow-up status. Assistants may still complete ordinary tasks.
+        if (payload.meetingTracked) payload.done = !!currentPayload.done;
         payload.meetingNote = String(currentPayload.meetingNote || "").slice(0,500);
         payload.meetingHistory = oldHistory;
         if (scheduleChanged && payload.meetingTracked) {
@@ -487,6 +490,7 @@ async function pushSync(request, auth, env) {
       } else {
         payload.meetingStatus = "scheduled";
         payload.meetingHistory = [];
+        if (payload.meetingTracked) payload.done = false;
       }
       if (!currentPayload) {
         // An assistant may explicitly schedule a new task without approval.

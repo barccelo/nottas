@@ -841,36 +841,27 @@ html[data-theme="dark"] .taskInlineLocation input{color:#f5f5f7}
 @media(max-width:350px){.taskInlineScheduleBtn strong{font-size:13px}.taskInlineTimeBtn strong{font-size:18px}.taskInlineSchedule{grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr)}}
 
 
-.taskMeetingFollowup{border:1px solid #e0e0e5;border-radius:12px;padding:10px 12px;margin:12px 0;color:#1d1d1f}
-.taskMeetingHead{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
-.taskMeetingTrackedLabel{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:630}
-.taskMeetingTrackedLabel input{width:18px;height:18px;accent-color:#1677ff}
-.taskMeetingHead strong{font-size:12px;color:#1677ff;font-weight:650}
-.taskMeetingActions{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0 8px}
-.taskMeetingActions button{border:1px solid #d1d1d6;color:#1677ff;background:#f5f5f7;border-radius:9px;padding:9px 12px;font-size:12px;font-weight:640}
+/* Meeting actions live in the existing check button, not a new editor section. */
+#taskDoneBtn{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.taskMeetingMenu{position:absolute;left:10px;top:45px;width:min(292px,calc(100vw - 48px));z-index:35;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;border-radius:15px;padding:11px;box-shadow:0 14px 34px rgba(0,0,0,.18)}
+#taskForm>.card{position:relative}
+.taskMeetingMenuTitle{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 10px}
+.taskMeetingMenuTitle strong{font-size:13px;color:#1677ff}
+.taskMeetingMenuTitle button{width:30px;height:30px;border:0;background:#f1f1f5;border-radius:50%;font-size:20px;color:#636366}
+.taskMeetingActions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.taskMeetingActions button{border:1px solid #d1d1d6;color:#1677ff;background:#f5f5f7;border-radius:9px;padding:10px 5px;font-size:12px;font-weight:640}
 .taskMeetingActions button:active{background:#e5e5ea}
-#taskMeetingNote{box-sizing:border-box;width:100%;border:1px solid #e0e0e5;border-radius:10px;background:transparent;color:inherit;font:inherit;font-size:12px;line-height:1.4;padding:10px;resize:vertical;min-height:55px}
-.taskMeetingHistoryBox{margin-top:11px;font-size:12px;color:#8e8e93}
-.taskMeetingHistoryBox summary{cursor:pointer;list-style:revert;font-weight:650}
+.taskMeetingActions button[data-meeting-action="cancelled"]{color:#c43838}
+.taskMeetingExtra{font-size:12px;color:#8e8e93;margin-top:10px;border-top:1px solid #e5e5ea;padding:8px 0 0}
+.taskMeetingExtra summary{cursor:pointer;font-weight:600}
+#taskMeetingNote{box-sizing:border-box;width:100%;border:1px solid #e0e0e5;border-radius:10px;margin-top:9px;background:transparent;color:inherit;font:inherit;font-size:12px;line-height:1.4;padding:10px;resize:vertical;min-height:55px}
+.taskMeetingHistory{max-height:130px;overflow-y:auto}
 .taskMeetingHistoryEntry{display:flex;flex-direction:column;gap:4px;border-left:2px solid #8e8e93;padding:8px 10px;margin:10px 0}
 .taskMeetingHistoryEntry strong{font-size:11px;color:#48484a}.taskMeetingHistoryEntry small{line-height:1.3;overflow-wrap:anywhere}
-html[data-theme="dark"] .taskMeetingFollowup,html[data-theme="dark"] #taskMeetingNote{border-color:#48484a;color:#f5f5f7}
+html[data-theme="dark"] .taskMeetingMenu{background:#242426;color:#f5f5f7;border-color:#48484a}
+html[data-theme="dark"] #taskMeetingNote{border-color:#48484a;color:#f5f5f7}
 html[data-theme="dark"] .taskMeetingActions button{background:#303033;border-color:#48484a;color:#64a9ff}
 html[data-theme="dark"] .taskMeetingHistoryEntry strong{color:#d1d1d6}
-
-.directorInboxTabs{display:flex;gap:3px;padding:3px;background:#e5e5ea;border-radius:12px;margin-bottom:12px}
-.directorInboxTabs button{min-width:0;flex:1;display:flex;gap:4px;justify-content:center;align-items:center;border:0;border-radius:10px;padding:9px 3px;background:transparent;font-size:11px;font-weight:600;color:#636366;white-space:nowrap}
-.directorInboxTabs button[aria-selected="true"]{background:#fff;color:#1677ff;box-shadow:0 2px 5px rgba(0,0,0,.10)}
-.directorInboxTabs button span{font-size:10px;font-weight:700}
-.directorInboxItemStatus{font-size:11px;color:#b56b09;font-weight:650}
-html[data-theme="dark"] .directorInboxTabs{background:#303033}
-html[data-theme="dark"] .directorInboxTabs button[aria-selected="true"]{background:#48484a;color:#64a9ff}
-
-.meetingFollowupMeta{background:rgba(22,119,255,.10);color:#1677ff}
-.meetingFollowupMeta.needs_review{background:rgba(255,159,10,.15);color:#ac6a00}
-.meetingFollowupMeta.deferred{background:rgba(110,98,213,.13);color:#7364d0}
-.meetingFollowupMeta.realized{background:rgba(52,159,102,.12);color:#278950}
-.meetingFollowupMeta.cancelled{background:rgba(142,142,147,.15);color:#636366}
 /* Compact main actions and a persistent approval inbox. */
 .header{gap:4px}.headerTitle{min-width:0}.headerActions{gap:0;flex:0 0 auto}
 .headerActions>.iconBtn{width:36px;min-width:36px;height:40px}.headerActions>.iconBtn svg{width:20px;height:20px}
@@ -1182,20 +1173,18 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
           <div id="assistantTaskActions" class="assistantTaskActions"></div>
         </div>
 
-        <section id="taskMeetingFollowup" class="taskMeetingFollowup hidden" aria-label="Seguimiento de reunión">
-          <div class="taskMeetingHead">
-            <label class="taskMeetingTrackedLabel"><input id="taskMeetingTracked" type="checkbox"><span>Seguimiento de reunión</span></label>
-            <strong id="taskMeetingStatus"></strong>
+        <div id="taskMeetingMenu" class="taskMeetingMenu hidden" role="dialog" aria-label="Opciones de reunión">
+          <div class="taskMeetingMenuTitle">
+            <strong id="taskMeetingStatus">Programada</strong>
+            <button id="taskMeetingMenuClose" type="button" aria-label="Cerrar opciones">×</button>
           </div>
-          <div id="taskMeetingDetails" class="hidden">
-            <div id="taskMeetingActions" class="taskMeetingActions"></div>
-            <textarea id="taskMeetingNote" placeholder="Nota o motivo del cambio (opcional)" rows="2" maxlength="500"></textarea>
-            <details class="taskMeetingHistoryBox">
-              <summary>Historial de la reunión</summary>
-              <div id="taskMeetingHistory"></div>
-            </details>
-          </div>
-        </section>
+          <div id="taskMeetingActions" class="taskMeetingActions"></div>
+          <details id="taskMeetingExtra" class="taskMeetingExtra">
+            <summary>Motivo e historial</summary>
+            <textarea id="taskMeetingNote" placeholder="Motivo o nota (opcional)" rows="2" maxlength="500"></textarea>
+            <div id="taskMeetingHistory" class="taskMeetingHistory"></div>
+          </details>
+        </div>
 
         <div id="taskMetaChips" class="taskMetaChips hidden">
           <button id="taskDateChip" class="taskMetaChip hidden" type="button"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="3"></rect><path d="M8 3.5v4M16 3.5v4M3.5 10h17"></path></svg><span id="taskDateChipText"></span></button>
@@ -1724,7 +1713,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 
   let state=null;
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
-  let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false;
+  let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
@@ -3036,6 +3025,20 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function completeTask(t,done){
     if(!t)return;
+    if(meetingIsTracked(t)){
+      const ws=state.workspaces.find(w=>w.id===t.workspaceId);
+      if(!assistantWorkspaceIsOwner(ws)||["proposed","changes_requested","rejected","cancelled"].includes(t.approvalStatus)){
+        showToast("Solo el director puede cerrar reuniones confirmadas");return;
+      }
+      if(!!t.done!==!!done||t.meetingStatus!==(done?"realized":"scheduled")){
+        const from=meetingScheduleSnapshot(t);
+        t.meetingStatus=done?"realized":"scheduled";
+        t.meetingHistory=[...(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49),{
+          at:now(),by:currentUserId(),action:done?"Realizada":"Programada",
+          from,to:meetingScheduleSnapshot(t),note:""
+        }];
+      }
+    }
     const wasDone=!!t.done;
     t.done=!!done;
     if(t.done&&!wasDone){
@@ -4561,7 +4564,10 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function syncTaskDoneButton(){
     const b=$("taskDoneBtn"),input=$("taskText");if(!b||!input)return;
-    b.classList.toggle("active",!!editorTaskDone);b.setAttribute("aria-label",editorTaskDone?"Marcar como pendiente":"Completar tarea");
+    b.classList.toggle("active",!!editorTaskDone);
+    const managed=canManageMeetingInEditor();
+    b.setAttribute("aria-label",managed?(editorTaskDone?"Reabrir reunión; mantener pulsado para opciones":"Marcar reunión como realizada; mantener pulsado para opciones"):(editorTaskDone?"Marcar como pendiente":"Completar tarea"));
+    b.setAttribute("aria-haspopup",managed?"dialog":"false");
     input.classList.toggle("done",!!editorTaskDone);
   }
   function syncTaskEditorMeta(){
@@ -4820,61 +4826,87 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     const day=event.dueDate||"Sin fecha";
     return day+(event.endDate&&event.endDate>event.dueDate?" a "+event.endDate:"")+(event.dueTime?" · "+event.dueTime+(event.endTime?"–"+event.endTime:""):"")+" · "+meetingStatusLabel(event.status);
   }
+  function canManageMeetingInEditor(){
+    const ws=state?.workspaces?.find(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId()));
+    return !!(editorMeetingTracked&&ws?.kind==="assistant"&&assistantWorkspaceIsOwner(ws)&&
+      !["proposed","changes_requested","rejected","cancelled"].includes(editorTaskApprovalStatus));
+  }
+  function closeTaskMeetingMenu(){
+    editorMeetingMenuOpen=false;
+    $("taskMeetingMenu").classList.add("hidden");
+  }
+  function openTaskMeetingMenu(){
+    if(!canManageMeetingInEditor())return;
+    editorMeetingMenuOpen=true;
+    renderMeetingFollowup();
+  }
   function renderMeetingFollowup(){
-    const section=$("taskMeetingFollowup");if(!section)return;
-    const ws=state.workspaces.find(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId()));
-    const visible=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws);
-    section.classList.toggle("hidden",!visible);if(!visible)return;
-    $("taskMeetingTracked").checked=editorMeetingTracked;
-    const role=assistantWorkspaceIsOwner(ws)?"owner":"assistant";
-    $("taskMeetingTracked").disabled=role!=="owner"&&!!editingTaskId;
-    $("taskMeetingNote").disabled=role!=="owner"&&!!editingTaskId;
-    const details=$("taskMeetingDetails");details.classList.toggle("hidden",!editorMeetingTracked);
-    if(!editorMeetingTracked)return;
+    const menu=$("taskMeetingMenu"),check=$("taskDoneBtn");
+    if(!menu||!check)return;
+    const allowed=canManageMeetingInEditor();
+    if(!allowed)editorMeetingMenuOpen=false;
+    menu.classList.toggle("hidden",!editorMeetingMenuOpen||!allowed);
     const t=editingTaskId?state.tasks.find(x=>x.id===editingTaskId):null;
-    const currentStatus=t&&editorMeetingStatus==="scheduled"&&!editorMeetingStatusChanged?
+    const status=t&&editorMeetingStatus==="scheduled"&&!editorMeetingStatusChanged?
       meetingEffectiveStatus({...t,meetingTracked:true}):editorMeetingStatus;
-    $("taskMeetingStatus").textContent=meetingStatusLabel(currentStatus);
+    check.title=allowed?"Tocar: marcar realizada. Mantener pulsado: diferir o cancelar":"Completar tarea";
+    check.setAttribute("aria-label",allowed?"Marcar reunión como realizada; mantener pulsado para más opciones":"Completar tarea");
+    check.setAttribute("aria-haspopup",allowed?"dialog":"false");
+    check.setAttribute("aria-expanded",editorMeetingMenuOpen&&allowed?"true":"false");
+    if(!editorMeetingMenuOpen||!allowed)return;
+    $("taskMeetingStatus").textContent=meetingStatusLabel(status);
     const actions=$("taskMeetingActions");actions.replaceChildren();
-    const owner=assistantWorkspaceIsOwner(ws);
-    const add=(label,value)=>{const b=document.createElement("button");b.type="button";b.textContent=label;
-      b.dataset.meetingAction=value;b.addEventListener("click",()=>setEditorMeetingStatus(value));actions.appendChild(b)};
-    if(owner){
-      if(["scheduled","needs_review"].includes(currentStatus)){
-        add("Realizada","realized");add("Diferir","deferred");add("Cancelar","cancelled");
-      }else if(currentStatus==="deferred"){
-        add("Reprogramar","reprogram");if($("taskDate").value)add("Confirmar horario","scheduled");
-        add("Cancelar","cancelled");
-      }else add("Reabrir","scheduled");
-    }else if(currentStatus==="deferred")add("Proponer otra fecha","reprogram");
-    $("taskMeetingNote").value=$("taskMeetingNote").value||"";
-    const hist=$("taskMeetingHistory");hist.replaceChildren();
+    const add=(label,value)=>{
+      const b=document.createElement("button");b.type="button";b.textContent=label;b.dataset.meetingAction=value;
+      b.addEventListener("click",()=>setEditorMeetingStatus(value));actions.appendChild(b);
+    };
+    if(status==="deferred"){
+      add("Reprogramar","reprogram");if($("taskDate").value)add("Confirmar horario","scheduled");
+      add("Cancelar","cancelled");
+    }else if(status==="realized"||status==="cancelled"){
+      add("Reabrir","scheduled");
+    }else{
+      add("Diferir","deferred");add("Cancelar","cancelled");
+    }
+    const history=$("taskMeetingHistory");history.replaceChildren();
     const records=editorMeetingHistory.slice().reverse();
-    if(!records.length){hist.textContent="El historial de cambios aparecerá aquí.";return}
-    for(const row of records.slice(0,20)){
-      const entry=document.createElement("div");entry.className="taskMeetingHistoryEntry";
-      const action=document.createElement("strong");action.textContent=(row.action||"Cambio")+" · "+new Date(row.at||Date.now()).toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-      const desc=document.createElement("small");desc.textContent=meetingScheduleDesc(row.from)+" → "+meetingScheduleDesc(row.to);
-      entry.append(action,desc);
-      if(row.note){const note=document.createElement("small");note.textContent=row.note;entry.append(note)}
-      hist.appendChild(entry);
+    if(!records.length){history.textContent="Aún no hay cambios registrados.";return}
+    for(const record of records.slice(0,20)){
+      const row=document.createElement("div");row.className="taskMeetingHistoryEntry";
+      const head=document.createElement("strong");
+      head.textContent=(record.action||"Cambio")+" · "+new Date(record.at||Date.now()).toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+      const details=document.createElement("small");details.textContent=meetingScheduleDesc(record.from)+" → "+meetingScheduleDesc(record.to);
+      row.append(head,details);
+      if(record.note){const note=document.createElement("small");note.textContent=record.note;row.appendChild(note)}
+      history.appendChild(row);
     }
   }
+  // Existing check continues to handle personal tasks without meeting states.
   function setEditorMeetingStatus(action){
     if(action==="reprogram"){
+      closeTaskMeetingMenu();
       taskInlineDateTarget="start";taskInlineMonth=dateFromISO($("taskDate").value||localDateISO());
       setTaskInlinePanel("date");$("taskInlineDatePanel").scrollIntoView({block:"nearest"});return;
     }
-    const ws=state.workspaces.find(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId()));
-    if(!assistantWorkspaceIsOwner(ws))return;
+    if(!canManageMeetingInEditor())return;
     if(!["scheduled","deferred","realized","cancelled"].includes(action))return;
-    if(action==="scheduled"&&!$("taskDate").value){showToast("Selecciona una nueva fecha y hora");return}
+    if(action==="scheduled"&&!$("taskDate").value){
+      showToast("Selecciona una nueva fecha y hora");return;
+    }
+    commitTaskHistory();
     if(action==="deferred"){
-      $("taskDate").value="";$("taskEndDate").value="";$("taskTime").value="";$("taskEndTime").value="";
+      $("taskDate").value="";$("taskEndDate").value="";
+      $("taskTime").value="";$("taskEndTime").value="";
       editorTaskReminders=[];syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");
     }
     editorMeetingStatus=action;editorMeetingStatusChanged=true;
-    commitTaskHistory();renderMeetingFollowup();persistOpenTask(false);
+    editorTaskDone=action==="realized";
+    if(editorTaskDone){
+      (editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));
+      syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();
+    }
+    syncTaskEditorMeta();
+    closeTaskMeetingMenu();persistOpenTask(false);commitTaskHistory();
   }
   function assistantStatusLabel(status){
     return status==="proposed"?"Propuesta":status==="scheduled"?"Agendada":status==="confirmed"?"Confirmada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Confirmada";
@@ -4993,6 +5025,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     });
   }
   function handleEditorBack(){
+    if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
     if(closeOpenEditorPanel())return true;
     const taskTools=$("taskRichToolbar"),noteTools=$("richToolbar");
     if(taskTools&&!taskTools.classList.contains("hidden")){taskTools.classList.add("hidden");return true}
@@ -5036,6 +5069,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     editorMeetingStatus=t?.meetingStatus||"scheduled";editorMeetingStatusChanged=false;
     editorMeetingHistory=cloneSerializable(t?.meetingHistory||[]);
     $("taskMeetingNote").value=t?.meetingNote||"";
+    closeTaskMeetingMenu();$("taskMeetingExtra").open=false;
     editorTaskWorkspaceId=collab.workspaceId;editorTaskCreatedBy=collab.createdBy;editorTaskApprovalStatus=collab.approvalStatus||"confirmed";editorTaskRequiresApproval=!!collab.requiresApproval;editorTaskAssignedTo=collab.assignedTo||"";editorTaskProposalMessage=collab.proposalMessage||"";editorTaskReminders=t?taskReminderOffsets(t):defaultTaskReminderOffsets();taskReminderPanelOpen=false;$("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskEndDate").value=t?t.endDate||"":"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
@@ -5044,6 +5078,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
+    closeTaskMeetingMenu();
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
@@ -5052,6 +5087,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
   }
   function closeEditor(options={}){
+    closeTaskMeetingMenu();
     const isNote=!$("noteForm").classList.contains("hidden"),isTask=!$("taskForm").classList.contains("hidden");
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
@@ -5576,9 +5612,6 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
-  $("taskMeetingTracked").addEventListener("change",()=>{
-    editorMeetingTracked=$("taskMeetingTracked").checked;commitTaskHistory();renderMeetingFollowup();persistOpenTask(false);
-  });
   $("taskMeetingNote").addEventListener("change",()=>{commitTaskHistory();persistOpenTask(false)});
   $("taskMeetingNote").addEventListener("input",scheduleTaskHistory);
   $("taskInlineDateBtn").addEventListener("click",()=>{taskInlineDateTarget="start";if(taskInlineOpenPanel==="date"){syncTaskInlineForm();return}setTaskInlinePanel("date")});
@@ -5635,7 +5668,60 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     setEditorTaskApproval(st);
     showToast(st==="scheduled"?"Tarea agendada · sin aprobación":"Tarea como propuesta");
   });
-  $("taskDoneBtn").addEventListener("click",()=>{commitTaskHistory();editorTaskDone=!editorTaskDone;if(editorTaskDone){(editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks()}syncTaskEditorMeta();commitTaskHistory()});
+  const meetingCheck=$("taskDoneBtn");
+  let meetingPressTimer=null,meetingPressStartX=0,meetingPressStartY=0,meetingPressFired=false,meetingPressUntil=0;
+  const clearMeetingPress=()=>{clearTimeout(meetingPressTimer);meetingPressTimer=null};
+  meetingCheck.addEventListener("pointerdown",e=>{
+    if(e.button!==0||!canManageMeetingInEditor())return;
+    meetingPressFired=false;meetingPressStartX=e.clientX;meetingPressStartY=e.clientY;
+    clearMeetingPress();
+    meetingPressTimer=setTimeout(()=>{
+      meetingPressFired=true;meetingPressUntil=Date.now()+800;
+      meetingCheck.blur();openTaskMeetingMenu();
+      try{navigator.vibrate?.(35)}catch(_){}
+    },560);
+  });
+  meetingCheck.addEventListener("pointermove",e=>{
+    if(Math.hypot(e.clientX-meetingPressStartX,e.clientY-meetingPressStartY)>12)clearMeetingPress();
+  });
+  meetingCheck.addEventListener("pointerup",clearMeetingPress);
+  meetingCheck.addEventListener("pointercancel",clearMeetingPress);
+  meetingCheck.addEventListener("contextmenu",e=>{
+    if(!canManageMeetingInEditor())return;
+    e.preventDefault();clearMeetingPress();
+    meetingPressFired=true;meetingPressUntil=Date.now()+800;
+    openTaskMeetingMenu();
+  });
+  meetingCheck.addEventListener("keydown",e=>{
+    if(canManageMeetingInEditor()&&(e.key==="ContextMenu"||(e.shiftKey&&e.key==="F10"))){
+      e.preventDefault();meetingPressFired=true;meetingPressUntil=Date.now()+800;openTaskMeetingMenu();
+    }
+  });
+  meetingCheck.addEventListener("click",e=>{
+    clearMeetingPress();
+    if(meetingPressFired||Date.now()<meetingPressUntil){
+      e.preventDefault();meetingPressFired=false;return;
+    }
+    if(editorMeetingMenuOpen){closeTaskMeetingMenu();return}
+    if(editorMeetingTracked&&state.workspaces.some(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId())&&w.kind==="assistant")){
+      if(!canManageMeetingInEditor()){
+        showToast("Solo el director puede cerrar una reunión confirmada.");return;
+      }
+      const action=editorTaskDone?"scheduled":"realized";
+      setEditorMeetingStatus(action);return;
+    }
+    commitTaskHistory();editorTaskDone=!editorTaskDone;
+    if(editorTaskDone){
+      (editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));
+      syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();
+    }
+    syncTaskEditorMeta();commitTaskHistory();
+  });
+  $("taskMeetingMenuClose").addEventListener("click",closeTaskMeetingMenu);
+  document.addEventListener("pointerdown",e=>{
+    if(!editorMeetingMenuOpen)return;
+    if(!e.target.closest("#taskMeetingMenu")&&!e.target.closest("#taskDoneBtn"))closeTaskMeetingMenu();
+  });
   $("taskSubtasksBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");addEditorSubtask()});
   $("taskDateBtn").addEventListener("click",()=>{hideTaskPanels();$("taskRichToolbar").classList.add("hidden");taskInlineDateTarget="start";setTaskInlinePanel("date")});
   $("taskDateChip").addEventListener("click",()=>{taskInlineDateTarget="start";setTaskInlinePanel("date")});
