@@ -3464,11 +3464,6 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       if(isSharedWorkspace()&&googleCalendarLoading){showToast("Cargando eventos de Google Calendar…");return}
       createTaskOnCalendarDate();return;
     }
-    if(tasks.length+google.length===1){
-      if(tasks.length)openCalendarDayEvent({kind:"local",value:tasks[0]},date);
-      else openCalendarDayEvent({kind:"google",value:google[0]},date);
-      return;
-    }
     showCalendarDayList(date,tasks,google);
   }
   function bindCalendarDateTargets(){
