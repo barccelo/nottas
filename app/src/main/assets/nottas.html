@@ -2085,7 +2085,11 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       $("backupBadge").textContent="Activa";
       $("backupDesc").textContent="Copia automática local + historial interno.";
       setStatus("Local");
-      if(!assistantApplyingRemote&&assistantConfigured())scheduleAssistantSync(650);
+      // Remote merges save local cache without causing another round-trip.
+      // Never suppress a genuine local edit made during that short merge window.
+      const hasUnsentChanges=[state.tasks,state.notes,state.categories].some(items=>
+        items.some(item=>item.syncState==="pending"&&assistantAuthorizedIds.has(item.workspaceId||personalWorkspaceId())));
+      if(assistantConfigured()&&(!assistantApplyingRemote||hasUnsentChanges))scheduleAssistantSync(650);
     }catch(_){
       setStatus("Error local","err");
     }finally{
