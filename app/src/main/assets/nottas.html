@@ -5003,7 +5003,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     overlay.classList.toggle("taskToolsExpanded",taskToolsExpanded);
     overlay.classList.toggle("taskToolsCompact",!taskToolsExpanded);
     overlay.classList.toggle("taskToolsHasSubtasks",!taskToolsExpanded&&taskActiveTool==="subtasks");
-    const box=$("taskSubtasksBox"),section=$("taskToolSection_subtasks"),content=$("taskContentArea");
+    const box=$("taskSubtasksBox"),section=$("taskToolSection_subtasks"),content=document.querySelector("#taskForm .taskContentArea");
     if(box&&section&&content){
       if(!taskToolsExpanded&&box.parentElement!==section)section.appendChild(box);
       else if(taskToolsExpanded&&box.previousElementSibling!==content)content.after(box);
