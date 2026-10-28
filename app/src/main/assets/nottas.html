@@ -976,6 +976,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 #editorOverlay.taskEditorMode .taskToolsExpand{flex:0 0 36px;min-height:58px;border:0;border-radius:12px;display:grid;place-items:center;background:#eaeaf0;color:#636366}
 #editorOverlay.taskEditorMode .taskToolsExpand svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection{display:contents}
+#editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection>.taskInlineRow{border-bottom:1px solid #ececf0}
+#editorOverlay.taskEditorMode.taskToolsExpanded #taskToolSection_subtasks>.taskInlineRow{border-bottom:0}
+html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection>.taskInlineRow{border-color:#38383a}
 #editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection{display:none}
 #editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection.active{display:block;background:#f2f2f7;border-radius:14px;padding:8px 11px 10px;margin:8px 0 12px}
 #editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection .taskInlineRow,#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection .taskInlineLocation{border-bottom:0}
@@ -4987,6 +4990,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(focused?.closest?.("#taskToolSections")&&focused.blur)focused.blur();
     const wasOpen=!taskToolsExpanded&&taskActiveTool===key;
     taskToolsExpanded=false;taskActiveTool=wasOpen?"":key;
+    saveUI();
     if(key==="reminder")taskReminderPanelOpen=!wasOpen;
     else taskReminderPanelOpen=false;
     if(taskActiveTool==="subtasks")taskSubtasksExpanded=true;
@@ -6426,8 +6430,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   initSheetGestures();
   initActionPanelGestures();
   initNottasSelects();
-  initTaskTools();
   load();
+  initTaskTools();
   setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
 })();
 </script>
