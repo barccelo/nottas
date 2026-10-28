@@ -1317,6 +1317,15 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       <div id="taskMorePanel" class="noteActionPanel taskMorePanel hidden" aria-hidden="true">
         <div class="noteActionPanelHandle"></div>
         <div id="taskEditedHint" class="noteEditedHint"></div>
+        <button id="taskMoreReminderBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4M12 2v2"></path></svg><span>Recordatorio</span>
+        </button>
+        <button id="taskDuplicateBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Crear una copia</span>
+        </button>
+        <button id="taskMoreTagsBtn" class="noteActionRow" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5v5.8L13 19.8l6.8-6.8-8.5-8.5H5.5a1 1 0 0 0-1 1Z"></path><circle cx="8.4" cy="8.4" r="1.1"></circle></svg><span>Etiquetas</span>
+        </button>
         <div class="taskMoreGrid">
           <div class="field taskMoreWide">
             <div class="noteActionLabel">Categoría</div>
@@ -1337,9 +1346,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
           <div class="field"><div class="noteActionLabel">Duración rápida</div><div class="durationQuick"><button type="button" data-duration-minutes="30">30 m</button><button type="button" data-duration-minutes="60">1 h</button><button type="button" data-duration-minutes="90">1 h 30</button><button type="button" data-duration-minutes="120">2 h</button></div></div>
           <div class="field taskMoreWide"><div class="noteActionLabel">Repetir</div><select id="taskRecurrence" class="select"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></div>
         </div>
-        <button id="deleteTaskBtn" class="noteActionRow noteActionDanger hidden" type="button">
+        <button id="deleteTaskBtn" class="noteActionRow noteActionDanger" type="button">
           <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>
-          <span>Borrar</span>
+          <span id="deleteTaskLabel">Borrar</span>
         </button>
       </div>
 
@@ -4643,7 +4652,12 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   function hideTaskPanels(){closeEditorActionPanel($("taskListPanel"));closeEditorActionPanel($("taskMorePanel"))}
   function showTaskPanel(){
     const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskListPanel"));
-    const p=$("taskMorePanel");if(p){resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
+    const p=$("taskMorePanel");
+    if(p){
+      resetEditorActionPanel(p);
+      $("deleteTaskLabel").textContent=editingTaskId?"Borrar":"Descartar borrador";
+      p.classList.remove("hidden");p.setAttribute("aria-hidden","false");
+    }
   }
   function showTaskListPanel(){
     const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskMorePanel"));
@@ -5097,7 +5111,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     }else{
       const stamp=now(),id=makeId("t");
       target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,locationText:snap.locationText,workspaceId:snap.workspaceId,createdBy:snap.createdBy,updatedBy:currentUserId(),approvalStatus:snap.approvalStatus,requiresApproval:snap.requiresApproval,assignedTo:snap.assignedTo,proposalMessage:snap.proposalMessage,meetingTracked:snap.meetingTracked,meetingStatus:snap.meetingStatus,meetingNote:snap.meetingNote,meetingHistory:[],category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,endDate:snap.endDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,reminders:snap.reminders,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
-      state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskBtn").classList.remove("hidden");
+      state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskLabel").textContent="Borrar";
       if(target.done)createNextOccurrence(target);
     }
     if(changed){scheduleSave();render();if(snap.reminders.length)requestReminderPermission();if(showSaved)showToast("Tarea guardada")}
@@ -5177,7 +5191,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");const newEventDefaults=!t&&isSharedWorkspace()?defaultNewEventTimes():null;$("taskDate").value=t?t.dueDate:(newEventDefaults?.date||"");$("taskEndDate").value=t?t.endDate||"":(newEventDefaults?.endDate||"");$("taskTime").value=t?t.dueTime:(newEventDefaults?.start||"");$("taskEndTime").value=t?t.endTime||"":(newEventDefaults?.end||"");$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -5838,7 +5852,34 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   $("taskFormatBtn").addEventListener("click",()=>{hideTaskPanels();setRichToolbar("task",$("taskRichToolbar").classList.contains("hidden"))});
   $("taskFormatClose").addEventListener("pointerdown",e=>e.preventDefault());
   $("taskFormatClose").addEventListener("click",()=>setRichToolbar("task",false));
-  $("taskMoreBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskPanel()});
+  $("taskMoreBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");if(!$("taskMorePanel").classList.contains("hidden"))closeEditorActionPanel($("taskMorePanel"));else showTaskPanel()});
+  $("taskMoreReminderBtn").addEventListener("click",()=>{
+    hideTaskPanels();
+    if(!taskReminderPanelOpen)$("taskInlineReminderRow").click();
+    $("taskInlineReminderRow").scrollIntoView({block:"nearest",behavior:"smooth"});
+  });
+  $("taskMoreTagsBtn").addEventListener("click",()=>{
+    hideTaskPanels();
+    const input=$("taskInlineTags");
+    input.scrollIntoView({block:"center",behavior:"smooth"});
+    setTimeout(()=>input.focus(),80);
+  });
+  $("taskDuplicateBtn").addEventListener("click",()=>{
+    const snap=taskSnapshot();
+    if(!snap.text){showToast("Escribe un título para crear la copia");return}
+    const stamp=now(),items=cloneTaskItems(snap.items||[],true),blocks=cloneNoteBlocks(snap.blocks||[],true);
+    const fields=newItemWorkspaceFields("task");
+    const copy={
+      id:makeId("t"),text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks,locationText:snap.locationText,
+      ...fields,meetingTracked:!!snap.meetingTracked,meetingStatus:"scheduled",meetingNote:"",meetingHistory:[],
+      category:snap.category,tags:snap.tags.slice(),done:false,pinned:false,dueDate:snap.dueDate,endDate:snap.endDate,
+      dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,
+      reminder:snap.reminder,reminders:snap.reminders.slice(),recurrenceFrom:"",items,subtasks:legacySubtasksFromItems(items),
+      createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"
+    };
+    state.tasks.push(copy);scheduleSave();render();hideTaskPanels();
+    showToast("Copia creada");
+  });
   $("taskListToolsBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskListPanel()});
   $("taskCompletedAtEndToggle").addEventListener("change",()=>{state.preferences.completedSubtasksAtEnd=$("taskCompletedAtEndToggle").checked;if(completedSubtasksAtEnd())sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();scheduleSave()});
   $("taskMarkAllBtn").addEventListener("click",()=>{commitTaskHistory();setAllTaskItemsDone(editorSubtasks,true);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"))});
@@ -5886,7 +5927,12 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   });
   $("editorClose").addEventListener("click",closeEditor);$("editorOverlay").addEventListener("click",e=>{if(e.target===$("editorOverlay"))closeEditor()});
   $("taskForm").addEventListener("submit",e=>{e.preventDefault();persistOpenTask(true)});
-  $("deleteTaskBtn").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===editingTaskId);if(!t)return;t.deletedAt=now();touch(t);hideTaskPanels();closeEditor({save:false});scheduleSave();render();showToast("Tarea enviada a papelera")});
+  $("deleteTaskBtn").addEventListener("click",()=>{
+    const t=state.tasks.find(x=>x.id===editingTaskId);
+    if(!t){closeEditor({save:false});showToast("Borrador descartado");return}
+    t.deletedAt=now();touch(t);hideTaskPanels();closeEditor({save:false});scheduleSave();render();
+    showToast("Tarea enviada a papelera");
+  });
   $("noteForm").addEventListener("submit",e=>{e.preventDefault();persistOpenNote(true)});
   $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);hideNotePanels();closeEditor({save:false});scheduleSave();render();showToast("Nota enviada a papelera")});
 
