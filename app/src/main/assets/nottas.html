@@ -961,6 +961,33 @@ html[data-theme="dark"] .directorBellBadge{border-color:#000}
 html[data-theme="dark"] .directorInboxItem{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 html[data-theme="dark"] .directorInboxItem:active{background:#19344f}
 html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInboxDetails small{color:#a1a1a6}
+
+/* Compact task/event metadata tools, built from the existing edit controls. */
+#editorOverlay.taskEditorMode .taskToolsHeader{padding:10px 0 9px;border-top:1px solid #e5e5ea}
+#editorOverlay.taskEditorMode .taskToolsHeading{color:#8e8e93;font-size:10px;letter-spacing:.065em;font-weight:650;margin:0 2px 9px;text-transform:uppercase}
+#editorOverlay.taskEditorMode .taskToolsBar{display:flex;gap:7px;align-items:stretch;min-width:0}
+#editorOverlay.taskEditorMode .taskToolsScroller{display:flex;align-items:stretch;gap:5px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding:0 1px 2px}
+#editorOverlay.taskEditorMode .taskToolsScroller::-webkit-scrollbar{display:none}
+#editorOverlay.taskEditorMode .taskToolBtn{position:relative;flex:0 0 56px;min-height:58px;border:0;border-radius:12px;padding:7px 2px 5px;color:#636366;background:#eaeaf0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+#editorOverlay.taskEditorMode .taskToolBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode .taskToolBtn span{font-size:9px;white-space:nowrap;font-weight:590;line-height:1.1}
+#editorOverlay.taskEditorMode .taskToolBtn.active,#editorOverlay.taskEditorMode .taskToolsExpand.active{background:rgba(52,120,246,.13);color:#3478f6}
+#editorOverlay.taskEditorMode .taskToolBtn.hasValue::after{content:"";position:absolute;right:7px;top:6px;width:5px;height:5px;border-radius:50%;background:#3478f6}
+#editorOverlay.taskEditorMode .taskToolsExpand{flex:0 0 36px;min-height:58px;border:0;border-radius:12px;display:grid;place-items:center;background:#eaeaf0;color:#636366}
+#editorOverlay.taskEditorMode .taskToolsExpand svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection{display:contents}
+#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection{display:none}
+#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection.active{display:block;background:#f2f2f7;border-radius:14px;padding:8px 11px 10px;margin:8px 0 12px}
+#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection .taskInlineRow,#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection .taskInlineLocation{border-bottom:0}
+#editorOverlay.taskEditorMode.taskToolsCompact #taskSubtasksBox{display:none}
+#editorOverlay.taskEditorMode.taskToolsCompact.taskToolsHasSubtasks #taskSubtasksBox:not(.inlineCollapsed){display:block;width:100%;margin:5px 0 0;padding:8px 0 2px;background:transparent;border:0;border-top:1px solid #e5e5ea;border-radius:0}
+#editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection .taskInlineCategorySuggestions{z-index:70}
+html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolsHeader{border-color:#38383a}
+html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolBtn,html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolsExpand{background:#2c2c2e;color:#aeaeb2}
+html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolBtn.active,html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolsExpand.active{background:rgba(10,132,255,.2);color:#64a9ff}
+html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolBtn.hasValue::after{background:#64a9ff}
+html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection.active{background:#242426}
+html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskToolsHasSubtasks #taskSubtasksBox{border-color:#38383a}
 </style>
 </head>
 <body>
@@ -2111,11 +2138,11 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     applyTaskFilterChoice(taskSelectedFilter);saveUI();render();
     showToast(taskPinnedFilters.has(choice)?"Filtro fijado":"Filtro desfijado");
   }
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskToolsExpanded=u.taskToolsExpanded===true;
     taskPinnedFilters=new Set((Array.isArray(u.taskPinnedFilters)?u.taskPinnedFilters:[]).filter(x=>["today","pending","all"].includes(x)));
     applyTaskFilterChoice(["today","pending","all","pinned","done"].includes(u.taskSelectedFilter)?u.taskSelectedFilter:(taskTodayOnly?"today":taskFilter));
     if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme}catch(_){}applyTheme()}
-  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme}))}catch(_){}}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,taskToolsExpanded,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
     try{
@@ -4905,6 +4932,109 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory();
   }
   function formatTaskInlineDate(value){if(!value)return "Sin fecha";const d=dateFromISO(value);return d.toLocaleDateString("es",{weekday:"short",day:"numeric",month:"short"})}
+
+  // Compact metadata is a presentation mode: the original form inputs and
+  // their listeners are moved, never duplicated or replaced.
+  const TASK_TOOL_DEFS=[
+    ["place","Lugar",'<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>'],
+    ["reminder","Aviso",'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>'],
+    ["repeat","Repetir",'<path d="m2 9 3-3 3 3M13 6H5v8m17 1-3 3-3-3M11 18h8v-8"/>'],
+    ["priority","Prioridad",'<path d="M4 22V4M4 4h12l-2 5 2 5H4"/>'],
+    ["category","Categoría",'<path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2Z"/>'],
+    ["tags","Tags",'<path d="M12.6 2.6a2 2 0 0 0-1.4-.6H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1"/>'],
+    ["subtasks","Subtareas",'<rect x="3" y="5" width="6" height="6" rx="1"/><path d="m4 8 2 2 3-4M13 6h8M13 12h8M13 18h8"/><rect x="3" y="15" width="6" height="6" rx="1"/>']
+  ];
+  let taskToolsExpanded=false,taskActiveTool="";
+  function initTaskTools(){
+    const form=$("taskInlineForm"),location=form?.querySelector(".taskInlineLocation");
+    if(!location||$("taskToolsHeader"))return;
+    const header=document.createElement("div");
+    header.id="taskToolsHeader";header.className="taskToolsHeader";
+    header.innerHTML='<div id="taskToolsHeading" class="taskToolsHeading">Herramientas de la tarea</div><div class="taskToolsBar"><div id="taskToolsScroller" class="taskToolsScroller" role="group" aria-label="Herramientas"></div><button type="button" id="taskToolsExpand" class="taskToolsExpand" aria-label="Mostrar todas las herramientas" title="Mostrar todas las herramientas"></button></div>';
+    const sections=document.createElement("div");sections.id="taskToolSections";
+    form.insertBefore(header,location);form.insertBefore(sections,location);
+    const nodes={
+      place:[location],
+      reminder:[$("taskInlineReminderRow"),$("taskInlineReminderOptions")],
+      repeat:[$("taskInlineRecurrence").closest(".taskInlineRow")],
+      priority:[$("taskInlinePriority").closest(".taskInlineRow")],
+      category:[$("taskInlineCategory").closest(".taskInlineRow")],
+      tags:[$("taskInlineTags").closest(".taskInlineRow")],
+      subtasks:[$("taskInlineSubtasksToggle")]
+    };
+    const svg=paths=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+paths+'</svg>';
+    TASK_TOOL_DEFS.forEach(([key,label,path])=>{
+      const section=document.createElement("div");section.className="taskToolSection";
+      section.dataset.taskToolSection=key;section.id="taskToolSection_"+key;
+      nodes[key].forEach(node=>{if(node)section.appendChild(node)});
+      sections.appendChild(section);
+      const button=document.createElement("button");button.type="button";button.className="taskToolBtn";
+      button.dataset.taskTool=key;button.setAttribute("aria-label",label);button.setAttribute("aria-expanded","false");
+      button.innerHTML=svg(path)+'<span>'+label+'</span>';
+      button.addEventListener("click",()=>selectTaskTool(key));
+      $("taskToolsScroller").appendChild(button);
+    });
+    $("taskToolsExpand").addEventListener("click",()=>{
+      taskToolsExpanded=!taskToolsExpanded;taskActiveTool="";
+      if(taskToolsExpanded)taskReminderPanelOpen=false;
+      saveUI();syncTaskInlineForm();
+    });
+    syncTaskToolsLayout();
+  }
+  function selectTaskTool(key){
+    if(!TASK_TOOL_DEFS.some(([name])=>name===key))return;
+    const focused=document.activeElement;
+    if(focused?.closest?.("#taskToolSections")&&focused.blur)focused.blur();
+    const wasOpen=!taskToolsExpanded&&taskActiveTool===key;
+    taskToolsExpanded=false;taskActiveTool=wasOpen?"":key;
+    if(key==="reminder")taskReminderPanelOpen=!wasOpen;
+    else taskReminderPanelOpen=false;
+    if(taskActiveTool==="subtasks")taskSubtasksExpanded=true;
+    syncTaskInlineForm();
+    const btn=document.querySelector('[data-task-tool="'+key+'"]');
+    if(btn)btn.scrollIntoView({block:"nearest",inline:"nearest"});
+    if(taskActiveTool==="place")setTimeout(()=>$("taskLocation").focus({preventScroll:true}),50);
+    if(taskActiveTool==="tags")setTimeout(()=>$("taskInlineTags").focus({preventScroll:true}),50);
+    if(taskActiveTool==="category")setTimeout(()=>$("taskInlineCategory").focus({preventScroll:true}),50);
+  }
+  function syncTaskToolsLayout(){
+    const overlay=$("editorOverlay");
+    if(!$("taskToolsHeader")||!overlay)return;
+    overlay.classList.toggle("taskToolsExpanded",taskToolsExpanded);
+    overlay.classList.toggle("taskToolsCompact",!taskToolsExpanded);
+    overlay.classList.toggle("taskToolsHasSubtasks",!taskToolsExpanded&&taskActiveTool==="subtasks");
+    const box=$("taskSubtasksBox"),section=$("taskToolSection_subtasks"),content=$("taskContentArea");
+    if(box&&section&&content){
+      if(!taskToolsExpanded&&box.parentElement!==section)section.appendChild(box);
+      else if(taskToolsExpanded&&box.previousElementSibling!==content)content.after(box);
+    }
+    $("taskToolsHeading").textContent=state?.workspaces?.some(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId())&&w.kind==="assistant")?"Herramientas del evento":"Herramientas de la tarea";
+    const indicators={
+      place:!!$("taskLocation")?.value.trim(),
+      reminder:!!editorTaskReminders?.length,
+      repeat:$("taskRecurrence")?.value!=="none",
+      priority:$("taskPriority")?.value!=="normal",
+      category:getCategoryPickerValue("taskCategory")!=="inbox",
+      tags:!!$("taskTags")?.value.trim(),
+      subtasks:!!editorSubtasks?.length
+    };
+    document.querySelectorAll("[data-task-tool]").forEach(btn=>{
+      const key=btn.dataset.taskTool,active=!taskToolsExpanded&&taskActiveTool===key;
+      btn.classList.toggle("active",active);btn.classList.toggle("hasValue",!!indicators[key]);
+      btn.setAttribute("aria-expanded",String(active));btn.setAttribute("aria-pressed",String(active));
+    });
+    document.querySelectorAll("[data-task-tool-section]").forEach(section=>{
+      section.classList.toggle("active",!taskToolsExpanded&&section.dataset.taskToolSection===taskActiveTool);
+    });
+    const expand=$("taskToolsExpand");
+    expand.classList.toggle("active",taskToolsExpanded);
+    expand.setAttribute("aria-label",taskToolsExpanded?"Contraer herramientas":"Mostrar todas las herramientas");
+    expand.setAttribute("title",expand.getAttribute("aria-label"));
+    expand.setAttribute("aria-expanded",String(taskToolsExpanded));
+    expand.innerHTML=taskToolsExpanded?
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5-5 5 5M7 20l5-5 5 5"/></svg>':
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>';
+  }
   function setTaskInlinePanel(name){
     taskInlineOpenPanel=taskInlineOpenPanel===name?"":name;
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
@@ -5054,7 +5184,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 
     renderTaskReminderPicker();$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
     const categoryId=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=categoryId==="inbox"?"":catName(categoryId);$("taskInlineTags").value=$("taskTags").value||"";
-    const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();syncNottasSelectTriggers();
+    const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();syncNottasSelectTriggers();syncTaskToolsLayout();
   }
   function meetingIsTracked(t){
     return !!t?.meetingTracked&&!t?.deletedAt&&
@@ -5346,7 +5476,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");const newEventDefaults=!t&&isSharedWorkspace()?defaultNewEventTimes():null;$("taskDate").value=t?t.dueDate:(newEventDefaults?.date||"");$("taskEndDate").value=t?t.endDate||"":(newEventDefaults?.endDate||"");$("taskTime").value=t?t.dueTime:(newEventDefaults?.start||"");$("taskEndTime").value=t?t.endTime||"":(newEventDefaults?.end||"");$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
   }
   function openNote(n){
@@ -6296,6 +6426,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   initSheetGestures();
   initActionPanelGestures();
   initNottasSelects();
+  initTaskTools();
   load();
   setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
 })();
