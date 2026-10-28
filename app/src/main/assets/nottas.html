@@ -965,16 +965,17 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 /* Compact task/event metadata tools, built from the existing edit controls. */
 #editorOverlay.taskEditorMode .taskToolsHeader{padding:10px 0 9px;border-top:1px solid #e5e5ea}
 #editorOverlay.taskEditorMode .taskToolsHeading{color:#8e8e93;font-size:10px;letter-spacing:.065em;font-weight:650;margin:0 2px 9px;text-transform:uppercase}
-#editorOverlay.taskEditorMode .taskToolsBar{display:flex;gap:7px;align-items:stretch;min-width:0}
-#editorOverlay.taskEditorMode .taskToolsScroller{display:flex;align-items:stretch;gap:5px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding:0 1px 2px}
+#editorOverlay.taskEditorMode .taskToolsBar{display:flex;gap:4px;align-items:stretch;min-width:0;width:100%}
+#editorOverlay.taskEditorMode .taskToolsScroller{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:stretch;gap:3px;flex:1;min-width:0;overflow:visible;padding:0}
 #editorOverlay.taskEditorMode .taskToolsScroller::-webkit-scrollbar{display:none}
-#editorOverlay.taskEditorMode .taskToolBtn{position:relative;flex:0 0 56px;min-height:58px;border:0;border-radius:12px;padding:7px 2px 5px;color:#636366;background:#eaeaf0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
-#editorOverlay.taskEditorMode .taskToolBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#editorOverlay.taskEditorMode .taskToolBtn span{font-size:9px;white-space:nowrap;font-weight:590;line-height:1.1}
+@media(max-width:360px){#editorOverlay.taskEditorMode .taskToolsScroller{gap:2px}#editorOverlay.taskEditorMode .taskToolsExpand{flex-basis:27px}#editorOverlay.taskEditorMode .taskToolBtn span{font-size:7px}#editorOverlay.taskEditorMode .taskToolBtn svg{width:17px;height:17px}}
+#editorOverlay.taskEditorMode .taskToolBtn{position:relative;min-width:0;width:100%;min-height:49px;border:0;border-radius:10px;padding:5px 0 4px;color:#636366;background:#eaeaf0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px}
+#editorOverlay.taskEditorMode .taskToolBtn svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode .taskToolBtn span{font-size:8px;white-space:nowrap;font-weight:590;letter-spacing:-.025em;line-height:1.1;max-width:100%;text-align:center}
 #editorOverlay.taskEditorMode .taskToolBtn.active,#editorOverlay.taskEditorMode .taskToolsExpand.active{background:rgba(52,120,246,.13);color:#3478f6}
 #editorOverlay.taskEditorMode .taskToolBtn.hasValue::after{content:"";position:absolute;right:7px;top:6px;width:5px;height:5px;border-radius:50%;background:#3478f6}
-#editorOverlay.taskEditorMode .taskToolsExpand{flex:0 0 36px;min-height:58px;border:0;border-radius:12px;display:grid;place-items:center;background:#eaeaf0;color:#636366}
-#editorOverlay.taskEditorMode .taskToolsExpand svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode .taskToolsExpand{flex:0 0 30px;min-width:0;min-height:49px;border:0;border-radius:10px;display:grid;place-items:center;background:#eaeaf0;color:#636366}
+#editorOverlay.taskEditorMode .taskToolsExpand svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 #editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection{display:contents}
 #editorOverlay.taskEditorMode.taskToolsExpanded .taskToolSection>.taskInlineRow{border-bottom:1px solid #ececf0}
 #editorOverlay.taskEditorMode.taskToolsExpanded #taskToolSection_subtasks>.taskInlineRow{border-bottom:0}
@@ -4941,7 +4942,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   const TASK_TOOL_DEFS=[
     ["place","Lugar",'<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>'],
     ["reminder","Aviso",'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>'],
-    ["repeat","Repetir",'<path d="m2 9 3-3 3 3M13 6H5v8m17 1-3 3-3-3M11 18h8v-8"/>'],
+    ["repeat","Repetir",'<path d="m17 2 4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>'],
     ["priority","Prioridad",'<path d="M4 22V4M4 4h12l-2 5 2 5H4"/>'],
     ["category","Categoría",'<path d="M20 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2Z"/>'],
     ["tags","Tags",'<path d="M12.6 2.6a2 2 0 0 0-1.4-.6H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8Z"/><circle cx="7.5" cy="7.5" r="1"/>'],
