@@ -639,7 +639,7 @@ async function pendingAssistantProposals(workspaceId, auth, env) {
   if (workspace?.kind !== "assistant") return json({ error: "assistant_workspace_required" }, 400);
   const result = await env.DB.prepare(
     "SELECT id,payload_json,updated_at FROM items WHERE workspace_id=? AND entity_type='task' AND deleted_at IS NULL " +
-    "AND json_extract(payload_json,'$.approvalStatus')='proposed' ORDER BY updated_at DESC LIMIT 250"
+    "AND json_extract(payload_json,'$.approvalStatus')='proposed' AND json_extract(payload_json,'$.deletedAt') IS NULL ORDER BY updated_at DESC LIMIT 250"
   ).bind(workspaceId).all();
   const proposals = (result.results || []).map(row => {
     const p = safeJson(row.payload_json, {});
