@@ -4319,7 +4319,14 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       options.appendChild(button);
     });
     sheet.append(handle,head,options);layer.appendChild(sheet);
-    layer.addEventListener("pointerdown",event=>{if(event.target===layer)closeNottasChoice()});
+    // Close only after the click finishes on the backdrop. Removing the layer
+    // on pointerdown lets Android dispatch the rest of that tap to controls beneath.
+    layer.addEventListener("click",event=>{
+      if(event.target!==layer)return;
+      event.preventDefault();
+      event.stopPropagation();
+      closeNottasChoice();
+    });
     nottasChoiceRestoreFocus=source.nextElementSibling;nottasChoiceLayer=layer;
     document.body.appendChild(layer);
     options.querySelector(".selected")?.scrollIntoView({block:"nearest"});
