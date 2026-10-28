@@ -96,6 +96,12 @@ html[data-theme="dark"] .taskGroupHourHeader.isUntimed strong{color:#a1a1a6}
 .noteBottomSpacer{flex:1}
 .noteActionPanel{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);max-height:min(64vh,520px);overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -10px 34px rgba(0,0,0,.18);z-index:75}
 .noteActionPanelHandle{width:40px;height:5px;border-radius:99px;background:#c7c7cc;margin:0 auto 14px}
+.editorActionBackdrop{position:fixed;inset:0;z-index:74;width:100%;height:100%;border:0;background:rgba(0,0,0,.13);padding:0;touch-action:manipulation}
+.hierarchyPanelHead{position:sticky;top:-10px;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 1px 7px;background:inherit}
+.hierarchyPanelHead .hierarchyPanelTitle{min-width:0;flex:1;padding:0 4px}
+.hierarchyDeleteBtn{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;min-height:40px;border:0;border-radius:12px;background:rgba(255,59,48,.09);color:#ff3b30;padding:8px 11px;font-size:14px;font-weight:650}
+.hierarchyDeleteBtn:active{background:rgba(255,59,48,.18)}
+.hierarchyDeleteBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .noteActionRow{width:100%;min-height:52px;border:0;background:transparent;color:#1d1d1f;display:flex;align-items:center;gap:14px;padding:9px 4px;text-align:left;font-size:16px}
 .noteActionRow:active{background:rgba(118,118,128,.09)}
 .noteActionRow svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
@@ -1532,15 +1538,20 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       </div>
     </form>
 
+    <button id="editorActionBackdrop" class="editorActionBackdrop hidden" type="button" aria-label="Cerrar menú" aria-hidden="true"></button>
     <div id="hierarchyPanel" class="noteActionPanel hidden" aria-hidden="true">
       <div class="noteActionPanelHandle"></div>
-      <div id="hierarchyPanelTitle" class="hierarchyPanelTitle">Organizar elemento</div>
+      <div class="hierarchyPanelHead">
+        <div id="hierarchyPanelTitle" class="hierarchyPanelTitle">Organizar elemento</div>
+        <button id="hierarchyDelete" class="hierarchyDeleteBtn" type="button" aria-label="Eliminar elemento" title="Eliminar elemento">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg><span>Eliminar</span>
+        </button>
+      </div>
       <button id="hierarchyMoveUp" class="noteActionRow" type="button"><span>↑</span><span>Mover arriba</span></button>
       <button id="hierarchyMoveDown" class="noteActionRow" type="button"><span>↓</span><span>Mover abajo</span></button>
       <button id="hierarchyIndent" class="noteActionRow" type="button"><span>→</span><span>Hacer subelemento</span></button>
       <button id="hierarchyOutdent" class="noteActionRow" type="button"><span>←</span><span>Sacar un nivel</span></button>
       <button id="hierarchyAddChild" class="noteActionRow" type="button"><span>＋</span><span>Añadir dentro</span></button>
-      <button id="hierarchyDelete" class="noteActionRow noteActionDanger" type="button"><span>×</span><span>Eliminar</span></button>
     </div>
   </div>
 </div>
@@ -4526,10 +4537,20 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     closeOpenEditorPanel();hierarchyScope=scope;hierarchyPath=path;$("hierarchyPanelTitle").textContent=hierarchyNodeLabel(scope,node);
     $("hierarchyMoveUp").disabled=loc.index<=0;$("hierarchyMoveDown").disabled=loc.index>=loc.arr.length-1;$("hierarchyIndent").disabled=loc.index<=0;$("hierarchyOutdent").disabled=String(path).split(".").length<2;
     const p=$("hierarchyPanel");resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false");
+    const del=$("hierarchyDelete");del.dataset.armed="";del.querySelector("span").textContent="Eliminar";
+    syncEditorActionBackdrop();
   }
   function mutateHierarchy(action){
     const scope=hierarchyScope,path=hierarchyPath,root=hierarchyRoot(scope);if(!scope||!root)return;
     const loc=treeArrayForPath(root,path),node=treeNodeAtPath(root,path);if(!loc||!node)return;
+    if(action==="delete"&&(node.children||[]).length){
+      const del=$("hierarchyDelete");
+      if(del.dataset.armed!=="1"){
+        del.dataset.armed="1";del.querySelector("span").textContent="Confirmar";
+        showToast("Se eliminarán también los subelementos");
+        return;
+      }
+    }
     if(scope.startsWith("task-"))commitTaskHistory();
     if(action==="up"&&loc.index>0){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index-1,0,n)}
     else if(action==="down"&&loc.index<loc.arr.length-1){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index+1,0,n)}
@@ -4822,10 +4843,17 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     panel.classList.remove("panelDragging");
     panel.style.removeProperty("--panel-drag-y");
   }
+  function syncEditorActionBackdrop(){
+    const backdrop=$("editorActionBackdrop");if(!backdrop)return;
+    const showing=[...document.querySelectorAll("#editorOverlay .noteActionPanel")].some(panel=>!panel.classList.contains("hidden"));
+    backdrop.classList.toggle("hidden",!showing);
+    backdrop.setAttribute("aria-hidden",showing?"false":"true");
+  }
   function closeEditorActionPanel(panel){
     if(!panel)return false;
     const wasOpen=!panel.classList.contains("hidden");
     panel.classList.add("hidden");panel.setAttribute("aria-hidden","true");resetEditorActionPanel(panel);
+    syncEditorActionBackdrop();
     return wasOpen;
   }
   function closeOpenEditorPanel(){
@@ -4843,11 +4871,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       resetEditorActionPanel(p);
       $("deleteTaskLabel").textContent=editingTaskId?"Borrar":"Descartar borrador";
       p.classList.remove("hidden");p.setAttribute("aria-hidden","false");
+      syncEditorActionBackdrop();
     }
   }
   function showTaskListPanel(){
     const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskMorePanel"));
-    const p=$("taskListPanel");if(p){resetEditorActionPanel(p);$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
+    const p=$("taskListPanel");if(p){resetEditorActionPanel(p);$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();p.classList.remove("hidden");p.setAttribute("aria-hidden","false");syncEditorActionBackdrop()}
   }
   function taskDateText(value){
     if(!value)return "";
@@ -5430,6 +5459,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       if(other===id){resetEditorActionPanel(p);p.classList.remove("hidden");p.setAttribute("aria-hidden","false")}
       else closeEditorActionPanel(p);
     });
+    syncEditorActionBackdrop();
   }
   function handleEditorBack(){
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
@@ -6020,6 +6050,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("hierarchyOutdent").addEventListener("click",()=>mutateHierarchy("outdent"));
   $("hierarchyAddChild").addEventListener("click",()=>mutateHierarchy("child"));
   $("hierarchyDelete").addEventListener("click",()=>mutateHierarchy("delete"));
+  $("editorActionBackdrop").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();closeOpenEditorPanel()});
   $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
   ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
@@ -6428,6 +6459,82 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const target=richTargetFromNode(sel.getRangeAt(0).commonAncestorContainer);
     if(target&&(target.closest("#taskForm:not(.hidden)")||target.closest("#noteForm:not(.hidden)")))rememberRichSelection();
   });
+
+  // A transient menu consumes the entire outside tap before the underlying UI
+  // receives pointerdown or click. A subsequent tap may then act normally.
+  let dismissedOutsideAt=0;
+  function dismissTransientOutside(target){
+    if(!$("editorActionBackdrop").classList.contains("hidden")||nottasChoiceLayer||
+       !$("calendarDayBackdrop").classList.contains("hidden"))return false;
+    const visible=id=>{const el=$(id);return !!el&&!el.classList.contains("hidden")};
+    if($("calendarOverlay").classList.contains("show")){
+      if(visible("calendarEyePopover")){
+        if(target.closest("#calendarEyePopover"))return false;
+        closeCalendarEye();return true;
+      }
+      if(visible("calendarWeekOptionsPopover")){
+        if(target.closest("#calendarWeekOptionsPopover"))return false;
+        $("calendarWeekOptionsPopover").classList.add("hidden");
+        $("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
+        return true;
+      }
+      if(visible("calendarPeek")){
+        if(target.closest("#calendarPeek"))return false;
+        closeCalendarPeek();return true;
+      }
+    }
+    if($("editorOverlay").classList.contains("show")){
+      if(editorMeetingMenuOpen){
+        if(target.closest("#taskMeetingMenu"))return false;
+        closeTaskMeetingMenu();return true;
+      }
+      if(visible("taskCustomReminderPanel")){
+        if(target.closest("#taskCustomReminderPanel"))return false;
+        $("taskCustomReminderPanel").classList.add("hidden");return true;
+      }
+      if(visible("taskInlineCategorySuggestions")){
+        if(target.closest("#taskInlineCategorySuggestions,#taskInlineCategory"))return false;
+        hideTaskInlineCategorySuggestions();return true;
+      }
+      const picker=[...document.querySelectorAll("#editorOverlay .categorySuggestions:not(.hidden)")].find(el=>el.closest("[data-category-picker]"));
+      if(picker){
+        if(picker.closest("[data-category-picker]").contains(target))return false;
+        picker.classList.add("hidden");return true;
+      }
+      if(taskInlineOpenPanel==="date"||taskInlineOpenPanel==="time"){
+        if(target.closest(taskInlineOpenPanel==="date"?"#taskInlineDatePanel":"#taskInlineTimePanel"))return false;
+        setTaskInlinePanel("");return true;
+      }
+      const rich=$("taskForm").classList.contains("hidden")?$("richToolbar"):$("taskRichToolbar");
+      if(rich&&!rich.classList.contains("hidden")&&!rich.contains(target)){
+        rich.classList.add("hidden");return true;
+      }
+    }
+    return false;
+  }
+  document.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    if(dismissTransientOutside(e.target)){
+      dismissedOutsideAt=Date.now();e.preventDefault();e.stopImmediatePropagation();
+    }else dismissedOutsideAt=0;
+  },true);
+  document.addEventListener("click",e=>{
+    if(dismissedOutsideAt&&Date.now()-dismissedOutsideAt<700){
+      dismissedOutsideAt=0;e.preventDefault();e.stopImmediatePropagation();return;
+    }
+    dismissedOutsideAt=0;
+    const target=e.target;
+    if(!target.classList?.contains("overlay")||!target.classList.contains("show"))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    switch(target.id){
+      case "editorOverlay":handleEditorBack();break;
+      case "calendarOverlay":handleCalendarBack();break;
+      case "timeOverlay":closeTimePicker();break;
+      case "quickOverlay":closeQuickCapture();break;
+      case "categoryOverlay":closeCategory();break;
+      default:closeOverlay(target.id);break;
+    }
+  },true);
   initSheetGestures();
   initActionPanelGestures();
   initNottasSelects();
