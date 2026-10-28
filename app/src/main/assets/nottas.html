@@ -871,6 +871,12 @@ html[data-theme="dark"] .taskMeetingHistoryEntry strong{color:#d1d1d6}
 .directorBell.hasPending .directorBellBadge{animation:directorNudge 3.2s ease-in-out infinite}
 @keyframes directorNudge{0%,85%,100%{transform:scale(1)}92%{transform:scale(1.13)}}
 @media(prefers-reduced-motion:reduce){.directorBell.hasPending .directorBellBadge{animation:none}}
+.directorInboxTabs{display:flex;gap:3px;padding:3px;background:#e5e5ea;border-radius:12px;margin-bottom:12px}
+.directorInboxTabs button{min-width:0;flex:1;display:flex;gap:4px;justify-content:center;align-items:center;border:0;border-radius:10px;padding:9px 3px;background:transparent;font-size:11px;font-weight:600;color:#636366;white-space:nowrap}
+.directorInboxTabs button[aria-selected="true"]{background:#fff;color:#1677ff;box-shadow:0 2px 5px rgba(0,0,0,.10)}
+.directorInboxTabs button span{font-size:10px;font-weight:700}
+html[data-theme="dark"] .directorInboxTabs{background:#303033}
+html[data-theme="dark"] .directorInboxTabs button[aria-selected="true"]{background:#48484a;color:#64a9ff}
 .directorInboxSheet{max-width:570px;max-height:min(85vh,750px);display:flex;flex-direction:column}
 .directorInboxIntro{font-size:12px;line-height:1.5;color:#636366;margin:0 3px 9px}
 .directorInboxItems{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:1px 0 10px}
