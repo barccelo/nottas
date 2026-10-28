@@ -736,6 +736,27 @@ body.imeVisible #editorOverlay.noteEditorMode .editorSheet{
   height:var(--vv-height,100vh)!important;
   max-height:var(--vv-height,100vh)!important;
 }
+/* Task actions must sit above the fixed toolbar, not be covered by it. */
+#editorOverlay.taskEditorMode #taskMorePanel{
+  bottom:calc(58px + env(safe-area-inset-bottom))!important;
+  max-height:min(64vh,520px,calc(var(--vv-height,100vh) - 96px));
+  z-index:125!important;
+  overscroll-behavior:contain;
+}
+body.imeVisible #editorOverlay.taskEditorMode #taskMorePanel{
+  bottom:calc(var(--ime-offset,0px) + 58px + env(safe-area-inset-bottom))!important;
+}
+#editorOverlay.taskEditorMode #deleteTaskBtn{
+  position:sticky;
+  bottom:0;
+  z-index:1;
+  background:#fff;
+  border-top:1px solid #e5e5ea;
+}
+html[data-theme="dark"] #editorOverlay.taskEditorMode #deleteTaskBtn{
+  background:#1c1c1e;
+  border-color:#38383a;
+}
 #editorOverlay #taskBottomBar,
 #editorOverlay #noteBottomBar{
   position:fixed!important;
