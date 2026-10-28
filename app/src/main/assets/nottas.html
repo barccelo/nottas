@@ -519,7 +519,41 @@ html[data-theme="dark"] .taskInlineCalendarGrid button.rangeStart,html[data-them
 .taskInlineQuickRow{display:flex;gap:6px;overflow-x:auto;margin-top:9px;scrollbar-width:none}.taskInlineQuickRow::-webkit-scrollbar{display:none}.taskInlineQuickRow button{height:31px;flex:0 0 auto;border:0;border-radius:9px;background:#f2f2f7;color:#1d1d1f;padding:0 10px;font-size:11px;font-weight:600}
 .taskInlineTimeGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.taskInlineTimeGrid label{display:flex;flex-direction:column;gap:4px;color:#8e8e93;font-size:9px;text-transform:uppercase}.taskInlineTimeGrid input{height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 11px;font-size:16px;font-weight:650;outline:none}.taskInlineSelect{width:100%;height:42px;border:0;border-radius:10px;background:#f2f2f7;color:#1d1d1f;padding:0 10px}
 .taskInlineInlineSelect{max-width:48%;border:0;background:transparent;color:#636366;text-align:right;font-size:12px;outline:none}.taskInlineText{min-width:0;max-width:58%;height:36px;border:0;background:transparent;color:#1d1d1f;text-align:right;outline:none;font-size:12px}.taskInlineText::placeholder{color:#8e8e93}.taskInlineSectionLabel{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#8e8e93;margin:8px 2px 4px}
-#editorOverlay.taskEditorMode .taskSubtasksBox{margin-top:4px}#editorOverlay.taskEditorMode .taskSubtasksBox.inlineCollapsed{display:none}.taskMorePanel .taskMoreGrid{display:none}
+#editorOverlay.taskEditorMode .taskSubtasksBox{margin-top:4px}#editorOverlay.taskEditorMode .taskSubtasksBox.inlineCollapsed{display:none}
+/* Nottas selection sheet replaces Android native select pop-ups. */
+.nottasSelectSource{display:none!important}
+.nottasSelectTrigger{font:inherit;cursor:pointer;border:0;background:transparent;color:inherit;display:inline-flex;align-items:center;justify-content:space-between;gap:7px;min-height:36px;padding:5px 2px;text-align:right;min-width:0}
+.nottasSelectTrigger svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nottasSelectTrigger:active{opacity:.75}
+.taskInlineRow .nottasSelectTrigger{margin-left:auto;max-width:55%;font-size:12px;color:#636366}
+.field .nottasSelectTrigger,.timeReminderOptions .nottasSelectTrigger{width:100%;min-height:42px;border-radius:10px;padding:8px 12px;background:#f2f2f7;text-align:left}
+.nottasSelectTrigger:focus-visible{outline:2px solid #1677ff;outline-offset:2px}
+.nottasChoiceLayer{position:fixed;inset:0;z-index:1100;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.4)}
+.nottasChoiceSheet{width:min(760px,100%);max-height:min(74vh,660px);background:#f5f5f7;color:#1d1d1f;border-radius:26px 26px 0 0;box-shadow:0 -10px 36px rgba(0,0,0,.14);padding:10px 14px calc(22px + env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden}
+.nottasChoiceHandle{width:42px;height:5px;border-radius:99px;background:#c7c7cc;align-self:center;margin:3px auto 20px}
+.nottasChoiceHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px 14px}
+.nottasChoiceTitle{font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.nottasChoiceClose{border:0;border-radius:50%;width:36px;height:36px;flex:none;background:#e5e5ea;color:#636366;display:grid;place-items:center;font-size:24px}
+.nottasChoiceList{overflow-y:auto;overscroll-behavior:contain;background:#fff;border-radius:17px;padding:4px;min-height:0}
+.nottasChoiceOption{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:54px;text-align:left;border:0;border-radius:12px;background:transparent;color:#1d1d1f;padding:12px 14px;font:inherit;font-size:15px}
+.nottasChoiceOption+.nottasChoiceOption{margin-top:2px}
+.nottasChoiceOption:active{background:#e9f0ff}
+.nottasChoiceOption.selected{background:#eaf2ff;color:#1677ff;font-weight:650}
+.nottasChoiceMark{width:22px;height:22px;border-radius:50%;border:1.6px solid #c7c7cc;flex:none;display:grid;place-items:center}
+.nottasChoiceOption.selected .nottasChoiceMark{background:#1677ff;border-color:#1677ff;color:#fff}
+.nottasChoiceMark svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+html[data-theme="dark"] .taskInlineRow .nottasSelectTrigger{color:#d1d1d6}
+html[data-theme="dark"] .field .nottasSelectTrigger,html[data-theme="dark"] .timeReminderOptions .nottasSelectTrigger{background:#2c2c2e;color:#f5f5f7}
+html[data-theme="dark"] .nottasChoiceSheet{background:#1c1c1e;color:#f5f5f7}
+html[data-theme="dark"] .nottasChoiceHandle{background:#636366}
+html[data-theme="dark"] .nottasChoiceClose{background:#38383a;color:#d1d1d6}
+html[data-theme="dark"] .nottasChoiceList{background:#2c2c2e}
+html[data-theme="dark"] .nottasChoiceOption{color:#f5f5f7}
+html[data-theme="dark"] .nottasChoiceOption:active{background:#303d57}
+html[data-theme="dark"] .nottasChoiceOption.selected{background:#183454;color:#9ecaff}
+html[data-theme="dark"] .nottasChoiceMark{border-color:#636366}
+html[data-theme="dark"] .nottasChoiceOption.selected .nottasChoiceMark{background:#0a84ff;border-color:#0a84ff;color:#fff}
+.taskMorePanel .taskMoreGrid{display:none}
 html[data-theme="dark"] .taskInlineForm{border-color:#38383a}html[data-theme="dark"] .taskInlineRow,html[data-theme="dark"] .taskInlineSchedule,html[data-theme="dark"] .taskInlineExpand{border-color:#38383a;color:#f5f5f7}html[data-theme="dark"] .taskInlineScheduleBtn,html[data-theme="dark"] .taskInlineMiniBtn,html[data-theme="dark"] .taskInlineQuickRow button,html[data-theme="dark"] .taskInlineTimeGrid input,html[data-theme="dark"] .taskInlineSelect{background:#2c2c2e;color:#f5f5f7}html[data-theme="dark"] .taskInlineCalendarGrid button{color:#f5f5f7}html[data-theme="dark"] .taskInlineCalendarGrid button.other{color:#636366}html[data-theme="dark"] .taskInlineInlineSelect,html[data-theme="dark"] .taskInlineText{color:#d1d1d6}
 
 /* Task/event editor width and overflow fixes */
@@ -4229,11 +4263,104 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     const reminders=normalizeReminderMinutes(editorTaskReminders),active=!!value&&reminders.length>0;
     $("taskTimeReminderText").textContent=active?(reminders.length===1?reminderMinutesLabel(reminders[0]):reminders.length+" recordatorios"):"Sin recordatorio";
   }
+
+  // Retain original selects and listeners as the data source, replacing only their UI.
+  let nottasChoiceLayer=null,nottasChoiceRestoreFocus=null;
+  function closeNottasChoice(){
+    if(!nottasChoiceLayer)return false;
+    nottasChoiceLayer.remove();nottasChoiceLayer=null;
+    if(nottasChoiceRestoreFocus?.isConnected)try{nottasChoiceRestoreFocus.focus({preventScroll:true})}catch(_){}
+    nottasChoiceRestoreFocus=null;return true;
+  }
+  function nottasSelectTitle(source){
+    if(source.id==="taskInlineRecurrence"||source.id==="taskRecurrence")return "Repetir";
+    if(source.id==="taskInlinePriority"||source.id==="taskPriority")return "Prioridad";
+    if(source.id==="taskReminder")return "Recordatorio";
+    return source.getAttribute("aria-label")||"Seleccionar";
+  }
+  function syncNottasSelectTriggers(){
+    document.querySelectorAll("select.nottasSelectSource").forEach(source=>{
+      const btn=source.nextElementSibling;
+      if(!btn?.classList.contains("nottasSelectTrigger"))return;
+      btn.querySelector(".nottasSelectValue").textContent=source.selectedOptions?.[0]?.textContent?.trim()||"Seleccionar";
+      btn.disabled=source.disabled;
+    });
+  }
+  function openNottasChoice(source){
+    if(!source||source.disabled)return;
+    closeNottasChoice();
+    const layer=document.createElement("div");layer.className="nottasChoiceLayer";
+    const sheet=document.createElement("div");sheet.className="nottasChoiceSheet";
+    sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");
+    const handle=document.createElement("div");handle.className="nottasChoiceHandle";
+    const head=document.createElement("div");head.className="nottasChoiceHeading";
+    const title=document.createElement("strong");title.className="nottasChoiceTitle";title.textContent=nottasSelectTitle(source);
+    const close=document.createElement("button");close.type="button";close.className="nottasChoiceClose";
+    close.setAttribute("aria-label","Cerrar");close.textContent="×";close.addEventListener("click",closeNottasChoice);
+    head.append(title,close);
+    const options=document.createElement("div");options.className="nottasChoiceList";
+    options.setAttribute("role","radiogroup");options.setAttribute("aria-label",title.textContent);
+    [...source.options].forEach(option=>{
+      if(option.hidden)return;
+      const button=document.createElement("button");button.type="button";
+      button.className="nottasChoiceOption"+(option.value===source.value?" selected":"");
+      button.setAttribute("role","radio");button.setAttribute("aria-checked",String(option.value===source.value));
+      button.disabled=option.disabled;
+      const label=document.createElement("span");label.textContent=option.textContent.trim();
+      const mark=document.createElement("span");mark.className="nottasChoiceMark";
+      if(option.value===source.value)mark.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+      button.append(label,mark);
+      button.addEventListener("click",()=>{
+        source.value=option.value;closeNottasChoice();
+        source.dispatchEvent(new Event("input",{bubbles:true}));
+        source.dispatchEvent(new Event("change",{bubbles:true}));
+        syncNottasSelectTriggers();
+      });
+      options.appendChild(button);
+    });
+    sheet.append(handle,head,options);layer.appendChild(sheet);
+    layer.addEventListener("pointerdown",event=>{if(event.target===layer)closeNottasChoice()});
+    nottasChoiceRestoreFocus=source.nextElementSibling;nottasChoiceLayer=layer;
+    document.body.appendChild(layer);
+    options.querySelector(".selected")?.scrollIntoView({block:"nearest"});
+    close.focus({preventScroll:true});
+  }
+  function initNottasSelects(){
+    document.querySelectorAll("select:not(.noteBlockType)").forEach(source=>{
+      if(source.classList.contains("nottasSelectSource"))return;
+      // Remove implicit native-select activation from the whole inline row.
+      const parent=source.parentElement;
+      if(parent?.tagName==="LABEL"&&parent.classList.contains("taskInlineRow")){
+        const row=document.createElement("div");
+        for(const attr of [...parent.attributes])row.setAttribute(attr.name,attr.value);
+        while(parent.firstChild)row.appendChild(parent.firstChild);
+        parent.replaceWith(row);
+        row.addEventListener("click",event=>{
+          if(event.target.closest("button,input"))return;
+          openNottasChoice(source);
+        });
+      }
+      source.classList.add("nottasSelectSource");source.setAttribute("tabindex","-1");
+      const button=document.createElement("button");button.type="button";
+      button.className="nottasSelectTrigger";button.setAttribute("aria-haspopup","dialog");
+      button.setAttribute("aria-label",nottasSelectTitle(source));
+      const value=document.createElement("span");value.className="nottasSelectValue";
+      const chevron=document.createElement("span");
+      chevron.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+      button.append(value,chevron);button.addEventListener("click",()=>openNottasChoice(source));
+      source.insertAdjacentElement("afterend",button);
+    });
+    syncNottasSelectTriggers();
+    document.addEventListener("change",event=>{
+      if(event.target?.matches?.("select.nottasSelectSource"))syncNottasSelectTriggers();
+    });
+  }
   function syncTimeReminderUI(){
     const on=$("timeReminderToggle").checked;
     $("timeReminderOptions").classList.toggle("hidden",!on);
     if(on&&!$("taskReminder").value)$("taskReminder").value="at";
     timeDraftReminder=on?($("taskReminder").value||"at"):"none";
+    syncNottasSelectTriggers();
   }
   function parseTypedClock(value){
     const clean=String(value||"").trim().replace(/\s/g,"");
@@ -4920,7 +5047,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 
     renderTaskReminderPicker();$("taskInlineRecurrence").value=$("taskRecurrence").value||"none";$("taskInlinePriority").value=$("taskPriority").value||"normal";
     const categoryId=getCategoryPickerValue("taskCategory");$("taskInlineCategory").value=categoryId==="inbox"?"":catName(categoryId);$("taskInlineTags").value=$("taskTags").value||"";
-    const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
+    const p=taskTreeProgressValue(editorSubtasks||[]),count=allTaskItemIds(editorSubtasks||[],[]).length;$("taskInlineSubtasksSummary").textContent=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";$("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();syncNottasSelectTriggers();
   }
   function meetingIsTracked(t){
     return !!t?.meetingTracked&&!t?.deletedAt&&
@@ -6088,6 +6215,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
 
   window.NottasHandleBack=function(){
+    if(closeNottasChoice())return true;
     const active=document.activeElement;
     if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       active.blur();
@@ -6160,6 +6288,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   });
   initSheetGestures();
   initActionPanelGestures();
+  initNottasSelects();
   load();
   setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
 })();
