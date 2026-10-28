@@ -2014,8 +2014,8 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
         to:e.to&&typeof e.to==="object"?{dueDate:String(e.to.dueDate||""),endDate:String(e.to.endDate||""),dueTime:String(e.to.dueTime||""),endTime:String(e.to.endTime||""),status:String(e.to.status||"scheduled")} : null,
         note:String(e.note||"").slice(0,500)
       })),
-      category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),endDate:String(t.endDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
-    o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
+      category:String(t.category||"inbox"),tags:normalizeTags(t.tags),done:!!t.done,pinned:!!t.pinned,dueDate:String(t.dueDate||""),endDate:String(t.endDate||""),dueTime:String(t.dueTime||""),endTime:normalizeTaskEndTime(String(t.dueTime||""),String(t.endTime||"")),priority:["low","normal","high"].includes(t.priority)?t.priority:"normal",recurrence:["none","daily","weekdays","weekly","monthly"].includes(t.recurrence)?t.recurrence:"none",reminder:["none","at","5m","15m","30m","1h","1d"].includes(t.reminder)?t.reminder:"none",recurrenceFrom:t.recurrenceFrom?String(t.recurrenceFrom):"",items,subtasks:legacySubtasksFromItems(items),createdAt:t.createdAt||t.updatedAt||stamp,updatedAt:t.updatedAt||t.createdAt||stamp,deletedAt:t.deletedAt||null,purgedAt:t.deletedAt?(t.purgedAt||null):null,rev:Number(t.rev)||1,syncState:t.syncState||"pending"}});
+    o.notes=(Array.isArray(o.notes)?o.notes:[]).filter(Boolean).map(n=>{const blocks=normalizeNoteBlocks(n.blocks,n.body);const body=noteBlocksText(blocks)||String(n.body||"");const title=String(n.title||"");return {id:String(n.id||makeId("n")),title,titleHtml:sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(title)),body,blocks,workspaceId:String(n.workspaceId||personalId),createdBy:String(n.createdBy||""),updatedBy:String(n.updatedBy||""),category:String(n.category||"inbox"),tags:normalizeTags(n.tags),pinned:!!n.pinned,createdAt:n.createdAt||n.updatedAt||stamp,updatedAt:n.updatedAt||n.createdAt||stamp,deletedAt:n.deletedAt||null,purgedAt:n.deletedAt?(n.purgedAt||null):null,rev:Number(n.rev)||1,syncState:n.syncState||"pending"}});
     const prefs=o.preferences&&typeof o.preferences==="object"?o.preferences:{};
     o.preferences={...prefs,workHoursEnabled:!!prefs.workHoursEnabled,workHoursStart:/^\d{2}:\d{2}$/.test(String(prefs.workHoursStart||""))?String(prefs.workHoursStart):"08:00",workHoursEnd:/^\d{2}:\d{2}$/.test(String(prefs.workHoursEnd||""))?String(prefs.workHoursEnd):"17:00",completedSubtasksAtEnd:prefs.completedSubtasksAtEnd!==false,calendarWeekWorkHoursOnly:!!prefs.calendarWeekWorkHoursOnly,calendarWeekShowWeekends:prefs.calendarWeekShowWeekends!==false,calendarMonthShowWeekends:prefs.calendarMonthShowWeekends!==false,calendarAgendaShowCompleted:prefs.calendarAgendaShowCompleted!==false,defaultReminderMinutes:normalizeReminderMinutes(prefs.defaultReminderMinutes)};
     o.schemaVersion=12;o.version=12;o.updatedAt=o.updatedAt||stamp;o.sync=o.sync&&typeof o.sync==="object"?o.sync:{};o.sync.deviceId=o.sync.deviceId||("android_"+Math.random().toString(36).slice(2,10));if(!("lastSyncAt" in o.sync))o.sync.lastSyncAt=null;return o;
@@ -2212,7 +2212,10 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     if(existing){
       if(existing.syncState==="pending"&&Number(existing.updatedAt||0)>Number(payload.updatedAt||0))return;
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
+      const purgedAt=existing.deletedAt&&existing.purgedAt?existing.purgedAt:null;
       Object.assign(existing,payload,{syncState:"synced"});
+      // Preserve local Trash visibility even when acknowledging an older payload.
+      if(purgedAt&&existing.deletedAt)existing.purgedAt=purgedAt;
     }else arr.push(payload);
   }
   function assistantMarkAccepted(rows){
@@ -3099,8 +3102,8 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     touch(t);scheduleSave();render();
   }
 
-  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,t.locationText,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
-  function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
+  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskFilter==="pending"&&t.done)return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,t.locationText,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
+  function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
   function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
 
   function updateCounts(){
@@ -3140,7 +3143,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("sideCountDone").textContent=counts.done||"";
     $("sideCountNotes").textContent=liveNotes.length||"";
     $("sideCountPinnedNotes").textContent=liveNotes.filter(n=>n.pinned).length||"";
-    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
+    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt).length;
     $("sideTrashCount").textContent=trashCount||"";
     document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.classList.toggle("active",mode==="tasks"&&!trash&&!activeTag&&(b.dataset.sidebarTaskFilter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.sidebarTaskFilter))));
     document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.classList.toggle("active",mode==="notes"&&!trash&&!activeTag&&noteFilter===b.dataset.sidebarNoteFilter));
@@ -3990,7 +3993,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       if(!tagStillExists)activeTag="";
     }
     updateCounts();
-    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
+    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
     renderDirectorBell();
@@ -5353,7 +5356,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function renderSettingsSummary(){
     syncWorkHoursSettings();renderDefaultReminderSettings();renderAssistantSummary();
-    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt).length;
+    const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt).length;
     $("trashCountDesc").textContent=trashCount?`${trashCount} elemento${trashCount===1?"":"s"} eliminado${trashCount===1?"":"s"}.`:"No hay elementos eliminados.";
     renderCategoryManage();
     const history=$("backupHistoryDesc"),restore=$("restoreBackupBtn");
@@ -5678,8 +5681,11 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       setTimeout(()=>{if(Date.now()>emptyTrashConfirmUntil){btn.textContent="Vaciar";btn.classList.remove("armed")}},3600);
       return;
     }
-    state.tasks=state.tasks.filter(t=>!itemInActiveWorkspace(t)||!t.deletedAt);
-    state.notes=state.notes.filter(n=>!itemInActiveWorkspace(n)||!n.deletedAt);
+    // Keep deleted records as tombstones after clearing Trash, so unsent
+    // deletions can still reach the server and other devices.
+    const purgedAt=now();
+    state.tasks.forEach(t=>{if(itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt)t.purgedAt=purgedAt});
+    state.notes.forEach(n=>{if(itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt)n.purgedAt=purgedAt});
     emptyTrashConfirmUntil=0;
     btn.textContent="Vaciar";btn.classList.remove("armed");
     scheduleSave();render();showToast("Papelera vaciada");
