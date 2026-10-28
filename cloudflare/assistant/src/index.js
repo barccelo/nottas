@@ -908,12 +908,14 @@ async function pushAvailabilityChanged(ownerUserId, env) {
   }, env)));
 }
 
-async function pushWorkspaceSync(workspaceId, actorUserId, env, skipUserId="") {
+async function pushWorkspaceSync(workspaceId, actorUserId, env) {
   const result = await env.DB.prepare(
     "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
   ).bind(workspaceId, actorUserId).all();
-  await Promise.all((result.results || []).filter(r=>r.user_id!==skipUserId).map(r => sendPushToUser(r.user_id, {
-    type: "sync", workspaceId, changedBy: actorUserId
+  await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
+    type: "sync",
+    workspaceId,
+    changedBy: actorUserId
   }, env)));
 }
 
