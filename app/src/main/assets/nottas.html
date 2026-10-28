@@ -3745,16 +3745,16 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     if($("calendarOverlay").classList.contains("show"))scheduleGoogleCalendarFetch();
   }
   function defaultNewEventTimes(){
-    const d=new Date(),nextHour=d.getHours()+(d.getMinutes()>0||d.getSeconds()>0?1:0);
-    if(nextHour>=24)return {date:addCalendarDays(localDateISO(d),1),start:"00:00",end:"01:00"};
-    if(nextHour===23)return {date:localDateISO(d),start:"23:00",end:"23:59"};
-    return {date:localDateISO(d),start:formatTimeParts(nextHour,0),end:formatTimeParts(nextHour+1,0)};
+    const d=new Date(),date=localDateISO(d),startMinutes=d.getHours()*60+(d.getMinutes()<30?0:30),endMinutes=startMinutes+30;
+    return {date,start:formatTimeParts(Math.floor(startMinutes/60),startMinutes%60),
+      end:formatTimeParts(Math.floor(endMinutes/60)%24,endMinutes%60),
+      endDate:endMinutes>=1440?addCalendarDays(date,1):date};
   }
   function createTaskOnCalendarDate(){
     const date=calendarDate||localDateISO();calendarMoveTaskId=null;
     openTaskFromCalendar(null,date);
     const defaults=defaultNewEventTimes();
-    $("taskDate").value=date===localDateISO()?defaults.date:date;$("taskEndDate").value="";
+    $("taskDate").value=date;$("taskEndDate").value=defaults.endDate!==defaults.date?addCalendarDays(date,1):date;
     $("taskTime").value=defaults.start;$("taskEndTime").value=defaults.end;
     syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO($("taskDate").value);
   }
@@ -5052,7 +5052,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     closeTaskMeetingMenu();$("taskMeetingExtra").open=false;
     editorTaskWorkspaceId=collab.workspaceId;editorTaskCreatedBy=collab.createdBy;editorTaskApprovalStatus=collab.approvalStatus||"confirmed";editorTaskRequiresApproval=!!collab.requiresApproval;editorTaskAssignedTo=collab.assignedTo||"";editorTaskProposalMessage=collab.proposalMessage||"";editorTaskReminders=t?taskReminderOffsets(t):defaultTaskReminderOffsets();taskReminderPanelOpen=false;$("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";syncEditorPin();
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
-    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");$("taskDate").value=t?t.dueDate:"";$("taskEndDate").value=t?t.endDate||"":"";$("taskTime").value=t?t.dueTime:"";$("taskEndTime").value=t?t.endTime||"":"";$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
+    $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");const newEventDefaults=!t&&isSharedWorkspace()?defaultNewEventTimes():null;$("taskDate").value=t?t.dueDate:(newEventDefaults?.date||"");$("taskEndDate").value=t?t.endDate||"":(newEventDefaults?.endDate||"");$("taskTime").value=t?t.dueTime:(newEventDefaults?.start||"");$("taskEndTime").value=t?t.endTime||"":(newEventDefaults?.end||"");$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskBtn").classList.toggle("hidden",!t);updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
