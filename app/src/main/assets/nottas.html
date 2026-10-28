@@ -871,6 +871,7 @@ html[data-theme="dark"] .taskMeetingHistoryEntry strong{color:#d1d1d6}
 .directorBell.hasPending .directorBellBadge{animation:directorNudge 3.2s ease-in-out infinite}
 @keyframes directorNudge{0%,85%,100%{transform:scale(1)}92%{transform:scale(1.13)}}
 @media(prefers-reduced-motion:reduce){.directorBell.hasPending .directorBellBadge{animation:none}}
+#calendarOverlay.calendarRescheduling{z-index:85}
 .directorInboxTabs{display:flex;gap:3px;padding:3px;background:#e5e5ea;border-radius:12px;margin-bottom:12px}
 .directorInboxTabs button{min-width:0;flex:1;display:flex;gap:4px;justify-content:center;align-items:center;border:0;border-radius:10px;padding:9px 3px;background:transparent;font-size:11px;font-weight:600;color:#636366;white-space:nowrap}
 .directorInboxTabs button[aria-selected="true"]{background:#fff;color:#1677ff;box-shadow:0 2px 5px rgba(0,0,0,.10)}
@@ -1719,7 +1720,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
 
   let state=null;
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
-  let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false;
+  let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
@@ -3305,6 +3306,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   function calendarTasksFor(value){return state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&!(t.meetingTracked&&["deferred","cancelled"].includes(t.meetingStatus))&&taskOccursOn(t,value)).slice().sort((a,b)=>(a.dueTime||"99:99").localeCompare(b.dueTime||"99:99")||String(a.text).localeCompare(String(b.text)))}
   function calendarDateLabel(value,opts){return dateFromISO(value).toLocaleDateString("es",{...opts})}
   function calendarMoveNotice(){
+    if(calendarRescheduleEditor)return '<div class="calendarMoveBanner"><span>Posponer</span><strong>Consulta la agenda y elige fecha u hora</strong><button id="calendarMoveCancel" class="calendarMoveCancel" type="button">Cancelar</button></div>';
     if(!calendarMoveTaskId)return "";
     const t=state.tasks.find(x=>x.id===calendarMoveTaskId);
     if(!t){calendarMoveTaskId=null;return ""}
@@ -3318,7 +3320,39 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
     calendarMoveTaskId=t.id;calendarDate=t.dueDate||calendarDate||localDateISO();calendarView="month";renderCalendar();
   }
-  function cancelCalendarMove(){calendarMoveTaskId=null;renderCalendar()}
+  function cancelCalendarReschedule(){
+    calendarRescheduleEditor=false;$("calendarOverlay").classList.remove("calendarRescheduling");
+    closeCalendarPeek();closeCalendarDayPanel();closeOverlay("calendarOverlay");
+  }
+  function chooseCalendarReschedule(date,minute=null){
+    if(!calendarRescheduleEditor)return;
+    commitTaskHistory();
+    const start=timeToMinutes($("taskTime").value),end=timeToMinutes($("taskEndTime").value);
+    const duration=start!==null&&end!==null&&end>start?end-start:30;
+    const oldStart=$("taskDate").value,oldEnd=$("taskEndDate").value;
+    const days=oldStart&&oldEnd&&oldEnd>oldStart?taskDaysBetween(oldStart,oldEnd):0;
+    $("taskDate").value=date;$("taskEndDate").value=days?addCalendarDays(date,days):date;
+    if(minute!==null){
+      $("taskTime").value=minutesToTime(minute);
+      $("taskEndTime").value=minutesToTime((minute+duration)%1440);
+      if(minute+duration>=1440)$("taskEndDate").value=addCalendarDays(date,1);
+    }
+    editorMeetingStatus="scheduled";editorMeetingStatusChanged=true;
+    setEditorTaskApproval("changes_requested");
+    syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();
+    cancelCalendarReschedule();commitTaskHistory();
+    showToast("Horario seleccionado · revisa y guarda");
+  }
+  function openCalendarForReschedule(){
+    closeTaskMeetingMenu();closeCalendarEye();closeCalendarPeek();
+    calendarRescheduleEditor=true;calendarMoveTaskId=null;
+    calendarDate=$("taskDate").value||localDateISO();
+    $("calendarOverlay").classList.add("calendarRescheduling");
+    renderCalendar();openOverlay("calendarOverlay");
+    setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);
+    scheduleGoogleCalendarFetch();
+  }
+  function cancelCalendarMove(){if(calendarRescheduleEditor){cancelCalendarReschedule();return}calendarMoveTaskId=null;renderCalendar()}
   function moveCalendarTaskTo(date){
     const t=state.tasks.find(x=>x.id===calendarMoveTaskId&&!x.deletedAt);if(!t){calendarMoveTaskId=null;renderCalendar();return}
     const old=t.dueDate||"";moveTaskStartDate(t,date);touch(t);calendarMoveTaskId=null;calendarDate=date;scheduleSave();renderCalendar();render();
@@ -3421,9 +3455,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("calendarBody").querySelectorAll("[data-calendar-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.calendarTask);if(!t)return;
       const check=row.querySelector(".calendarTaskCheck"),move=row.querySelector(".calendarMoveBtn");
-      if(check)check.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      if(move){move.addEventListener("click",e=>{e.stopPropagation();if(Date.now()<suppressClickUntil)return;beginCalendarMove(t.id)});installCalendarTaskDrag(move,t,row)}
-      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;if(calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t)});
+      if(check)check.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor){check.checked=!!t.done;return}completeTask(t,check.checked);renderCalendar()});
+      if(move){move.classList.toggle("hidden",calendarRescheduleEditor);move.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor||Date.now()<suppressClickUntil)return;beginCalendarMove(t.id)});if(!calendarRescheduleEditor)installCalendarTaskDrag(move,t,row)}
+      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t)});
       row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();if(calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t)}});
     });
     bindCalendarMoveCancel();
@@ -3433,6 +3467,12 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function openCalendarDayEvent(item,date){
     closeCalendarDayPanel();
+    if(calendarRescheduleEditor){
+      const anchor=$("calendarBody").querySelector('[data-calendar-date="'+date+'"]')||$("calendarToday");
+      if(item.kind==="local")showCalendarPeek(item.value,anchor);
+      else showGoogleCalendarPeek(item.value,anchor);
+      return;
+    }
     if(item.kind==="local"){openTaskFromCalendar(item.value,date);return}
     const anchor=$("calendarBody").querySelector('[data-calendar-date="'+date+'"]')||$("calendarToday");
     showGoogleCalendarPeek(item.value,anchor);
@@ -3463,6 +3503,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function activateCalendarDate(date){
     if(!date)return;
+    if(calendarRescheduleEditor){chooseCalendarReschedule(date);return}
     if(calendarMoveTaskId){moveCalendarTaskTo(date);return}
     calendarDate=date;renderCalendar();
     const tasks=calendarTasksFor(date),google=calendarGoogleFor(date);
@@ -3663,6 +3704,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   }
   function createTaskOnCalendarSlot(date,minute){
     if(!date||minute===null||minute===undefined)return;
+    if(calendarRescheduleEditor){chooseCalendarReschedule(date,minute);return}
     calendarMoveTaskId=null;openTaskFromCalendar(null,date);
     $("taskDate").value=date;
     $("taskTime").value=minutesToTime(minute);
@@ -3681,9 +3723,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("calendarBody").querySelectorAll("[data-calendar-time-task]").forEach(block=>{
       const t=state.tasks.find(x=>x.id===block.dataset.calendarTimeTask);if(!t)return;
       const check=block.querySelector(".calendarBlockCheck"),resize=block.querySelector(".calendarResizeHandle");
-      check?.addEventListener("click",e=>{e.stopPropagation();completeTask(t,check.checked);renderCalendar()});
-      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;if(calendarView==="week")showCalendarPeek(t,block);else openTaskFromCalendar(t)});
-      installCalendarTimeMove(block,t);installCalendarTimeResize(resize,t,block);
+      check?.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor){check.checked=!!t.done;return}completeTask(t,check.checked);renderCalendar()});
+      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,block);else openTaskFromCalendar(t)});
+      if(!calendarRescheduleEditor){installCalendarTimeMove(block,t);installCalendarTimeResize(resize,t,block)}
     });
   }
   function renderCalendarWeek(){
@@ -3731,8 +3773,9 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("calendarEyeBtn").classList.toggle("hidden",!eyeVisible);
     if(!eyeVisible||calendarEyeWorkspace&&ws?.id!==calendarEyeWorkspace)closeCalendarEye();
     $("calendarPeriod").textContent=calendarPeriodText();
+    $("calendarOverlay").querySelector(".sheetHeader h2").textContent=calendarRescheduleEditor?"Posponer":"Calendario";
     closeCalendarDayPanel();
-    $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId);
+    $("calendarCreateBtn").classList.toggle("hidden",!!calendarMoveTaskId||calendarRescheduleEditor);
     $("calendarWeekOptions").classList.remove("hidden");
     $("calendarWeekOptionsPopover").classList.add("hidden");$("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
     const showWork=calendarView==="day"||calendarView==="week",showWeekend=calendarView==="week"||calendarView==="month",showCompleted=calendarView==="agenda";
@@ -3764,7 +3807,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     $("taskTime").value=defaults.start;$("taskEndTime").value=defaults.end;
     syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO($("taskDate").value);
   }
-  function openCalendar(){calendarEditorReturn=null;closeCalendarDayPanel();closeCalendarEye();calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
+  function openCalendar(){calendarRescheduleEditor=false;$("calendarOverlay").classList.remove("calendarRescheduling");calendarEditorReturn=null;closeCalendarDayPanel();closeCalendarEye();calendarMoveTaskId=null;calendarDate=localDateISO();renderCalendar();openOverlay("calendarOverlay");setSheetExpanded($("calendarOverlay").querySelector(".sheet"),true);scheduleGoogleCalendarFetch()}
   function shiftCalendar(dir){
     if(calendarMoveTaskId)return;
     if(calendarView==="day")calendarDate=addCalendarDays(calendarDate,dir);
@@ -4919,7 +4962,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
     const add=(label,cls,fn)=>{const b=document.createElement("button");b.type="button";b.textContent=label;if(cls)b.className=cls;b.addEventListener("click",fn);actions.appendChild(b)};
     if(role==="owner"&&st==="proposed"){
       add("Aprobar","approve",()=>setEditorTaskApproval("confirmed"));
-      add("Posponer","",()=>{setEditorTaskApproval("changes_requested");setTaskInlinePanel("date")});
+      add("Posponer","",openCalendarForReschedule);
       add("Rechazar","reject",()=>setEditorTaskApproval("rejected"));
     }else if(role==="owner"&&st==="changes_requested"){
       add("Confirmar","approve",()=>setEditorTaskApproval("confirmed"));
@@ -5487,6 +5530,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   $("calendarBtn").addEventListener("click",openCalendar);
   $("calendarCreateBtn").addEventListener("click",createTaskOnCalendarDate);
   $("calendarClose").addEventListener("click",()=>{
+    if(calendarRescheduleEditor){cancelCalendarReschedule();return}
     closeCalendarDayPanel();closeCalendarEye();closeCalendarPeek();
     $("calendarWeekOptionsPopover").classList.add("hidden");
     $("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
@@ -5519,7 +5563,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
   $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
   $("calendarGoogleReloadBtn").addEventListener("click",()=>scheduleGoogleCalendarFetch(true));
-  $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t)return;openTaskFromCalendar(t)});
+  $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t||calendarRescheduleEditor)return;openTaskFromCalendar(t)});
   $("calendarOverlay").addEventListener("click",e=>{
     if(!e.target.closest("#calendarEyePopover,#calendarEyeBtn"))closeCalendarEye();
     if(!e.target.closest("#calendarDayPanel,[data-calendar-date]"))closeCalendarDayPanel();
@@ -5893,6 +5937,7 @@ html[data-theme="dark"] .directorInboxIntro,html[data-theme="dark"] .directorInb
       return true;
     }
     if(closeCalendarPeek())return true;
+    if(calendarRescheduleEditor){cancelCalendarReschedule();return true}
     if(calendarMoveTaskId){cancelCalendarMove();return true}
     closeOverlay("calendarOverlay");
     return true;
