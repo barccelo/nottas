@@ -228,7 +228,7 @@ class AssistantNoticeActivity : Activity() {
             ).apply { leftMargin = dp(7) })
             replyPanel.addView(inputRow, LinearLayout.LayoutParams(-1, -2))
         }
-        scroll.addView(messageArea, ScrollView.LayoutParams(-1, -2))
+        scroll.addView(messageArea)
         root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
         if (canReply) {
             root.addView(replyPanel, LinearLayout.LayoutParams(-1, -2).apply {
