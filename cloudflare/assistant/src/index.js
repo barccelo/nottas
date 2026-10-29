@@ -829,6 +829,7 @@ async function createAssistantMessage(request,workspaceId,auth,env) {
     const result=await sendAssistantCallPush(target,{
       type:"assistant_notice",noticeId:id,workspaceId,
       fromName:auth.displayName|| (access.role==="owner"?"Jefe":"Asistente"),
+      fromRole:access.role,
       message
     },env);
     pushed=result.accepted;
