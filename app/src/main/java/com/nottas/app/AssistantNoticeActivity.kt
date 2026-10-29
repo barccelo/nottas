@@ -117,22 +117,16 @@ class AssistantNoticeActivity : Activity() {
         // The scroll area contains the title, message and quick replies;
         // only the composer and dismiss action stay anchored above the IME.
         val head = TextView(this).apply {
-            text = "Nottas · Mensajes"
-            textSize = 15f
+            text = "Nuevo mensaje"
+            textSize = 16f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextColor(gray)
         }
         val senderView = TextView(this).apply {
-            text = who
-            textSize = 30f
-            typeface = Typeface.create("sans",Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setTextColor(ink)
-        }
-        val subtitleView = TextView(this).apply {
-            text = "te ha enviado un mensaje"
-            textSize = 15f
+            text = "De $who"
+            textSize = 14f
+            typeface = Typeface.create("sans-medium",Typeface.NORMAL)
             gravity = Gravity.CENTER
             setTextColor(gray)
         }
@@ -148,18 +142,17 @@ class AssistantNoticeActivity : Activity() {
             setPadding(dp(2),dp(15),dp(2),dp(15))
         }
         messageArea.addView(head, LinearLayout.LayoutParams(-1,-2))
-        messageArea.addView(senderView,LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(15) })
-        messageArea.addView(subtitleView,LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(4) })
         messageArea.addView(TextView(this).apply {
             text = message
-            textSize = 25f
+            textSize = if (message.length > 130) 23f else 29f
             typeface = Typeface.create("sans",Typeface.BOLD)
             gravity = Gravity.CENTER
             setTextColor(blue)
         },LinearLayout.LayoutParams(-1,-2).apply {
-            topMargin=dp(36)
-            bottomMargin=dp(20)
+            topMargin=dp(26)
+            bottomMargin=dp(12)
         })
+        messageArea.addView(senderView,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(22) })
         scroll.addView(messageArea)
         root.addView(scroll,LinearLayout.LayoutParams(-1,0,1f).apply {
             bottomMargin=dp(8)
