@@ -76,6 +76,20 @@ CREATE TABLE IF NOT EXISTS assistant_calls (
   responded_at INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS assistant_messages (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  from_user_id TEXT NOT NULL REFERENCES users(id),
+  to_user_id TEXT NOT NULL REFERENCES users(id),
+  reply_to_id TEXT,
+  body TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  read_at INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_assistant_messages_workspace ON assistant_messages(workspace_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_assistant_messages_unread ON assistant_messages(to_user_id, read_at, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_members_user ON workspace_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_changes_workspace_seq ON changes(workspace_id, seq);
