@@ -5773,13 +5773,14 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   }
   function setEditorTaskApproval(status){
     if(!["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
-    const returnToInbox=status==="confirmed"&&!!directorProposalReturn&&directorProposalReturn.taskId===editingTaskId;
+    const previousStatus=editorTaskApprovalStatus;
+    const closeAfterApproval=status==="confirmed"&&currentWorkspaceRole()==="owner"&&
+      ["proposed","changes_requested"].includes(previousStatus);
     editorTaskApprovalStatus=status;editorTaskRequiresApproval=status==="proposed"||status==="changes_requested";
     syncAssistantTaskStrip();
     const saved=editingTaskId?persistOpenTask(false):false;
-    if(returnToInbox&&saved){
+    if(closeAfterApproval&&saved){
       closeEditor({save:false});
-      returnFromDirectorProposal();
       showToast("Evento agendado");
       return;
     }
@@ -5938,6 +5939,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
     clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
+    if(directorProposalReturn)returnFromDirectorProposal();
   }
 
   function syncQuickMode(){
