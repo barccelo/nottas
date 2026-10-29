@@ -729,6 +729,14 @@ html[data-theme="dark"] .metaTag.assistantMeta.state-rejected,html[data-theme="d
 html[data-theme="dark"] .metaTag.assistantMeta.state-changes_requested{--approval-bg:#303055;--approval-color:#b2b8ff}
 html[data-theme="dark"] .assistantStatusCard,html[data-theme="dark"] .assistantInput{background:#1c1c1e;border-color:#3a3a3c;color:#f5f5f7}html[data-theme="dark"] .assistantBadge{background:#2c2c2e;color:#d1d1d6}html[data-theme="dark"] .assistantTaskActions button{background:#2c2c2e;color:#f5f5f7}
 .assistantMembers{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}.assistantMember{display:flex;align-items:center;gap:7px;background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}.assistantMemberRole{font-size:9px;color:#8e8e93;text-transform:uppercase}.assistantActivity{display:flex;flex-direction:column;gap:6px}.assistantActivityRow{background:#fff;border-radius:12px;padding:9px 11px}.assistantActivityMain{font-size:13px;color:#1d1d1f}.assistantActivityMeta{font-size:10px;color:#8e8e93;margin-top:3px}.assistantActivityEmpty{font-size:12px;color:#8e8e93;padding:10px 2px}.assistantRefreshBtn{border:0;background:transparent;color:#007aff;font-size:13px;font-weight:650;padding:6px}html[data-theme="dark"] .assistantMember,html[data-theme="dark"] .assistantActivityRow{background:#1c1c1e}html[data-theme="dark"] .assistantActivityMain{color:#f5f5f7}
+.assistantNoticeThread{display:flex;flex-direction:column;gap:7px;max-height:190px;overflow:auto;overscroll-behavior:contain;margin:0 0 8px;padding:8px 3px;background:rgba(118,118,128,.07);border-radius:12px}
+.assistantNoticeBubble{max-width:83%;padding:8px 10px;border-radius:12px;background:#fff;color:#1d1d1f;font-size:12px;line-height:1.35;overflow-wrap:anywhere;align-self:flex-start}
+.assistantNoticeBubble.mine{align-self:flex-end;background:#e5f0ff}
+.assistantNoticeBubbleMeta{font-size:10px;color:#8e8e93;margin-top:4px}
+.assistantMessageBadge{position:absolute;right:1px;top:1px;min-width:7px;height:7px;border-radius:99px;background:#ff3b30}
+html[data-theme="dark"] .assistantNoticeThread{background:#1d1d1f}
+html[data-theme="dark"] .assistantNoticeBubble{background:#353539;color:#f5f5f7}
+html[data-theme="dark"] .assistantNoticeBubble.mine{background:#173755}
 .assistantNoticeQuick{color:#1677ff!important}.assistantNoticeQuick svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .assistantNoticeOverlay{z-index:105}.assistantNoticeSheet{max-width:550px;display:flex;flex-direction:column;gap:12px}
 .assistantNoticePresets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
@@ -1094,8 +1102,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10"></path><path d="M5.64 5.64a9 9 0 1 0 12.72 0"></path></svg>
         <span class="wakeQuickDot" aria-hidden="true"></span>
       </button>
-      <button id="assistantNoticeQuickBtn" class="iconBtn assistantNoticeQuick hidden" type="button" aria-label="Avisar al jefe">
-        <svg viewBox="0 0 24 24"><path d="m3 11.2 17-7.2-5.8 16-3.4-6.6L3 11.2Z"></path><path d="M10.8 13.4 20 4"></path></svg>
+      <button id="assistantNoticeQuickBtn" class="iconBtn assistantNoticeQuick hidden" type="button" aria-label="Mensajes con asistente o jefe">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.8L3 20l1.4-4.5A8.2 8.2 0 0 1 4 11.5a8 8 0 0 1 8-8c4.4 0 8 3.6 8 8Z"/><path d="M8 11.5h8M8 14.5h5"/></svg>
+        <span id="assistantMessageBadge" class="assistantMessageBadge hidden" aria-hidden="true"></span>
       </button>
       <button id="directorBellBtn" class="iconBtn directorBell hidden" type="button" aria-label="Propuestas por agendar" title="Propuestas por agendar">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10Z"></path><path d="M10 21h4"></path></svg>
@@ -1870,9 +1879,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     <div id="assistantLastCallStatus" class="assistantSectionHint" aria-live="polite"></div>
 
     <div id="assistantNoticeSection" class="hidden">
-      <div class="sectionTitle">Avisos al jefe</div>
-      <div class="assistantSectionHint">Envía avisos predeterminados o personalizados a su pantalla.</div>
-      <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Enviar aviso al jefe</button>
+      <div class="sectionTitle">Mensajes</div>
+      <div class="assistantSectionHint">Avisos a pantalla completa para el jefe y el asistente. Puedes responder o simplemente cerrar.</div>
+      <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Abrir mensajes</button>
     </div>
     <div class="sectionTitle" style="margin-top:16px">Equipo y actividad <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
     <div id="assistantMembers" class="assistantMembers"></div>
@@ -1883,17 +1892,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
 <div id="assistantNoticeOverlay" class="overlay assistantNoticeOverlay" aria-hidden="true">
   <div class="sheet assistantNoticeSheet">
     <div class="sheetHandle"></div>
-    <div class="sheetHeader"><h2>Avisar al jefe</h2><button id="assistantNoticeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
-    <div class="assistantSectionHint">Elige un aviso o escribe el tuyo. Puedes editarlo antes de enviarlo.</div>
-    <div class="assistantNoticePresets">
-      <button class="assistantNoticePreset" type="button" data-notice-preset="Hay alguien que quiere verte.">Hay alguien que quiere verte</button>
-      <button class="assistantNoticePreset" type="button" data-notice-preset="Tu reunión está por comenzar.">Tu reunión está por comenzar</button>
-      <button class="assistantNoticePreset" type="button" data-notice-preset="La persona de tu reunión ya llegó.">La persona de tu reunión ya llegó</button>
-      <button class="assistantNoticePreset" type="button" data-notice-preset="Te están esperando.">Te están esperando</button>
-      <button class="assistantNoticePreset" type="button" data-notice-preset="Necesito hablar contigo.">Necesito hablar contigo</button>
-      <button class="assistantNoticePreset" type="button" data-notice-preset="Por favor, llama a recepción.">Por favor, llama a recepción</button>
-    </div>
-    <textarea id="assistantNoticeText" class="assistantNoticeInput" maxlength="280" rows="4" placeholder="Escribe tu aviso…" aria-label="Mensaje para el jefe"></textarea>
+    <div class="sheetHeader"><h2 id="assistantNoticeTitle">Mensajes</h2><button id="assistantNoticeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
+    <div class="assistantSectionHint">Los mensajes aparecen en pantalla completa en el otro teléfono. Responder es opcional.</div>
+    <div id="assistantNoticeThread" class="assistantNoticeThread" aria-live="polite"></div>
+    <div class="assistantSectionHint">Mensaje rápido</div>
+    <div id="assistantNoticePresets" class="assistantNoticePresets"></div>
+    <textarea id="assistantNoticeText" class="assistantNoticeInput" maxlength="280" placeholder="Escribe un mensaje…"></textarea>
     <div id="assistantNoticeStatus" class="assistantSectionHint" aria-live="polite"></div>
     <div class="assistantNoticeFooter"><span id="assistantNoticeCount" class="assistantNoticeCount">0 / 280</span><button id="assistantNoticeSend" class="btn" type="button">Enviar</button></div>
   </div>
@@ -2601,11 +2605,51 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       state.assistant.pushRegisteredAt=now();scheduleSave();return true;
     }catch(_){return false}
   }
+
+  const assistantBossPresets=["Ven, por favor","Haz pasar a mi siguiente cita","Trae cafés y refrigerio","¿Puedes venir un momento?","Reprograma mi siguiente reunión","Gracias"];
+  const assistantStaffPresets=["Hay alguien que quiere verte","Tu siguiente cita ha llegado","¿Puedo hacer pasar a la visita?","La persona está esperando","¿Necesitas algo más?","Ya está listo"];
+  let assistantMessageWorkspace="",assistantMessageUnread=0,assistantMessagesLoading=false;
+  function renderAssistantMessageBadge(){
+    $("assistantMessageBadge").classList.toggle("hidden",assistantMessageUnread<=0);
+    $("assistantNoticeQuickBtn").setAttribute("aria-label",assistantMessageUnread?("Mensajes · "+assistantMessageUnread+" sin leer"):"Mensajes con asistente o jefe");
+  }
+  async function refreshAssistantMessageThread(){
+    const ws=currentWorkspace(),thread=$("assistantNoticeThread");
+    if(!assistantConfigured()||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws))return;
+    if(assistantMessagesLoading)return;
+    assistantMessagesLoading=true;assistantMessageWorkspace=ws.id;
+    try{
+      const data=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages");
+      if(ws.id!==currentWorkspaceId())return;
+      assistantMessageUnread=Number(data.unread)||0;renderAssistantMessageBadge();
+      const rows=Array.isArray(data.messages)?data.messages.slice(-24):[];
+      thread.innerHTML=rows.length?rows.map(row=>
+        '<div class="assistantNoticeBubble'+(row.mine?" mine":"")+'">'+esc(row.body||"")+
+        '<div class="assistantNoticeBubbleMeta">'+esc(row.mine?"Tú":row.fromName||"Asistente")+
+        ' · '+esc(new Date(row.createdAt||Date.now()).toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+
+        (row.mine&&row.readAt?" · Leído":"")+'</div></div>'
+      ).join(""):'<div class="assistantSectionHint">Todavía no hay mensajes en este espacio.</div>';
+      thread.scrollTop=thread.scrollHeight;
+    }catch(error){
+      thread.textContent="No se pudo cargar el historial: "+String(error?.message||error);
+    }finally{assistantMessagesLoading=false}
+  }
   function openAssistantNotice(){
     const ws=currentWorkspace();
-    if(!assistantConfigured()||ws?.kind!=="assistant"||ws.role!=="assistant"||!assistantWorkspaceAuthorized(ws)){showToast("Selecciona un espacio compartido como asistente.");return}
+    if(!assistantConfigured()||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws)){showToast("Selecciona un espacio compartido conectado.");return}
+    $("assistantNoticeTitle").textContent=ws.role==="owner"?"Mensajes al asistente":"Mensajes al jefe";
+    const presets=ws.role==="owner"?assistantBossPresets:assistantStaffPresets;
+    $("assistantNoticePresets").innerHTML=presets.map(text=>
+      '<button class="assistantNoticePreset" type="button" data-notice-preset="'+esc(text)+'">'+esc(text)+'</button>'
+    ).join("");
     $("assistantNoticeText").value="";$("assistantNoticeStatus").textContent="";
     updateAssistantNoticeCount();openOverlay("assistantNoticeOverlay");
+    $("assistantNoticePresets").querySelectorAll("[data-notice-preset]").forEach(button=>button.addEventListener("click",()=>{
+      $("assistantNoticeText").value=button.dataset.noticePreset;
+      updateAssistantNoticeCount();$("assistantNoticeText").focus();
+    }));
+    $("assistantNoticeThread").textContent="Cargando mensajes…";
+    refreshAssistantMessageThread();
   }
   function updateAssistantNoticeCount(){
     const text=$("assistantNoticeText").value;
@@ -2614,18 +2658,19 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   }
   async function sendAssistantNotice(){
     const ws=currentWorkspace(),message=$("assistantNoticeText").value.trim();
-    if(!message||message.length>280||ws?.role!=="assistant"||!assistantWorkspaceAuthorized(ws)||!assistantConfigured())return;
+    if(!message||message.length>280||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws)||!assistantConfigured())return;
     $("assistantNoticeSend").disabled=true;
-    $("assistantNoticeStatus").textContent="Enviando por Firebase…";
+    $("assistantNoticeStatus").textContent="Guardando y notificando…";
     try{
-      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/notice",{method:"POST",body:{message}});
-      if(!result.pushAccepted)throw new Error("Firebase no confirmó el envío");
-      $("assistantNoticeStatus").textContent="Firebase aceptó el aviso; la visualización depende del teléfono del jefe.";
+      const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages",{method:"POST",body:{message}});
+      $("assistantNoticeStatus").textContent=result.pushAccepted?
+        "Mensaje guardado y notificación enviada.":"Mensaje guardado. El destinatario lo verá al conectarse.";
       $("assistantNoticeText").value="";
-      showToast("Aviso enviado");
+      showToast("Mensaje guardado");
+      await refreshAssistantMessageThread();
     }catch(error){
       $("assistantNoticeStatus").textContent="No se pudo enviar: "+String(error?.message||error);
-      showToast("Aviso no entregado");
+      showToast("Mensaje no enviado");
     }finally{updateAssistantNoticeCount()}
   }
   async function assistantCall(targetUserId=""){
@@ -2661,6 +2706,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     for(const event of events){
       if(event.type==="push_token")assistantRegisterPushToken();
       else if(event.type==="sync"||event.type==="director_proposal")needsSync=true;
+      else if(event.type==="assistant_notice"){
+        assistantMessageUnread++;renderAssistantMessageBadge();
+        if($("assistantNoticeOverlay").classList.contains("show"))refreshAssistantMessageThread();
+      }
       else if(event.type==="assistant_call_response"){
         // Android presents this reply in AssistantResponseActivity (full screen).
         // The queue is retained for refreshing shared activity, never a duplicate toast.
@@ -3028,7 +3077,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("assistantGoogleConnectBtn").classList.toggle("hidden",!ownerShared);
     $("assistantGoogleConnectBtn").disabled=!connected||!ownerShared;
     $("assistantGoogleDiscoverBtn").classList.add("hidden");$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
-    $("assistantNoticeSection").classList.toggle("hidden",!(connected&&ws?.kind==="assistant"&&ws.role==="assistant"&&assistantWorkspaceAuthorized(ws)));
+    $("assistantNoticeSection").classList.toggle("hidden",!(connected&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)));
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
     $("assistantPushDesc").textContent=push.fcmToken?("Token Firebase disponible · "+String(push.fcmToken).slice(0,12)+"… · comprueba el registro en Equipo y actividad"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
     renderAssistantSummary();
@@ -4340,7 +4389,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
     renderDirectorBell();
-    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&ws.role==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-pressed",taskGroupedByTime?"true":"false");$("taskGroupToggle").title=taskGroupedByTime?"Desactivar agrupación":"Agrupar por fecha y hora";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-pressed",taskGroupedByTime?"true":"false");$("taskGroupToggle").title=taskGroupedByTime?"Desactivar agrupación":"Agrupar por fecha y hora";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -6769,11 +6818,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("assistantNoticeOverlay").addEventListener("click",e=>{if(e.target===$("assistantNoticeOverlay"))closeOverlay("assistantNoticeOverlay")});
   $("assistantNoticeText").addEventListener("input",updateAssistantNoticeCount);
   $("assistantNoticeSend").addEventListener("click",sendAssistantNotice);
-  document.querySelectorAll("[data-notice-preset]").forEach(btn=>btn.addEventListener("click",()=>{
-    $("assistantNoticeText").value=btn.dataset.noticePreset;
-    $("assistantNoticeStatus").textContent="";
-    updateAssistantNoticeCount();$("assistantNoticeText").focus();
-  }));
+
   $("assistantActivityRefresh").addEventListener("click",()=>assistantLoadActivity(false));
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
   document.querySelectorAll("[data-default-reminder]").forEach(input=>input.addEventListener("change",()=>{
