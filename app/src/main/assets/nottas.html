@@ -5886,7 +5886,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     }
     const numeric=!foundDate&&remaining.match(/(?:^|\s)(?:el\s+)?([0-3]?\d)[\/-]([01]?\d)(?:[\/-](\d{2,4}))?(?=$|\s|[,;.!?])/i);
     const months=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-    const names=String.raw`(?:ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|septiembre|setiembre|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)`;
+    const names=String.raw`(?:ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep|sept|septiembre|setiembre|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)`;
     const named=!foundDate&&!numeric&&remaining.match(new RegExp("(?:^|\\s)(?:el\\s+)?([0-3]?\\d)\\s+(?:de\\s+)?("+names+")(?=$|\\s|[,;.!?])","i"));
     function validCalendarDay(day,month,year){
       if(day<1||day>31||month<1||month>12||year<2000||year>2100)return "";
@@ -5951,8 +5951,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   }
   function syncQuickFromText(){
     quickDetected=parseQuickSchedule($("quickTaskText").value);
-    if(!quickExplicitDate)quickDueDate=quickDetected.date;
     if(!quickExplicitTime)quickDueTime=quickDetected.time;
+    if(!quickExplicitDate)quickDueDate=quickDetected.date||(quickDueTime?localDateISO():"");
     syncQuickControls();
   }
   function setQuickDate(value,manual=true){
@@ -5968,6 +5968,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     quickDueTime=/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(String(value||""))?value:"";
     if(quickDueTime&&!quickDueDate){
       quickDueDate=localDateISO();quickExplicitDate=false;
+    }else if(!quickDueTime&&!quickExplicitDate&&!quickDetected.hasDate){
+      quickDueDate="";
     }
     syncQuickControls();
   }
@@ -6032,7 +6034,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       $("taskText").innerHTML=plainToInlineHtml(text);
       setCategoryPicker("taskCategory",category);
       $("taskDate").value=due;
+      $("taskEndDate").value="";
       $("taskTime").value=due?dueTime:"";
+      $("taskEndTime").value="";
       syncTaskTimeButton();syncTaskEditorMeta();
     }else{
       const raw=$("quickNoteText").value;
@@ -6924,7 +6928,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   // receives pointerdown or click. A subsequent tap may then act normally.
   let dismissedOutsideAt=0;
   function dismissTransientOutside(target){
-    if(expandedTaskDaysId&&!$("editorOverlay").classList.contains("show")&&!$("calendarOverlay").classList.contains("show")&&
+    if(expandedTaskDaysId&&!$("editorOverlay").classList.contains("show")&&!$("calendarOverlay").classList.contains("show")&&!$("quickOverlay").classList.contains("show")&&
        !target.closest(".taskDaysChip,.taskListDayPanel")){
       expandedTaskDaysId=null;renderTasks();return true;
     }
