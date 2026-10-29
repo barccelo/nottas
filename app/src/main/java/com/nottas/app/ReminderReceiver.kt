@@ -24,11 +24,15 @@ object ReminderScheduler {
             val previous = readItems(context)
             val input = JSONArray(json)
             val activeTaskIds = mutableSetOf<String>()
+            val activeOccurrenceIds = mutableSetOf<String>()
 
             for (i in 0 until input.length()) {
                 val item = input.optJSONObject(i) ?: continue
                 val taskId = item.optString("id").trim()
                 if (taskId.isNotEmpty()) activeTaskIds.add(taskId)
+                val day = item.optString("date").trim()
+                if (taskId.isNotEmpty() && day.matches(Regex("\\d{4}-\\d{2}-\\d{2}")))
+                    activeOccurrenceIds.add("$taskId::$day")
             }
 
             val previousKeys = mutableListOf<String>()
@@ -52,6 +56,7 @@ object ReminderScheduler {
                         .put("taskId", taskId)
                         .put("text", text)
                         .put("at", at)
+                        .put("date", item.optString("date").trim())
                         .put("snoozed", false)
                 )
                 scheduleAlarm(context, alarmId, taskId, text, at)
@@ -64,7 +69,9 @@ object ReminderScheduler {
                 val taskId = old.optString("taskId", alarmId.substringBefore("::")).trim()
                 val text = old.optString("text").trim()
                 val at = old.optLong("at", 0L)
+                val day = old.optString("date").trim()
                 if (taskId.isEmpty() || text.isEmpty() || at <= now || !activeTaskIds.contains(taskId)) return@forEach
+                if (day.isNotEmpty() && !activeOccurrenceIds.contains("$taskId::$day")) return@forEach
                 stored.put(alarmId, old)
                 scheduleAlarm(context, alarmId, taskId, text, at)
             }
@@ -130,6 +137,7 @@ object ReminderScheduler {
                     .put("alarmId", alarmId)
                     .put("text", text)
                     .put("at", at)
+                    .put("date", item.optString("date").trim().ifEmpty { alarmId.substringAfter("::", "").substringBefore("::") })
                     .put("snoozed", item.optBoolean("snoozed", false))
             )
             claimedAlarmIds.add(alarmId)
@@ -144,11 +152,11 @@ object ReminderScheduler {
         return group
     }
 
-    fun snooze(context: Context, taskId: String, text: String, minutes: Int) {
+    fun snooze(context: Context, taskId: String, text: String, minutes: Int, day: String = "") {
         try {
             val safeMinutes = minutes.coerceIn(1, 120)
             val at = System.currentTimeMillis() + safeMinutes * 60_000L
-            val alarmId = taskId + "::snooze"
+            val alarmId = if (day.isNotEmpty()) "$taskId::$day::snooze" else taskId + "::snooze"
             cancelAlarm(context, alarmId)
             cancelNotification(context, taskId)
 
@@ -159,6 +167,7 @@ object ReminderScheduler {
                     .put("taskId", taskId)
                     .put("text", text)
                     .put("at", at)
+                    .put("date", day)
                     .put("snoozed", true)
             )
             saveItems(context, items)
@@ -167,7 +176,7 @@ object ReminderScheduler {
         }
     }
 
-    fun remove(context: Context, taskId: String) {
+    fun remove(context: Context, taskId: String, day: String = "") {
         try {
             val items = readItems(context)
             val keys = mutableListOf<String>()
@@ -175,7 +184,10 @@ object ReminderScheduler {
             keys.forEach { alarmId ->
                 val item = items.optJSONObject(alarmId)
                 val storedTaskId = item?.optString("taskId", alarmId.substringBefore("::"))?.trim().orEmpty()
-                if (storedTaskId == taskId || alarmId == taskId) {
+                val storedDay = item?.optString("date")?.trim().orEmpty().ifEmpty {
+                    alarmId.substringAfter("::", "").substringBefore("::")
+                }
+                if ((storedTaskId == taskId || alarmId == taskId) && (day.isEmpty() || storedDay == day)) {
                     cancelAlarm(context, alarmId)
                     items.remove(alarmId)
                 }
@@ -272,13 +284,14 @@ object ReminderActionStore {
     private const val KEY_QUEUE = "queue"
 
     @Synchronized
-    fun enqueueComplete(context: Context, taskId: String) {
+    fun enqueueComplete(context: Context, taskId: String, day: String = "") {
         try {
             val queue = readQueue(context)
             queue.put(
                 JSONObject()
                     .put("type", "complete")
                     .put("taskId", taskId)
+                    .put("date", day)
                     .put("at", System.currentTimeMillis())
             )
             saveQueue(context, queue)
