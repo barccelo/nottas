@@ -67,33 +67,33 @@ class AssistantCallActivity : Activity() {
         }
 
         root.addView(TextView(this).apply {
-            text = "Nottas · Asistente"
-            textSize = 16f
+            text = "Nottas · Llamada"
+            textSize = 15f
             setTextColor(Color.rgb(99, 99, 102))
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         })
 
         root.addView(TextView(this).apply {
-            text = caller
-            textSize = 34f
+            text = "Te están llamando"
+            textSize = 30f
             setTextColor(Color.rgb(29, 29, 31))
             typeface = Typeface.create("sans", Typeface.BOLD)
             gravity = Gravity.CENTER
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(74) })
+        ).apply { topMargin = dp(62) })
 
         root.addView(TextView(this).apply {
-            text = "te está llamando"
-            textSize = 20f
+            text = "De $caller"
+            textSize = 16f
             setTextColor(Color.rgb(99, 99, 102))
             gravity = Gravity.CENTER
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(6) })
+        ).apply { topMargin = dp(12) })
 
         root.addView(TextView(this).apply {
             text = workspace
