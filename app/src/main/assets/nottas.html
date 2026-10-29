@@ -671,13 +671,13 @@ html[data-theme="dark"] .calendarTimeColumns{
 .assistantStatusCard{background:#fff;border-radius:16px;padding:13px 14px;margin-bottom:10px}.assistantStatusLine{display:flex;align-items:center;justify-content:space-between;gap:10px}.assistantStatusTitle{font-size:17px;font-weight:700}.assistantStatusDesc{font-size:12px;color:#8e8e93;margin-top:4px;line-height:1.35}.assistantBadge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#e5e5ea;color:#636366;font-size:10px;font-weight:700}.assistantBadge.ok{background:#e4f7e9;color:#248a3d}.assistantBadge.warn{background:#fff4d6;color:#9a6700}.assistantGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.assistantGrid .wide{grid-column:1/-1}.assistantInput{width:100%;height:46px;border:1px solid #d1d1d6;border-radius:12px;background:#fff;color:#1d1d1f;padding:0 12px;font-size:15px;outline:none}.assistantInput:focus{border-color:#1677ff}.assistantActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.assistantActions .btn{flex:1 1 135px}.assistantInviteCode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;font-size:16px;font-weight:750}.assistantCallBtn{background:#34c759!important;color:#fff!important}.assistantDangerBtn{background:#fff0f0!important;color:#b42318!important}.assistantSectionHint{font-size:12px;color:#8e8e93;line-height:1.4;margin:4px 2px 10px}.assistantTaskStrip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 4px}.assistantTaskStatus{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;background:#e5e5ea;color:#636366}.assistantTaskStatus.proposed{background:#fff4d6;color:#9a6700}.assistantTaskStatus.confirmed{background:#e4f7e9;color:#248a3d}.assistantTaskStatus.rejected,.assistantTaskStatus.cancelled{background:#ffe8e6;color:#b42318}.assistantTaskStatus.changes_requested{background:#e8f2ff;color:#0066cc}.assistantTaskActions{display:flex;gap:6px;margin-left:auto}.assistantTaskActions button{height:32px;border:0;border-radius:9px;padding:0 10px;font-size:11px;font-weight:650;background:#e5e5ea;color:#1d1d1f}.assistantTaskActions .approve{background:#34c759;color:#fff}.assistantTaskActions .reject{background:#ff3b30;color:#fff}.metaTag.assistantMeta{--approval-bg:#fff3d6;--approval-color:#8d5a00;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:var(--approval-bg);color:var(--approval-color)!important;font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap}
 .metaTag.meetingFollowupMeta{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#e9edf4;color:#53637a!important;font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap}
 .metaTag.meetingFollowupMeta svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.metaTag.meetingFollowupMeta.realized{background:#e8f2ff;color:#205d9c!important}
+.metaTag.meetingFollowupMeta.realized,.metaTag.meetingFollowupMeta.in_progress{background:#e8f2ff;color:#205d9c!important}
 .metaTag.meetingFollowupMeta.scheduled{background:#edf1f7;color:#4c607d!important}
 .metaTag.meetingFollowupMeta.needs_review{background:#fff0d8;color:#8a5914!important}
 .metaTag.meetingFollowupMeta.deferred{background:#f2eaff;color:#7951a0!important}
 .metaTag.meetingFollowupMeta.cancelled{background:#ffe8e7;color:#aa3640!important}
 html[data-theme="dark"] .metaTag.meetingFollowupMeta{background:#303744;color:#b5c6e2!important}
-html[data-theme="dark"] .metaTag.meetingFollowupMeta.realized{background:#163551;color:#9ccaff!important}
+html[data-theme="dark"] .metaTag.meetingFollowupMeta.realized,html[data-theme="dark"] .metaTag.meetingFollowupMeta.in_progress{background:#163551;color:#9ccaff!important}
 /* Compact task cards: temporal data first, context second, status last. */
 .taskInfoPrimary,.taskInfoContext,.taskStatusRow{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:5px}
 .taskInfoPrimary{margin-top:7px;color:#505058;font-size:12px;font-weight:590}
@@ -5606,10 +5606,11 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     return '<span class="metaTag assistantMeta state-'+status+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+icons[status]+'</svg>'+esc(assistantStatusLabel(status))+'</span>';
   }
   function meetingStatusChipHtml(status){
-    const label=meetingStatusLabel(status);
+    const label=status==="in_progress"?"En curso":meetingStatusLabel(status);
     const icons={
       scheduled:'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3.5 10h17"/>',
       realized:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      in_progress:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l3 2"/>',
       needs_review:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
       deferred:'<path d="M5 5v5h5M5 10a8 8 0 1 1 2 7"/>',
       cancelled:'<circle cx="12" cy="12" r="9"/><path d="m8 8 8 8M16 8l-8 8"/>'
@@ -5619,7 +5620,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function assistantTaskMetaHtml(t){
     if(!t||!isSharedWorkspace())return "";
     const st=t.approvalStatus||"confirmed";
-    return assistantStatusChipHtml(st)+(meetingIsTracked(t)?meetingStatusChipHtml(meetingEffectiveStatus(t)):"");
+    const tracking=meetingIsTracked(t)?meetingEffectiveStatus(t):"";
+    const partial=taskMultiDay(t)&&taskCompletedDates(t).length>0&&!t.done;
+    const visual=tracking==="scheduled"&&partial?"in_progress":tracking;
+    return assistantStatusChipHtml(st)+(visual&&visual!=="scheduled"?meetingStatusChipHtml(visual):"");
   }
   function syncAssistantTaskStrip(){
     const strip=$("assistantTaskStrip"),status=$("assistantTaskStatus"),actions=$("assistantTaskActions"),hint=$("assistantTaskHint");
