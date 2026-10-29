@@ -46,7 +46,9 @@ class AssistantMessagingService : FirebaseMessagingService() {
                     this,
                     data["noticeId"].orEmpty(),
                     data["fromName"].orEmpty().ifBlank { "Asistente" },
-                    data["message"].orEmpty()
+                    data["message"].orEmpty(),
+                    data["workspaceId"].orEmpty(),
+                    data["fromRole"].orEmpty()
                 )
             }
             "assistant_call_response" -> {
@@ -263,13 +265,15 @@ object AssistantNoticeNotifier {
 
     fun notificationId(noticeId: String): Int = ("assistant_notice_" + noticeId).hashCode()
 
-    fun show(context: Context, noticeId: String, fromName: String, message: String) {
+    fun show(context: Context, noticeId: String, fromName: String, message: String, workspaceId: String = "", fromRole: String = "") {
         if (noticeId.isBlank() || message.isBlank()) return
         ensureChannel(context)
         val intent = Intent(context, AssistantNoticeActivity::class.java).apply {
             putExtra(AssistantNoticeActivity.EXTRA_NOTICE_ID, noticeId)
             putExtra(AssistantNoticeActivity.EXTRA_FROM_NAME, fromName)
             putExtra(AssistantNoticeActivity.EXTRA_MESSAGE, message.take(280))
+            putExtra(AssistantNoticeActivity.EXTRA_WORKSPACE_ID, workspaceId)
+            putExtra(AssistantNoticeActivity.EXTRA_FROM_ROLE, fromRole)
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -312,9 +316,9 @@ object AssistantNoticeNotifier {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(
             NotificationChannel(
-                CHANNEL_ID, "Asistente · Avisos al jefe", NotificationManager.IMPORTANCE_HIGH
+                CHANNEL_ID, "Asistente · Mensajes", NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Mensajes breves del asistente con pantalla de aviso."
+                description = "Avisos entre jefe y asistente, con respuestas desde pantalla completa."
                 lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 setShowBadge(true)
             }
