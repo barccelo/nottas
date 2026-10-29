@@ -127,17 +127,24 @@ html[data-theme="dark"] .taskGroupHourHeader.isUntimed strong{color:#a1a1a6}
 .taskDoneBtn svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .taskDoneBtn .taskDoneFill{fill:transparent}
 .taskDoneBtn.active{color:#34c759}.taskDoneBtn.active .taskDoneFill{fill:currentColor}.taskDoneBtn.active .taskDoneCheck{stroke:#fff}
-.taskDayTracker{margin:1px 0 13px 50px;min-width:0;border-radius:14px;background:rgba(118,118,128,.07);padding:10px}
-.taskDaySummary{font-size:12px;font-weight:620;color:#636366;margin:0 0 8px}
-.taskDayButtons{display:flex;flex-wrap:wrap;gap:6px;max-height:170px;overflow-y:auto;overscroll-behavior:contain}
-.taskDayButton{min-width:78px;min-height:37px;padding:7px 9px;border:1px solid #d1d1d6;border-radius:11px;background:#fff;color:#48484a;text-align:center;font-size:12px}
-.taskDayButton.selected{border-color:#007aff;box-shadow:0 0 0 1px #007aff}
-.taskDayButton.completed{color:#248044;background:rgba(52,199,89,.1);border-color:rgba(52,199,89,.32)}
+.taskDayTracker{margin:5px 0 11px 50px;min-width:0}
+.taskDayDisclosure{width:100%;min-height:39px;display:flex;align-items:center;gap:8px;padding:6px 10px;border:0;border-radius:11px;background:rgba(118,118,128,.085);color:#3a3a3c;text-align:left;font-size:12px}
+.taskDayDisclosure svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:#636366}
+.taskDayDisclosure .taskDayHeading{font-weight:660;flex:1}
+.taskDaySummary{font-size:12px;font-weight:580;color:#636366;white-space:nowrap}
+.taskDayDisclosure .taskDayChevron{width:15px;height:15px;transition:transform .15s}
+.taskDayTracker.expanded .taskDayChevron{transform:rotate(180deg)}
+.taskDayDetails{padding:10px 0 2px}
+.taskDayHint{font-size:11px;color:#8e8e93;padding:0 3px 8px}
+.taskDayButtons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:184px;overflow-y:auto;overscroll-behavior:contain}
+.taskDayButton{min-width:0;min-height:39px;padding:7px 4px;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #d1d1d6;border-radius:10px;background:transparent;color:#636366;text-align:center;font-size:12px;font-weight:560}
+.taskDayButton svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+.taskDayButton.selected{border-color:#007aff;box-shadow:inset 0 0 0 1px #007aff}
+.taskDayButton.completed{color:#248044;background:rgba(52,199,89,.08);border-color:rgba(52,199,89,.32)}
 .taskDayButton.selected.completed{border-color:#007aff}
-.taskDayButton b{display:block;font-size:13px}
-html[data-theme="dark"] .taskDayTracker{background:rgba(118,118,128,.11)}
-html[data-theme="dark"] .taskDaySummary{color:#aeaeb2}
-html[data-theme="dark"] .taskDayButton{background:#242426;color:#f5f5f7;border-color:#48484a}
+html[data-theme="dark"] .taskDayDisclosure{background:rgba(118,118,128,.16);color:#f2f2f7}
+html[data-theme="dark"] .taskDaySummary,html[data-theme="dark"] .taskDayDisclosure svg{color:#aeaeb2}
+html[data-theme="dark"] .taskDayButton{background:#242426;color:#d1d1d6;border-color:#48484a}
 html[data-theme="dark"] .taskDayButton.completed{background:#183b27;color:#9ce2ae;border-color:#39714b}
 .taskTitleInput{width:100%;border:0;background:transparent;color:#1d1d1f;padding:2px 0 9px;font-size:25px;line-height:1.25;font-weight:560;outline:none}
 .taskTitleInput.done{text-decoration:line-through;color:#8e8e93}
@@ -650,6 +657,15 @@ html[data-theme="dark"] .calendarTimeColumns{
 .calendarWeekTimeViewport .calendarTimeBlockTitle{line-height:1.08}
 .workspaceContextBtn{max-width:145px;height:30px;border:0;border-radius:999px;background:#e8f2ff;color:#0066cc;padding:0 10px;font-size:11px;font-weight:680;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.workspaceContextBtn.shared{background:#ede7ff;color:#5e35b1}.workspaceContextBtn:active{opacity:.65}.workspaceRole{margin-left:auto;font-size:10px;color:#8e8e93;text-transform:uppercase;letter-spacing:.04em}.workspaceSideIcon{width:22px;height:22px;border-radius:7px;background:#e8f2ff;color:#007aff;display:grid;place-items:center;font-size:12px;font-weight:750;flex:0 0 auto}.workspaceSideIcon.shared{background:#ede7ff;color:#6f42c1}html[data-theme="dark"] .workspaceContextBtn{background:#16365d;color:#64a9ff}html[data-theme="dark"] .workspaceContextBtn.shared,html[data-theme="dark"] .workspaceSideIcon.shared{background:#302452;color:#b69cff}
 .assistantStatusCard{background:#fff;border-radius:16px;padding:13px 14px;margin-bottom:10px}.assistantStatusLine{display:flex;align-items:center;justify-content:space-between;gap:10px}.assistantStatusTitle{font-size:17px;font-weight:700}.assistantStatusDesc{font-size:12px;color:#8e8e93;margin-top:4px;line-height:1.35}.assistantBadge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#e5e5ea;color:#636366;font-size:10px;font-weight:700}.assistantBadge.ok{background:#e4f7e9;color:#248a3d}.assistantBadge.warn{background:#fff4d6;color:#9a6700}.assistantGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.assistantGrid .wide{grid-column:1/-1}.assistantInput{width:100%;height:46px;border:1px solid #d1d1d6;border-radius:12px;background:#fff;color:#1d1d1f;padding:0 12px;font-size:15px;outline:none}.assistantInput:focus{border-color:#1677ff}.assistantActions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.assistantActions .btn{flex:1 1 135px}.assistantInviteCode{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;font-size:16px;font-weight:750}.assistantCallBtn{background:#34c759!important;color:#fff!important}.assistantDangerBtn{background:#fff0f0!important;color:#b42318!important}.assistantSectionHint{font-size:12px;color:#8e8e93;line-height:1.4;margin:4px 2px 10px}.assistantTaskStrip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0 4px}.assistantTaskStatus{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;background:#e5e5ea;color:#636366}.assistantTaskStatus.proposed{background:#fff4d6;color:#9a6700}.assistantTaskStatus.confirmed{background:#e4f7e9;color:#248a3d}.assistantTaskStatus.rejected,.assistantTaskStatus.cancelled{background:#ffe8e6;color:#b42318}.assistantTaskStatus.changes_requested{background:#e8f2ff;color:#0066cc}.assistantTaskActions{display:flex;gap:6px;margin-left:auto}.assistantTaskActions button{height:32px;border:0;border-radius:9px;padding:0 10px;font-size:11px;font-weight:650;background:#e5e5ea;color:#1d1d1f}.assistantTaskActions .approve{background:#34c759;color:#fff}.assistantTaskActions .reject{background:#ff3b30;color:#fff}.metaTag.assistantMeta{--approval-bg:#fff3d6;--approval-color:#8d5a00;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:var(--approval-bg);color:var(--approval-color)!important;font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap}
+.metaTag.meetingFollowupMeta{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#e9edf4;color:#53637a!important;font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap}
+.metaTag.meetingFollowupMeta svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.metaTag.meetingFollowupMeta.realized{background:#e8f2ff;color:#205d9c!important}
+.metaTag.meetingFollowupMeta.scheduled{background:#edf1f7;color:#4c607d!important}
+.metaTag.meetingFollowupMeta.needs_review{background:#fff0d8;color:#8a5914!important}
+.metaTag.meetingFollowupMeta.deferred{background:#f2eaff;color:#7951a0!important}
+.metaTag.meetingFollowupMeta.cancelled{background:#ffe8e7;color:#aa3640!important}
+html[data-theme="dark"] .metaTag.meetingFollowupMeta{background:#303744;color:#b5c6e2!important}
+html[data-theme="dark"] .metaTag.meetingFollowupMeta.realized{background:#163551;color:#9ccaff!important}
 .metaTag.assistantMeta svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .metaTag.assistantMeta.state-scheduled{--approval-bg:#e5f5e9;--approval-color:#217344}
 .metaTag.assistantMeta.state-confirmed{--approval-bg:#e4f1ff;--approval-color:#205d9c}
@@ -1289,8 +1305,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
           <div id="taskText" class="taskTitleInput richEditable" contenteditable="true" role="textbox" aria-label="Tarea" data-placeholder="Tarea" data-rich-kind="task-title"></div>
         </div>
         <div id="taskDayTracker" class="taskDayTracker hidden" aria-label="Jornadas del evento">
-          <div id="taskDaySummary" class="taskDaySummary"></div>
-          <div id="taskDayButtons" class="taskDayButtons"></div>
+          <button id="taskDayDisclosure" class="taskDayDisclosure" type="button" aria-expanded="false" aria-controls="taskDayDetails">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15l2 2 4-4"/></svg>
+            <span class="taskDayHeading">Jornadas</span>
+            <span id="taskDaySummary" class="taskDaySummary"></span>
+            <svg class="taskDayChevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="taskDayDetails" class="taskDayDetails hidden">
+            <div class="taskDayHint">Toca cada día para marcarlo o desmarcarlo.</div>
+            <div id="taskDayButtons" class="taskDayButtons"></div>
+          </div>
         </div>
 
         <div id="assistantTaskStrip" class="assistantTaskStrip hidden">
@@ -1857,6 +1881,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   let state=null;
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
+  let editorDaysExpanded=false,expandedTaskDaysId=null;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
@@ -4971,25 +4996,31 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const t={dueDate:$("taskDate")?.value||"",endDate:$("taskEndDate")?.value||"",completedDates:editorCompletedDates};
     const multi=taskMultiDay(t),tracker=$("taskDayTracker");
     tracker.classList.toggle("hidden",!multi);
-    if(!multi)return;
+    if(!multi){editorDaysExpanded=false;return}
     const days=taskDays(t),done=new Set(taskCompletedDates(t));
     editorCompletedDates=days.filter(d=>done.has(d));
     if(!days.includes(editorTaskDay))editorTaskDay=taskRelevantDay(t,localDateISO());
     editorTaskDone=days.length>0&&editorCompletedDates.length===days.length;
-    $("taskDaySummary").textContent=editorCompletedDates.length+" de "+days.length+" jornadas realizadas · Selecciona el día que deseas marcar";
+    $("taskDaySummary").textContent=editorCompletedDates.length+" de "+days.length+" realizadas";
+    tracker.classList.toggle("expanded",editorDaysExpanded);
+    $("taskDayDisclosure").setAttribute("aria-expanded",String(editorDaysExpanded));
+    $("taskDayDetails").classList.toggle("hidden",!editorDaysExpanded);
+    if(!editorDaysExpanded)return;
     $("taskDayButtons").innerHTML=days.map(d=>{
       const label=dateFromISO(d).toLocaleDateString("es",{day:"numeric",month:"short"});
-      return '<button class="taskDayButton'+(done.has(d)?" completed":"")+(editorTaskDay===d?" selected":"")+'" type="button" data-task-day="'+d+'" aria-pressed="'+(editorTaskDay===d?"true":"false")+'"><b>'+(done.has(d)?"✓ ":"")+esc(label)+'</b></button>';
+      const icon=done.has(d)?'<path d="M20 6 9 17l-5-5"/>':'<circle cx="12" cy="12" r="9"/>';
+      return '<button class="taskDayButton'+(done.has(d)?" completed":"")+(editorTaskDay===d?" selected":"")+'" type="button" data-task-day="'+d+'" aria-label="'+(done.has(d)?"Desmarcar ":"Completar ")+esc(label)+'" aria-pressed="'+(done.has(d)?"true":"false")+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+icon+'</svg>'+esc(label)+'</button>';
     }).join("");
     $("taskDayButtons").querySelectorAll("[data-task-day]").forEach(btn=>btn.addEventListener("click",()=>{
-      editorTaskDay=btn.dataset.taskDay;syncTaskEditorMeta();
+      editorTaskDay=btn.dataset.taskDay;
+      setEditorDayDone(!editorCompletedDates.includes(editorTaskDay));
     }));
   }
   function setEditorDayDone(done){
     const t={dueDate:$("taskDate").value,endDate:$("taskEndDate").value,completedDates:editorCompletedDates,done:editorTaskDone,meetingTracked:editorMeetingTracked,meetingStatus:editorMeetingStatus};
     if(!taskMultiDay(t))return false;
-    if(!setTaskDayCompletion(t,editorTaskDay||taskRelevantDay(t),done))return false;
     commitTaskHistory();
+    if(!setTaskDayCompletion(t,editorTaskDay||taskRelevantDay(t),done))return false;
     editorCompletedDates=t.completedDates;editorTaskDone=t.done;
     if(editorMeetingTracked){editorMeetingStatus=t.meetingStatus;editorMeetingStatusChanged=true}
     if(editorTaskDone){
@@ -5467,11 +5498,21 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     };
     return '<span class="metaTag assistantMeta state-'+status+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+icons[status]+'</svg>'+esc(assistantStatusLabel(status))+'</span>';
   }
+  function meetingStatusChipHtml(status){
+    const label=meetingStatusLabel(status);
+    const icons={
+      scheduled:'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3.5 10h17"/>',
+      realized:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      needs_review:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      deferred:'<path d="M5 5v5h5M5 10a8 8 0 1 1 2 7"/>',
+      cancelled:'<circle cx="12" cy="12" r="9"/><path d="m8 8 8 8M16 8l-8 8"/>'
+    };
+    return '<span class="metaTag meetingFollowupMeta '+esc(status)+'"><svg viewBox="0 0 24 24" aria-hidden="true">'+(icons[status]||icons.scheduled)+'</svg>'+esc(label)+'</span>';
+  }
   function assistantTaskMetaHtml(t){
     if(!t||!isSharedWorkspace())return "";
     const st=t.approvalStatus||"confirmed";
-    const tracking=meetingIsTracked(t)?'<span class="metaTag meetingFollowupMeta '+esc(meetingEffectiveStatus(t))+'">'+esc(meetingStatusLabel(meetingEffectiveStatus(t)))+'</span>':"";
-    return assistantStatusChipHtml(st)+tracking;
+    return assistantStatusChipHtml(st)+(meetingIsTracked(t)?meetingStatusChipHtml(meetingEffectiveStatus(t)):"");
   }
   function syncAssistantTaskStrip(){
     const strip=$("assistantTaskStrip"),status=$("assistantTaskStatus"),actions=$("assistantTaskActions"),hint=$("assistantTaskHint");
@@ -5623,7 +5664,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function openTask(t,selectedDate=null){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
-    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
+    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
     editorMeetingTracked=t?!!t.meetingTracked:isSharedWorkspace();
     editorMeetingStatus=t?.meetingStatus||"scheduled";editorMeetingStatusChanged=false;
@@ -5652,7 +5693,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
-    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
   }
 
@@ -6335,6 +6376,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("taskCopyCancelBtn").addEventListener("click",()=>{taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks()});
   $("taskCopyConfirmBtn").addEventListener("click",async()=>{if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}const text=selectedTaskItemsText(editorSubtasks,taskCopySelection);let ok=false;try{await navigator.clipboard.writeText(text);ok=true}catch(_){try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(__){}}if(ok){taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks();showToast("Lista copiada")}else showToast("No pude copiar")});
   $("taskRemoveChecksBtn").addEventListener("click",()=>{if(!editorSubtasks.length)return;commitTaskHistory();const bullets=taskItemsToBulletBlocks(editorSubtasks),existing=cleanNoteBlocks(editorTaskBlocks);editorTaskBlocks=[...existing,...bullets];editorSubtasks=[];renderTaskBlocks();renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"));showToast("Casillas eliminadas")});
+  $("taskDayDisclosure").addEventListener("click",()=>{
+    editorDaysExpanded=!editorDaysExpanded;renderTaskDayTracker();
+  });
   $("taskFinishAllBtn").addEventListener("click",()=>{
     const btn=$("taskFinishAllBtn"),range={dueDate:$("taskDate").value,endDate:$("taskEndDate").value};
     if(!taskMultiDay(range))return;
