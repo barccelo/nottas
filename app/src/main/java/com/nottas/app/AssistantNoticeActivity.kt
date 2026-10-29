@@ -12,6 +12,7 @@ import android.text.InputFilter
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -79,6 +80,11 @@ class AssistantNoticeActivity : Activity() {
         }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
             WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+        // Android 11+ and targetSdk 35+ may lay full-screen windows behind the
+        // keyboard. Let the root handle IME and system-bar insets explicitly.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        }
         @Suppress("DEPRECATION")
         window.statusBarColor = Color.rgb(245,245,247)
         @Suppress("DEPRECATION")
@@ -99,6 +105,17 @@ class AssistantNoticeActivity : Activity() {
             setBackgroundColor(pageBackground)
             gravity = Gravity.CENTER_HORIZONTAL
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            root.setOnApplyWindowInsetsListener { view, insets ->
+                val bars = insets.getInsets(WindowInsets.Type.systemBars())
+                val keyboard = insets.getInsets(WindowInsets.Type.ime())
+                val bottom = maxOf(bars.bottom, keyboard.bottom)
+                view.setPadding(dp(23), bars.top + dp(15), dp(23), bottom + dp(10))
+                insets
+            }
+        }
+        // The scroll area contains the title, message and quick replies;
+        // only the composer and dismiss action stay anchored above the IME.
         val head = TextView(this).apply {
             text = "Nottas · Mensajes"
             textSize = 15f
@@ -106,42 +123,50 @@ class AssistantNoticeActivity : Activity() {
             gravity = Gravity.CENTER
             setTextColor(gray)
         }
-        root.addView(head,LinearLayout.LayoutParams(-1,-2))
-        root.addView(TextView(this).apply {
+        val senderView = TextView(this).apply {
             text = who
             textSize = 30f
             typeface = Typeface.create("sans",Typeface.BOLD)
             gravity = Gravity.CENTER
             setTextColor(ink)
-        },LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(16) })
-        root.addView(TextView(this).apply {
+        }
+        val subtitleView = TextView(this).apply {
             text = "te ha enviado un mensaje"
             textSize = 15f
             gravity = Gravity.CENTER
             setTextColor(gray)
-        },LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(4) })
+        }
 
-        val scroll = ScrollView(this).apply { isFillViewport = true }
+        val scroll = ScrollView(this).apply {
+            isFillViewport = false
+            isVerticalScrollBarEnabled = false
+            clipToPadding = false
+        }
         val messageArea = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setPadding(dp(12),dp(12),dp(12),dp(12))
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(dp(2),dp(15),dp(2),dp(15))
         }
+        messageArea.addView(head, LinearLayout.LayoutParams(-1,-2))
+        messageArea.addView(senderView,LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(15) })
+        messageArea.addView(subtitleView,LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(4) })
         messageArea.addView(TextView(this).apply {
             text = message
             textSize = 25f
             typeface = Typeface.create("sans",Typeface.BOLD)
             gravity = Gravity.CENTER
             setTextColor(blue)
-        },LinearLayout.LayoutParams(-1,-2))
+        },LinearLayout.LayoutParams(-1,-2).apply {
+            topMargin=dp(36)
+            bottomMargin=dp(20)
+        })
         scroll.addView(messageArea)
         root.addView(scroll,LinearLayout.LayoutParams(-1,0,1f).apply {
-            topMargin=dp(16)
-            bottomMargin=dp(14)
+            bottomMargin=dp(8)
         })
 
         if (canReply) {
-            root.addView(TextView(this).apply {
+            messageArea.addView(TextView(this).apply {
                 text = "Responder"
                 textSize = 13f
                 typeface = Typeface.DEFAULT_BOLD
@@ -167,7 +192,9 @@ class AssistantNoticeActivity : Activity() {
                         if(column==1)leftMargin=dp(7)
                     })
                 }
-                root.addView(row,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(7) })
+                messageArea.addView(row,LinearLayout.LayoutParams(-1,-2).apply {
+                    bottomMargin=dp(7)
+                })
             }
             val inputRow=LinearLayout(this).apply {
                 orientation=LinearLayout.HORIZONTAL
@@ -216,7 +243,10 @@ class AssistantNoticeActivity : Activity() {
             setTextColor(gray)
             setOnClickListener { finishNotice() }
         },LinearLayout.LayoutParams(-1,dp(48)).apply { topMargin=dp(5) })
+        root.isFocusableInTouchMode = true
         setContentView(root)
+        root.requestFocus()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) root.requestApplyInsets()
         getSystemService(NotificationManager::class.java)
             .cancel(AssistantNoticeNotifier.notificationId(noticeId))
         if(canReply)AssistantPush.markNoticeRead(applicationContext,workspaceId,noticeId)
