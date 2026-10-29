@@ -127,6 +127,18 @@ html[data-theme="dark"] .taskGroupHourHeader.isUntimed strong{color:#a1a1a6}
 .taskDoneBtn svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .taskDoneBtn .taskDoneFill{fill:transparent}
 .taskDoneBtn.active{color:#34c759}.taskDoneBtn.active .taskDoneFill{fill:currentColor}.taskDoneBtn.active .taskDoneCheck{stroke:#fff}
+.taskDayTracker{margin:1px 0 13px 50px;min-width:0;border-radius:14px;background:rgba(118,118,128,.07);padding:10px}
+.taskDaySummary{font-size:12px;font-weight:620;color:#636366;margin:0 0 8px}
+.taskDayButtons{display:flex;flex-wrap:wrap;gap:6px;max-height:170px;overflow-y:auto;overscroll-behavior:contain}
+.taskDayButton{min-width:78px;min-height:37px;padding:7px 9px;border:1px solid #d1d1d6;border-radius:11px;background:#fff;color:#48484a;text-align:center;font-size:12px}
+.taskDayButton.selected{border-color:#007aff;box-shadow:0 0 0 1px #007aff}
+.taskDayButton.completed{color:#248044;background:rgba(52,199,89,.1);border-color:rgba(52,199,89,.32)}
+.taskDayButton.selected.completed{border-color:#007aff}
+.taskDayButton b{display:block;font-size:13px}
+html[data-theme="dark"] .taskDayTracker{background:rgba(118,118,128,.11)}
+html[data-theme="dark"] .taskDaySummary{color:#aeaeb2}
+html[data-theme="dark"] .taskDayButton{background:#242426;color:#f5f5f7;border-color:#48484a}
+html[data-theme="dark"] .taskDayButton.completed{background:#183b27;color:#9ce2ae;border-color:#39714b}
 .taskTitleInput{width:100%;border:0;background:transparent;color:#1d1d1f;padding:2px 0 9px;font-size:25px;line-height:1.25;font-weight:560;outline:none}
 .taskTitleInput.done{text-decoration:line-through;color:#8e8e93}
 .taskMetaChips{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:2px 0 12px 50px}
@@ -1276,6 +1288,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
           </button>
           <div id="taskText" class="taskTitleInput richEditable" contenteditable="true" role="textbox" aria-label="Tarea" data-placeholder="Tarea" data-rich-kind="task-title"></div>
         </div>
+        <div id="taskDayTracker" class="taskDayTracker hidden" aria-label="Jornadas del evento">
+          <div id="taskDaySummary" class="taskDaySummary"></div>
+          <div id="taskDayButtons" class="taskDayButtons"></div>
+        </div>
 
         <div id="assistantTaskStrip" class="assistantTaskStrip hidden">
           <button id="assistantTaskStatus" class="assistantTaskStatus" type="button" aria-label="Estado de aprobación" aria-pressed="false"></button>
@@ -1411,6 +1427,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
         <div id="taskEditedHint" class="noteEditedHint"></div>
         <button id="taskMoreReminderBtn" class="noteActionRow" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4M12 2v2"></path></svg><span>Recordatorio</span>
+        </button>
+        <button id="taskFinishAllBtn" class="noteActionRow noteActionDanger hidden" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"></rect><path d="M7 12l3 3 6-7M7 2v4M17 2v4"></path></svg><span>Finalizar todo el evento</span>
         </button>
         <button id="taskDuplicateBtn" class="noteActionRow" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Crear una copia</span>
@@ -1838,7 +1857,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   let state=null;
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -4856,7 +4875,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       text:inlineHtmlToText($("taskText")?.innerHTML||""),textHtml:sanitizeInlineHtml($("taskText")?.innerHTML||""),locationText:$("taskLocation")?.value||"",category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
       dueDate:$("taskDate")?.value||"",endDate:$("taskEndDate")?.value||"",dueTime:$("taskTime")?.value||"",endTime:$("taskEndTime")?.value||"",priority:$("taskPriority")?.value||"normal",
       recurrence:$("taskRecurrence")?.value||"none",reminder:$("taskReminder")?.value||"at",
-      reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,
+      reminderActive:$("taskTimeButton")?.dataset.reminderActive==="1",pinned:!!editorPinned,done:!!editorTaskDone,completedDates:editorCompletedDates.slice(),selectedDay:editorTaskDay,
       meetingTracked:!!editorMeetingTracked,meetingStatus:editorMeetingStatus,meetingNote:$("taskMeetingNote")?.value||"",
       blocks:cloneSerializable(editorTaskBlocks||[]),items:cloneSerializable(editorSubtasks||[])
     };
@@ -4881,7 +4900,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("taskText").innerHTML=sanitizeInlineHtml(snap.textHtml||plainToInlineHtml(snap.text||""));$("taskLocation").value=snap.locationText||"";setCategoryPicker("taskCategory",snap.category||"inbox");$("taskTags").value=snap.tags||"";
     $("taskDate").value=snap.dueDate||"";$("taskEndDate").value=snap.endDate||"";$("taskTime").value=snap.dueTime||"";$("taskEndTime").value=snap.endTime||"";$("taskPriority").value=snap.priority||"normal";$("taskRecurrence").value=snap.recurrence||"none";$("taskReminder").value=snap.reminder||"at";$("taskTimeButton").dataset.reminderActive=snap.reminderActive?"1":"0";
     editorMeetingTracked=!!snap.meetingTracked;editorMeetingStatus=snap.meetingStatus||"scheduled";$("taskMeetingNote").value=snap.meetingNote||"";
-    editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
+    editorPinned=!!snap.pinned;editorTaskDone=!!snap.done;editorCompletedDates=Array.isArray(snap.completedDates)?snap.completedDates.slice():[];editorTaskDay=snap.selectedDay||"";editorTaskBlocks=cloneSerializable(snap.blocks||[]);editorSubtasks=cloneSerializable(snap.items||[]);
     renderTaskBlocks();renderEditorSubtasks();syncTaskTimeButton();syncTaskEditorMeta();syncEditorPin();renderMeetingFollowup();taskHistoryApplying=false;
   }
   function undoTaskEditor(){
@@ -4925,6 +4944,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(p){
       resetEditorActionPanel(p);
       $("deleteTaskLabel").textContent=editingTaskId?"Borrar":"Descartar borrador";
+      const multi=taskMultiDay({dueDate:$("taskDate").value,endDate:$("taskEndDate").value});
+      $("taskFinishAllBtn").classList.toggle("hidden",!multi);
+      $("taskFinishAllBtn").dataset.armed="";
+      $("taskFinishAllBtn").querySelector("span").textContent="Finalizar todo el evento";
       p.classList.remove("hidden");p.setAttribute("aria-hidden","false");
       syncEditorActionBackdrop();
     }
@@ -4938,13 +4961,47 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const d=new Date(value+"T12:00:00");
     return Number.isNaN(d.getTime())?value:d.toLocaleDateString("es",{day:"numeric",month:"short"});
   }
+  function renderTaskDayTracker(){
+    const t={dueDate:$("taskDate")?.value||"",endDate:$("taskEndDate")?.value||"",completedDates:editorCompletedDates};
+    const multi=taskMultiDay(t),tracker=$("taskDayTracker");
+    tracker.classList.toggle("hidden",!multi);
+    if(!multi)return;
+    const days=taskDays(t),done=new Set(taskCompletedDates(t));
+    editorCompletedDates=days.filter(d=>done.has(d));
+    if(!days.includes(editorTaskDay))editorTaskDay=taskRelevantDay(t,localDateISO());
+    editorTaskDone=days.length>0&&editorCompletedDates.length===days.length;
+    $("taskDaySummary").textContent=editorCompletedDates.length+" de "+days.length+" jornadas realizadas · Selecciona el día que deseas marcar";
+    $("taskDayButtons").innerHTML=days.map(d=>{
+      const label=dateFromISO(d).toLocaleDateString("es",{day:"numeric",month:"short"});
+      return '<button class="taskDayButton'+(done.has(d)?" completed":"")+(editorTaskDay===d?" selected":"")+'" type="button" data-task-day="'+d+'" aria-pressed="'+(editorTaskDay===d?"true":"false")+'"><b>'+(done.has(d)?"✓ ":"")+esc(label)+'</b></button>';
+    }).join("");
+    $("taskDayButtons").querySelectorAll("[data-task-day]").forEach(btn=>btn.addEventListener("click",()=>{
+      editorTaskDay=btn.dataset.taskDay;syncTaskEditorMeta();
+    }));
+  }
+  function setEditorDayDone(done){
+    const t={dueDate:$("taskDate").value,endDate:$("taskEndDate").value,completedDates:editorCompletedDates,done:editorTaskDone,meetingTracked:editorMeetingTracked,meetingStatus:editorMeetingStatus};
+    if(!taskMultiDay(t))return false;
+    if(!setTaskDayCompletion(t,editorTaskDay||taskRelevantDay(t),done))return false;
+    commitTaskHistory();
+    editorCompletedDates=t.completedDates;editorTaskDone=t.done;
+    if(editorMeetingTracked){editorMeetingStatus=t.meetingStatus;editorMeetingStatusChanged=true}
+    if(editorTaskDone){
+      (editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));
+      syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();
+    }
+    syncTaskEditorMeta();commitTaskHistory();persistOpenTask(false);
+    return true;
+  }
   function syncTaskDoneButton(){
     const b=$("taskDoneBtn"),input=$("taskText");if(!b||!input)return;
-    b.classList.toggle("active",!!editorTaskDone);
+    const multi=taskMultiDay({dueDate:$("taskDate").value,endDate:$("taskEndDate").value});
+    const dayChecked=multi?editorCompletedDates.includes(editorTaskDay):!!editorTaskDone;
+    b.classList.toggle("active",dayChecked);
     const managed=canManageMeetingInEditor();
-    b.setAttribute("aria-label",managed?(editorTaskDone?"Reabrir reunión; mantener pulsado para opciones":"Marcar reunión como realizada; mantener pulsado para opciones"):(editorTaskDone?"Marcar como pendiente":"Completar tarea"));
+    b.setAttribute("aria-label",multi?(dayChecked?"Desmarcar jornada":"Completar jornada"):(managed?(editorTaskDone?"Reabrir reunión; mantener pulsado para opciones":"Marcar reunión como realizada; mantener pulsado para opciones"):(editorTaskDone?"Marcar como pendiente":"Completar tarea")));
     b.setAttribute("aria-haspopup",managed?"dialog":"false");
-    input.classList.toggle("done",!!editorTaskDone);
+    input.classList.toggle("done",multi?dayChecked:!!editorTaskDone);
   }
   function syncTaskEditorMeta(){
     const date=$("taskDate")?.value||"",dateEnd=$("taskEndDate")?.value||"",time=$("taskTime")?.value||"",end=$("taskEndTime")?.value||"";
@@ -4955,7 +5012,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("taskDateBtn")?.classList.toggle("active",!!date);$("taskTimeQuickBtn")?.classList.toggle("active",!!time);
     const p=taskTreeProgressValue(editorSubtasks||[]),label=$("taskProgressMini");
     if(label)label.textContent=p===null?"":Math.round(p*100)+"%";
-    syncTaskDoneButton();
+    renderTaskDayTracker();syncTaskDoneButton();
     if(!$("taskForm")?.classList.contains("hidden"))syncTaskInlineForm();
   }
   const INLINE_TIME_ROW=44;
@@ -5379,6 +5436,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       editorTaskReminders=[];syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");
     }
     editorMeetingStatus=action;editorMeetingStatusChanged=true;
+    if(action==="realized"&&taskMultiDay({dueDate:$("taskDate").value,endDate:$("taskEndDate").value}))
+      editorCompletedDates=taskDays({dueDate:$("taskDate").value,endDate:$("taskEndDate").value});
     editorTaskDone=action==="realized";
     if(editorTaskDone){
       (editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));
@@ -5448,7 +5507,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(editorTaskDone){items.forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(items)}
     const dueDate=$("taskDate").value||"",endDate=$("taskEndDate").value>dueDate?$("taskEndDate").value:"",dueTime=$("taskTime").value||"",endTime=normalizeTaskEndTime(dueTime,$("taskEndTime").value||"");
     const reminders=dueDate?normalizeReminderMinutes(editorTaskReminders):[],reminder=reminders.length?reminderMinutesToLegacy(reminders[0]):"none";
-    return {text,textHtml,body,blocks,locationText:$("taskLocation").value.trim().slice(0,200),workspaceId:editorTaskWorkspaceId||currentWorkspaceId(),createdBy:editorTaskCreatedBy||currentUserId(),approvalStatus:editorTaskApprovalStatus||"confirmed",requiresApproval:!!editorTaskRequiresApproval,assignedTo:editorTaskAssignedTo||"",proposalMessage:editorTaskProposalMessage||"",meetingTracked:!!editorMeetingTracked,meetingStatus:editorMeetingStatus||"scheduled",meetingNote:$("taskMeetingNote").value.trim().slice(0,500),category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done:!!editorTaskDone,pinned:editorPinned,dueDate,endDate,dueTime,endTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,reminders,items,subtasks:legacySubtasksFromItems(items)};
+    const range={dueDate,endDate},days=taskDays(range);
+    const completedDates=taskMultiDay(range)?days.filter(d=>editorCompletedDates.includes(d)):[];
+    const done=taskMultiDay(range)?completedDates.length===days.length:!!editorTaskDone;
+    return {text,textHtml,body,blocks,locationText:$("taskLocation").value.trim().slice(0,200),workspaceId:editorTaskWorkspaceId||currentWorkspaceId(),createdBy:editorTaskCreatedBy||currentUserId(),approvalStatus:editorTaskApprovalStatus||"confirmed",requiresApproval:!!editorTaskRequiresApproval,assignedTo:editorTaskAssignedTo||"",proposalMessage:editorTaskProposalMessage||"",meetingTracked:!!editorMeetingTracked,meetingStatus:editorMeetingStatus||"scheduled",meetingNote:$("taskMeetingNote").value.trim().slice(0,500),category:getCategoryPickerValue("taskCategory"),tags:normalizeTags($("taskTags").value),done,completedDates,pinned:editorPinned,dueDate,endDate,dueTime,endTime,priority:$("taskPriority").value||"normal",recurrence:$("taskRecurrence").value||"none",reminder,reminders,items,subtasks:legacySubtasksFromItems(items)};
   }
   function persistOpenTask(showSaved=false){
     if($("taskForm").classList.contains("hidden"))return false;
@@ -5464,7 +5526,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     let changed=false,target=existing;
     if(existing){
       const wasDone=!!existing.done;
-      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&(existing.locationText||"")===snap.locationText&&existing.workspaceId===snap.workspaceId&&(existing.createdBy||"")===snap.createdBy&&(existing.approvalStatus||"confirmed")===snap.approvalStatus&&!!existing.requiresApproval===!!snap.requiresApproval&&(existing.assignedTo||"")===snap.assignedTo&&(existing.proposalMessage||"")===snap.proposalMessage&&!!existing.meetingTracked===snap.meetingTracked&&(existing.meetingStatus||"scheduled")===snap.meetingStatus&&(existing.meetingNote||"")===snap.meetingNote&&existing.category===snap.category&&existing.done===snap.done&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&(existing.endDate||"")===snap.endDate&&existing.dueTime===snap.dueTime&&(existing.endTime||"")===snap.endTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(taskReminderOffsets(existing))===JSON.stringify(snap.reminders)&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
+      const same=existing.text===snap.text&&sanitizeInlineHtml(existing.textHtml||plainToInlineHtml(existing.text))===snap.textHtml&&existing.body===snap.body&&(existing.locationText||"")===snap.locationText&&existing.workspaceId===snap.workspaceId&&(existing.createdBy||"")===snap.createdBy&&(existing.approvalStatus||"confirmed")===snap.approvalStatus&&!!existing.requiresApproval===!!snap.requiresApproval&&(existing.assignedTo||"")===snap.assignedTo&&(existing.proposalMessage||"")===snap.proposalMessage&&!!existing.meetingTracked===snap.meetingTracked&&(existing.meetingStatus||"scheduled")===snap.meetingStatus&&(existing.meetingNote||"")===snap.meetingNote&&existing.category===snap.category&&existing.done===snap.done&&JSON.stringify(taskCompletedDates(existing))===JSON.stringify(snap.completedDates)&&existing.pinned===snap.pinned&&existing.dueDate===snap.dueDate&&(existing.endDate||"")===snap.endDate&&existing.dueTime===snap.dueTime&&(existing.endTime||"")===snap.endTime&&existing.priority===snap.priority&&existing.recurrence===snap.recurrence&&existing.reminder===snap.reminder&&JSON.stringify(taskReminderOffsets(existing))===JSON.stringify(snap.reminders)&&JSON.stringify(normalizeTags(existing.tags))===JSON.stringify(snap.tags)&&JSON.stringify(existing.blocks||[])===JSON.stringify(snap.blocks)&&JSON.stringify(existing.items||[])===JSON.stringify(snap.items);
       if(!same){
         const previousMeeting=meetingScheduleSnapshot(existing);
         const meetingScheduleChanged=existing.dueDate!==snap.dueDate||(existing.endDate||"")!==snap.endDate||existing.dueTime!==snap.dueTime||(existing.endTime||"")!==snap.endTime;
@@ -5479,12 +5541,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
         }
         existing.meetingTracked=snap.meetingTracked;existing.meetingStatus=snap.meetingStatus;existing.meetingNote=snap.meetingNote;existing.meetingHistory=nextMeetingHistory;
         editorMeetingHistory=nextMeetingHistory;editorMeetingStatusChanged=false;
-        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.locationText=snap.locationText;existing.workspaceId=snap.workspaceId;existing.createdBy=snap.createdBy;existing.approvalStatus=snap.approvalStatus;existing.requiresApproval=snap.requiresApproval;existing.assignedTo=snap.assignedTo;existing.proposalMessage=snap.proposalMessage;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.endDate=snap.endDate;existing.dueTime=snap.dueTime;existing.endTime=snap.endTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.reminders=snap.reminders;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
+        existing.text=snap.text;existing.textHtml=snap.textHtml;existing.body=snap.body;existing.blocks=snap.blocks;existing.locationText=snap.locationText;existing.workspaceId=snap.workspaceId;existing.createdBy=snap.createdBy;existing.approvalStatus=snap.approvalStatus;existing.requiresApproval=snap.requiresApproval;existing.assignedTo=snap.assignedTo;existing.proposalMessage=snap.proposalMessage;existing.category=snap.category;existing.tags=snap.tags;existing.done=snap.done;existing.completedDates=snap.completedDates;existing.pinned=snap.pinned;existing.dueDate=snap.dueDate;existing.endDate=snap.endDate;existing.dueTime=snap.dueTime;existing.endTime=snap.endTime;existing.priority=snap.priority;existing.recurrence=snap.recurrence;existing.reminder=snap.reminder;existing.reminders=snap.reminders;existing.items=snap.items;existing.subtasks=snap.subtasks;touch(existing);changed=true;
         if(existing.done&&!wasDone)createNextOccurrence(existing);
       }
     }else{
       const stamp=now(),id=makeId("t");
-      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,locationText:snap.locationText,workspaceId:snap.workspaceId,createdBy:snap.createdBy,updatedBy:currentUserId(),approvalStatus:snap.approvalStatus,requiresApproval:snap.requiresApproval,assignedTo:snap.assignedTo,proposalMessage:snap.proposalMessage,meetingTracked:snap.meetingTracked,meetingStatus:snap.meetingStatus,meetingNote:snap.meetingNote,meetingHistory:[],category:snap.category,tags:snap.tags,done:snap.done,pinned:snap.pinned,dueDate:snap.dueDate,endDate:snap.endDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,reminders:snap.reminders,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
+      target={id,text:snap.text,textHtml:snap.textHtml,body:snap.body,blocks:snap.blocks,locationText:snap.locationText,workspaceId:snap.workspaceId,createdBy:snap.createdBy,updatedBy:currentUserId(),approvalStatus:snap.approvalStatus,requiresApproval:snap.requiresApproval,assignedTo:snap.assignedTo,proposalMessage:snap.proposalMessage,meetingTracked:snap.meetingTracked,meetingStatus:snap.meetingStatus,meetingNote:snap.meetingNote,meetingHistory:[],category:snap.category,tags:snap.tags,done:snap.done,completedDates:snap.completedDates,pinned:snap.pinned,dueDate:snap.dueDate,endDate:snap.endDate,dueTime:snap.dueTime,endTime:snap.endTime,priority:snap.priority,recurrence:snap.recurrence,reminder:snap.reminder,reminders:snap.reminders,recurrenceFrom:"",items:snap.items,subtasks:snap.subtasks,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"};
       state.tasks.push(target);editingTaskId=id;changed=true;$("deleteTaskLabel").textContent="Borrar";
       if(target.done)createNextOccurrence(target);
     }
@@ -5552,10 +5614,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const d=new Date(n.updatedAt||n.createdAt||Date.now());
     hint.textContent="Editada "+d.toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   }
-  function openTask(t){
+  function openTask(t,selectedDate=null){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
-    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;
+    savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
     editorMeetingTracked=t?!!t.meetingTracked:isSharedWorkspace();
     editorMeetingStatus=t?.meetingStatus||"scheduled";editorMeetingStatusChanged=false;
@@ -5584,7 +5646,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
-    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
   }
 
@@ -6200,6 +6262,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       e.preventDefault();meetingPressFired=false;return;
     }
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return}
+    const multi=taskMultiDay({dueDate:$("taskDate").value,endDate:$("taskEndDate").value});
+    if(multi){setEditorDayDone(!editorCompletedDates.includes(editorTaskDay));return}
     if(editorMeetingTracked&&state.workspaces.some(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId())&&w.kind==="assistant")){
       if(!canManageMeetingInEditor()){
         showToast("Esta reunión aún no puede marcarse como realizada.");return;
@@ -6265,6 +6329,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("taskCopyCancelBtn").addEventListener("click",()=>{taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks()});
   $("taskCopyConfirmBtn").addEventListener("click",async()=>{if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}const text=selectedTaskItemsText(editorSubtasks,taskCopySelection);let ok=false;try{await navigator.clipboard.writeText(text);ok=true}catch(_){try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(__){}}if(ok){taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks();showToast("Lista copiada")}else showToast("No pude copiar")});
   $("taskRemoveChecksBtn").addEventListener("click",()=>{if(!editorSubtasks.length)return;commitTaskHistory();const bullets=taskItemsToBulletBlocks(editorSubtasks),existing=cleanNoteBlocks(editorTaskBlocks);editorTaskBlocks=[...existing,...bullets];editorSubtasks=[];renderTaskBlocks();renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"));showToast("Casillas eliminadas")});
+  $("taskFinishAllBtn").addEventListener("click",()=>{
+    const btn=$("taskFinishAllBtn"),range={dueDate:$("taskDate").value,endDate:$("taskEndDate").value};
+    if(!taskMultiDay(range))return;
+    if(btn.dataset.armed!=="1"){btn.dataset.armed="1";btn.querySelector("span").textContent="Confirmar finalización";return}
+    commitTaskHistory();editorCompletedDates=taskDays(range);editorTaskDone=true;
+    if(editorMeetingTracked){editorMeetingStatus="realized";editorMeetingStatusChanged=true}
+    (editorSubtasks||[]).forEach(n=>setTaskNodeDone(n,true));syncTaskTreeDone(editorSubtasks);renderEditorSubtasks();
+    syncTaskEditorMeta();commitTaskHistory();persistOpenTask(false);
+    closeEditorActionPanel($("taskMorePanel"));showToast("Todas las jornadas finalizadas");
+  });
   $("taskUndoBtn").addEventListener("click",undoTaskEditor);
   $("taskRedoBtn").addEventListener("click",redoTaskEditor);
   $("taskCategory").querySelector(".categoryPickerInput").addEventListener("input",scheduleTaskHistory);
