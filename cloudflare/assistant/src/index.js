@@ -86,6 +86,16 @@ async function route(request, env) {
     return workspaceAvailability(url, decodeURIComponent(availabilityWorkspace[1]), auth, env);
   }
 
+  const messagesWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/messages$/);
+  if (messagesWorkspace) {
+    const id = decodeURIComponent(messagesWorkspace[1]);
+    if (request.method === "GET") return listAssistantMessages(id, auth, env);
+    if (request.method === "POST") return createAssistantMessage(request, id, auth, env);
+  }
+  const readMessageRoute = path.match(/^\/v1\/workspaces\/([^/]+)\/messages\/([^/]+)\/read$/);
+  if (readMessageRoute && request.method === "POST") {
+    return readAssistantMessage(decodeURIComponent(readMessageRoute[1]), decodeURIComponent(readMessageRoute[2]), auth, env);
+  }
   const noticeWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/notice$/);
   if (noticeWorkspace && request.method === "POST") {
     return sendAssistantNotice(request, decodeURIComponent(noticeWorkspace[1]), auth, env);
@@ -718,40 +728,118 @@ async function workspaceActivity(workspaceId, auth, env) {
   });
 }
 
-/**
- * Assistant-to-owner instant notices. There is no arbitrary recipient parameter:
- * the owner is resolved from the verified shared workspace on the server.
- * FCM acceptance is explicitly distinguished from device display/read receipt.
+
+/** Durable, authorized one-to-one message exchange between owner and assistant.
+ * Creating the D1 table lazily makes this update safe for existing installations,
+ * without requiring a destructive migration of workspaces or task data.
  */
-async function sendAssistantNotice(request, workspaceId, auth, env) {
+async function ensureAssistantMessagesTable(env) {
+  await env.DB.prepare(
+    "CREATE TABLE IF NOT EXISTS assistant_messages (" +
+    "id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE," +
+    "from_user_id TEXT NOT NULL REFERENCES users(id), to_user_id TEXT NOT NULL REFERENCES users(id)," +
+    "reply_to_id TEXT, body TEXT NOT NULL, created_at INTEGER NOT NULL, read_at INTEGER)"
+  ).run();
+  await env.DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_assistant_messages_workspace ON assistant_messages(workspace_id,created_at DESC)"
+  ).run();
+  await env.DB.prepare(
+    "CREATE INDEX IF NOT EXISTS idx_assistant_messages_unread ON assistant_messages(to_user_id,read_at,created_at DESC)"
+  ).run();
+}
+async function assistantMessageAccess(workspaceId, auth, env) {
   const member = await membership(workspaceId, auth.userId, env);
-  if (!member || member.role !== "assistant") {
-    return json({ error: "assistant_required", message: "Solo un asistente activo puede enviar avisos al jefe." }, 403);
+  if (!member || !["owner","assistant"].includes(member.role)) return null;
+  const workspace = await env.DB.prepare("SELECT kind,owner_user_id FROM workspaces WHERE id=?")
+    .bind(workspaceId).first();
+  return workspace?.kind==="assistant" ? { ...member,workspace } : null;
+}
+function publicAssistantMessage(row, currentUserId) {
+  return {
+    id:row.id,workspaceId:row.workspace_id,fromUserId:row.from_user_id,toUserId:row.to_user_id,
+    fromName:row.from_name||"",body:row.body,replyToId:row.reply_to_id||"",
+    createdAt:Number(row.created_at),readAt:Number(row.read_at)||null,
+    mine:row.from_user_id===currentUserId
+  };
+}
+async function listAssistantMessages(workspaceId, auth, env) {
+  const access = await assistantMessageAccess(workspaceId,auth,env);
+  if (!access) return json({error:"workspace_forbidden"},403);
+  await ensureAssistantMessagesTable(env);
+  const rows=await env.DB.prepare(
+    "SELECT m.*,u.display_name AS from_name FROM assistant_messages m " +
+    "JOIN users u ON u.id=m.from_user_id WHERE m.workspace_id=? " +
+    "AND (m.from_user_id=? OR m.to_user_id=?) ORDER BY m.created_at DESC LIMIT 60"
+  ).bind(workspaceId,auth.userId,auth.userId).all();
+  const unread=await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM assistant_messages WHERE workspace_id=? AND to_user_id=? AND read_at IS NULL"
+  ).bind(workspaceId,auth.userId).first();
+  return json({messages:(rows.results||[]).reverse().map(row=>publicAssistantMessage(row,auth.userId)),unread:Number(unread?.n)||0});
+}
+async function readAssistantMessage(workspaceId,messageId,auth,env) {
+  const access=await assistantMessageAccess(workspaceId,auth,env);
+  if (!access) return json({error:"workspace_forbidden"},403);
+  await ensureAssistantMessagesTable(env);
+  const result=await env.DB.prepare(
+    "UPDATE assistant_messages SET read_at=COALESCE(read_at,?) WHERE id=? AND workspace_id=? AND to_user_id=?"
+  ).bind(Date.now(),messageId,workspaceId,auth.userId).run();
+  if (!result.meta?.changes) return json({error:"message_not_found"},404);
+  return json({ok:true});
+}
+async function createAssistantMessage(request,workspaceId,auth,env) {
+  const access=await assistantMessageAccess(workspaceId,auth,env);
+  if (!access) return json({error:"workspace_forbidden"},403);
+  const body=await bodyJson(request);
+  const message=String(body.message||"").trim();
+  if(!message||message.length>280)return json({error:"invalid_message",message:"Escribe entre 1 y 280 caracteres."},400);
+  await ensureAssistantMessagesTable(env);
+  const replyToId=textValue(body.replyToId,80);
+  let target=null;
+  if(replyToId){
+    const previous=await env.DB.prepare(
+      "SELECT from_user_id,to_user_id FROM assistant_messages WHERE id=? AND workspace_id=?"
+    ).bind(replyToId,workspaceId).first();
+    if(!previous||previous.to_user_id!==auth.userId||previous.from_user_id===auth.userId)
+      return json({error:"invalid_reply_target"},403);
+    target=previous.from_user_id;
+  }else if(access.role==="assistant"){
+    target=access.workspace.owner_user_id;
+  }else{
+    const result=await env.DB.prepare(
+      "SELECT m.user_id FROM workspace_members m LEFT JOIN devices d ON d.user_id=m.user_id " +
+      "AND d.fcm_token IS NOT NULL AND d.fcm_token<>'' " +
+      "WHERE m.workspace_id=? AND m.role='assistant' AND m.status='active' " +
+      "GROUP BY m.user_id,m.joined_at " +
+      "ORDER BY CASE WHEN MAX(d.updated_at) IS NULL THEN 1 ELSE 0 END," +
+      "MAX(d.updated_at) DESC,m.joined_at DESC LIMIT 1"
+    ).bind(workspaceId).first();
+    target=result?.user_id;
   }
-  const body = await bodyJson(request);
-  const content = String(body.message || "").trim();
-  if (!content || content.length > 280) {
-    return json({ error: "invalid_notice", message: "Escribe un aviso de 1 a 280 caracteres." }, 400);
-  }
-  const boss = await env.DB.prepare(
-    "SELECT w.owner_user_id AS user_id FROM workspaces w " +
-    "JOIN workspace_members m ON m.workspace_id=w.id AND m.user_id=w.owner_user_id " +
-    "WHERE w.id=? AND w.kind='assistant' AND m.role='owner' AND m.status='active'"
-  ).bind(workspaceId).first();
-  if (!boss?.user_id) {
-    return json({ error: "owner_not_connected", message: "No se encontró el jefe activo en este espacio." }, 409);
-  }
-  const noticeId = crypto.randomUUID();
-  const result = await sendAssistantCallPush(boss.user_id, {
-    type: "assistant_notice",
-    noticeId, workspaceId,
-    fromName: auth.displayName || "Asistente",
-    message: content
-  }, env);
-  if (!result.accepted) {
-    return json({ error: "notice_not_delivered", message: "Firebase no aceptó el aviso. Comprueba las notificaciones del teléfono del jefe." }, 502);
-  }
-  return json({ ok: true, noticeId, pushAccepted: true, acceptedDevices: result.accepted }, 201);
+  if(!target)return json({error:"recipient_not_connected",message:"No hay un destinatario activo en este espacio."},409);
+  const active=await membership(workspaceId,target,env);
+  if(!active)return json({error:"recipient_not_member"},403);
+  const id=crypto.randomUUID(),at=Date.now();
+  await env.DB.prepare(
+    "INSERT INTO assistant_messages(id,workspace_id,from_user_id,to_user_id,reply_to_id,body,created_at) " +
+    "VALUES(?,?,?,?,?,?,?)"
+  ).bind(id,workspaceId,auth.userId,target,replyToId||null,message,at).run();
+  // Persist first: push delivery can fail while the recipient is offline.
+  let pushed=0;
+  try{
+    const result=await sendAssistantCallPush(target,{
+      type:"assistant_notice",noticeId:id,workspaceId,
+      fromName:auth.displayName|| (access.role==="owner"?"Jefe":"Asistente"),
+      message
+    },env);
+    pushed=result.accepted;
+  }catch(error){console.error("Assistant message push:",String(error?.message||error).slice(0,180))}
+  return json({ok:true,id,createdAt:at,recipientUserId:target,pushAccepted:pushed>0,acceptedDevices:pushed},201);
+}
+// Keep existing older clients functional on assistant-to-owner notices.
+async function sendAssistantNotice(request,workspaceId,auth,env) {
+  const access=await assistantMessageAccess(workspaceId,auth,env);
+  if(!access||access.role!=="assistant")return json({error:"assistant_required"},403);
+  return createAssistantMessage(request,workspaceId,auth,env);
 }
 
 async function createAssistantCall(request, workspaceId, auth, env) {
