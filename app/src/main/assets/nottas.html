@@ -769,7 +769,23 @@ html[data-theme="dark"] .assistantNoticeBubble.mine{background:#173755}
 .assistantNoticeCount{font-size:11px;color:#8e8e93}
 html[data-theme="dark"] .assistantNoticeComposer,html[data-theme="dark"] .assistantNoticePresetsBlock{background:#1c1c1e;border-color:#38383a}
 body.imeVisible .assistantNoticeSheet{height:calc(var(--vv-height,100vh) - 4px);padding-bottom:8px}
-body.imeVisible .assistantNoticePresetsBlock{display:none}
+/* Keep quick replies immediately above the composer when the keyboard is open.
+   Limit their height instead of hiding them; the presets scroll independently. */
+body.imeVisible .assistantNoticePresetsBlock{
+  display:block;
+  flex:0 1 auto;
+  min-height:0;
+  max-height:min(164px,max(76px,calc(var(--vv-height,100vh) - 176px)));
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:6px 0 8px;
+}
+body.imeVisible .assistantNoticeSheet .sheetHeader{margin-bottom:3px}
+body.imeVisible .assistantNoticeSheet .assistantNoticeInput{min-height:43px;max-height:70px}
+body.imeVisible .assistantNoticeSheet .assistantNoticeComposer{flex:0 0 auto;padding-top:7px;gap:4px}
+body.imeVisible .assistantNoticeSheet .assistantNoticeScroll{flex:1 1 0;min-height:0}
+body.imeVisible .assistantNoticeSheet.historyCollapsed{max-height:calc(var(--vv-height,100vh) - 4px)}
+body.imeVisible .assistantNoticeSheet.historyCollapsed .assistantNoticeScroll{display:none}
 html[data-theme="dark"] .assistantNoticePreset,html[data-theme="dark"] .assistantNoticeInput{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 .assistantCallQuick{color:#248a3d!important}.assistantCallQuick:active{background:rgba(52,199,89,.14)!important}.assistantCallQuick svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .calendarTimeBlock.assistant-proposed{outline:1px dashed #ff9f0a;background:#fff8e8}.calendarTimeBlock.assistant-changes_requested{outline:1px dashed #007aff}.calendarTimeBlock.assistant-rejected,.calendarTimeBlock.assistant-cancelled{opacity:.5}.calendarTimeBlock.assistant-confirmed{outline:0}html[data-theme="dark"] .calendarTimeBlock.assistant-proposed{background:#3a3016}html[data-theme="dark"] .calendarTimeBlock.assistant-changes_requested{background:#16365d}
@@ -1824,7 +1840,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
     </div>
 
     <div class="sectionTitle">Mensajes rápidos</div>
-    <div class="assistantSectionHint">Personaliza los mensajes de ambos roles. Los cambios se guardan en este dispositivo. Toca para enviar y mantén pulsado para editar antes de enviar.</div>
+    <div id="assistantQuickPresetsHelp" class="assistantSectionHint">Edita únicamente los mensajes rápidos que envía este dispositivo. Toca para enviar y mantén pulsado para modificar antes de enviar.</div>
     <div id="assistantQuickPresetsSettings" class="assistantPresetSettings"></div>
     <div class="sectionTitle">Recordatorios predeterminados</div>
     <div class="settingsGroup">
@@ -2724,29 +2740,54 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       ?assistantQuickPresets[own?"owner":"assistant"]
       :(own?assistantBossPresets:assistantStaffPresets);
   }
+  function editableAssistantPresetRole(){
+    // Settings are local to the device and follow its active assistant role.
+    // Never infer "director" from the Personal workspace's owner role.
+    const selected=currentWorkspace();
+    const workspaces=(state?.workspaces||[]).filter(ws=>
+      ws.kind==="assistant"&&!assistantWorkspaceHidden(ws)
+    );
+    const ws=selected?.kind==="assistant"?selected:
+      workspaces.find(ws=>assistantWorkspaceAuthorized(ws))||
+      (workspaces.length===1?workspaces[0]:null);
+    return ws?.role==="owner"?"owner":ws?.role==="assistant"?"assistant":null;
+  }
   function renderAssistantPresetSettings(){
-    const parent=$("assistantQuickPresetsSettings");if(!parent)return;
-    parent.innerHTML=[["owner","Del director al asistente"],["assistant","Del asistente al director"]].map(([role,title])=>
+    const parent=$("assistantQuickPresetsSettings"),hint=$("assistantQuickPresetsHelp");
+    if(!parent)return;
+    const role=editableAssistantPresetRole();
+    if(!role){
+      parent.replaceChildren();
+      if(hint)hint.textContent="Selecciona un espacio Asistente conectado para editar tus mensajes rápidos.";
+      return;
+    }
+    const title=role==="owner"?"Del director al asistente":"Del asistente al director";
+    if(hint)hint.textContent=(role==="owner"?
+      "Mensajes que el director envía al asistente.":
+      "Mensajes que el asistente envía al director.")+
+      " Estos ajustes se guardan en este dispositivo. Toca para enviar y mantén pulsado para editar antes de enviar.";
+    parent.innerHTML=
       '<div class="assistantPresetSettingsGroup"><div class="assistantPresetSettingsHeading">'+title+'</div>'+
       getAssistantPresets(role).map((message,index)=>
         '<div class="assistantPresetEditRow"><input type="text" maxlength="280" autocomplete="off" data-preset-edit-role="'+role+'" data-preset-edit-index="'+index+'" aria-label="Mensaje '+(index+1)+' de '+title+'" value="'+esc(message)+'"><button class="assistantPresetRemove" type="button" data-preset-remove-role="'+role+'" data-preset-remove-index="'+index+'" aria-label="Eliminar mensaje">×</button></div>'
       ).join("")+
       '<button class="assistantPresetAdd" type="button" data-preset-add="'+role+'"'+(getAssistantPresets(role).length>=12?' disabled':'')+'>+ Añadir mensaje</button>'+
-      '<p class="assistantPresetHelp">Hasta 12 mensajes por rol; máximo 280 caracteres cada uno.</p></div>'
-    ).join("");
+      '<p class="assistantPresetHelp">Hasta 12 mensajes; máximo 280 caracteres cada uno.</p></div>';
     parent.querySelectorAll("[data-preset-edit-role]").forEach(input=>input.addEventListener("input",()=>{
       const role=input.dataset.presetEditRole,index=Number(input.dataset.presetEditIndex);
+      if(role!==editableAssistantPresetRole())return;
       const list=getAssistantPresets(role).slice();list[index]=input.value;
       assistantQuickPresets[role]=list;saveUI();
     }));
     parent.querySelectorAll("[data-preset-remove-role]").forEach(button=>button.addEventListener("click",()=>{
       const role=button.dataset.presetRemoveRole,index=Number(button.dataset.presetRemoveIndex);
+      if(role!==editableAssistantPresetRole())return;
       const list=getAssistantPresets(role).slice();list.splice(index,1);
       assistantQuickPresets[role]=list;saveUI();renderAssistantPresetSettings();
     }));
     parent.querySelectorAll("[data-preset-add]").forEach(button=>button.addEventListener("click",()=>{
       const role=button.dataset.presetAdd,list=getAssistantPresets(role).slice();
-      if(list.length>=12)return;
+      if(role!==editableAssistantPresetRole()||list.length>=12)return;
       list.push("");assistantQuickPresets[role]=list;saveUI();renderAssistantPresetSettings();
       const inputs=parent.querySelectorAll('[data-preset-edit-role="'+role+'"]');
       const input=inputs[inputs.length-1];if(input)input.focus();
@@ -7173,6 +7214,13 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
   ));
   $("assistantNoticeClose").addEventListener("click",()=>closeOverlay("assistantNoticeOverlay"));
   $("assistantNoticeOverlay").addEventListener("click",e=>{if(e.target===$("assistantNoticeOverlay"))closeOverlay("assistantNoticeOverlay")});
+  $("assistantNoticeText").addEventListener("focus",()=>{
+    // Prioritize quick replies and composer over the historical conversation
+    // when the keyboard appears. This also handles long-press insertion.
+    if(!$("assistantNoticeOverlay").classList.contains("show"))return;
+    toggleAssistantNoticeHistory(false);
+    syncVisualViewport();
+  });
   $("assistantNoticeText").addEventListener("input",updateAssistantNoticeCount);
   $("assistantNoticeSend").addEventListener("click",sendAssistantNotice);
 
