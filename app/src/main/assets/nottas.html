@@ -1950,7 +1950,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -5844,12 +5844,132 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("quickDetectedHint").classList.toggle("hidden",!isTask||!quickDetected?.found);
     setTimeout(()=>{(isTask?$("quickTaskText"):$("quickNoteText")).focus()},40);
   }
-  function setQuickDate(value){
-    quickDueDate=value==="today"?localDateISO():value==="tomorrow"?(()=>{const d=new Date();d.setDate(d.getDate()+1);return localDateISO(d)})():"";
+  function parseQuickSchedule(raw){
+    let remaining=String(raw||"").trim(),date="",time="",foundDate=false,foundTime=false;
+    if(!remaining)return {found:false,date:"",time:"",clean:""};
+    function strip(match){
+      if(!match)return;
+      remaining=(remaining.slice(0,match.index)+" "+remaining.slice(match.index+match[0].length))
+        .replace(/\s{2,}/g," ").trim();
+    }
+    function parsedClock(hour,minute,meridiem=""){
+      let h=Number(hour),m=Number(minute||0);
+      if(!Number.isInteger(h)||!Number.isInteger(m)||m<0||m>59)return "";
+      const period=String(meridiem||"").toLowerCase().replace(/[\s.]/g,"");
+      if(period==="am"||period==="pm"){
+        if(h<1||h>12)return "";
+        h=h%12+(period==="pm"?12:0);
+      }else if(h<0||h>23)return "";
+      return formatTimeParts(h,m);
+    }
+    const timePatterns=[
+      {re:/(?:^|\s)(?:a\s+las?\s+)?(0?[1-9]|1[0-2])(?:[:.](\d{2}))?\s*(a\.?\s*m\.?|p\.?\s*m\.?)(?=$|\s|[,;!?])/i,
+       read:m=>parsedClock(m[1],m[2],m[3])},
+      {re:/(?:^|\s)(?:a\s+las?\s+)?([01]?\d|2[0-3])[:h]([0-5]\d)(?=$|\s|[,;.!?])/i,
+       read:m=>parsedClock(m[1],m[2])},
+      {re:/(?:^|\s)a\s+las?\s+([01]?\d|2[0-3])(?:\s+de\s+la\s+(mañana|tarde|noche))?(?=$|\s|[,;.!?])/i,
+       read:m=>{const h=Number(m[1]),part=(m[2]||"").toLowerCase();return parsedClock(part==="mañana"&&h===12?0:part==="tarde"||part==="noche"?(h<12?h+12:h):h,0)}},
+      {re:/(?:^|\s)(\d{1,2})\s+de\s+la\s+(mañana|tarde|noche)(?=$|\s|[,;.!?])/i,
+       read:m=>{const h=Number(m[1]),part=m[2].toLowerCase();return parsedClock(part==="mañana"&&h===12?0:part==="tarde"||part==="noche"?(h<12?h+12:h):h,0)}}
+    ];
+    for(const pattern of timePatterns){
+      const m=remaining.match(pattern.re);if(!m)continue;
+      const parsed=pattern.read(m);
+      if(parsed){time=parsed;foundTime=true;strip(m);break}
+    }
+    const today=localDateISO(),nowDate=dateFromISO(today);
+    const relative=remaining.match(/(?:^|\s)(pasado\s+mañana|mañana|hoy)(?=$|\s|[,;.!?])/i);
+    if(relative){
+      const word=relative[1].toLowerCase().replace(/\s+/g," ");
+      date=addCalendarDays(today,word==="hoy"?0:word==="mañana"?1:2);
+      foundDate=true;strip(relative);
+    }
+    const numeric=!foundDate&&remaining.match(/(?:^|\s)(?:el\s+)?([0-3]?\d)[\/-]([01]?\d)(?:[\/-](\d{2,4}))?(?=$|\s|[,;.!?])/i);
+    const months=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    const names=String.raw`(?:ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|septiembre|setiembre|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)`;
+    const named=!foundDate&&!numeric&&remaining.match(new RegExp("(?:^|\\s)(?:el\\s+)?([0-3]?\\d)\\s+(?:de\\s+)?("+names+")(?=$|\\s|[,;.!?])","i"));
+    function validCalendarDay(day,month,year){
+      if(day<1||day>31||month<1||month>12||year<2000||year>2100)return "";
+      const d=new Date(year,month-1,day,12);
+      return d.getFullYear()===year&&d.getMonth()===month-1&&d.getDate()===day?localDateISO(d):"";
+    }
+    if(numeric||named){
+      const m=numeric||named,day=Number(m[1]);
+      const index=numeric?Number(m[2])-1:months.findIndex((name,i)=>{
+        const aliases=[name.slice(0,3)];
+        if(i===8)aliases.push("sept","set","setiembre");
+        return name===m[2].toLowerCase()||aliases.some(a=>m[2].toLowerCase()===a);
+      });
+      const month=index+1;
+      let year=numeric&&m[3]?Number(m[3]):nowDate.getFullYear();
+      if(year<100)year+=2000;
+      let guessed=validCalendarDay(day,month,year);
+      if(guessed&&!(numeric&&m[3])&&guessed<today)guessed=validCalendarDay(day,month,year+1);
+      if(guessed){date=guessed;foundDate=true;strip(m)}
+    }
+    if(!foundDate){
+      const weekday=remaining.match(/(?:^|\s)(?:(?:el|pr[oó]ximo)\s+)?(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)(?=$|\s|[,;.!?])/i);
+      if(weekday){
+        const names=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+        const normalizeName=x=>x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const target=names.findIndex(x=>normalizeName(x)===normalizeName(weekday[1]));
+        if(target>=0){
+          let ahead=(target-nowDate.getDay()+7)%7;
+          if(!ahead)ahead=7;
+          date=addCalendarDays(today,ahead);foundDate=true;strip(weekday);
+        }
+      }
+    }
+    if(time&&!date)date=today;
+    const clean=remaining.replace(/^[,;:.\s]+|[,;:.\s]+$/g,"").trim()||String(raw||"").trim();
+    return {found:foundDate||foundTime,date,time,clean,hasDate:foundDate,hasTime:foundTime};
+  }
+  function quickDateDisplay(date){
+    if(!date)return "";
+    const today=localDateISO();
+    if(date===today)return "Hoy";
+    if(date===addCalendarDays(today,1))return "Mañana";
+    return dateFromISO(date).toLocaleDateString("es",{day:"numeric",month:"short"});
+  }
+  function syncQuickControls(){
+    const today=localDateISO(),tomorrow=addCalendarDays(today,1);
     document.querySelectorAll("[data-quick-date]").forEach(b=>{
-      const resolved=b.dataset.quickDate==="today"?localDateISO():b.dataset.quickDate==="tomorrow"?(()=>{const d=new Date();d.setDate(d.getDate()+1);return localDateISO(d)})():"";
+      const resolved=b.dataset.quickDate==="today"?today:b.dataset.quickDate==="tomorrow"?tomorrow:"";
       b.classList.toggle("active",resolved===quickDueDate);
     });
+    document.querySelectorAll("[data-quick-time]").forEach(b=>b.classList.toggle("active",b.dataset.quickTime===quickDueTime));
+    const custom=$("quickCustomTime");
+    if(custom&&custom.value!==quickDueTime)custom.value=quickDueTime;
+    const hint=$("quickDetectedHint");
+    const relevant=quickMode==="tasks"&&!!quickDetected.found;
+    hint.classList.toggle("hidden",!relevant);
+    if(relevant){
+      const parts=[quickDateDisplay(quickDueDate),quickDueTime].filter(Boolean);
+      hint.textContent="Detectado: "+(parts.length?parts.join(" · "):"sin fecha ni hora")+
+        (quickDetected.clean&&quickDetected.clean!==$("quickTaskText").value.trim()?" · Título: «"+quickDetected.clean+"»":"");
+    }
+  }
+  function syncQuickFromText(){
+    quickDetected=parseQuickSchedule($("quickTaskText").value);
+    if(!quickExplicitDate)quickDueDate=quickDetected.date;
+    if(!quickExplicitTime)quickDueTime=quickDetected.time;
+    syncQuickControls();
+  }
+  function setQuickDate(value,manual=true){
+    if(manual)quickExplicitDate=true;
+    quickDueDate=value==="today"?localDateISO():value==="tomorrow"?addCalendarDays(localDateISO(),1):"";
+    if(manual&&!quickDueDate){
+      quickDueTime="";quickExplicitTime=true;
+    }
+    syncQuickControls();
+  }
+  function setQuickTime(value,manual=true){
+    if(manual)quickExplicitTime=true;
+    quickDueTime=/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(String(value||""))?value:"";
+    if(quickDueTime&&!quickDueDate){
+      quickDueDate=localDateISO();quickExplicitDate=false;
+    }
+    syncQuickControls();
   }
   window.NottasOpenQuickCapture=function(requestedMode){
     if(requestedMode==="notes")openNote(null);else openQuickCapture("tasks");
@@ -5870,11 +5990,11 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
-    quickDueDate="";
+    quickDueDate="";quickDueTime="";quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};
     $("quickTaskText").value="";
     $("quickNoteText").value="";
     setCategoryPicker("quickCategory",activeCategory!=="all"?activeCategory:"inbox");
-    setQuickDate("");
+    syncQuickControls();
     syncQuickMode();
     openOverlay("quickOverlay");
   }
@@ -5893,8 +6013,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function saveQuickCapture(){
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
-      const text=$("quickTaskText").value.trim();if(!text)return false;
-      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],...newItemWorkspaceFields("task"),category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      const raw=$("quickTaskText").value.trim();if(!raw)return false;
+      const text=quickDetected.found?quickDetected.clean||raw:raw;
+      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],...newItemWorkspaceFields("task"),category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:quickDueDate?quickDueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
@@ -5904,13 +6025,15 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function expandQuickCapture(){
     const category=getCategoryPickerValue("quickCategory");
     if(quickMode==="tasks"){
-      const text=$("quickTaskText").value;
-      const due=quickDueDate;
+      const text=quickDetected.found?quickDetected.clean||$("quickTaskText").value:$("quickTaskText").value;
+      const due=quickDueDate,dueTime=quickDueTime;
       closeQuickCapture();
       openTask(null);
       $("taskText").innerHTML=plainToInlineHtml(text);
       setCategoryPicker("taskCategory",category);
       $("taskDate").value=due;
+      $("taskTime").value=due?dueTime:"";
+      syncTaskTimeButton();syncTaskEditorMeta();
     }else{
       const raw=$("quickNoteText").value;
       closeQuickCapture();
@@ -6312,7 +6435,18 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("quickOverlay").addEventListener("click",e=>{if(e.target===$("quickOverlay"))closeQuickCapture()});
   $("quickTaskMode").addEventListener("click",()=>{quickMode="tasks";syncQuickMode()});
   $("quickNoteMode").addEventListener("click",()=>{const category=getCategoryPickerValue("quickCategory");closeQuickCapture();openNote(null);setCategoryPicker("noteCategory",category)});
+  document.querySelectorAll("[data-quick-date],[data-quick-time]").forEach(b=>{
+    // Preserve an actively focused quick-title input and its Android IME.
+    // Pointer cancellation prevents buttons from stealing focus; the click still fires.
+    b.addEventListener("pointerdown",e=>{
+      if(e.pointerType!=="mouse"&&e.pointerType!=="touch"&&e.pointerType!=="pen")return;
+      if(document.activeElement===$("quickTaskText"))e.preventDefault();
+    });
+  });
   document.querySelectorAll("[data-quick-date]").forEach(b=>b.addEventListener("click",()=>setQuickDate(b.dataset.quickDate||"")));
+  document.querySelectorAll("[data-quick-time]").forEach(b=>b.addEventListener("click",()=>setQuickTime(b.dataset.quickTime||"")));
+  $("quickCustomTime").addEventListener("change",e=>setQuickTime(e.target.value));
+  $("quickTaskText").addEventListener("input",syncQuickFromText);
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("quickMore").addEventListener("click",expandQuickCapture);
   $("backBtn").addEventListener("click",()=>{trash=false;render()});
