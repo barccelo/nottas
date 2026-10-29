@@ -718,13 +718,13 @@ html[data-theme="dark"] .taskInfoContext,html[data-theme="dark"] .taskMetaSubtle
 html[data-theme="dark"] .taskDaysChip,html[data-theme="dark"] .taskListDayBtn{background:#2c2c2e;border-color:#48484a;color:#d1d1d6}
 html[data-theme="dark"] .taskListDayBtn.completed{background:#193b2a;border-color:#39714b;color:#9ce2ae}
 .metaTag.assistantMeta svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.metaTag.assistantMeta.state-scheduled{--approval-bg:#e5f5e9;--approval-color:#217344}
-.metaTag.assistantMeta.state-confirmed{--approval-bg:#e4f1ff;--approval-color:#205d9c}
+.metaTag.assistantMeta.state-scheduled,.metaTag.assistantMeta.state-confirmed{--approval-bg:#e5f5e9;--approval-color:#217344}
+
 .metaTag.assistantMeta.state-rejected,.metaTag.assistantMeta.state-cancelled{--approval-bg:#ffe7e7;--approval-color:#a92c30}
 .metaTag.assistantMeta.state-changes_requested{--approval-bg:#e8edff;--approval-color:#4d56aa}
 html[data-theme="dark"] .metaTag.assistantMeta{--approval-bg:#423419;--approval-color:#ffcf74}
-html[data-theme="dark"] .metaTag.assistantMeta.state-scheduled{--approval-bg:#173a27;--approval-color:#91d7a5}
-html[data-theme="dark"] .metaTag.assistantMeta.state-confirmed{--approval-bg:#18344e;--approval-color:#9ecaff}
+html[data-theme="dark"] .metaTag.assistantMeta.state-scheduled,html[data-theme="dark"] .metaTag.assistantMeta.state-confirmed{--approval-bg:#173a27;--approval-color:#91d7a5}
+
 html[data-theme="dark"] .metaTag.assistantMeta.state-rejected,html[data-theme="dark"] .metaTag.assistantMeta.state-cancelled{--approval-bg:#4d2427;--approval-color:#ff9fa1}
 html[data-theme="dark"] .metaTag.assistantMeta.state-changes_requested{--approval-bg:#303055;--approval-color:#b2b8ff}
 html[data-theme="dark"] .assistantStatusCard,html[data-theme="dark"] .assistantInput{background:#1c1c1e;border-color:#3a3a3c;color:#f5f5f7}html[data-theme="dark"] .assistantBadge{background:#2c2c2e;color:#d1d1d6}html[data-theme="dark"] .assistantTaskActions button{background:#2c2c2e;color:#f5f5f7}
@@ -2874,7 +2874,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       if(seq===directorProposalsSeq){directorProposalsFetching=false;renderDirectorBell()}
     }
   }
+  let directorProposalReturn=null;
   async function openDirectorProposal(item){
+    const source={workspaceId:currentWorkspaceId(),mode,activeCategory,activeTag,trash,tab:directorInboxTab};
     closeOverlay("directorInboxOverlay");
     let task=state.tasks.find(t=>t.id===item.id&&t.workspaceId===item.workspaceId&&!t.deletedAt);
     if(!task){
@@ -2884,8 +2886,20 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(!task){showToast("No se pudo cargar la propuesta");return}
     const ws=state.workspaces.find(w=>w.id===item.workspaceId);
     if(!assistantWorkspaceIsOwner(ws)){showToast("No tienes permiso para aprobarla");return}
+    directorProposalReturn={...source,taskId:task.id};
     activeWorkspaceId=ws.id;activeCategory="all";activeTag="";trash=false;mode="tasks";
-    saveUI();render();openTask(task);
+    saveUI();render();openTask(task,null,{autoFocus:false});
+  }
+  function returnFromDirectorProposal(){
+    const origin=directorProposalReturn;
+    directorProposalReturn=null;
+    if(!origin)return;
+    activeWorkspaceId=origin.workspaceId;activeCategory=origin.activeCategory;
+    activeTag=origin.activeTag;trash=origin.trash;mode=origin.mode;
+    directorInboxTab=origin.tab;
+    saveUI();render();
+    openOverlay("directorInboxOverlay");renderDirectorInbox();
+    refreshDirectorProposals(true);
   }
   function openDirectorInbox(){
     if(!directorOwnedSpaces().length)return;
@@ -5677,14 +5691,14 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     closeTaskMeetingMenu();persistOpenTask(false);commitTaskHistory();
   }
   function assistantStatusLabel(status){
-    return status==="proposed"?"Propuesta":status==="scheduled"?"Agendada":status==="confirmed"?"Confirmada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Confirmada";
+    return status==="proposed"?"Propuesta":status==="scheduled"||status==="confirmed"?"Agendada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Agendada";
   }
   function assistantStatusChipHtml(raw){
     const status=["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(raw)?raw:"confirmed";
     const icons={
       proposed:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
       scheduled:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M9 15l2 2 4-4"/>',
-      confirmed:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      confirmed:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M9 15l2 2 4-4"/>',
       rejected:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
       changes_requested:'<path d="M3 11a9 9 0 0 1 15-6l2 2M20 3v4h-4M21 13a9 9 0 0 1-15 6l-2-2M4 21v-4h4"/>',
       cancelled:'<circle cx="12" cy="12" r="9"/><path d="m8 8 8 8M16 8l-8 8"/>'
@@ -5738,9 +5752,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   }
   function setEditorTaskApproval(status){
     if(!["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
+    const returnToInbox=status==="confirmed"&&!!directorProposalReturn&&directorProposalReturn.taskId===editingTaskId;
     editorTaskApprovalStatus=status;editorTaskRequiresApproval=status==="proposed"||status==="changes_requested";
     syncAssistantTaskStrip();
-    if(editingTaskId)persistOpenTask(false);
+    const saved=editingTaskId?persistOpenTask(false):false;
+    if(returnToInbox&&saved){
+      closeEditor({save:false});
+      returnFromDirectorProposal();
+      showToast("Evento agendado");
+      return;
+    }
     renderMeetingFollowup();
   }
 
@@ -5858,7 +5879,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const d=new Date(n.updatedAt||n.createdAt||Date.now());
     hint.textContent="Editada "+d.toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   }
-  function openTask(t,selectedDate=null){
+  function openTask(t,selectedDate=null,options={}){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
@@ -5873,7 +5894,11 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");const newEventDefaults=!t&&isSharedWorkspace()?defaultNewEventTimes():null;$("taskDate").value=t?t.dueDate:(newEventDefaults?.date||"");$("taskEndDate").value=t?t.endDate||"":(newEventDefaults?.endDate||"");$("taskTime").value=t?t.dueTime:(newEventDefaults?.start||"");$("taskEndTime").value=t?t.endTime||"":(newEventDefaults?.end||"");$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=!!(t?.items?.length);taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
-    resetTaskHistory();openOverlay("editorOverlay");setTimeout(()=>$("taskText").focus(),80)
+    resetTaskHistory();openOverlay("editorOverlay");
+    if(options.autoFocus!==false)setTimeout(()=>{
+      if($("editorOverlay").classList.contains("show")&&editingTaskId===(t?.id||null))$("taskText").focus();
+    },80);
+    else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   }
   function openNote(n){
     closeTaskMeetingMenu();
