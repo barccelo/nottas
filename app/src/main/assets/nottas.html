@@ -3223,7 +3223,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       if(!window.NottasNative||!NottasNative.syncReminders||!state)return;
       const rows=[];
       state.tasks.filter(t=>!t.deletedAt&&!t.done).forEach(t=>{
-        taskReminderTimes(t).forEach(r=>rows.push({id:t.id,alarmId:t.id+"::"+r.date+"::r"+r.minutes,text:t.text,at:r.at,offsetMinutes:r.minutes}));
+        taskReminderTimes(t).forEach(r=>rows.push({id:t.id,alarmId:t.id+"::"+r.date+"::r"+r.minutes,text:t.text,date:r.date,at:r.at,offsetMinutes:r.minutes}));
       });
       NottasNative.syncReminders(JSON.stringify(rows));
     }catch(_){}
@@ -3623,7 +3623,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function closeCalendarPeek(){
     const peek=$("calendarPeek");if(!peek)return false;
     const open=!peek.classList.contains("hidden");
-    peek.classList.add("hidden");peek.dataset.taskId="";peek.style.removeProperty("left");peek.style.removeProperty("top");peek.style.removeProperty("width");
+    peek.classList.add("hidden");peek.dataset.taskId="";peek.dataset.taskDate="";peek.style.removeProperty("left");peek.style.removeProperty("top");peek.style.removeProperty("width");
     return open;
   }
   function calendarPeekDurationLabel(t){
@@ -3642,7 +3642,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(t.locationText)bits.push(t.locationText);
     const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
     $("calendarPeekMeta").textContent=bits.join(" · ");
-    peek.dataset.taskId=t.id;peek.classList.remove("hidden");$("calendarPeekOpen").classList.remove("hidden");
+    peek.dataset.taskId=t.id;peek.dataset.taskDate=anchor.dataset.calendarDate||calendarDate;peek.classList.remove("hidden");$("calendarPeekOpen").classList.remove("hidden");
     requestAnimationFrame(()=>{
       const sr=sheet.getBoundingClientRect(),ar=anchor.getBoundingClientRect(),width=Math.min(286,Math.max(220,sr.width-28));
       peek.style.width=width+"px";
@@ -3695,7 +3695,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       const check=row.querySelector(".calendarTaskCheck"),move=row.querySelector(".calendarMoveBtn");
       if(check)check.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor){check.checked=taskDayDone(t,check.closest("[data-calendar-date]")?.dataset.calendarDate||calendarDate);return}completeTask(t,check.checked,check.closest("[data-calendar-date]")?.dataset.calendarDate||calendarDate);renderCalendar()});
       if(move){move.classList.toggle("hidden",calendarRescheduleEditor);move.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor||Date.now()<suppressClickUntil)return;beginCalendarMove(t.id)});if(!calendarRescheduleEditor)installCalendarTaskDrag(move,t,row)}
-      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t)});
+      row.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target===check||e.target.closest(".calendarMoveBtn")||calendarMoveTaskId)return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t,row.dataset.calendarDate||calendarDate)});
       row.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&!calendarMoveTaskId){e.preventDefault();if(calendarView==="week")showCalendarPeek(t,row);else openTaskFromCalendar(t)}});
     });
     bindCalendarMoveCancel();
@@ -3962,7 +3962,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       const t=state.tasks.find(x=>x.id===block.dataset.calendarTimeTask);if(!t)return;
       const check=block.querySelector(".calendarBlockCheck"),resize=block.querySelector(".calendarResizeHandle");
       check?.addEventListener("click",e=>{e.stopPropagation();if(calendarRescheduleEditor){check.checked=taskDayDone(t,check.closest("[data-calendar-date]")?.dataset.calendarDate||calendarDate);return}completeTask(t,check.checked,check.closest("[data-calendar-date]")?.dataset.calendarDate||calendarDate);renderCalendar()});
-      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,block);else openTaskFromCalendar(t)});
+      block.addEventListener("click",e=>{if(Date.now()<suppressClickUntil||e.target.closest(".calendarBlockCheck,.calendarResizeHandle"))return;if(calendarRescheduleEditor||calendarView==="week")showCalendarPeek(t,block);else openTaskFromCalendar(t,block.dataset.calendarDate||calendarDate)});
       if(!calendarRescheduleEditor){installCalendarTimeMove(block,t);installCalendarTimeResize(resize,t,block)}
     });
   }
@@ -3974,7 +3974,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     html+='</div>';
     if(hasAllDay){
       html+='<div class="calendarWeekAllDayWrap"><div class="calendarWeekAllDayLabel">Sin<br>hora</div><div class="calendarWeekAllDay" style="--week-cols:'+dates.length+'">';
-      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
+      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(dates[i])+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
       html+='</div></div>';
     }
     const hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
@@ -6088,7 +6088,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
   $("calendarGoogleReloadBtn").addEventListener("click",()=>scheduleGoogleCalendarFetch(true));
-  $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t||calendarRescheduleEditor)return;openTaskFromCalendar(t)});
+  $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t||calendarRescheduleEditor)return;openTaskFromCalendar(t,$("calendarPeek").dataset.taskDate||calendarDate)});
   $("calendarOverlay").addEventListener("click",e=>{
     if(!e.target.closest("#calendarEyePopover,#calendarEyeBtn"))closeCalendarEye();
     if(!e.target.closest("#calendarDayPanel,[data-calendar-date]"))closeCalendarDayPanel();
