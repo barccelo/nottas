@@ -158,7 +158,7 @@ class AssistantNoticeActivity : Activity() {
                     row.addView(TextView(this).apply {
                         text=preset
                         textSize=13f
-                        typeface=Typeface.create("sans",Typeface.MEDIUM)
+                        typeface=Typeface.create("sans-medium",Typeface.NORMAL)
                         gravity=Gravity.CENTER
                         setTextColor(ink)
                         background=rounded(Color.WHITE,12)
