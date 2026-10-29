@@ -5948,6 +5948,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     $("quickNoteText").classList.toggle("hidden",isTask);
     $("quickTaskOptions").classList.toggle("hidden",!isTask);
     $("quickTimeOptions").classList.toggle("hidden",!isTask);
+    $("quickReminderPanel").classList.toggle("hidden",!isTask||!quickReminderPanelOpen);
     $("quickDetectedHint").classList.toggle("hidden",!isTask||!quickDetected?.found);
     setTimeout(()=>{(isTask?$("quickTaskText"):$("quickNoteText")).focus()},40);
   }
@@ -6047,6 +6048,17 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     document.querySelectorAll("[data-quick-time]").forEach(b=>b.classList.toggle("active",b.dataset.quickTime===quickDueTime));
     const custom=$("quickCustomTime");
     if(custom&&custom.value!==quickDueTime)custom.value=quickDueTime;
+    quickReminderOffsets=normalizeReminderMinutes(quickReminderOffsets);
+    const reminderButton=$("quickReminderBtn"),count=$("quickReminderCount");
+    count.textContent=quickReminderOffsets.length?String(quickReminderOffsets.length):"—";
+    reminderButton.classList.toggle("hasReminders",quickReminderOffsets.length>0);
+    reminderButton.setAttribute("aria-expanded",String(quickReminderPanelOpen));
+    reminderButton.title=quickReminderOffsets.length?quickReminderOffsets.map(reminderMinutesLabel).join(" · "):"Sin avisos";
+    $("quickReminderPanel").classList.toggle("hidden",!quickReminderPanelOpen||quickMode!=="tasks");
+    document.querySelectorAll("[data-quick-reminder]").forEach(button=>{
+      button.classList.toggle("active",button.dataset.quickReminder==="off"?
+        !quickReminderOffsets.length:quickReminderOffsets.includes(Number(button.dataset.quickReminder)));
+    });
     const hint=$("quickDetectedHint");
     const relevant=quickMode==="tasks"&&!!quickDetected.found;
     hint.classList.toggle("hidden",!relevant);
@@ -6069,6 +6081,18 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       quickDueTime="";quickExplicitTime=true;
     }
     syncQuickControls();
+  }
+  function setQuickReminder(value){
+    if(value==="off")quickReminderOffsets=[];
+    else{
+      const minutes=Number(value);
+      if(![0,5,10].includes(minutes))return;
+      quickReminderOffsets=normalizeReminderMinutes(
+        quickReminderOffsets.includes(minutes)?quickReminderOffsets.filter(v=>v!==minutes):[...quickReminderOffsets,minutes]
+      );
+    }
+    syncQuickControls();
+    if(quickDueDate&&quickReminderOffsets.length)requestReminderPermission();
   }
   function setQuickTime(value,manual=true){
     if(manual)quickExplicitTime=true;
@@ -6099,7 +6123,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
-    quickDueDate="";quickDueTime="";quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};
+    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};
     $("quickTaskText").value="";
     $("quickNoteText").value="";
     setCategoryPicker("quickCategory",activeCategory!=="all"?activeCategory:"inbox");
@@ -6108,6 +6132,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     openOverlay("quickOverlay");
   }
   function closeQuickCapture(){
+    quickReminderPanelOpen=false;
     closeOverlay("quickOverlay");
     $("quickTaskText").blur();$("quickNoteText").blur();
     setNativeSearchKeyboardMode(true);
@@ -6124,8 +6149,11 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(quickMode==="tasks"){
       const raw=$("quickTaskText").value.trim();if(!raw)return false;
       const text=quickDetected.found?quickDetected.clean||raw:raw;
-      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],...newItemWorkspaceFields("task"),category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:quickDueDate?quickDueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:"none",recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
-      closeQuickCapture();scheduleSave();render();showToast("Tarea guardada");return true;
+      state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],...newItemWorkspaceFields("task"),category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:quickDueDate?quickDueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:quickDueDate&&quickReminderOffsets.length?reminderMinutesToLegacy(quickReminderOffsets[0]):"none",reminders:quickDueDate?quickReminderOffsets.slice():[],recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      const shouldRequestPermission=!!quickDueDate&&quickReminderOffsets.length>0;
+      closeQuickCapture();scheduleSave();render();
+      if(shouldRequestPermission)requestReminderPermission();
+      showToast("Tarea guardada");return true;
     }
     const raw=$("quickNoteText").value.trim();if(!raw)return false;
     state.notes.push({id:makeId("n"),title:"",titleHtml:"",body:raw,...newItemWorkspaceFields("note"),blocks:[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}],category,tags:activeTag?[activeTag]:[],pinned:false,createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
@@ -6135,7 +6163,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const category=getCategoryPickerValue("quickCategory");
     if(quickMode==="tasks"){
       const text=quickDetected.found?quickDetected.clean||$("quickTaskText").value:$("quickTaskText").value;
-      const due=quickDueDate,dueTime=quickDueTime;
+      const due=quickDueDate,dueTime=quickDueTime,reminders=quickReminderOffsets.slice();
       closeQuickCapture();
       openTask(null);
       $("taskText").innerHTML=plainToInlineHtml(text);
@@ -6144,7 +6172,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
       $("taskEndDate").value="";
       $("taskTime").value=due?dueTime:"";
       $("taskEndTime").value="";
-      syncTaskTimeButton();syncTaskEditorMeta();
+      editorTaskReminders=due?normalizeReminderMinutes(reminders):[];
+      $("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";
+      syncTaskTimeButton();syncTaskEditorMeta();syncTaskInlineForm();
     }else{
       const raw=$("quickNoteText").value;
       closeQuickCapture();
@@ -6546,7 +6576,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("quickOverlay").addEventListener("click",e=>{if(e.target===$("quickOverlay"))closeQuickCapture()});
   $("quickTaskMode").addEventListener("click",()=>{quickMode="tasks";syncQuickMode()});
   $("quickNoteMode").addEventListener("click",()=>{const category=getCategoryPickerValue("quickCategory");closeQuickCapture();openNote(null);setCategoryPicker("noteCategory",category)});
-  document.querySelectorAll("[data-quick-date],[data-quick-time]").forEach(b=>{
+  document.querySelectorAll("[data-quick-date],[data-quick-time],#quickReminderBtn,[data-quick-reminder]").forEach(b=>{
     // Preserve an actively focused quick-title input and its Android IME.
     // Pointer cancellation prevents buttons from stealing focus; the click still fires.
     b.addEventListener("pointerdown",e=>{
@@ -6555,6 +6585,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     });
   });
   document.querySelectorAll("[data-quick-date]").forEach(b=>b.addEventListener("click",()=>setQuickDate(b.dataset.quickDate||"")));
+  $("quickReminderBtn").addEventListener("click",()=>{
+    quickReminderPanelOpen=!quickReminderPanelOpen;syncQuickControls();
+  });
+  document.querySelectorAll("[data-quick-reminder]").forEach(button=>button.addEventListener("click",()=>setQuickReminder(button.dataset.quickReminder)));
   document.querySelectorAll("[data-quick-time]").forEach(b=>b.addEventListener("click",()=>setQuickTime(b.dataset.quickTime||"")));
   $("quickCustomTime").addEventListener("change",e=>setQuickTime(e.target.value));
   $("quickTaskText").addEventListener("input",syncQuickFromText);
@@ -7031,6 +7065,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   // receives pointerdown or click. A subsequent tap may then act normally.
   let dismissedOutsideAt=0;
   function dismissTransientOutside(target){
+    if($("quickOverlay").classList.contains("show")&&quickReminderPanelOpen&&!target.closest("#quickReminderBtn,#quickReminderPanel")){
+      quickReminderPanelOpen=false;syncQuickControls();return true;
+    }
     if(expandedTaskDaysId&&!$("editorOverlay").classList.contains("show")&&!$("calendarOverlay").classList.contains("show")&&!$("quickOverlay").classList.contains("show")&&
        !target.closest(".taskDaysChip,.taskListDayPanel")){
       expandedTaskDaysId=null;renderTasks();return true;
