@@ -752,11 +752,24 @@ html[data-theme="dark"] .assistantNoticeThread{background:#1d1d1f}
 html[data-theme="dark"] .assistantNoticeBubble{background:#353539;color:#f5f5f7}
 html[data-theme="dark"] .assistantNoticeBubble.mine{background:#173755}
 .assistantNoticeQuick{color:#1677ff!important}.assistantNoticeQuick svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.assistantNoticeOverlay{z-index:105}.assistantNoticeSheet{max-width:550px;display:flex;flex-direction:column;gap:12px}
+.assistantNoticeOverlay{z-index:105}
+.assistantNoticeSheet,.assistantNoticeSheet.sheetExpanded{max-width:550px;height:min(640px,calc(var(--vv-height,100vh) - 4px));max-height:calc(var(--vv-height,100vh) - 4px);display:flex;flex-direction:column;gap:0;overflow:hidden;padding-bottom:calc(8px + env(safe-area-inset-bottom));transition:none}
+.assistantNoticeSheet .sheetHeader{flex:0 0 auto;margin-bottom:7px}
+.assistantNoticeScroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:4px 1px 10px}
+.assistantNoticePresetsLabel{font-size:11px;color:#8e8e93;font-weight:650;margin:8px 2px}
 .assistantNoticePresets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
-.assistantNoticePreset{min-height:47px;padding:10px 12px;border:1px solid #d5d5da;border-radius:12px;background:#fff;color:#1d1d1f;font-size:12px;line-height:1.3;text-align:left}
-.assistantNoticeInput{min-height:106px;width:100%;resize:vertical;border-radius:13px;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;padding:13px;font:inherit;font-size:16px;line-height:1.4;outline:none}
-.assistantNoticeInput:focus{border-color:#1677ff}.assistantNoticeFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.assistantNoticeCount{font-size:11px;color:#8e8e93}
+.assistantNoticePreset{min-height:42px;padding:8px 11px;border:1px solid #d5d5da;border-radius:11px;background:#fff;color:#1d1d1f;font-size:12px;line-height:1.3;text-align:left}
+.assistantNoticeComposer{flex:0 0 auto;min-height:0;display:flex;flex-direction:column;gap:6px;padding:10px 0 0;border-top:1px solid rgba(120,120,130,.14);background:#f5f5f7}
+.assistantNoticeInput{box-sizing:border-box;min-height:54px;max-height:86px;width:100%;resize:none;border-radius:12px;border:1px solid #d1d1d6;background:#fff;color:#1d1d1f;padding:10px 12px;font:inherit;font-size:16px;line-height:1.35;outline:none}
+.assistantNoticeInput:focus{border-color:#1677ff}
+.assistantNoticeFooter{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:39px}
+.assistantNoticeFooter .btn{min-height:36px}
+.assistantNoticeStatus{font-size:11px;color:#636366;line-height:1.35}
+.assistantNoticeStatus:empty{display:none}
+.assistantNoticeCount{font-size:11px;color:#8e8e93}
+html[data-theme="dark"] .assistantNoticeComposer{background:#1c1c1e;border-color:#38383a}
+body.imeVisible .assistantNoticeSheet{height:calc(var(--vv-height,100vh) - 4px);padding-bottom:8px}
+body.imeVisible .assistantNoticeThread{max-height:100px}
 html[data-theme="dark"] .assistantNoticePreset,html[data-theme="dark"] .assistantNoticeInput{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 .assistantCallQuick{color:#248a3d!important}.assistantCallQuick:active{background:rgba(52,199,89,.14)!important}.assistantCallQuick svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .calendarTimeBlock.assistant-proposed{outline:1px dashed #ff9f0a;background:#fff8e8}.calendarTimeBlock.assistant-changes_requested{outline:1px dashed #007aff}.calendarTimeBlock.assistant-rejected,.calendarTimeBlock.assistant-cancelled{opacity:.5}.calendarTimeBlock.assistant-confirmed{outline:0}html[data-theme="dark"] .calendarTimeBlock.assistant-proposed{background:#3a3016}html[data-theme="dark"] .calendarTimeBlock.assistant-changes_requested{background:#16365d}
@@ -1924,13 +1937,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   <div class="sheet assistantNoticeSheet">
     <div class="sheetHandle"></div>
     <div class="sheetHeader"><h2 id="assistantNoticeTitle">Mensajes</h2><button id="assistantNoticeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
-    <div class="assistantSectionHint">Los mensajes aparecen en pantalla completa en el otro teléfono. Responder es opcional.</div>
-    <div id="assistantNoticeThread" class="assistantNoticeThread" aria-live="polite"></div>
-    <div class="assistantSectionHint">Mensaje rápido</div>
-    <div id="assistantNoticePresets" class="assistantNoticePresets"></div>
-    <textarea id="assistantNoticeText" class="assistantNoticeInput" maxlength="280" placeholder="Escribe un mensaje…"></textarea>
-    <div id="assistantNoticeStatus" class="assistantSectionHint" aria-live="polite"></div>
-    <div class="assistantNoticeFooter"><span id="assistantNoticeCount" class="assistantNoticeCount">0 / 280</span><button id="assistantNoticeSend" class="btn" type="button">Enviar</button></div>
+    <div class="assistantNoticeScroll">
+      <div id="assistantNoticeThread" class="assistantNoticeThread" aria-live="polite"></div>
+      <div class="assistantNoticePresetsLabel">Mensajes rápidos</div>
+      <div id="assistantNoticePresets" class="assistantNoticePresets"></div>
+    </div>
+    <div class="assistantNoticeComposer">
+      <textarea id="assistantNoticeText" class="assistantNoticeInput" rows="2" maxlength="280" placeholder="Escribir mensaje…"></textarea>
+      <div id="assistantNoticeStatus" class="assistantNoticeStatus" aria-live="polite"></div>
+      <div class="assistantNoticeFooter"><span id="assistantNoticeCount" class="assistantNoticeCount">0 / 280</span><button id="assistantNoticeSend" class="btn" type="button">Enviar</button></div>
+    </div>
   </div>
 </div>
 <div id="directorInboxOverlay" class="overlay" aria-hidden="true">
@@ -2689,7 +2705,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     updateAssistantNoticeCount();openOverlay("assistantNoticeOverlay");
     $("assistantNoticePresets").querySelectorAll("[data-notice-preset]").forEach(button=>button.addEventListener("click",()=>{
       $("assistantNoticeText").value=button.dataset.noticePreset;
-      updateAssistantNoticeCount();$("assistantNoticeText").focus();
+      $("assistantNoticeStatus").textContent="";
+      updateAssistantNoticeCount();
+      // Presets fill the composer without opening the keyboard. Enviar stays visible.
+      $("assistantNoticeSend").focus({preventScroll:true});
     }));
     $("assistantNoticeThread").textContent="Cargando mensajes…";
     refreshAssistantMessageThread();
@@ -2702,6 +2721,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   async function sendAssistantNotice(){
     const ws=currentWorkspace(),message=$("assistantNoticeText").value.trim();
     if(!message||message.length>280||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws)||!assistantConfigured())return;
+    $("assistantNoticeText").blur();
     $("assistantNoticeSend").disabled=true;
     $("assistantNoticeStatus").textContent="Guardando y notificando…";
     try{
