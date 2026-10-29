@@ -29,8 +29,19 @@ async function route(request, env) {
     return json({ ok: true, service: "nottas-assistant", env: env.APP_ENV || "unknown" });
   }
 
+  if (path === "/v1/client-config" && request.method === "GET") {
+    return json({ firebase: {
+      projectId: env.FIREBASE_PROJECT_ID || "",
+      senderId: env.FIREBASE_SENDER_ID || "",
+      appId: env.FIREBASE_APP_ID || "",
+      apiKey: env.FIREBASE_API_KEY || ""
+    } });
+  }
   if (path === "/v1/auth/register" && request.method === "POST") {
     return register(request, env);
+  }
+  if (path === "/v1/auth/redeem" && request.method === "POST") {
+    return redeemAccountKey(request, env);
   }
   // Google redirects from the system browser; callback validation uses a single-use state.
   if (path === "/v1/google/oauth/callback" && request.method === "GET") {
@@ -44,6 +55,7 @@ async function route(request, env) {
   if (calendarResponse) return calendarResponse;
 
   if (path === "/v1/me" && request.method === "GET") return me(auth, env);
+  if (path === "/v1/auth/issue-key" && request.method === "POST") return issueAccountKey(request, auth, env);
   if (path === "/v1/workspaces" && request.method === "GET") return listWorkspaces(auth, env);
   if (path === "/v1/workspaces" && request.method === "POST") return createWorkspace(request, auth, env);
   if (path === "/v1/workspaces/join" && request.method === "POST") return joinWorkspace(request, auth, env);
@@ -59,6 +71,11 @@ async function route(request, env) {
   const workspaceDelete = path.match(/^\/v1\/workspaces\/([^/]+)$/);
   if (workspaceDelete && request.method === "DELETE") {
     return deleteAssistantWorkspace(request, decodeURIComponent(workspaceDelete[1]), auth, env);
+  }
+
+  const directorWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/assign-director$/);
+  if (directorWorkspace && request.method === "POST") {
+    return assignWorkspaceDirector(request, decodeURIComponent(directorWorkspace[1]), auth, env);
   }
 
   const recoveryWorkspace = path.match(/^\/v1\/workspaces\/([^/]+)\/restore-owner$/);
@@ -114,6 +131,97 @@ async function route(request, env) {
   return json({ error: "not_found" }, 404);
 }
 
+// Device-independent account access reuses the existing sessions table.
+ // Temporary and recovery keys are 256-bit, stored only as SHA-256 hashes,
+ // and are not accepted as bearer sessions. No schema migration is required.
+async function issueAccountKey(request, auth, env) {
+  const body = await bodyJson(request);
+  const kind = body?.kind === "recovery" ? "recovery" : "link";
+  const marker = kind === "recovery" ? "nottas-recovery" : "nottas-link";
+  const now = Date.now();
+  const key = randomToken();
+  const hash = await sha256(key);
+  if (kind === "recovery") {
+    // Replace previously issued recovery credentials for this account.
+    await env.DB.prepare("DELETE FROM sessions WHERE user_id=? AND device_id='nottas-recovery'")
+      .bind(auth.userId).run();
+  } else {
+    await env.DB.prepare("DELETE FROM sessions WHERE user_id=? AND device_id='nottas-link'")
+      .bind(auth.userId).run();
+  }
+  await env.DB.prepare(
+    "INSERT INTO sessions(token_hash,user_id,device_id,created_at,last_seen_at) VALUES(?,?,?,?,?)"
+  ).bind(hash, auth.userId, marker, now, now).run();
+  return json({ key, kind, expiresAt: kind === "link" ? now + 10 * 60 * 1000 : null });
+}
+
+async function redeemAccountKey(request, env) {
+  const body = await bodyJson(request);
+  const key = textValue(body?.key, 120);
+  const deviceId = textValue(body?.deviceId, 120);
+  const label = textValue(body?.deviceLabel || "Android", 80);
+  // This is not a workspace invitation: it grants the exact account's access.
+  if (!/^[A-Za-z0-9_-]{43}$/.test(key) || !deviceId || deviceId.startsWith("nottas-")) {
+    return json({ error: "invalid_account_key" }, 400);
+  }
+  const hash = await sha256(key);
+  const now = Date.now();
+  const claimed = await env.DB.prepare(
+    "DELETE FROM sessions WHERE token_hash=? " +
+    "AND (device_id='nottas-recovery' OR (device_id='nottas-link' AND created_at>?)) " +
+    "RETURNING user_id,device_id"
+  ).bind(hash, now - 10 * 60 * 1000).first();
+  if (!claimed) return json({ error: "invalid_or_expired_account_key" }, 403);
+  const user = await env.DB.prepare("SELECT id,display_name FROM users WHERE id=?")
+    .bind(claimed.user_id).first();
+  if (!user) return json({ error: "account_not_found" }, 404);
+  const token = randomToken(), tokenHash = await sha256(token);
+  await env.DB.batch([
+    env.DB.prepare("INSERT INTO sessions(token_hash,user_id,device_id,created_at,last_seen_at) VALUES(?,?,?,?,?)")
+      .bind(tokenHash, user.id, deviceId, now, now),
+    env.DB.prepare("INSERT INTO devices(id,user_id,label,platform,updated_at) VALUES(?,?,?,?,?) " +
+      "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,updated_at=excluded.updated_at")
+      .bind(deviceId, user.id, label, "android", now)
+  ]);
+  const workspaces = await workspaceRows(user.id, env);
+  return json({
+    user: { id: user.id, displayName: user.display_name },
+    sessionToken: token,
+    personalWorkspace: workspaces.find(w => w.kind === "personal") || null,
+    workspaces
+  });
+}
+
+// The creator may be an assistant. The creator must explicitly designate an
+// already joined member as director; an invitation code never grants admin.
+async function assignWorkspaceDirector(request, workspaceId, auth, env) {
+  const member = await membership(workspaceId, auth.userId, env);
+  const workspace = await env.DB.prepare(
+    "SELECT id,kind,name,owner_user_id FROM workspaces WHERE id=?"
+  ).bind(workspaceId).first();
+  if (!workspace || workspace.kind !== "assistant") return json({ error: "workspace_not_found" }, 404);
+  if (member?.role !== "owner" || workspace.owner_user_id !== auth.userId) {
+    return json({ error: "owner_required" }, 403);
+  }
+  const body = await bodyJson(request);
+  const targetUserId = textValue(body?.toUserId, 120);
+  if (!targetUserId || targetUserId === auth.userId ||
+      !(await membership(workspaceId, targetUserId, env))) {
+    return json({ error: "select_active_team_member" }, 400);
+  }
+  const now = Date.now();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE workspace_members SET role='assistant' WHERE workspace_id=? AND user_id=? AND role='owner' AND status='active'")
+      .bind(workspaceId, auth.userId),
+    env.DB.prepare("UPDATE workspace_members SET role='owner' WHERE workspace_id=? AND user_id=? AND role='assistant' AND status='active'")
+      .bind(workspaceId, targetUserId),
+    env.DB.prepare("UPDATE workspaces SET owner_user_id=?,updated_at=? WHERE id=? AND owner_user_id=?")
+      .bind(targetUserId, now, workspaceId, auth.userId)
+  ]);
+  await pushWorkspaceSync(workspaceId, auth.userId, env);
+  return json({ ok: true, workspaceId, directorUserId: targetUserId });
+}
+
 async function register(request, env) {
   const body = await bodyJson(request);
   const displayName = textValue(body.displayName, 80);
@@ -153,7 +261,7 @@ async function authenticate(request, env) {
   if (!match) return null;
   const tokenHash = await sha256(match[1]);
   const row = await env.DB.prepare(
-    "SELECT s.user_id, s.device_id, u.display_name FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=?"
+    "SELECT s.user_id, s.device_id, u.display_name FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.device_id NOT IN ('nottas-link','nottas-recovery')"
   ).bind(tokenHash).first();
   if (!row) return null;
   await env.DB.prepare("UPDATE sessions SET last_seen_at=? WHERE token_hash=?")

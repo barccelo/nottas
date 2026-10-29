@@ -1172,6 +1172,39 @@ html[data-theme="dark"] .assistantPresetSettingsHeading{color:#f5f5f7}
 html[data-theme="dark"] .assistantPresetEditRow input{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
 html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
 
+
+/* Production team management, with legacy diagnostics isolated from normal UI. */
+.teamHome{display:flex;flex-direction:column;gap:12px;padding:2px 0 8px}
+.teamHero{text-align:center;padding:22px 14px}.teamHeroIcon{font-size:38px;color:#1677ff;line-height:1.3}.teamHero strong{font-size:21px}.teamHero p{font-size:13px;color:#8e8e93;margin:6px 0}
+.teamPanel{background:#fff;border-radius:15px;padding:14px;display:flex;flex-direction:column;gap:11px;color:#1d1d1f}
+.teamPanelTitle{font-size:16px;font-weight:700}.teamPanelCaption{font-size:12px;font-weight:650;color:#8e8e93;margin-top:6px}
+.teamLabel{font-size:12px;color:#68686c;font-weight:600}.teamHint{font-size:12px;color:#8e8e93;line-height:1.45;margin:0}
+.teamInput{width:100%;min-height:45px;border:1px solid #d1d1d6;border-radius:11px;padding:10px 12px;background:#f5f5f7;color:#1d1d1f;outline:none;font-size:15px;box-sizing:border-box}
+.teamInput:focus{border-color:#1677ff}
+.teamAccountCard{display:flex;align-items:center;gap:11px;padding:12px 16px;background:#fff;border-radius:15px}.teamAccountCard div{flex:1;min-width:0}.teamAccountCard strong{display:block;font-size:16px}.teamAccountCard small{display:block;color:#8e8e93;font-size:11px;margin-top:3px}.teamAvatar{width:40px;height:40px;border-radius:50%;background:#e8f2ff;color:#1677ff;display:grid;place-items:center;font-size:23px}.teamOnlineDot{width:9px;height:9px;border-radius:50%;background:#34c759}
+.teamWorkspaceList{display:flex;flex-direction:column;gap:5px}.teamWorkspaceButton{width:100%;background:#f5f5f7;border:1px solid transparent;border-radius:11px;padding:12px;text-align:left;color:inherit;display:flex;align-items:center;gap:9px}
+.teamWorkspaceButton[aria-current="true"]{border-color:#b6d5ff;background:#e8f2ff}.teamWorkspaceButton strong{flex:1}.teamWorkspaceButton small{color:#8e8e93}
+.teamActionGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.teamMinorButton{min-height:43px;border:1px solid #d1d1d6;border-radius:11px;background:#fff;color:#1677ff;font-size:12px;font-weight:700}
+.teamInlineForm{display:flex;flex-direction:column;gap:9px;padding-top:12px;border-top:1px solid #e5e5ea}
+.teamStatusLine{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#8e8e93;font-size:12px}
+.teamInviteArea{padding:12px;background:#f5f5f7;border-radius:12px;display:flex;flex-direction:column;gap:8px}
+.teamInviteArea small{color:#8e8e93;font-size:11px;line-height:1.45}
+.teamInviteCode{display:flex;align-items:center;justify-content:space-between;gap:10px}.teamInviteCode strong{letter-spacing:.13em;font-size:18px}.teamInviteCode button{border:0;border-radius:8px;color:#1677ff;background:#e8f2ff;min-height:34px;padding:0 10px;font-size:12px;font-weight:700}
+.teamMemberList{display:flex;flex-direction:column;gap:4px}.teamMemberEntry{padding:9px 0;border-bottom:1px solid #f1f1f3;display:flex;align-items:center;gap:8px}.teamMemberEntry span{flex:1;min-width:0}.teamMemberEntry small{color:#8e8e93}.teamMemberEntry button{color:#1677ff;border:0;border-radius:9px;padding:7px;background:#e8f2ff;font-size:11px;font-weight:700}
+.teamIntegrationStatus{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:28px;font-size:13px}.teamIntegrationStatus span:last-child{font-size:12px;color:#8e8e93}
+.teamInlineLink{border:0;background:none;padding:4px 0;text-align:left;color:#1677ff;font-size:12px;font-weight:650}
+.teamOptionRow{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:9px 0;border:0;border-top:1px solid #e5e5ea;background:transparent;color:#1d1d1f;font-size:13px}
+.teamOptionRow span:last-child{font-size:21px;color:#8e8e93}
+.teamKeyResult{padding:10px;border-radius:12px;background:#f5f5f7;display:flex;flex-direction:column;gap:9px}
+.teamKeyValue{overflow-wrap:anywhere;word-break:break-all;font-size:14px;letter-spacing:.04em;user-select:all}
+.teamAdvancedToggle{align-self:center;min-height:38px;border:0;background:transparent;color:#8e8e93;font-size:12px}
+#assistantAdvanced{margin-top:4px;padding-top:12px;border-top:1px solid #dedee2}
+html[data-theme="dark"] .teamPanel,html[data-theme="dark"] .teamAccountCard{background:#1c1c1e;color:#f5f5f7}
+html[data-theme="dark"] .teamWorkspaceButton,html[data-theme="dark"] .teamInput,html[data-theme="dark"] .teamInviteArea,html[data-theme="dark"] .teamKeyResult{background:#2c2c2e;color:#f5f5f7;border-color:#3a3a3c}
+html[data-theme="dark"] .teamWorkspaceButton[aria-current="true"]{background:#173755;border-color:#2977bb}
+html[data-theme="dark"] .teamMinorButton{background:#2c2c2e;color:#64a9ff;border-color:#3a3a3c}
+html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,html[data-theme="dark"] .teamInlineForm{border-color:#3a3a3c;color:#f5f5f7}
+
 </style>
 </head>
 <body>
@@ -1860,9 +1893,9 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       <div class="settingsRow"><div class="left"><div class="title">Estado actual</div><div id="workHoursNativeStatus" class="desc">Comprobando…</div></div></div>
     </div>
 
-    <div class="sectionTitle">Asistente</div>
+    <div class="sectionTitle">Equipo de trabajo</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Espacio compartido</div><div id="assistantSummaryDesc" class="desc">No configurado.</div></div><button id="assistantSettingsBtn" type="button">Configurar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Equipos y cuenta</div><div id="assistantSummaryDesc" class="desc">Tus espacios y compañeros.</div></div><button id="assistantSettingsBtn" type="button">Abrir</button></div>
     </div>
 
     <div class="sectionTitle">Datos</div>
@@ -1894,8 +1927,62 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
 <div id="assistantOverlay" class="overlay" aria-hidden="true">
   <div class="sheet">
     <div class="sheetHandle"></div>
-    <div class="sheetHeader"><h2>Asistente</h2><button id="assistantClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
+    <div class="sheetHeader"><h2>Equipo de trabajo</h2><button id="assistantClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
 
+
+    <div class="teamHome" id="teamHome">
+      <div id="teamAccountOnboarding" class="teamOnboarding">
+        <div class="teamHero"><div class="teamHeroIcon">◎</div><strong>Trabaja en equipo</strong><p>Comparte tareas, citas y mensajes en un solo espacio.</p></div>
+        <div class="teamPanel">
+          <div class="teamPanelTitle">Empezar</div>
+          <label class="teamLabel" for="teamNewAccountName">Tu nombre</label>
+          <input id="teamNewAccountName" class="teamInput" type="text" maxlength="80" placeholder="Cómo quieres aparecer en el equipo">
+          <button id="teamCreateAccount" class="btn primary full" type="button">Continuar</button>
+        </div>
+        <div class="teamPanel">
+          <div class="teamPanelTitle">Ya tengo una cuenta</div>
+          <p class="teamHint">Introduce tu clave de recuperación o un código temporal generado en tu otro dispositivo.</p>
+          <input id="teamAccountSignInKey" class="teamInput" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Clave de acceso" aria-label="Clave de acceso a mi cuenta">
+          <button id="teamSignIn" class="btn secondary full" type="button">Entrar en mi cuenta</button>
+        </div>
+      </div>
+      <div id="teamConnectedPanel" class="hidden">
+        <div class="teamAccountCard"><span class="teamAvatar" aria-hidden="true">◉</span><div><strong id="teamAccountName">Cuenta</strong><small id="teamAccountHint">Conectada</small></div><span class="teamOnlineDot" title="Conectado"></span></div>
+        <div class="teamPanel">
+          <div class="teamPanelTitle">Mis equipos</div>
+          <div id="teamWorkspaceList" class="teamWorkspaceList"></div>
+          <div class="teamActionGrid">
+            <button id="teamShowCreate" type="button" class="teamMinorButton">+ Crear equipo</button>
+            <button id="teamShowJoin" type="button" class="teamMinorButton">Unirme con código</button>
+          </div>
+          <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button><p class="teamHint">Quien crea el equipo puede administrar integrantes y asignar después al director.</p></div>
+          <div id="teamJoinForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceCode">Código de invitación</label><input id="teamWorkspaceCode" class="teamInput" autocapitalize="characters" maxlength="16" placeholder="Código"><button id="teamJoinWorkspace" class="btn primary full" type="button">Unirme al equipo</button></div>
+        </div>
+        <div id="teamWorkspaceDetail" class="teamPanel hidden">
+          <div class="teamPanelTitle" id="teamCurrentName">Oficina</div>
+          <div class="teamStatusLine"><span id="teamCurrentRole"></span><span id="teamSyncLabel">Sincronización automática</span></div>
+          <div id="teamInviteArea" class="teamInviteArea hidden">
+            <div class="teamPanelCaption">Invitar a otra persona</div>
+            <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar invitación">Copiar</button></div>
+            <small>El código permite unirse como integrante. Solo la persona que administra el equipo puede asignar el rol de director.</small>
+          </div>
+          <div class="teamPanelCaption">Integrantes</div>
+          <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
+          <div class="teamIntegrationStatus"><span>Google Calendar</span><span id="teamGoogleLabel">Sin conectar</span></div>
+          <div class="teamIntegrationStatus"><span>Notificaciones</span><span id="teamNotificationsLabel">Comprobando</span></div>
+          <button id="teamManageCalendar" class="teamInlineLink" type="button">Administrar calendarios</button>
+        </div>
+        <div class="teamPanel">
+          <div class="teamPanelTitle">Acceso a mi cuenta</div>
+          <p class="teamHint">Tus equipos pertenecen a tu cuenta, no a este teléfono. Guarda una clave de recuperación en un lugar seguro.</p>
+          <button id="teamIssueRecovery" class="teamOptionRow" type="button"><span>Crear o renovar clave de recuperación</span><span>›</span></button>
+          <button id="teamIssueLink" class="teamOptionRow" type="button"><span>Iniciar sesión en otro dispositivo</span><span>›</span></button>
+          <div id="teamKeyResult" class="teamKeyResult hidden"><p id="teamKeyDescription" class="teamHint"></p><div class="teamKeyValue"><code id="teamKeyValue"></code></div><button id="teamCopyKey" class="btn secondary" type="button">Copiar clave</button></div>
+        </div>
+      </div>
+      <button id="teamAdvancedToggle" class="teamAdvancedToggle" type="button" aria-expanded="false">Soporte y diagnóstico <span aria-hidden="true">›</span></button>
+    </div>
+    <div id="assistantAdvanced" class="hidden">
     <div class="assistantStatusCard">
       <div class="assistantStatusLine"><div id="assistantStatusTitle" class="assistantStatusTitle">Sin configurar</div><span id="assistantConnectionBadge" class="assistantBadge">Local</span></div>
       <div id="assistantStatusDesc" class="assistantStatusDesc">Configura el Worker para compartir espacios entre dispositivos.</div>
@@ -1991,9 +2078,9 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       <div class="assistantSectionHint">Avisos a pantalla completa para el jefe y el asistente. Puedes responder o simplemente cerrar.</div>
       <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Abrir mensajes</button>
     </div>
-    <div class="sectionTitle" style="margin-top:16px">Equipo y actividad <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
+    <div class="sectionTitle" style="margin-top:16px">Actividad del equipo <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
     <div id="assistantMembers" class="assistantMembers"></div>
-    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div>
+    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div>    </div>
   </div>
 </div>
 
@@ -2685,7 +2772,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       assistantRemapPersonalWorkspace(data.personalWorkspace);
       saveAssistantAuth({sessionToken:String(data.sessionToken||"")});
       try{if(window.NottasNative&&NottasNative.setAssistantSession)NottasNative.setAssistantSession(server,String(data.sessionToken||""))}catch(_){}
-      scheduleSave();render();renderAssistantSettings();await assistantRegisterPushToken();await assistantSync(true,true);showToast("Dispositivo registrado");
+      scheduleSave();render();renderAssistantSettings();await assistantRegisterPushToken();await assistantSync(true,true);showToast("Cuenta creada");
     }catch(error){showToast("Registro: "+String(error?.message||error))}
   }
   async function assistantCreateWorkspace(){
@@ -2700,7 +2787,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
     if(!inviteCode){showToast("Escribe el código de invitación");return}
     try{
       const data=await assistantRequest("/v1/workspaces/join",{method:"POST",body:{inviteCode}});
-      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();const pushLinked=await assistantRegisterPushToken();await assistantSync(true,true);render();renderAssistantSettings();await assistantLoadActivity(true);showToast(pushLinked?"Espacio conectado y push registrado":"Espacio conectado; verifica el registro push");
+      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();const pushLinked=await assistantRegisterPushToken();await assistantSync(true,true);render();renderAssistantSettings();await assistantLoadActivity(true);showToast(pushLinked?"Equipo conectado":"Te uniste al equipo");
     }catch(error){showToast("Unirse: "+String(error?.message||error))}
   }
   async function assistantConfigurePush(){
@@ -2927,8 +3014,8 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
     try{
       const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/call",{method:"POST",body:{toUserId:targetUserId}});
       if(!result.pushAccepted)throw new Error("Firebase no confirmó la recepción de la solicitud");
-      status.textContent="Firebase aceptó la llamada para "+(result.recipientName||"el asistente")+" ("+(result.acceptedDevices||1)+" dispositivo(s)). Esperando respuesta.";
-      showToast("Notificación enviada a Firebase");
+      status.textContent="Llamada enviada. Esperando respuesta.";
+      showToast("Llamada enviada");
     }catch(error){
       status.textContent="No se confirmó el envío: "+String(error?.message||error);
       showToast("No se entregó la llamada");
@@ -3203,6 +3290,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       }
       members.appendChild(entry);
     });
+    renderTeamMembers(rows);
     activity.innerHTML=events.length?events.slice(0,30).map(row=>'<div class="assistantActivityRow"><div class="assistantActivityMain">'+esc(assistantActivityText(row))+'</div><div class="assistantActivityMeta">'+new Date(Number(row.createdAt)||Date.now()).toLocaleString("es",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})+'</div></div>').join(""):'<div class="assistantActivityEmpty">Todavía no hay actividad compartida.</div>';
   }
   async function assistantLoadActivity(silent=false){
@@ -3306,6 +3394,228 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
       showToast("No se pudo eliminar el espacio");
     }finally{btn.disabled=false}
   }
+
+  const TEAM_DEFAULT_SERVER="https://nottas-assistant-api.losrobles.workers.dev";
+  let teamPushAutoAttempted=false;
+  async function assistantAutoConfigurePush(){
+    if(!assistantConfigured()||teamPushAutoAttempted)return;
+    const status=assistantNativePushStatus();
+    if(status.configured){
+      if(status.fcmToken)await assistantRegisterPushToken();
+      return;
+    }
+    teamPushAutoAttempted=true;
+    try{
+      const result=await assistantRequest("/v1/client-config",{auth:false});
+      const config=result.firebase||{};
+      if(["projectId","senderId","appId","apiKey"].some(k=>!String(config[k]||"").trim()))return;
+      if(!window.NottasNative?.configureAssistantPush)return;
+      state.assistant.firebase=config;scheduleSave();
+      NottasNative.configureAssistantPush(JSON.stringify(config));
+      setTimeout(()=>{assistantRegisterPushToken();renderAssistantSettings()},1500);
+    }catch(_){
+      // Account and workspace access remain usable without push.
+    }
+  }
+  let teamMemberCache=[],teamAssignConfirm=null;
+  function teamEnsureServer(){
+    // Existing device configuration always wins. Only new installs get the public default.
+    if(!$("assistantServerUrl").value.trim()&&!state.assistant.serverUrl){
+      $("assistantServerUrl").value=TEAM_DEFAULT_SERVER;
+    }
+  }
+  function teamCopyText(value){
+    const text=String(value||"");
+    if(!text)return;
+    const legacy=()=>{
+      const input=document.createElement("textarea");
+      input.value=text;input.style.position="fixed";input.style.opacity="0";
+      document.body.appendChild(input);input.select();
+      try{document.execCommand("copy");showToast("Copiado")}catch(_){showToast("Mantén pulsado para copiar")}
+      input.remove();
+    };
+    if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>showToast("Copiado")).catch(legacy);
+    else legacy();
+  }
+  function selectedSharedTeam(){
+    const ws=currentWorkspace();
+    if(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&!assistantWorkspaceHidden(ws))return ws;
+    return null;
+  }
+  function renderTeamHome(){
+    if(!state)return;
+    const connected=assistantConfigured();
+    $("teamAccountOnboarding").classList.toggle("hidden",connected);
+    $("teamConnectedPanel").classList.toggle("hidden",!connected);
+    if(!connected){teamEnsureServer();return}
+    $("teamAccountName").textContent=state.assistant.displayName||"Mi cuenta";
+    $("teamAccountHint").textContent="Conectada · acceso a tus equipos";
+    const teams=(state.workspaces||[]).filter(w=>w.kind==="assistant"&&assistantWorkspaceAuthorized(w)&&!assistantWorkspaceHidden(w));
+    const list=$("teamWorkspaceList");
+    list.innerHTML=teams.length?teams.map(w=>
+      '<button type="button" class="teamWorkspaceButton" data-team-select="'+esc(w.id)+'" aria-current="'+(currentWorkspaceId()===w.id?"true":"false")+'">'+
+      '<strong>'+esc(w.name)+'</strong><small>'+(w.role==="owner"?"Director":"Asistente")+'</small></button>'
+    ).join(""):'<p class="teamHint">Todavía no perteneces a ningún equipo. Puedes crear uno o unirte con una invitación.</p>';
+    list.querySelectorAll("[data-team-select]").forEach(button=>button.addEventListener("click",()=>{
+      activeWorkspaceId=button.dataset.teamSelect;activeCategory="all";activeTag="";
+      teamMemberCache=[];$("teamCalendarTools").classList.add("hidden");
+      saveUI();render();renderAssistantSettings();assistantLoadActivity(true);assistantGoogleRefresh();
+    }));
+    const ws=selectedSharedTeam();
+    $("teamWorkspaceDetail").classList.toggle("hidden",!ws);
+    if(!ws)return;
+    $("teamCurrentName").textContent=ws.name;
+    $("teamCurrentRole").textContent=ws.role==="owner"?"Director · administrador":"Asistente";
+    $("teamSyncLabel").textContent=state.assistant.lastSyncAt?"Actualizado":"Sincronización automática";
+    const owner=assistantWorkspaceIsOwner(ws);
+    $("teamInviteArea").classList.toggle("hidden",!owner||!ws.inviteCode);
+    $("teamInviteCode").textContent=owner?ws.inviteCode||"":"";
+    const push=assistantNativePushStatus();
+    $("teamNotificationsLabel").textContent=push.fcmToken?"Activadas":push.configured?"Conectando…":"Requieren configuración";
+    const google=$("assistantGoogleStatus").textContent.toLowerCase();
+    $("teamGoogleLabel").textContent=google.includes("conectad")||google.includes("autorizad")?"Conectado":"Sin conectar";
+    renderTeamMembers(teamMemberCache);
+  }
+  function renderTeamMembers(members){
+    teamMemberCache=Array.isArray(members)?members:[];
+    const box=$("teamMemberList");
+    if(!box)return;
+    const team=selectedSharedTeam();
+    if(!team){box.textContent="";return}
+    if(!teamMemberCache.length){box.textContent="Sin integrantes disponibles.";return}
+    box.replaceChildren();
+    for(const member of teamMemberCache){
+      const el=document.createElement("div");el.className="teamMemberEntry";
+      const name=document.createElement("span");name.textContent=member.displayName||"Integrante";
+      const role=document.createElement("small");role.textContent=member.role==="owner"?"Director":"Asistente";
+      el.append(name,role);
+      if(assistantWorkspaceIsOwner(team)&&member.role==="assistant"&&member.userId){
+        const action=document.createElement("button");action.type="button";action.textContent="Hacer director";
+        action.addEventListener("click",async()=>{
+          const current=selectedSharedTeam();
+          if(!current||!assistantWorkspaceIsOwner(current))return;
+          const key=current.id+":"+member.userId;
+          if(!teamAssignConfirm||teamAssignConfirm.key!==key||teamAssignConfirm.until<Date.now()){
+            teamAssignConfirm={key,until:Date.now()+10000};
+            action.textContent="Confirmar dirección";return;
+          }
+          teamAssignConfirm=null;action.disabled=true;
+          try{
+            await assistantRequest("/v1/workspaces/"+encodeURIComponent(current.id)+"/assign-director",{
+              method:"POST",body:{toUserId:member.userId}
+            });
+            showToast("Dirección asignada");
+            await assistantSync(true,true);render();renderAssistantSettings();
+            await assistantLoadActivity(true);
+          }catch(error){action.disabled=false;action.textContent="Hacer director";showToast("No se pudo asignar: "+String(error?.message||error))}
+        });
+        el.appendChild(action);
+      }
+      box.appendChild(el);
+    }
+  }
+  async function teamCreateAccount(){
+    if(assistantConfigured())return;
+    const name=$("teamNewAccountName").value.trim();
+    if(!name){showToast("Escribe tu nombre");return}
+    teamEnsureServer();
+    $("assistantDisplayName").value=name;
+    const btn=$("teamCreateAccount");btn.disabled=true;
+    try{await assistantRegisterDevice();await assistantAutoConfigurePush();renderAssistantSettings()}
+    finally{btn.disabled=false}
+  }
+  async function teamSignIn(){
+    if(assistantConfigured()){showToast("Ya tienes una cuenta conectada");return}
+    const key=$("teamAccountSignInKey").value.trim();
+    if(!/^[A-Za-z0-9_-]{43}$/.test(key)){showToast("Introduce la clave completa");return}
+    const btn=$("teamSignIn");btn.disabled=true;
+    try{
+      teamEnsureServer();
+      const server=($("assistantServerUrl").value||TEAM_DEFAULT_SERVER).trim().replace(/\/+$/,"");
+      const data=await assistantRequest("/v1/auth/redeem",{auth:false,serverUrl:server,method:"POST",
+        body:{key,deviceId:assistantDeviceId(),deviceLabel:"Nottas Android"}});
+      if(!data.sessionToken||!data.user?.id||!data.personalWorkspace?.id)throw new Error("La cuenta no devolvió los datos esperados");
+      state.assistant.serverUrl=server;
+      state.assistant.userId=String(data.user.id);
+      state.assistant.displayName=String(data.user.displayName||"Cuenta");
+      state.assistant.cursor=0;
+      assistantMembershipChecked=false;assistantAuthorizedIds=new Set();
+      resetGoogleCalendarEvents();
+      assistantRemapPersonalWorkspace(data.personalWorkspace);
+      saveAssistantAuth({sessionToken:String(data.sessionToken)});
+      try{window.NottasNative?.setAssistantSession?.(server,String(data.sessionToken))}catch(_){}
+      mergeAssistantWorkspaces(data.workspaces||[]);
+      assistantAuthorizedIds=new Set((data.workspaces||[]).map(w=>w.id));
+      const preferred=(data.workspaces||[]).find(w=>w.kind==="assistant");
+      if(preferred)activeWorkspaceId=preferred.id;
+      $("teamAccountSignInKey").value="";
+      saveUI();scheduleSave();
+      await assistantSync(true,true);
+      await assistantAutoConfigurePush();
+      await assistantRegisterPushToken();
+      render();renderAssistantSettings();await assistantLoadActivity(true);
+      showToast("Cuenta conectada");
+    }catch(error){showToast("No se pudo iniciar sesión: "+String(error?.message||error))}
+    finally{btn.disabled=false}
+  }
+  async function teamIssueKey(kind){
+    if(!assistantConfigured())return;
+    const btn=$(kind==="recovery"?"teamIssueRecovery":"teamIssueLink");btn.disabled=true;
+    try{
+      const data=await assistantRequest("/v1/auth/issue-key",{method:"POST",body:{kind}});
+      if(!data.key)throw new Error("No se generó la clave");
+      $("teamKeyValue").textContent=data.key;
+      $("teamKeyDescription").textContent=kind==="recovery"?
+        "Guarda esta clave fuera del teléfono. Sustituye cualquier clave de recuperación anterior y solo puede utilizarse una vez.":
+        "Introduce esta clave en Nottas desde el otro dispositivo. Caduca en 10 minutos y solo funciona una vez.";
+      $("teamKeyResult").classList.remove("hidden");
+    }catch(error){showToast("No se pudo generar la clave: "+String(error?.message||error))}
+    finally{btn.disabled=false}
+  }
+  function toggleTeamAdvanced(expand){
+    $("assistantAdvanced").classList.toggle("hidden",!expand);
+    $("teamAdvancedToggle").setAttribute("aria-expanded",expand?"true":"false");
+    $("teamAdvancedToggle").innerHTML=expand?'Ocultar diagnóstico <span aria-hidden="true">⌄</span>':'Soporte y diagnóstico <span aria-hidden="true">›</span>';
+  }
+  function initializeTeamControls(){
+    $("teamCreateAccount").addEventListener("click",teamCreateAccount);
+    $("teamSignIn").addEventListener("click",teamSignIn);
+    $("teamShowCreate").addEventListener("click",()=>{$("teamCreateForm").classList.toggle("hidden");$("teamJoinForm").classList.add("hidden")});
+    $("teamShowJoin").addEventListener("click",()=>{$("teamJoinForm").classList.toggle("hidden");$("teamCreateForm").classList.add("hidden")});
+    $("teamCreateWorkspace").addEventListener("click",async()=>{
+      if(!assistantConfigured())return;
+      const name=$("teamWorkspaceName").value.trim();
+      if(!name){showToast("Escribe el nombre del equipo");return}
+      $("assistantWorkspaceName").value=name;
+      const btn=$("teamCreateWorkspace");btn.disabled=true;
+      try{await assistantCreateWorkspace();$("teamCreateForm").classList.add("hidden");await assistantSync(false,true);renderAssistantSettings();await assistantLoadActivity(true)}
+      finally{btn.disabled=false}
+    });
+    $("teamJoinWorkspace").addEventListener("click",async()=>{
+      if(!assistantConfigured())return;
+      const code=$("teamWorkspaceCode").value.trim().toUpperCase();
+      if(!code){showToast("Escribe el código de invitación");return}
+      $("assistantInviteInput").value=code;
+      const btn=$("teamJoinWorkspace");btn.disabled=true;
+      try{await assistantJoinWorkspace();if(assistantAuthorizedIds.has(currentWorkspaceId())){$("teamJoinForm").classList.add("hidden");$("teamWorkspaceCode").value=""}renderAssistantSettings()}
+      finally{btn.disabled=false}
+    });
+    $("teamCopyInvite").addEventListener("click",()=>teamCopyText($("teamInviteCode").textContent));
+    $("teamIssueRecovery").addEventListener("click",()=>teamIssueKey("recovery"));
+    $("teamIssueLink").addEventListener("click",()=>teamIssueKey("link"));
+    $("teamCopyKey").addEventListener("click",()=>teamCopyText($("teamKeyValue").textContent));
+    $("teamAdvancedToggle").addEventListener("click",()=>toggleTeamAdvanced($("assistantAdvanced").classList.contains("hidden")));
+    $("teamManageCalendar").addEventListener("click",()=>{
+      const section=$("assistantGoogleSection");
+      if(section.classList.contains("hidden")){showToast("Selecciona un equipo para gestionar calendarios");return}
+      section.classList.toggle("teamCalendarOpen");
+      $("teamCalendarTools").classList.toggle("hidden",!section.classList.contains("teamCalendarOpen"));
+      if(section.classList.contains("teamCalendarOpen"))assistantGoogleRefresh();
+    });
+    const tools=document.createElement("div");tools.id="teamCalendarTools";tools.className="hidden";
+    $("teamWorkspaceDetail").appendChild(tools);
+    tools.appendChild($("assistantGoogleSection"));
+  }
   function renderAssistantSettings(){
     if(!state)return;
     const a=state.assistant||{},f=a.firebase||{},auth=assistantAuth(),ws=currentWorkspace(),push=assistantNativePushStatus(),connected=assistantConfigured();
@@ -3340,7 +3650,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
     $("assistantNoticeSection").classList.toggle("hidden",!(connected&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)));
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
     $("assistantPushDesc").textContent=push.fcmToken?("Token Firebase disponible · "+String(push.fcmToken).slice(0,12)+"… · comprueba el registro en Equipo y actividad"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
-    renderAssistantSummary();
+    renderAssistantSummary();renderTeamHome();
   }
   function assistantGoogleCalendarSelector(calendars,canEdit){
     const target=$("assistantGoogleCalendars");target.replaceChildren();
@@ -3422,7 +3732,9 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
     catch(error){showToast("Google Calendar: "+String(error?.message||error).slice(0,90))}
   }
   function openAssistantSettings(){
-    renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true);assistantGoogleRefresh();
+    toggleTeamAdvanced(false);
+    $("teamKeyResult").classList.add("hidden");$("teamKeyValue").textContent="";
+    renderAssistantSettings();openOverlay("assistantOverlay");assistantLoadActivity(true);assistantGoogleRefresh();assistantAutoConfigurePush();
     if(assistantConfigured()&&!assistantMembershipChecked)assistantSync(false,true).then(()=>{renderAssistantSettings();assistantGoogleRefresh()});
   }
   window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
@@ -7467,6 +7779,7 @@ html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
   initSheetGestures();
   initActionPanelGestures();
   initNottasSelects();
+  initializeTeamControls();
   load();
   initTaskTools();
   setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
