@@ -522,9 +522,21 @@ html[data-theme="dark"] .calendarDayEvent:active{background:#48484a}
 }
 .calendarPeekTitle{font-size:17px;font-weight:700;line-height:1.25;padding-right:34px;white-space:normal;overflow-wrap:anywhere}
 .calendarPeekMeta{font-size:11px;color:#8e8e93;margin-top:7px}
-.calendarPeekOpen{margin-top:12px;height:36px;border:0;border-radius:10px;background:#1677ff;color:#fff;padding:0 14px;font-size:12px;font-weight:650}
+.calendarPeekPrimary{margin-top:9px;display:flex;flex-wrap:wrap;gap:6px 12px;color:#505058;font-size:12px;font-weight:610}
+.calendarPeekPrimary span{display:inline-flex;align-items:center;gap:5px}
+.calendarPeekPrimary svg,.calendarPeekDayState svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.calendarPeekProgress{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:11px;padding-top:10px;border-top:1px solid #e5e5ea}
+.calendarPeekDayState{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#447052;font-weight:620}
+.calendarPeekDayCount{font-size:11px;color:#8e8e93;white-space:nowrap}
+.calendarPeekFooter{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px}
+.calendarPeekToggle{min-height:33px;min-width:0;background:#eef2f8;color:#275a99;border:0;border-radius:9px;padding:6px 9px;font-size:11px;font-weight:630}
+.calendarPeekOpen{margin:0;height:33px;border:0;border-radius:9px;background:#1677ff;color:#fff;padding:0 12px;font-size:11px;font-weight:650}
 html[data-theme="dark"] .calendarPeek{background:#242426;color:#f5f5f7;border-color:#38383a}
 html[data-theme="dark"] .calendarPeekClose{background:#2c2c2e;color:#d1d1d6}
+html[data-theme="dark"] .calendarPeekPrimary{color:#e5e5ea}
+html[data-theme="dark"] .calendarPeekProgress{border-color:#38383a}
+html[data-theme="dark"] .calendarPeekDayState{color:#9ce2ae}
+html[data-theme="dark"] .calendarPeekToggle{background:#18344e;color:#a5d0ff}
 
 /* Unified task/event form */
 #editorOverlay.taskEditorMode .taskMetaChips{display:none!important}
@@ -1262,8 +1274,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     <div id="calendarPeek" class="calendarPeek hidden" role="dialog" aria-modal="false" aria-label="Vista previa del evento">
       <button id="calendarPeekClose" class="calendarPeekClose" type="button" aria-label="Cerrar vista previa">×</button>
       <div id="calendarPeekTitle" class="calendarPeekTitle"></div>
+      <div id="calendarPeekPrimary" class="calendarPeekPrimary"></div>
       <div id="calendarPeekMeta" class="calendarPeekMeta"></div>
-      <button id="calendarPeekOpen" class="calendarPeekOpen" type="button">Abrir</button>
+      <div id="calendarPeekProgress" class="calendarPeekProgress">
+        <span id="calendarPeekDayState" class="calendarPeekDayState"></span>
+        <span id="calendarPeekDayCount" class="calendarPeekDayCount"></span>
+      </div>
+      <div class="calendarPeekFooter">
+        <button id="calendarPeekToggle" class="calendarPeekToggle" type="button"></button>
+        <button id="calendarPeekOpen" class="calendarPeekOpen" type="button">Abrir</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3690,13 +3710,25 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     if(!t||!anchor)return;
     const peek=$("calendarPeek"),sheet=document.querySelector("#calendarOverlay .calendarSheet");if(!peek||!sheet)return;
     $("calendarPeekTitle").textContent=t.text||"Sin título";
+    const date=anchor.dataset.calendarDate||calendarDate;
+    const checked=taskDayDone(t,date);
+    const dateLabel=calendarDateLabel(date,{day:"numeric",month:"short"});
+    const timeLabel=calendarTaskRangeLabel(t);
+    $("calendarPeekPrimary").innerHTML='<span>'+taskMetaSvg("calendar")+esc(dateLabel)+'</span>'+
+      (t.dueTime?'<span>'+taskMetaSvg("clock")+esc(timeLabel)+'</span>':"");
     const bits=[];
-    if(t.dueDate)bits.push(calendarDateLabel(t.dueDate,{weekday:"short",day:"numeric",month:"short"})+(taskRangeEnd(t)>t.dueDate?" – "+calendarDateLabel(taskRangeEnd(t),{weekday:"short",day:"numeric",month:"short"}):""));
-    if(t.dueTime)bits.push(calendarTaskRangeLabel(t));
     if(t.locationText)bits.push(t.locationText);
     const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
     $("calendarPeekMeta").textContent=bits.join(" · ");
-    peek.dataset.taskId=t.id;peek.dataset.taskDate=anchor.dataset.calendarDate||calendarDate;peek.classList.remove("hidden");$("calendarPeekOpen").classList.remove("hidden");
+    $("calendarPeekMeta").classList.toggle("hidden",!bits.length);
+    $("calendarPeekDayState").innerHTML=taskMetaSvg(checked?"check":"clock")+
+      (taskMultiDay(t)?(checked?"Jornada realizada":"Jornada pendiente"):(checked?"Realizada":"Pendiente"));
+    $("calendarPeekDayCount").textContent=taskMultiDay(t)?taskCompletedDates(t).length+"/"+taskDays(t).length+" días":"";
+    const toggle=$("calendarPeekToggle");
+    toggle.textContent=checked?(taskMultiDay(t)?"Desmarcar jornada":"Reabrir"):(taskMultiDay(t)?"Completar jornada":"Completar");
+    toggle.dataset.taskId=t.id;toggle.dataset.taskDate=date;
+    peek.dataset.taskId=t.id;peek.dataset.taskDate=date;
+    peek.classList.remove("hidden");$("calendarPeekOpen").classList.remove("hidden");
     requestAnimationFrame(()=>{
       const sr=sheet.getBoundingClientRect(),ar=anchor.getBoundingClientRect(),width=Math.min(286,Math.max(220,sr.width-28));
       peek.style.width=width+"px";
@@ -6210,6 +6242,15 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("calendarPeek").addEventListener("click",e=>e.stopPropagation());
   $("calendarPeekClose").addEventListener("click",closeCalendarPeek);
   $("calendarGoogleReloadBtn").addEventListener("click",()=>scheduleGoogleCalendarFetch(true));
+  $("calendarPeekToggle").addEventListener("click",e=>{
+    e.stopPropagation();
+    const button=$("calendarPeekToggle");
+    const t=state.tasks.find(x=>x.id===button.dataset.taskId&&!x.deletedAt);
+    if(!t||calendarRescheduleEditor)return;
+    const date=button.dataset.taskDate||calendarDate;
+    const checked=taskDayDone(t,date);
+    closeCalendarPeek();completeTask(t,!checked,date);renderCalendar();
+  });
   $("calendarPeekOpen").addEventListener("click",()=>{const t=state.tasks.find(x=>x.id===$("calendarPeek").dataset.taskId);if(!t||calendarRescheduleEditor)return;openTaskFromCalendar(t,$("calendarPeek").dataset.taskDate||calendarDate)});
   $("calendarOverlay").addEventListener("click",e=>{
     if(!e.target.closest("#calendarEyePopover,#calendarEyeBtn"))closeCalendarEye();
