@@ -64,7 +64,6 @@ class AssistantNoticeActivity : Activity() {
         noticeId = intent.getStringExtra(EXTRA_NOTICE_ID).orEmpty()
         workspaceId = intent.getStringExtra(EXTRA_WORKSPACE_ID).orEmpty()
         if (noticeId.isBlank()) { finish(); return }
-        val who = intent.getStringExtra(EXTRA_FROM_NAME).orEmpty().ifBlank { "Asistente" }
         val message = intent.getStringExtra(EXTRA_MESSAGE).orEmpty().take(280)
         val fromRole = intent.getStringExtra(EXTRA_FROM_ROLE).orEmpty()
         if (message.isBlank()) { finish(); return }
@@ -116,126 +115,145 @@ class AssistantNoticeActivity : Activity() {
         }
         // The scroll area contains the title, message and quick replies;
         // only the composer and dismiss action stay anchored above the IME.
-        val head = TextView(this).apply {
-            text = "Nuevo mensaje"
-            textSize = 16f
+        val heading = TextView(this).apply {
+            text = "Mensaje recibido"
+            textSize = 15f
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
             setTextColor(gray)
         }
-        val senderView = TextView(this).apply {
-            text = "De $who"
-            textSize = 14f
-            typeface = Typeface.create("sans-medium",Typeface.NORMAL)
-            gravity = Gravity.CENTER
-            setTextColor(gray)
-        }
+        root.addView(heading, LinearLayout.LayoutParams(-1, -2))
 
+        // The message stays centered until the user explicitly chooses to
+        // answer. A separate bottom panel prevents replies from covering it.
         val scroll = ScrollView(this).apply {
-            isFillViewport = false
+            isFillViewport = true
             isVerticalScrollBarEnabled = false
             clipToPadding = false
         }
         val messageArea = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(2),dp(15),dp(2),dp(15))
+            gravity = Gravity.CENTER
+            setPadding(dp(2), dp(18), dp(2), dp(18))
         }
-        messageArea.addView(head, LinearLayout.LayoutParams(-1,-2))
         messageArea.addView(TextView(this).apply {
             text = message
-            textSize = if (message.length > 130) 23f else 29f
-            typeface = Typeface.create("sans",Typeface.BOLD)
+            textSize = when {
+                message.length > 150 -> 23f
+                message.length > 70 -> 27f
+                else -> 34f
+            }
+            typeface = Typeface.create("sans", Typeface.BOLD)
             gravity = Gravity.CENTER
             setTextColor(blue)
-        },LinearLayout.LayoutParams(-1,-2).apply {
-            topMargin=dp(26)
-            bottomMargin=dp(12)
-        })
-        messageArea.addView(senderView,LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(22) })
-        scroll.addView(messageArea)
-        root.addView(scroll,LinearLayout.LayoutParams(-1,0,1f).apply {
-            bottomMargin=dp(8)
-        })
+        }, LinearLayout.LayoutParams(-1, -2))
 
+        val replyPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+        }
         if (canReply) {
-            messageArea.addView(TextView(this).apply {
+            val showReplies = TextView(this).apply {
                 text = "Responder"
-                textSize = 13f
+                textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(gray)
-            },LinearLayout.LayoutParams(-1,-2).apply { bottomMargin=dp(7) })
-            val choices=if(fromRole=="assistant")
-                listOf("Hazlo pasar","En 5 minutos","Que espere","Gracias")
+                gravity = Gravity.CENTER
+                setTextColor(blue)
+                background = rounded(Color.WHITE, 16)
+                setOnClickListener {
+                    val opening = replyPanel.visibility != View.VISIBLE
+                    replyPanel.visibility = if (opening) View.VISIBLE else View.GONE
+                    text = if (opening) "Ocultar respuestas" else "Responder"
+                }
+            }
+            messageArea.addView(showReplies, LinearLayout.LayoutParams(
+                dp(172), dp(48)
+            ).apply { topMargin = dp(30) })
+
+            val choices = if (fromRole == "assistant")
+                listOf("Hazlo pasar", "En 5 minutos", "Que espere", "Gracias")
             else
-                listOf("Voy","En 5 minutos","Entendido","Ahora mismo")
+                listOf("Voy", "En 5 minutos", "Entendido", "Ahora mismo")
             for (rowIndex in 0..1) {
-                val row=LinearLayout(this).apply { orientation=LinearLayout.HORIZONTAL }
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                }
                 for (column in 0..1) {
-                    val preset=choices[rowIndex*2+column]
+                    val preset = choices[rowIndex * 2 + column]
                     row.addView(TextView(this).apply {
-                        text=preset
-                        textSize=13f
-                        typeface=Typeface.create("sans-medium",Typeface.NORMAL)
-                        gravity=Gravity.CENTER
+                        text = preset
+                        textSize = 14f
+                        typeface = Typeface.create("sans-medium", Typeface.NORMAL)
+                        gravity = Gravity.CENTER
                         setTextColor(ink)
-                        background=rounded(Color.WHITE,12)
+                        background = rounded(Color.WHITE, 12)
                         setOnClickListener { sendReply(preset) }
-                    },LinearLayout.LayoutParams(0,dp(43),1f).apply {
-                        if(column==1)leftMargin=dp(7)
+                    }, LinearLayout.LayoutParams(0, dp(44), 1f).apply {
+                        if (column == 1) leftMargin = dp(7)
                     })
                 }
-                messageArea.addView(row,LinearLayout.LayoutParams(-1,-2).apply {
-                    bottomMargin=dp(7)
+                replyPanel.addView(row, LinearLayout.LayoutParams(-1, -2).apply {
+                    bottomMargin = dp(8)
                 })
             }
-            val inputRow=LinearLayout(this).apply {
-                orientation=LinearLayout.HORIZONTAL
-                gravity=Gravity.CENTER_VERTICAL
+            val inputRow = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
             }
-            replyText=EditText(this).apply {
-                hint="Escribir respuesta…"
-                textSize=15f
-                minLines=1
-                maxLines=3
-                inputType=InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or
-                    InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                filters=arrayOf(InputFilter.LengthFilter(280))
+            replyText = EditText(this).apply {
+                hint = "Escribir respuesta…"
+                textSize = 15f
+                minLines = 1
+                maxLines = 3
+                inputType = InputType.TYPE_CLASS_TEXT or
+                    InputType.TYPE_TEXT_FLAG_CAP_SENTENCES or InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                filters = arrayOf(InputFilter.LengthFilter(280))
                 setTextColor(ink)
                 setHintTextColor(gray)
-                setPadding(dp(12),dp(7),dp(10),dp(7))
-                background=rounded(Color.WHITE,12)
+                setPadding(dp(12), dp(9), dp(10), dp(9))
+                background = rounded(Color.WHITE, 12)
             }
-            inputRow.addView(replyText,LinearLayout.LayoutParams(0,-2,1f))
-            sendButton=TextView(this).apply {
-                text="Enviar"
-                textSize=14f
-                typeface=Typeface.DEFAULT_BOLD
-                gravity=Gravity.CENTER
+            inputRow.addView(replyText, LinearLayout.LayoutParams(0, -2, 1f))
+            sendButton = TextView(this).apply {
+                text = "Enviar"
+                textSize = 14f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
                 setTextColor(Color.WHITE)
-                background=rounded(blue,12)
+                background = rounded(blue, 12)
                 setOnClickListener { sendReply(replyText.text.toString()) }
             }
-            inputRow.addView(sendButton,LinearLayout.LayoutParams(dp(74),dp(43)).apply {
-                leftMargin=dp(7)
+            inputRow.addView(sendButton, LinearLayout.LayoutParams(
+                dp(78), dp(46)
+            ).apply { leftMargin = dp(7) })
+            replyPanel.addView(inputRow, LinearLayout.LayoutParams(-1, -2))
+        }
+        scroll.addView(messageArea, ScrollView.LayoutParams(-1, -2))
+        root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
+        if (canReply) {
+            root.addView(replyPanel, LinearLayout.LayoutParams(-1, -2).apply {
+                bottomMargin = dp(8)
             })
-            root.addView(inputRow,LinearLayout.LayoutParams(-1,-2))
         }
-        statusText=TextView(this).apply {
-            text=""
-            textSize=12f
-            gravity=Gravity.CENTER
+
+        statusText = TextView(this).apply {
+            text = ""
+            textSize = 12f
+            gravity = Gravity.CENTER
             setTextColor(gray)
         }
-        root.addView(statusText,LinearLayout.LayoutParams(-1,-2).apply { topMargin=dp(5) })
+        root.addView(statusText, LinearLayout.LayoutParams(-1, -2))
         root.addView(TextView(this).apply {
-            text="Cerrar"
-            textSize=16f
-            typeface=Typeface.DEFAULT_BOLD
-            gravity=Gravity.CENTER
+            text = "Cerrar"
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
             setTextColor(gray)
+            background = rounded(Color.WHITE, 14)
             setOnClickListener { finishNotice() }
-        },LinearLayout.LayoutParams(-1,dp(48)).apply { topMargin=dp(5) })
+        }, LinearLayout.LayoutParams(-1, dp(48)).apply {
+            topMargin = dp(8)
+        })
         root.isFocusableInTouchMode = true
         setContentView(root)
         root.requestFocus()

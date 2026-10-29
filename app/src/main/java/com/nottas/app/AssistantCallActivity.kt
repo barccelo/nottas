@@ -30,9 +30,6 @@ class AssistantCallActivity : Activity() {
             finish()
             return
         }
-        val caller = intent.getStringExtra(EXTRA_CALLER_NAME).orEmpty().ifBlank { "Tu jefe" }
-        val workspace = intent.getStringExtra(EXTRA_WORKSPACE_NAME).orEmpty().ifBlank { "Asistente" }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -73,38 +70,20 @@ class AssistantCallActivity : Activity() {
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
         })
-
+        // The call itself is the primary message. Keep it centered in the
+        // remaining space and avoid repeating the known colleague/workspace.
+        root.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
         root.addView(TextView(this).apply {
             text = "Te están llamando"
-            textSize = 30f
-            setTextColor(Color.rgb(29, 29, 31))
+            textSize = 36f
+            setTextColor(Color.rgb(22, 119, 255))
             typeface = Typeface.create("sans", Typeface.BOLD)
             gravity = Gravity.CENTER
+            setPadding(dp(4), dp(16), dp(4), dp(16))
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(62) })
-
-        root.addView(TextView(this).apply {
-            text = "De $caller"
-            textSize = 16f
-            setTextColor(Color.rgb(99, 99, 102))
-            gravity = Gravity.CENTER
-        }, LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(12) })
-
-        root.addView(TextView(this).apply {
-            text = workspace
-            textSize = 14f
-            setTextColor(Color.rgb(142, 142, 147))
-            gravity = Gravity.CENTER
-        }, LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(12) })
-
+        ))
         root.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
 
         fun addAction(label: String, response: String, primary: Boolean = false) {
