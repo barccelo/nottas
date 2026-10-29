@@ -836,11 +836,36 @@ async function createAssistantMessage(request,workspaceId,auth,env) {
   }catch(error){console.error("Assistant message push:",String(error?.message||error).slice(0,180))}
   return json({ok:true,id,createdAt:at,recipientUserId:target,pushAccepted:pushed>0,acceptedDevices:pushed},201);
 }
-// Keep existing older clients functional on assistant-to-owner notices.
-async function sendAssistantNotice(request,workspaceId,auth,env) {
-  const access=await assistantMessageAccess(workspaceId,auth,env);
-  if(!access||access.role!=="assistant")return json({error:"assistant_required"},403);
-  return createAssistantMessage(request,workspaceId,auth,env);
+// Legacy notice route for older clients, with its original delivery semantics.
+async function sendAssistantNotice(request, workspaceId, auth, env) {
+  const member = await membership(workspaceId, auth.userId, env);
+  if (!member || member.role !== "assistant") {
+    return json({ error: "assistant_required", message: "Solo un asistente activo puede enviar avisos al jefe." }, 403);
+  }
+  const body = await bodyJson(request);
+  const content = String(body.message || "").trim();
+  if (!content || content.length > 280) {
+    return json({ error: "invalid_notice", message: "Escribe un aviso de 1 a 280 caracteres." }, 400);
+  }
+  const boss = await env.DB.prepare(
+    "SELECT w.owner_user_id AS user_id FROM workspaces w " +
+    "JOIN workspace_members m ON m.workspace_id=w.id AND m.user_id=w.owner_user_id " +
+    "WHERE w.id=? AND w.kind='assistant' AND m.role='owner' AND m.status='active'"
+  ).bind(workspaceId).first();
+  if (!boss?.user_id) {
+    return json({ error: "owner_not_connected", message: "No se encontró el jefe activo en este espacio." }, 409);
+  }
+  const noticeId = crypto.randomUUID();
+  const result = await sendAssistantCallPush(boss.user_id, {
+    type: "assistant_notice",
+    noticeId, workspaceId,
+    fromName: auth.displayName || "Asistente",
+    message: content
+  }, env);
+  if (!result.accepted) {
+    return json({ error: "notice_not_delivered", message: "Firebase no aceptó el aviso. Comprueba las notificaciones del teléfono del jefe." }, 502);
+  }
+  return json({ ok: true, noticeId, pushAccepted: true, acceptedDevices: result.accepted }, 201);
 }
 
 async function createAssistantCall(request, workspaceId, auth, env) {
