@@ -2630,6 +2630,18 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
         (row.mine&&row.readAt?" · Leído":"")+'</div></div>'
       ).join(""):'<div class="assistantSectionHint">Todavía no hay mensajes en este espacio.</div>';
       thread.scrollTop=thread.scrollHeight;
+      // Reading the mini-conversation acknowledges incoming messages, while
+      // opening the Android full-screen alert acknowledges a single message.
+      const unread=Array.isArray(data.messages)?data.messages.filter(row=>!row.mine&&!row.readAt):[];
+      if(unread.length){
+        const results=await Promise.allSettled(unread.map(row=>
+          assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages/"+encodeURIComponent(row.id)+"/read",{method:"POST",body:{}})
+        ));
+        if(ws.id===currentWorkspaceId()){
+          assistantMessageUnread=Math.max(0,assistantMessageUnread-results.filter(x=>x.status==="fulfilled").length);
+          renderAssistantMessageBadge();
+        }
+      }
     }catch(error){
       thread.textContent="No se pudo cargar el historial: "+String(error?.message||error);
     }finally{assistantMessagesLoading=false}
