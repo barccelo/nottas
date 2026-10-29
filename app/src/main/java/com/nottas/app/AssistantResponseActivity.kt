@@ -82,7 +82,7 @@ class AssistantResponseActivity : Activity() {
         }
 
         root.addView(TextView(this).apply {
-            text = "Nottas · Asistente"
+            text = "Respuesta recibida"
             textSize = 16f
             setTextColor(mutedColor)
             typeface = Typeface.DEFAULT_BOLD
@@ -90,10 +90,10 @@ class AssistantResponseActivity : Activity() {
         })
         root.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
         root.addView(TextView(this).apply {
-            text = fromName
-            textSize = 33f
-            setTextColor(textColor)
-            typeface = Typeface.create("sans", Typeface.BOLD)
+            text = "De $fromName"
+            textSize = 15f
+            setTextColor(mutedColor)
+            typeface = Typeface.create("sans-medium", Typeface.NORMAL)
             gravity = Gravity.CENTER
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -101,7 +101,7 @@ class AssistantResponseActivity : Activity() {
         ))
         root.addView(TextView(this).apply {
             text = "ha respondido"
-            textSize = 19f
+            textSize = 13f
             setTextColor(mutedColor)
             gravity = Gravity.CENTER
         }, LinearLayout.LayoutParams(
@@ -117,7 +117,7 @@ class AssistantResponseActivity : Activity() {
         }, LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = dp(38) })
+        ).apply { topMargin = dp(24) })
         root.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
 
         val button = TextView(this).apply {
