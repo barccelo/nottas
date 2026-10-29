@@ -666,6 +666,29 @@ html[data-theme="dark"] .calendarTimeColumns{
 .metaTag.meetingFollowupMeta.cancelled{background:#ffe8e7;color:#aa3640!important}
 html[data-theme="dark"] .metaTag.meetingFollowupMeta{background:#303744;color:#b5c6e2!important}
 html[data-theme="dark"] .metaTag.meetingFollowupMeta.realized{background:#163551;color:#9ccaff!important}
+/* Compact task cards: temporal data first, context second, status last. */
+.taskInfoPrimary,.taskInfoContext,.taskStatusRow{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:5px}
+.taskInfoPrimary{margin-top:7px;color:#505058;font-size:12px;font-weight:590}
+.taskInfoContext{margin-top:6px;color:#8e8e93;font-size:11px}
+.taskStatusRow{margin-top:8px;gap:6px}
+.taskMetaItem{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;overflow-wrap:anywhere}
+.taskMetaItem svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:#7a7a83}
+.taskMetaSubtle{font-size:11px;color:#8e8e93}
+.taskMetaSubtle svg{width:12px;height:12px;color:#a0a0a8}
+.taskMetaItem.overdueText{color:#c62828}
+.taskMetaItem.high{color:#b42318}
+.taskDaysChip{min-height:24px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid #dcdfe6;border-radius:99px;background:#f7f8fa;color:#566071;font-size:11px;font-weight:640}
+.taskDaysChip svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.taskDaysChip svg:last-child{width:12px;height:12px}
+.taskListDayPanel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px;padding:8px 0 2px}
+.taskListDayBtn{min-height:34px;display:flex;justify-content:center;align-items:center;gap:4px;border:1px solid #dcdfe6;border-radius:9px;background:#fafafa;color:#636366;padding:4px;font-size:11px;font-weight:590}
+.taskListDayBtn.completed{color:#248044;background:#ebf6ed;border-color:#b9dfc5}
+.taskListDayBtn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round}
+.taskEmptyDayCircle{width:13px;height:13px;border:1.5px solid #a3a3ad;border-radius:50%;flex:none}
+html[data-theme="dark"] .taskInfoPrimary{color:#d9d9df}
+html[data-theme="dark"] .taskInfoContext,html[data-theme="dark"] .taskMetaSubtle{color:#a0a0a8}
+html[data-theme="dark"] .taskDaysChip,html[data-theme="dark"] .taskListDayBtn{background:#2c2c2e;border-color:#48484a;color:#d1d1d6}
+html[data-theme="dark"] .taskListDayBtn.completed{background:#193b2a;border-color:#39714b;color:#9ce2ae}
 .metaTag.assistantMeta svg{width:13px;height:13px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .metaTag.assistantMeta.state-scheduled{--approval-bg:#e5f5e9;--approval-color:#217344}
 .metaTag.assistantMeta.state-confirmed{--approval-bg:#e4f1ff;--approval-color:#205d9c}
@@ -4116,6 +4139,49 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function taskGroupHourHeader(hour,count){
     return '<div class="taskGroupHourHeader'+(hour?"":" isUntimed")+'"><strong>'+esc(hour||"Sin hora")+'</strong><span class="taskGroupHourLine"></span>'+(count>1?'<span class="taskGroupHourCount">'+count+'</span>':"")+'</div>';
   }
+  function taskMetaSvg(kind){
+    const paths={
+      calendar:'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3.5 10h17"/>',
+      clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      tag:'<path d="M4 4h7l9 9-7 7-9-9V4Z"/><circle cx="8" cy="8" r="1"/>',
+      bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+      pin:'<path d="M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6ZM12 15v6"/>',
+      check:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      chevron:'<path d="m6 9 6 6 6-6"/>'
+    };
+    return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[kind]||paths.tag)+'</svg>';
+  }
+  function taskCompactDateLabel(t){
+    if(!t.dueDate)return "";
+    const start=dateFromISO(t.dueDate),end=dateFromISO(taskRangeEnd(t));
+    const fmt=d=>d.toLocaleDateString("es",{day:"numeric",month:"short",...(d.getFullYear()!==new Date().getFullYear()?{year:"numeric"}:{})});
+    return taskMultiDay(t)&&start.getMonth()===end.getMonth()&&start.getFullYear()===end.getFullYear()
+      ?start.getDate()+"–"+fmt(end):taskMultiDay(t)?fmt(start)+" – "+fmt(end):fmt(start);
+  }
+  function taskMetaRowsHtml(t){
+    const date=taskCompactDateLabel(t),time=t.dueTime?(t.dueTime+(t.endTime?"–"+t.endTime:"")):"";
+    const primary=[date?'<span class="taskMetaItem'+(isOverdue(t)?" overdueText":"")+'">'+taskMetaSvg("calendar")+esc(date)+'</span>':"",
+      time?'<span class="taskMetaItem">'+taskMetaSvg("clock")+esc(time)+'</span>':""].filter(Boolean).join("");
+    const context=[
+      '<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("tag")+esc(catName(t.category))+'</span>',
+      taskReminderOffsets(t).length?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("bell")+esc(reminderMinutesLabel(taskReminderOffsets(t)[0]))+'</span>':"",
+      t.locationText?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("pin")+esc(t.locationText)+'</span>':"",
+      t.priority!=="normal"?'<span class="taskMetaItem taskMetaSubtle '+esc(t.priority)+'">'+esc(priorityLabel(t.priority))+'</span>':"",
+      t.items?.length?'<span class="taskMetaItem taskMetaSubtle">'+esc(subtaskProgress(t))+'</span>':"",
+      recurrenceLabel(t.recurrence)?'<span class="taskMetaItem taskMetaSubtle">↻ '+esc(recurrenceLabel(t.recurrence))+'</span>':"",
+      tagsMeta(t.tags)
+    ].filter(Boolean).join("");
+    const controls=assistantTaskMetaHtml(t)+(taskMultiDay(t)?
+      '<button class="taskDaysChip" type="button" data-task-days-toggle="'+esc(t.id)+'" aria-expanded="'+(expandedTaskDaysId===t.id?"true":"false")+'">'+taskMetaSvg("check")+
+      esc(taskCompletedDates(t).length+"/"+taskDays(t).length+" días")+taskMetaSvg("chevron")+'</button>':"");
+    return (primary?'<div class="taskInfoPrimary">'+primary+'</div>':"")+
+      '<div class="taskInfoContext">'+context+'</div>'+
+      (controls?'<div class="taskStatusRow">'+controls+'</div>':"")+
+      (taskMultiDay(t)&&expandedTaskDaysId===t.id?'<div class="taskListDayPanel" aria-label="Jornadas">'+taskDays(t).map(day=>{
+        const marked=taskDayDone(t,day),label=dateFromISO(day).toLocaleDateString("es",{day:"numeric",month:"short"});
+        return '<button class="taskListDayBtn'+(marked?" completed":"")+'" type="button" data-task-day-toggle="'+esc(t.id)+'" data-task-date="'+day+'" aria-pressed="'+(marked?"true":"false")+'">'+(marked?taskMetaSvg("check"):'<span class="taskEmptyDayCircle"></span>')+esc(label)+'</button>';
+      }).join("")+'</div>':"");
+  }
   function renderTasks(){
     const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(taskGroupedByTime&&!trash?sortTasksByDateTime:sortTasks);
     const groupEnabled=taskGroupedByTime&&!trash;
@@ -4150,7 +4216,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
           <label class="checkHit"><input class="check" type="checkbox" ${dayDone?"checked":""} aria-label="Completar jornada"></label>
           <div class="content taskOpen">
             <div class="cardHeader"><div class="taskTitle">${sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text))}</div><button class="miniBtn pin ${t.pinned?"active":""} pinItem pinTask" type="button" aria-label="${t.pinned?"Quitar destacado":"Destacar"}">${iconPin}</button></div>${t.body?`<div class="preview">${esc(t.body)}</div>`:""}
-            <div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(t.category))}"></span>${esc(catName(t.category))}</span>${d?`<span class="metaTag ${isOverdue(t)?"overdueText":""}">${esc(d)}</span>`:""}${t.locationText?`<span class="metaTag">${esc(t.locationText)}</span>`:""}${p?`<span class="metaTag ${t.priority}">${esc(p)}</span>`:""}${t.items?.length?`<span class="metaTag subtaskProgress">✓ ${esc(subtaskProgress(t))}</span>`:""}${taskMultiDay(t)?`<span class="metaTag">✓ ${esc(taskDaysProgress(t))}</span>`:""}${recurrenceLabel(t.recurrence)?`<span class="metaTag recurrenceTag">↻ ${esc(recurrenceLabel(t.recurrence))}</span>`:""}${reminderLabel(t.reminder)?`<span class="metaTag">${esc(reminderLabel(t.reminder))}</span>`:""}${assistantTaskMetaHtml(t)}${tagsMeta(t.tags)}</div>
+            ${taskMetaRowsHtml(t)}
           </div>
         </div>
       </div>`;
@@ -4158,7 +4224,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     list.querySelectorAll("[data-task]").forEach(el=>{
       const t=state.tasks.find(x=>x.id===el.dataset.task);if(!t)return;
       const ck=el.querySelector(".check");if(ck)ck.addEventListener("change",e=>completeTask(t,e.target.checked));
-      const open=el.querySelector(".taskOpen");if(open&&!trash)open.addEventListener("click",()=>openTask(t));
+      const open=el.querySelector(".taskOpen");if(open&&!trash)open.addEventListener("click",()=>{expandedTaskDaysId=null;openTask(t)});
+      const expand=el.querySelector("[data-task-days-toggle]");
+      if(expand)expand.addEventListener("click",e=>{
+        e.preventDefault();e.stopPropagation();
+        expandedTaskDaysId=expandedTaskDaysId===t.id?null:t.id;renderTasks();
+      });
+      el.querySelectorAll("[data-task-day-toggle]").forEach(button=>button.addEventListener("click",e=>{
+        e.preventDefault();e.stopPropagation();
+        completeTask(t,!taskDayDone(t,button.dataset.taskDate),button.dataset.taskDate);
+      }));
       const pin=el.querySelector(".pinTask");if(pin)pin.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();t.pinned=!t.pinned;touch(t);scheduleSave();render()});
       const res=el.querySelector(".restoreTask");if(res)res.addEventListener("click",()=>{t.deletedAt=null;touch(t);scheduleSave();render();showToast("Tarea restaurada")});
     });
@@ -6643,6 +6718,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   // receives pointerdown or click. A subsequent tap may then act normally.
   let dismissedOutsideAt=0;
   function dismissTransientOutside(target){
+    if(expandedTaskDaysId&&!$("editorOverlay").classList.contains("show")&&!$("calendarOverlay").classList.contains("show")&&
+       !target.closest(".taskDaysChip,.taskListDayPanel")){
+      expandedTaskDaysId=null;renderTasks();return true;
+    }
     if(!$("editorActionBackdrop").classList.contains("hidden")||nottasChoiceLayer||
        !$("calendarDayBackdrop").classList.contains("hidden"))return false;
     const visible=id=>{const el=$(id);return !!el&&!el.classList.contains("hidden")};
