@@ -1112,6 +1112,50 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolBtn.active,html[d
 html[data-theme="dark"] #editorOverlay.taskEditorMode .taskToolBtn.hasValue::after{background:#64a9ff}
 html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact .taskToolSection.active{background:#242426}
 html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskToolsHasSubtasks #taskSubtasksBox{border-color:#38383a}
+
+/* Workspace-first navigation: no redundant large title, even with every action visible. */
+#mainHeader .headerTitle{display:flex;align-items:center;flex:1 1 auto;min-width:0;gap:0}
+#mainHeader .headerTitle h1{display:none}
+#mainHeader .headerTitleRow #workspaceContextBtn{margin-left:2px;min-width:0;flex:0 1 auto;max-width:clamp(64px,24vw,145px);font-size:12px;padding:0 9px}
+#mainHeader .headerActions{gap:0;flex:0 0 auto}
+#mainHeader .headerActions>.iconBtn{width:34px;min-width:34px;height:42px}
+#mainHeader .headerActions>.iconBtn svg{width:20px;height:20px}
+#mainHeader .menuBtn{width:36px;height:42px;flex:0 0 36px;margin-left:-5px}
+#mainHeader{gap:1px}
+body.headerBottom .app{padding-bottom:190px}
+body.headerBottom #mainHeader{position:fixed;z-index:29;left:50%;transform:translateX(-50%);bottom:max(7px,env(safe-area-inset-bottom));width:min(736px,calc(100% - 24px));box-sizing:border-box;min-height:58px;margin:0;padding:7px 9px;border-radius:19px;background:rgba(245,245,247,.97);box-shadow:0 3px 16px rgba(0,0,0,.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+body.headerBottom .bottomDock{bottom:calc(80px + env(safe-area-inset-bottom))}
+body.headerBottom.imeVisible #mainHeader,body.headerBottom.searchKeyboard #mainHeader{display:none!important}
+body.headerBottom.searchKeyboard .bottomDock{bottom:max(18px,env(safe-area-inset-bottom))}
+body.imeVisible .assistantNoticeSheet.historyCollapsed{height:auto}
+@media(max-width:370px){.assistantNoticeHistoryAction{display:none}}
+html[data-theme="dark"] body.headerBottom #mainHeader{background:rgba(28,28,30,.97);box-shadow:0 3px 16px rgba(0,0,0,.4)}
+@media(max-width:370px){#mainHeader .headerActions>.iconBtn{width:32px;min-width:32px}#mainHeader .menuBtn{width:32px;flex-basis:32px}#mainHeader .headerTitleRow #workspaceContextBtn{font-size:11px;padding:0 7px}}
+/* Expandable conversation: the header title itself toggles the history. */
+.assistantNoticeHistoryToggle{display:flex;align-items:center;gap:7px;border:0;background:transparent;color:inherit;padding:6px 0;min-width:0;text-align:left;cursor:pointer;font:inherit}
+.assistantNoticeHistoryToggle svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .15s}
+.assistantNoticeHistoryToggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.assistantNoticeHistoryAction{font-size:11px;font-weight:550;letter-spacing:0;color:#8e8e93;white-space:nowrap}
+.assistantNoticeSheet.historyCollapsed,.assistantNoticeSheet.historyCollapsed.sheetExpanded{height:auto;min-height:0;max-height:calc(var(--vv-height,100vh) - 4px)}
+.assistantNoticeSheet.historyCollapsed .assistantNoticeScroll{display:none}
+.assistantNoticePresetsBlock{max-height:min(40vh,320px);overflow-y:auto;overscroll-behavior:contain}
+.assistantNoticePreset{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.assistantNoticePreset.longPressed{border-color:#1677ff;background:#e8f2ff}
+html[data-theme="dark"] .assistantNoticePreset.longPressed{background:#234361;color:#fff}
+.assistantPresetSettings{display:flex;flex-direction:column;gap:12px}
+.assistantPresetSettingsGroup{padding:12px;border-radius:13px;background:#fff;border:1px solid #e5e5ea}
+.assistantPresetSettingsHeading{font-size:13px;font-weight:700;color:#303038;margin-bottom:8px}
+.assistantPresetEditRow{display:flex;align-items:center;gap:7px;margin:7px 0}
+.assistantPresetEditRow input{flex:1;min-width:0;height:40px;padding:7px 10px;border:1px solid #d1d1d6;border-radius:10px;background:#f5f5f7;color:#1d1d1f;font:inherit;font-size:13px;outline:none}
+.assistantPresetEditRow input:focus{border-color:#1677ff}
+.assistantPresetRemove{flex:0 0 35px;height:36px;border:0;border-radius:9px;color:#b3262b;background:#f9ebed;font-size:21px}
+.assistantPresetAdd{min-height:35px;background:transparent;border:0;color:#1677ff;font-size:13px;font-weight:650;padding:4px 3px;text-align:left}
+.assistantPresetHelp{font-size:11px;color:#8e8e93;margin:5px 0 0}
+html[data-theme="dark"] .assistantPresetSettingsGroup{background:#1c1c1e;border-color:#38383a}
+html[data-theme="dark"] .assistantPresetSettingsHeading{color:#f5f5f7}
+html[data-theme="dark"] .assistantPresetEditRow input{background:#2c2c2e;border-color:#48484a;color:#f5f5f7}
+html[data-theme="dark"] .assistantPresetRemove{background:#44262a;color:#ffa6a6}
+
 </style>
 </head>
 <body>
@@ -1776,8 +1820,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     <div class="sectionTitle" style="margin-top:16px">Apariencia</div>
     <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">Tema oscuro</div><div class="desc">Cambia la interfaz de Nottas a una apariencia oscura.</div></div><label class="iosSwitch"><input id="themeDarkToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Posición de la barra principal</div><div class="desc">Arriba o debajo de Buscar y Crear.</div></div><select id="headerPlacementSelect" class="select" style="width:120px;max-width:40%" aria-label="Posición de la barra principal"><option value="top">Arriba</option><option value="bottom">Abajo</option></select></div>
     </div>
 
+    <div class="sectionTitle">Mensajes rápidos</div>
+    <div class="assistantSectionHint">Personaliza los mensajes de ambos roles. Los cambios se guardan en este dispositivo. Toca para enviar y mantén pulsado para editar antes de enviar.</div>
+    <div id="assistantQuickPresetsSettings" class="assistantPresetSettings"></div>
     <div class="sectionTitle">Recordatorios predeterminados</div>
     <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">A la hora del evento</div><div class="desc">Se aplicará automáticamente a nuevas tareas o eventos con hora.</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="0"><span aria-hidden="true"></span></label></div>
@@ -1936,7 +1984,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
 <div id="assistantNoticeOverlay" class="overlay assistantNoticeOverlay" aria-hidden="true">
   <div class="sheet assistantNoticeSheet">
     <div class="sheetHandle"></div>
-    <div class="sheetHeader"><h2 id="assistantNoticeTitle">Mensajes</h2><button id="assistantNoticeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
+    <div class="sheetHeader"><h2><button id="assistantNoticeHistoryToggle" class="assistantNoticeHistoryToggle" type="button" aria-expanded="false" aria-controls="assistantNoticeThread" title="Mostrar u ocultar historial"><span id="assistantNoticeTitle">Mensajes</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg><span id="assistantNoticeHistoryAction" class="assistantNoticeHistoryAction">Mostrar historial</span></button></h2><button id="assistantNoticeClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
     <div class="assistantNoticeScroll" role="log" aria-label="Historial de mensajes">
       <div id="assistantNoticeThread" class="assistantNoticeThread" aria-live="polite"></div>
     </div>
@@ -2367,8 +2415,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskToolsExpanded=u.taskToolsExpanded===true;
     taskPinnedFilters=new Set((Array.isArray(u.taskPinnedFilters)?u.taskPinnedFilters:[]).filter(x=>["today","pending","all"].includes(x)));
     applyTaskFilterChoice(["today","pending","all","pinned","done"].includes(u.taskSelectedFilter)?u.taskSelectedFilter:(taskTodayOnly?"today":taskFilter));
-    if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme;if(typeof u.calendarOnlyEvents==="boolean")calendarOnlyEvents=u.calendarOnlyEvents}catch(_){}applyTheme()}
-  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,taskToolsExpanded,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme,calendarOnlyEvents}))}catch(_){}}
+    if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme;if(typeof u.calendarOnlyEvents==="boolean")calendarOnlyEvents=u.calendarOnlyEvents;
+    headerPlacement=u.headerPlacement==="bottom"?"bottom":"top";
+    if(u.assistantQuickPresets&&typeof u.assistantQuickPresets==="object"){
+      for(const role of ["owner","assistant"]){
+        const list=u.assistantQuickPresets[role];
+        if(Array.isArray(list))assistantQuickPresets[role]=list.filter(x=>typeof x==="string"&&x.trim()).slice(0,12).map(x=>x.slice(0,280));
+      }
+    }
+    }catch(_){}applyTheme();applyHeaderPlacement()}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,taskToolsExpanded,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme,calendarOnlyEvents,headerPlacement,assistantQuickPresets}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
     try{
@@ -2657,6 +2713,97 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
 
   const assistantBossPresets=["Ven, por favor","Haz pasar a mi siguiente cita","Trae cafés y refrigerio","¿Puedes venir un momento?","Reprograma mi siguiente reunión","Gracias"];
   const assistantStaffPresets=["Hay alguien que quiere verte","Tu siguiente cita ha llegado","¿Puedo hacer pasar a la visita?","La persona está esperando","¿Necesitas algo más?","Ya está listo"];
+  let headerPlacement="top",assistantQuickPresets={owner:null,assistant:null};
+  function applyHeaderPlacement(){
+    document.body.classList.toggle("headerBottom",headerPlacement==="bottom");
+    const select=$("headerPlacementSelect");if(select)select.value=headerPlacement;
+  }
+  function getAssistantPresets(role){
+    const own=role==="owner";
+    return Array.isArray(assistantQuickPresets[own?"owner":"assistant"])
+      ?assistantQuickPresets[own?"owner":"assistant"]
+      :(own?assistantBossPresets:assistantStaffPresets);
+  }
+  function renderAssistantPresetSettings(){
+    const parent=$("assistantQuickPresetsSettings");if(!parent)return;
+    parent.innerHTML=[["owner","Del director al asistente"],["assistant","Del asistente al director"]].map(([role,title])=>
+      '<div class="assistantPresetSettingsGroup"><div class="assistantPresetSettingsHeading">'+title+'</div>'+
+      getAssistantPresets(role).map((message,index)=>
+        '<div class="assistantPresetEditRow"><input type="text" maxlength="280" autocomplete="off" data-preset-edit-role="'+role+'" data-preset-edit-index="'+index+'" aria-label="Mensaje '+(index+1)+' de '+title+'" value="'+esc(message)+'"><button class="assistantPresetRemove" type="button" data-preset-remove-role="'+role+'" data-preset-remove-index="'+index+'" aria-label="Eliminar mensaje">×</button></div>'
+      ).join("")+
+      '<button class="assistantPresetAdd" type="button" data-preset-add="'+role+'"'+(getAssistantPresets(role).length>=12?' disabled':'')+'>+ Añadir mensaje</button>'+
+      '<p class="assistantPresetHelp">Hasta 12 mensajes por rol; máximo 280 caracteres cada uno.</p></div>'
+    ).join("");
+    parent.querySelectorAll("[data-preset-edit-role]").forEach(input=>input.addEventListener("input",()=>{
+      const role=input.dataset.presetEditRole,index=Number(input.dataset.presetEditIndex);
+      const list=getAssistantPresets(role).slice();list[index]=input.value;
+      assistantQuickPresets[role]=list;saveUI();
+    }));
+    parent.querySelectorAll("[data-preset-remove-role]").forEach(button=>button.addEventListener("click",()=>{
+      const role=button.dataset.presetRemoveRole,index=Number(button.dataset.presetRemoveIndex);
+      const list=getAssistantPresets(role).slice();list.splice(index,1);
+      assistantQuickPresets[role]=list;saveUI();renderAssistantPresetSettings();
+    }));
+    parent.querySelectorAll("[data-preset-add]").forEach(button=>button.addEventListener("click",()=>{
+      const role=button.dataset.presetAdd,list=getAssistantPresets(role).slice();
+      if(list.length>=12)return;
+      list.push("");assistantQuickPresets[role]=list;saveUI();renderAssistantPresetSettings();
+      const inputs=parent.querySelectorAll('[data-preset-edit-role="'+role+'"]');
+      const input=inputs[inputs.length-1];if(input)input.focus();
+    }));
+  }
+  function insertQuickPresetForEditing(value){
+    if(assistantNoticeSending)return;
+    const input=$("assistantNoticeText"),prefix=input.value&&!/\s$/.test(input.value)?" ":"";
+    if(input.value.length+prefix.length+value.length>280){showToast("El mensaje supera los 280 caracteres");return}
+    input.value+=prefix+value;updateAssistantNoticeCount();
+    input.focus();input.setSelectionRange(input.value.length,input.value.length);
+  }
+  function renderAssistantNoticePresets(){
+    const ws=currentWorkspace(),role=ws?.role==="owner"?"owner":"assistant",box=$("assistantNoticePresets");
+    const presets=getAssistantPresets(role).map(m=>String(m||"").trim()).filter(Boolean);
+    box.innerHTML=presets.map(message=>
+      '<button class="assistantNoticePreset" type="button" data-notice-preset="'+esc(message)+'" title="Toca para enviar; mantén pulsado para editar">'+esc(message)+'</button>'
+    ).join("") || '<p class="assistantSectionHint">Configura tus mensajes rápidos desde Ajustes.</p>';
+    box.querySelectorAll("[data-notice-preset]").forEach(button=>{
+      let timer=null,held=false,startX=0,startY=0;
+      const clear=()=>{if(timer!==null){clearTimeout(timer);timer=null}};
+      button.addEventListener("pointerdown",e=>{
+        if(e.pointerType==="mouse"&&e.button!==0)return;
+        clear();held=false;button.classList.remove("longPressed");
+        startX=e.clientX;startY=e.clientY;
+        timer=setTimeout(()=>{
+          timer=null;held=true;button.classList.add("longPressed");
+          insertQuickPresetForEditing(button.dataset.noticePreset);
+        },540);
+      });
+      button.addEventListener("pointermove",e=>{
+        if(Math.abs(e.clientX-startX)>10||Math.abs(e.clientY-startY)>10)clear();
+      });
+      button.addEventListener("pointerup",()=>{
+        clear();button.classList.remove("longPressed");
+        if(held){const input=$("assistantNoticeText");input.focus();input.setSelectionRange(input.value.length,input.value.length)}
+      });
+      button.addEventListener("pointercancel",()=>{clear();button.classList.remove("longPressed")});
+      button.addEventListener("pointerleave",clear);
+      button.addEventListener("contextmenu",e=>e.preventDefault());
+      button.addEventListener("click",e=>{
+        if(held){held=false;e.preventDefault();return}
+        sendAssistantNotice(button.dataset.noticePreset);
+      });
+    });
+  }
+  function toggleAssistantNoticeHistory(expanded){
+    const sheet=$("assistantNoticeOverlay").querySelector(".assistantNoticeSheet");
+    sheet.classList.toggle("historyCollapsed",!expanded);
+    const toggle=$("assistantNoticeHistoryToggle");
+    toggle.setAttribute("aria-expanded",expanded?"true":"false");
+    $("assistantNoticeHistoryAction").textContent=expanded?"Ocultar historial":"Mostrar historial";
+    if(expanded){
+      requestAnimationFrame(()=>{const scroll=sheet.querySelector(".assistantNoticeScroll");scroll.scrollTop=scroll.scrollHeight});
+      refreshAssistantMessageThread();
+    }
+  }
   let assistantMessageWorkspace="",assistantMessageUnread=0,assistantMessagesLoading=false;
   function renderAssistantMessageBadge(){
     $("assistantMessageBadge").classList.toggle("hidden",assistantMessageUnread<=0);
@@ -2678,11 +2825,11 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
         ' · '+esc(new Date(row.createdAt||Date.now()).toLocaleString("es",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))+
         (row.mine&&row.readAt?" · Leído":"")+'</div></div>'
       ).join(""):'<div class="assistantSectionHint">Todavía no hay mensajes en este espacio.</div>';
-      thread.scrollTop=thread.scrollHeight;
+      if(thread.parentElement)thread.parentElement.scrollTop=thread.parentElement.scrollHeight;
       // Reading the mini-conversation acknowledges incoming messages, while
       // opening the Android full-screen alert acknowledges a single message.
       const unread=Array.isArray(data.messages)?data.messages.filter(row=>!row.mine&&!row.readAt):[];
-      if(unread.length){
+      if(unread.length&&!$("assistantNoticeOverlay").querySelector(".assistantNoticeSheet").classList.contains("historyCollapsed")){
         const results=await Promise.allSettled(unread.map(row=>
           assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages/"+encodeURIComponent(row.id)+"/read",{method:"POST",body:{}})
         ));
@@ -2699,16 +2846,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     const ws=currentWorkspace();
     if(!assistantConfigured()||ws?.kind!=="assistant"||!assistantWorkspaceAuthorized(ws)){showToast("Selecciona un espacio compartido conectado.");return}
     $("assistantNoticeTitle").textContent=ws.role==="owner"?"Mensajes al asistente":"Mensajes al jefe";
-    const presets=ws.role==="owner"?assistantBossPresets:assistantStaffPresets;
-    $("assistantNoticePresets").innerHTML=presets.map(text=>
-      '<button class="assistantNoticePreset" type="button" data-notice-preset="'+esc(text)+'">'+esc(text)+'</button>'
-    ).join("");
     $("assistantNoticeText").value="";$("assistantNoticeStatus").textContent="";assistantNoticeSending=false;
-    updateAssistantNoticeCount();openOverlay("assistantNoticeOverlay");
-    $("assistantNoticePresets").querySelectorAll("[data-notice-preset]").forEach(button=>button.addEventListener("click",()=>{
-      // Quick messages send immediately; manual messages retain the composer.
-      sendAssistantNotice(button.dataset.noticePreset);
-    }));
+    renderAssistantNoticePresets();updateAssistantNoticeCount();openOverlay("assistantNoticeOverlay");
+    toggleAssistantNoticeHistory(false);
     $("assistantNoticeThread").textContent="Cargando mensajes…";
     refreshAssistantMessageThread();
   }
@@ -6345,7 +6485,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     refreshWorkHoursNativeStatus();
   }
   function renderSettingsSummary(){
-    syncWorkHoursSettings();renderDefaultReminderSettings();renderAssistantSummary();
+    syncWorkHoursSettings();renderDefaultReminderSettings();renderAssistantSummary();renderAssistantPresetSettings();applyHeaderPlacement();
     const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt).length;
     $("trashCountDesc").textContent=trashCount?`${trashCount} elemento${trashCount===1?"":"s"} eliminado${trashCount===1?"":"s"}.`:"No hay elementos eliminados.";
     renderCategoryManage();
@@ -7028,6 +7168,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   $("assistantPreviewCallBtn").addEventListener("click",assistantPreviewCall);
   $("assistantCallBtn").addEventListener("click",()=>assistantCall());
   $("assistantNoticeSettingsBtn").addEventListener("click",openAssistantNotice);
+  $("assistantNoticeHistoryToggle").addEventListener("click",()=>toggleAssistantNoticeHistory(
+    $("assistantNoticeOverlay").querySelector(".assistantNoticeSheet").classList.contains("historyCollapsed")
+  ));
   $("assistantNoticeClose").addEventListener("click",()=>closeOverlay("assistantNoticeOverlay"));
   $("assistantNoticeOverlay").addEventListener("click",e=>{if(e.target===$("assistantNoticeOverlay"))closeOverlay("assistantNoticeOverlay")});
   $("assistantNoticeText").addEventListener("input",updateAssistantNoticeCount);
@@ -7035,6 +7178,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
 
   $("assistantActivityRefresh").addEventListener("click",()=>assistantLoadActivity(false));
   $("themeDarkToggle").addEventListener("change",()=>{uiTheme=$("themeDarkToggle").checked?"dark":"light";applyTheme();saveUI()});
+  $("headerPlacementSelect").addEventListener("change",()=>{headerPlacement=$("headerPlacementSelect").value==="bottom"?"bottom":"top";applyHeaderPlacement();saveUI()});
   document.querySelectorAll("[data-default-reminder]").forEach(input=>input.addEventListener("change",()=>{
     state.preferences.defaultReminderMinutes=normalizeReminderMinutes([...document.querySelectorAll("[data-default-reminder]:checked")].map(x=>Number(x.dataset.defaultReminder)));
     renderDefaultReminderSettings();scheduleSave();
