@@ -4294,7 +4294,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     }
     if(!shown)html+='<div class="calendarEmpty">No hay eventos en este período.</div>';
     $("calendarBody").innerHTML=html;
-    bindCalendarDateTargets();bindCalendarTasks();bindCalendarGoogleEvents();bindCalendarMoveCancel();
+    $("calendarBody").querySelectorAll(".agendaGroupTitle[data-calendar-date]").forEach(button=>{
+      button.addEventListener("click",()=>activateCalendarDate(button.dataset.calendarDate));
+    });
+    bindCalendarTasks();bindCalendarGoogleEvents();bindCalendarMoveCancel();
   }
   function renderCalendar(){
     if(!state)return;
@@ -6609,6 +6612,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
     clearTimeout(eyeHoldTimer);
     eyeHoldTimer=setTimeout(()=>{
       eyeHoldTimer=null;eyeHoldSuppressClick=true;eyeHoldStart=null;
+      setTimeout(()=>{eyeHoldSuppressClick=false},900);
       closeCalendarDayPanel();openCalendarEyeHoldMenu();
       try{navigator.vibrate?.(25)}catch(_){}
     },550);
@@ -6622,7 +6626,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
   const cancelEyeHold=()=>{clearTimeout(eyeHoldTimer);eyeHoldTimer=null;eyeHoldStart=null};
   eyeButton.addEventListener("pointerup",cancelEyeHold);
   eyeButton.addEventListener("pointercancel",cancelEyeHold);
-  eyeButton.addEventListener("contextmenu",e=>{e.preventDefault();cancelEyeHold();eyeHoldSuppressClick=true;openCalendarEyeHoldMenu()});
+  eyeButton.addEventListener("contextmenu",e=>{e.preventDefault();cancelEyeHold();eyeHoldSuppressClick=true;setTimeout(()=>{eyeHoldSuppressClick=false},900);openCalendarEyeHoldMenu()});
   eyeButton.addEventListener("click",e=>{
     e.stopPropagation();
     if(eyeHoldSuppressClick){eyeHoldSuppressClick=false;return}
