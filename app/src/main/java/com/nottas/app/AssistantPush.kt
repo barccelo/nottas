@@ -254,6 +254,55 @@ object AssistantPush {
         }.start()
     }
 
+    /**
+     * Send a reply from the full-screen notice. Keep the screen open until the
+     * server actually stores it; never report a message as sent just for tapping.
+     */
+    fun replyToNotice(
+        context: Context,
+        workspaceId: String,
+        noticeId: String,
+        text: String,
+        callback: (Boolean) -> Unit
+    ) {
+        val message = text.trim().take(280)
+        if (message.isBlank() || !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(workspaceId) ||
+            !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(noticeId)
+        ) {
+            callback(false)
+            return
+        }
+        Thread {
+            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val server = prefs.getString(KEY_SERVER_URL, "").orEmpty().trimEnd('/')
+            val token = prefs.getString(KEY_SESSION_TOKEN, "").orEmpty()
+            val success = if (server.startsWith("https://") && token.isNotBlank()) {
+                postJson(
+                    server + "/v1/workspaces/" + workspaceId + "/messages",
+                    token,
+                    JSONObject().put("message", message).put("replyToId", noticeId)
+                )
+            } else false
+            callback(success)
+        }.start()
+    }
+
+    fun markNoticeRead(context: Context, workspaceId: String, noticeId: String) {
+        if (!Regex("^[a-zA-Z0-9_-]{1,100}$").matches(workspaceId) ||
+            !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(noticeId)) return
+        Thread {
+            val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val server = prefs.getString(KEY_SERVER_URL, "").orEmpty().trimEnd('/')
+            val token = prefs.getString(KEY_SESSION_TOKEN, "").orEmpty()
+            if (server.startsWith("https://") && token.isNotBlank()) {
+                postJson(
+                    server + "/v1/workspaces/" + workspaceId + "/messages/" + noticeId + "/read",
+                    token, JSONObject()
+                )
+            }
+        }.start()
+    }
+
     private fun postJson(url: String, token: String, payload: JSONObject): Boolean {
         var connection: HttpURLConnection? = null
         return try {
