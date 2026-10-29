@@ -27,10 +27,11 @@ class ReminderActivity : Activity() {
         const val EXTRA_REMINDERS_JSON = "reminders_json"
     }
 
-    private data class ReminderItem(val id: String, val text: String)
+    private data class ReminderItem(val id: String, val text: String, val date: String = "")
 
     private var taskId: String = ""
     private var taskText: String = ""
+    private var taskDate: String = ""
     private var snoozeMinutes = 5
     private lateinit var snoozeLabel: TextView
 
@@ -44,6 +45,7 @@ class ReminderActivity : Activity() {
         }
         taskId = reminders.first().id
         taskText = reminders.first().text
+        taskDate = reminders.first().date
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
@@ -80,8 +82,11 @@ class ReminderActivity : Activity() {
                     val item = array.optJSONObject(i) ?: continue
                     val id = item.optString("id").trim()
                     val text = item.optString("text").trim()
-                    if (id.isEmpty() || text.isEmpty() || !seen.add(id)) continue
-                    out.add(ReminderItem(id, text))
+                    val date = item.optString("date").trim().ifEmpty {
+                        item.optString("alarmId").substringAfter("::", "").substringBefore("::")
+                    }
+                    if (id.isEmpty() || text.isEmpty() || !seen.add("$id::$date")) continue
+                    out.add(ReminderItem(id, text, date))
                 }
                 if (out.isNotEmpty()) return out
             } catch (_: Throwable) {
@@ -352,8 +357,8 @@ class ReminderActivity : Activity() {
             refreshSnooze()
 
             fun resolveComplete() {
-                ReminderActionStore.enqueueComplete(this, reminder.id)
-                ReminderScheduler.remove(this, reminder.id)
+                ReminderActionStore.enqueueComplete(this, reminder.id, reminder.date)
+                ReminderScheduler.remove(this, reminder.id, reminder.date)
                 ReminderScheduler.cancelNotification(this, reminder.id)
             }
 
@@ -362,7 +367,8 @@ class ReminderActivity : Activity() {
                     this,
                     reminder.id,
                     reminder.text,
-                    cardSnoozeMinutes
+                    cardSnoozeMinutes,
+                    reminder.date
                 )
             }
 
@@ -1009,14 +1015,14 @@ class ReminderActivity : Activity() {
         if (snoozeMinutes == 1) "Posponer 1 min" else "Posponer $snoozeMinutes min"
 
     private fun completeReminder() {
-        ReminderActionStore.enqueueComplete(this, taskId)
-        ReminderScheduler.remove(this, taskId)
+        ReminderActionStore.enqueueComplete(this, taskId, taskDate)
+        ReminderScheduler.remove(this, taskId, taskDate)
         ReminderScheduler.cancelNotification(this, taskId)
         finishQuietly()
     }
 
     private fun snoozeReminder() {
-        ReminderScheduler.snooze(this, taskId, taskText, snoozeMinutes)
+        ReminderScheduler.snooze(this, taskId, taskText, snoozeMinutes, taskDate)
         finishQuietly()
     }
 
