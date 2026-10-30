@@ -1406,6 +1406,28 @@ html[data-theme="dark"] .sideItem.active{background:rgba(10,132,255,.17);color:#
 html[data-theme="dark"] .sideGlyph{background:#2a2a30;color:#a4a4ae}
 html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93c8ff}
 @media(prefers-reduced-motion:reduce){.sidebarBackdrop,.sidebarPanel{transition:none}}
+
+/* Sidebar X9: fixed masthead, independently scrollable navigation and anchored actions. */
+.sidebarPanel{display:flex;flex-direction:column;overflow:hidden!important;padding:calc(10px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom));height:100dvh;max-height:100%;box-sizing:border-box}
+.sidebarHeader{flex:0 0 auto;position:relative!important;top:auto!important;z-index:1;padding:8px 9px 15px;border-bottom:1px solid rgba(118,118,128,.12);background:#f5f5f7}
+.sidebarScroll{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:12px 0 16px}
+.sidebarScroll::-webkit-scrollbar{display:none}
+.sidebarFooter{flex:0 0 auto;border-top:1px solid rgba(118,118,128,.15);padding:11px 1px 0;display:grid;gap:7px;background:#f5f5f7}
+.sidebarFooter .sideItem{display:flex;border:1px solid rgba(118,118,128,.10);border-radius:15px;min-height:58px;background:#fff;padding:9px 12px;box-shadow:0 1px 2px rgba(0,0,0,.025)}
+.sidebarFooter .sideItem:active{background:#eeeef2}
+.sidebarFooter .sideGlyph{width:37px;height:37px;flex-basis:37px;border-radius:12px}
+.sidebarFooter #sidebarTrash .sideGlyph{color:#b25d61;background:#fae9ea}
+.sidebarFooter #sidebarSettings .sideGlyph{color:#276dc3;background:#e8f0ff}
+.sidebarFooter .sideGlyph svg{width:21px;height:21px}
+.sidebarFooter .sideItemCopy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.sidebarFooter .sideItemCopy strong{font-size:14px;font-weight:650;color:inherit}
+.sidebarFooter .sideItemCopy small{font-size:11px;font-weight:450;color:#8e8e93}
+.sidebarFooter .sideCount{font-variant-numeric:tabular-nums}
+html[data-theme="dark"] .sidebarHeader,html[data-theme="dark"] .sidebarFooter{background:#171719;border-color:#38383b}
+html[data-theme="dark"] .sidebarFooter .sideItem{background:#27272b;border-color:#3b3b40}
+html[data-theme="dark"] .sidebarFooter .sideItem:active{background:#37373b}
+html[data-theme="dark"] .sidebarFooter #sidebarTrash .sideGlyph{background:#443035;color:#f0a0aa}
+html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#263b58;color:#99bdff}
 </style>
 </head>
 <body>
@@ -1499,6 +1521,7 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
       <div class="sidebarHeaderText"><strong>Nottas</strong><span class="sidebarHeaderSub">Espacios y organización</span></div>
       <button id="sidebarClose" class="closeBtn" type="button" aria-label="Cerrar menú"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
+    <div id="sidebarScroll" class="sidebarScroll">
     <div class="sidebarSection">
       <div class="sidebarSectionTitle">Espacios</div>
       <div id="sidebarWorkspaces"></div>
@@ -1524,9 +1547,10 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
       <div class="sidebarSectionTitle">Etiquetas</div>
       <div id="sidebarTags"></div>
     </div>
-    <div class="sidebarSection">
-      <button id="sidebarTrash" class="sideItem" type="button"><span>Papelera</span><span id="sideTrashCount" class="sideCount"></span></button>
-      <button id="sidebarSettings" class="sideItem" type="button"><span>Ajustes</span></button>
+    </div>
+    <div class="sidebarFooter" aria-label="Accesos rápidos">
+      <button id="sidebarTrash" class="sideItem" type="button"><span class="sideItemCopy"><strong>Papelera</strong><small>Elementos eliminados</small></span><span id="sideTrashCount" class="sideCount"></span></button>
+      <button id="sidebarSettings" class="sideItem" type="button"><span class="sideItemCopy"><strong>Ajustes</strong><small>Preferencias y configuración</small></span></button>
     </div>
   </aside>
 </div>
@@ -4393,6 +4417,7 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
     closeRevealedCards();
     try{document.activeElement?.blur?.()}catch(_){}
     renderSidebar();
+    $("sidebarScroll").scrollTop=0;
     $("sidebarBackdrop").classList.add("show");$("sidebarBackdrop").setAttribute("aria-hidden","false");
     $("sidebarBtn").setAttribute("aria-expanded","true");
   }
@@ -4411,7 +4436,11 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
       trash:'<path d="M4 7h16M9 4h6M7 7l1 13h8l1-13M10 11v5M14 11v5"/>',
       settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'
     };
-    return '<span class="sideGlyph" aria-hidden="true"><svg viewBox="0 0 24 24">'+(paths[kind]||paths.all)+'</svg></span>';
+    // Settings MUST reuse the exact icon used in the main toolbar.
+    const icon=kind==="settings"?$("settingsBtn")?.querySelector("svg")?.outerHTML:
+      kind==="trash"?'<svg class="nsIcon" viewBox="0 0 24 24"><use href="#ns-trash"></use></svg>':
+      '<svg viewBox="0 0 24 24">'+(paths[kind]||paths.all)+'</svg>';
+    return '<span class="sideGlyph" aria-hidden="true">'+icon+'</span>';
   }
   function renderSidebar(){
     if(!state)return;
@@ -8387,10 +8416,11 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
     if($("directorInboxOverlay").classList.contains("show")){closeOverlay("directorInboxOverlay");return true}
     if($("assistantNoticeOverlay").classList.contains("show")){closeOverlay("assistantNoticeOverlay");return true}
     if($("assistantOverlay").classList.contains("show")){
-      closeOverlay("assistantOverlay");
+      closeTeamSettings();
       return true;
     }
     if($("settingsOverlay").classList.contains("show")){
+      if(currentSettingsPage!=="home"){showSettingsPage("home");return true}
       closeOverlay("settingsOverlay");
       return true;
     }
