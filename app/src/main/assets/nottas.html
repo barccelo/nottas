@@ -1304,6 +1304,34 @@ html[data-theme="dark"] #assistantOverlay .teamHeroIcon,html[data-theme="dark"] 
 html[data-theme="dark"] #assistantOverlay .teamMinorButton{background:#2c2c2e;border-color:#3a3a3c;color:#f5f5f7}
 html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9}
 
+
+/* Shared event category visual treatment; colors stay in the Nottas palette. */
+.eventCategoryHelp{font-size:12px;line-height:1.45;color:#8e8e93;padding:0 6px;margin:3px 0 12px}
+#eventCategorySection{margin-top:8px}
+#eventCategorySection #addEventCategoryBtn{margin:5px 0 22px;min-height:44px}
+.categoryDisplayIcon{width:24px;height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;vertical-align:middle;background:color-mix(in srgb,var(--category-color,#8e8e93) 12%,transparent);color:var(--category-color,#8e8e93)}
+.categoryDisplayIcon .nsIcon{width:17px;height:17px;stroke-width:1.75}
+.categoryDisplayIcon.isEmoji{font-size:18px;line-height:1;background:transparent}
+.categoryIconOptions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.categoryIconOption{display:grid;place-items:center;border:1px solid #d1d1d6;border-radius:12px;min-height:47px;background:transparent;color:#636366;padding:0;cursor:pointer}
+.categoryIconOption .nsIcon{width:22px;height:22px}
+.categoryIconOption[aria-pressed="true"]{background:rgba(22,119,255,.08);border-color:#1677ff;color:#1677ff}
+.categoryIconPreview{display:flex;align-items:center;gap:9px;margin-top:8px;font-size:12px;color:#8e8e93}
+.categoryIconPreview .categoryDisplayIcon{width:31px;height:31px;flex-basis:31px}
+.categoryIconPreview .categoryDisplayIcon .nsIcon{width:21px;height:21px}
+.categorySuggestion .categoryDisplayIcon{margin-right:6px}
+.taskInlineCategorySuggestion .categoryDisplayIcon{margin-right:8px}
+.taskMetaItem .categoryDisplayIcon{width:17px;height:17px;flex:0 0 17px;background:transparent;margin-right:1px}
+.taskMetaItem .categoryDisplayIcon .nsIcon{width:15px;height:15px}
+.calendarTaskMeta .categoryDisplayIcon{width:17px;height:17px;flex:0 0 17px;background:transparent;margin-right:3px}
+.calendarTimeBlockMeta .categoryDisplayIcon{width:13px;height:13px;flex:0 0 13px;background:transparent}
+.calendarTimeBlockMeta .categoryDisplayIcon .nsIcon{width:12px;height:12px}
+html[data-theme="dark"] .categoryIconOption{border-color:#3a3a3c;color:#d1d1d6}
+html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#649cfa;background:rgba(22,119,255,.14);color:#8fc1ff}
+
+#calendarOverlay .calendarTimeBlockTitle .categoryDisplayIcon{width:15px;height:15px;flex:0 0 15px;background:transparent;margin-right:3px;vertical-align:-2px}
+#calendarOverlay .calendarTimeBlockTitle .categoryDisplayIcon .nsIcon{width:14px;height:14px}
+#calendarOverlay .calendarPeekMeta .categoryDisplayIcon{width:17px;height:17px;display:inline-flex;vertical-align:-3px;background:transparent;margin-right:4px}
 </style>
 </head>
 <body>
@@ -1956,7 +1984,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   </div>
 </div>
 
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs><symbol id="ns-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7a9.3 9.3 0 0 0 0 18.6h1.2a2.1 2.1 0 0 0 2.1-2.1c0-.9-.6-1.4-.6-2.1 0-.8.7-1.4 1.5-1.4h1.2c2.5 0 4.2-1.7 4.2-4.1A9.3 9.3 0 0 0 12 2.7Z"/><path d="M7 10.4h.01M9.2 6.7h.01M14 6.5h.01M17.2 10h.01" stroke-width="3" stroke-linecap="round"/></symbol><symbol id="ns-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18.2 8.9a6.2 6.2 0 0 0-12.4 0c0 7-2 7.2-2 8.1h16.4c0-.9-2-1.1-2-8.1ZM9.4 20a2.8 2.8 0 0 0 5.2 0"/></symbol><symbol id="ns-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.7 20.6v-1.9a4 4 0 0 0-4-4H6.3a4 4 0 0 0-4 4v1.9M9 11.4a3.7 3.7 0 1 0 0-7.4 3.7 3.7 0 0 0 0 7.4ZM17.4 5a3.3 3.3 0 0 1 0 6.4M17.6 14.7a4 4 0 0 1 4 4v1.9"/></symbol><symbol id="ns-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.7 11.4c0 4.8-4 8.6-8.9 8.6-1.3 0-2.6-.3-3.8-.8l-4.8 1.1 1.2-4.3a8.2 8.2 0 0 1-1.4-4.6c0-4.8 4-8.7 8.8-8.7 4.9 0 8.9 3.9 8.9 8.7Z"/><path d="M7.9 10.6h8M7.9 13.7h5.6"/></symbol><symbol id="ns-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8.5" ry="3.2"/><path d="M3.5 5.5v10.3c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3V5.5M3.5 10.7c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3"/></symbol><symbol id="ns-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 10.7v6.2M12 6.9h.01" stroke-width="2.5"/></symbol><symbol id="ns-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></symbol><symbol id="ns-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol><symbol id="ns-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5.3 5.3 18.7 18.7M18.7 5.3 5.3 18.7"/></symbol><symbol id="ns-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="ns-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3.5h4.7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H13"/><path d="m11 7 5 5-5 5M16 12H3.8"/></symbol><symbol id="ns-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.3" r="4"/><path d="M4.3 21v-2.3a7.7 7.7 0 0 1 15.4 0V21"/></symbol><symbol id="ns-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.2" width="18" height="16" rx="2.6"/><path d="M7.5 2.8v5.1M16.5 2.8v5.1M3 10.4h18M8.6 15.8h6.8"/></symbol><symbol id="ns-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.7" width="14" height="10.7" rx="2.2"/><path d="M8 10.7V7a4 4 0 0 1 8 0v3.7M12 14.3v3.4"/></symbol><symbol id="ns-suitcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7.2" width="19" height="13.3" rx="2.4"/><path d="M8.3 7.2V5a2 2 0 0 1 2-2h3.4a2 2 0 0 1 2 2v2.2M2.5 12.6h19M11.6 12.6v2.6"/></symbol><symbol id="ns-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4.8 12.5 4.8 4.7L19 7.7"/></symbol><symbol id="ns-device" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.3" width="12" height="19.4" rx="2.5"/><path d="M10 18.6h4"/></symbol><symbol id="ns-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a2 2 0 0 1 2-2h5l2.2 2.7H19a2 2 0 0 1 2 2v9.3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol><symbol id="ns-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 6.5v5.8l4 2.5"/></symbol><symbol id="ns-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.7h15M9.3 6.7V4.4h5.4v2.3M6.5 6.7l.8 13a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-13M10 10.3v6.6M14 10.3v6.6"/></symbol></defs></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs><symbol id="ns-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7a9.3 9.3 0 0 0 0 18.6h1.2a2.1 2.1 0 0 0 2.1-2.1c0-.9-.6-1.4-.6-2.1 0-.8.7-1.4 1.5-1.4h1.2c2.5 0 4.2-1.7 4.2-4.1A9.3 9.3 0 0 0 12 2.7Z"/><path d="M7 10.4h.01M9.2 6.7h.01M14 6.5h.01M17.2 10h.01" stroke-width="3" stroke-linecap="round"/></symbol><symbol id="ns-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18.2 8.9a6.2 6.2 0 0 0-12.4 0c0 7-2 7.2-2 8.1h16.4c0-.9-2-1.1-2-8.1ZM9.4 20a2.8 2.8 0 0 0 5.2 0"/></symbol><symbol id="ns-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.7 20.6v-1.9a4 4 0 0 0-4-4H6.3a4 4 0 0 0-4 4v1.9M9 11.4a3.7 3.7 0 1 0 0-7.4 3.7 3.7 0 0 0 0 7.4ZM17.4 5a3.3 3.3 0 0 1 0 6.4M17.6 14.7a4 4 0 0 1 4 4v1.9"/></symbol><symbol id="ns-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.7 11.4c0 4.8-4 8.6-8.9 8.6-1.3 0-2.6-.3-3.8-.8l-4.8 1.1 1.2-4.3a8.2 8.2 0 0 1-1.4-4.6c0-4.8 4-8.7 8.8-8.7 4.9 0 8.9 3.9 8.9 8.7Z"/><path d="M7.9 10.6h8M7.9 13.7h5.6"/></symbol><symbol id="ns-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8.5" ry="3.2"/><path d="M3.5 5.5v10.3c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3V5.5M3.5 10.7c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3"/></symbol><symbol id="ns-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 10.7v6.2M12 6.9h.01" stroke-width="2.5"/></symbol><symbol id="ns-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></symbol><symbol id="ns-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol><symbol id="ns-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5.3 5.3 18.7 18.7M18.7 5.3 5.3 18.7"/></symbol><symbol id="ns-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="ns-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3.5h4.7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H13"/><path d="m11 7 5 5-5 5M16 12H3.8"/></symbol><symbol id="ns-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.3" r="4"/><path d="M4.3 21v-2.3a7.7 7.7 0 0 1 15.4 0V21"/></symbol><symbol id="ns-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.2" width="18" height="16" rx="2.6"/><path d="M7.5 2.8v5.1M16.5 2.8v5.1M3 10.4h18M8.6 15.8h6.8"/></symbol><symbol id="ns-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.7" width="14" height="10.7" rx="2.2"/><path d="M8 10.7V7a4 4 0 0 1 8 0v3.7M12 14.3v3.4"/></symbol><symbol id="ns-suitcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7.2" width="19" height="13.3" rx="2.4"/><path d="M8.3 7.2V5a2 2 0 0 1 2-2h3.4a2 2 0 0 1 2 2v2.2M2.5 12.6h19M11.6 12.6v2.6"/></symbol><symbol id="ns-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4.8 12.5 4.8 4.7L19 7.7"/></symbol><symbol id="ns-device" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.3" width="12" height="19.4" rx="2.5"/><path d="M10 18.6h4"/></symbol><symbol id="ns-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a2 2 0 0 1 2-2h5l2.2 2.7H19a2 2 0 0 1 2 2v9.3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol><symbol id="ns-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 6.5v5.8l4 2.5"/></symbol><symbol id="ns-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.7h15M9.3 6.7V4.4h5.4v2.3M6.5 6.7l.8 13a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-13M10 10.3v6.6M14 10.3v6.6"/></symbol><symbol id="ns-event-council" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.4"/><circle cx="5.1" cy="9" r="2.1"/><circle cx="18.9" cy="9" r="2.1"/><path d="M7.8 17v-2.5a4.2 4.2 0 0 1 8.4 0V17M1.5 19v-3.1a3.6 3.6 0 0 1 4.5-3.5M22.5 19v-3.1a3.6 3.6 0 0 0-4.5-3.5M7.8 21h8.4"/></symbol><symbol id="ns-event-meeting" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="8.4" r="2.6"/><path d="M2.6 20v-2.3a5.4 5.4 0 0 1 10.8 0V20M14.5 14.7a4.6 4.6 0 0 1 6.9 4V20"/></symbol><symbol id="ns-event-one-on-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.5" r="3.7"/><path d="M4.3 21v-2.4a7.7 7.7 0 0 1 15.4 0V21"/></symbol><symbol id="ns-event-interview" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11a7.9 7.9 0 0 1-8.2 8.1c-1.3 0-2.6-.3-3.8-.9L4 19.5l1.1-4a7.9 7.9 0 0 1-1-4.5 7.9 7.9 0 0 1 8.2-8 7.9 7.9 0 0 1 8.2 8Z"/><path d="M8 9h8M8 13h5.5"/></symbol><symbol id="ns-event-appointment" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.3" y="5.3" width="17.4" height="16" rx="2.5"/><path d="M7.5 3v4.4M16.5 3v4.4M3.3 10.1h17.4m-12 5.1 2.2 2.1 4.7-4.7"/></symbol><symbol id="ns-event-visit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 4.7-3 3.7 1.1m11.6 1.9-4.7-3-4 1.2-4.5 4.1 2.3 2.1 2.9-1.7 4.8 3.5-3.9 4a2 2 0 0 1-2.5.2L8 16.5m-5.3-5 5.5 6.3m13-6.3-4.8 6.5"/><path d="m9 16-1.4 1.5m4.6.5-1.3 1.5"/></symbol><symbol id="ns-event-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.1 3.6 10 7.1l-1.8 2.6c1 2 3 4.1 5.2 5.2l2.5-1.9 3.6 3a2 2 0 0 1 .2 2.8l-1.3 1.3c-2 2-6.2-.1-10.2-4.1C4.3 12.1 2.2 7.9 4.2 5.9l1.3-1.4a1.5 1.5 0 0 1 1.6-.9Z"/></symbol><symbol id="ns-event-followup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.7" width="14" height="17" rx="2.3"/><path d="M9 4.7V3.2h6v1.5M8.5 12.5l2 2 4.5-4.5M8.5 18h7"/></symbol><symbol id="ns-event-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="5.2" width="17.6" height="16" rx="2.2"/><path d="M7.5 3v4.5M16.5 3v4.5M3.2 10.3h17.6M8 14.2h3M8 17.7h3M14.3 14.2h2"/></symbol><symbol id="ns-event-training" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m2 9 10-5.1L22 9l-10 5.1L2 9Zm4.2 2.3v5.4c3.8 3 7.8 3 11.6 0v-5.4M22 9v8"/></symbol></defs></svg>
 <div id="settingsOverlay" class="overlay" aria-hidden="true">
   <div class="sheet settingsRootSheet">
     <div class="sheetHandle"></div>
@@ -1985,9 +2013,15 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     </div>
 
     
-      <div class="sectionTitle">Categorías</div>
+      <div class="sectionTitle">Categorías generales</div>
     <div id="categoryManage" class="settingsGroup"></div>
     <button id="addCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría</button>
+    <div id="eventCategorySection" class="hidden">
+      <div class="sectionTitle">Categorías de eventos · Oficina</div>
+      <p class="eventCategoryHelp">Se comparten con el equipo y aparecen en su agenda. Puedes cambiar el ícono por un emoji.</p>
+      <div id="eventCategoryManage" class="settingsGroup"></div>
+      <button id="addEventCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría de evento</button>
+    </div>
 
     
     </section>
@@ -2261,6 +2295,8 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
       <div class="card">
         <div class="field"><div class="label">Nombre</div><input id="categoryName" class="textInput" type="text" maxlength="40" placeholder="Nombre" autocomplete="off" required></div>
         <div class="field"><div class="label">Color</div><input id="categoryColor" class="colorInput" type="color" value="#1677ff" style="height:48px;padding:5px"></div>
+        <div class="field"><div class="label">Ícono</div><div id="categoryIconOptions" class="categoryIconOptions" role="group" aria-label="Elegir ícono"></div></div>
+        <div class="field"><label class="label" for="categoryEmoji">Emoji opcional</label><input id="categoryEmoji" class="textInput" type="text" maxlength="16" placeholder="Pega un emoji para usarlo como ícono" autocomplete="off"><div id="categoryIconPreview" class="categoryIconPreview" aria-live="polite"></div></div>
       </div>
       <div class="actions"><button id="deleteCategoryBtn" class="btn danger hidden" type="button">Eliminar</button><button class="btn primary" type="submit">Guardar</button></div>
     </form>
@@ -2282,6 +2318,43 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   }
   mountEditorBottomBars();
   const palette=["#8e8e93","#1677ff","#7c4dff","#00897b","#ef6c00","#c62828","#6d4c41","#ad1457","#2e7d32"];
+  const EVENT_CATEGORY_DEFAULTS=[
+    ["council","Consejo Directivo","#5e6c93"],["meeting","Reunión","#477eaf"],
+    ["one-on-one","1:1","#8c66ab"],["interview","Entrevista","#ae748b"],
+    ["appointment","Cita","#598f82"],["visit","Visita","#bc8854"],
+    ["phone","Llamada","#6787ae"],["followup","Seguimiento","#a47b5b"],
+    ["activity","Actividad","#669a7e"],["training","Capacitación","#8a83b9"]
+  ];
+  const EVENT_CATEGORY_ICONS=EVENT_CATEGORY_DEFAULTS.map(d=>d[0]);
+  function categoryScope(c){return c?.scope==="event"?"event":c?.scope==="system"?"system":"general"}
+  function categorySymbolHtml(c){
+    const color=/^#[0-9a-fA-F]{6}$/.test(c?.color||"")?c.color:"#8e8e93";
+    const emoji=String(c?.emoji||"").trim(),icon=String(c?.icon||"");
+    if(emoji)return '<span class="categoryDisplayIcon isEmoji" style="--category-color:'+color+'" aria-hidden="true">'+esc(emoji)+'</span>';
+    if(EVENT_CATEGORY_ICONS.includes(icon))return '<span class="categoryDisplayIcon" style="--category-color:'+color+'" aria-hidden="true"><svg class="nsIcon" viewBox="0 0 24 24"><use href="#ns-event-'+icon+'"></use></svg></span>';
+    return '<span class="dot" style="background:'+color+'" aria-hidden="true"></span>';
+  }
+  function eventCategories(){return activeCategories().filter(c=>categoryScope(c)==="event")}
+  function ensureOfficeEventCategories(){
+    const shared=(state?.workspaces||[]).filter(w=>w.kind==="assistant"&&w.status!=="inactive"&&assistantWorkspaceAuthorized(w));
+    let changed=false;
+    for(const ws of shared){
+      const marker="eventcats_v1_"+ws.id;
+      if(state.categories.some(c=>c.id===marker))continue;
+      const stamp=now();
+      for(const [icon,name,color] of EVENT_CATEGORY_DEFAULTS){
+        const id="eventcat_v1_"+icon+"_"+ws.id;
+        if(state.categories.some(c=>c.id===id))continue;
+        const existing=state.categories.find(c=>!c.deletedAt&&c.workspaceId===ws.id&&categoryScope(c)!=="system"&&c.name.trim().toLocaleLowerCase("es")===name.toLocaleLowerCase("es"));
+        if(existing){existing.scope="event";if(!existing.icon&&!existing.emoji)existing.icon=icon;touch(existing)}
+        else state.categories.push({id,name,color,icon,emoji:"",scope:"event",workspaceId:ws.id,createdBy:currentUserId(),updatedBy:currentUserId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+        changed=true;
+      }
+      state.categories.push({id:marker,name:"Event categories initialized",color:"#8e8e93",icon:"",emoji:"",scope:"system",workspaceId:ws.id,createdBy:currentUserId(),updatedBy:currentUserId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      changed=true;
+    }
+    return changed;
+  }
   const iconTrash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>';
   const iconEdit='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>';
   const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v5h5M5.5 12.5a7 7 0 1 0 2-5"></path></svg>';
@@ -2592,7 +2665,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     const stamp=now();const o=raw&&typeof raw==="object"?raw:{};
     let cats=Array.isArray(o.categories)?o.categories:[];
     if(!cats.some(c=>c&&c.id==="inbox"))cats.unshift({id:"inbox",name:"Sin categoría",color:"#8e8e93"});
-    o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
+    o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),scope:c.scope==="event"?"event":c.scope==="system"?"system":"general",icon:String(c.icon||"").slice(0,32),emoji:String(c.emoji||"").slice(0,16),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
     const assistantRaw=o.assistant&&typeof o.assistant==="object"?o.assistant:{};
     let workspaces=(Array.isArray(o.workspaces)?o.workspaces:[]).filter(Boolean).map(w=>({id:String(w.id||makeId("w")),name:String(w.name||"Espacio").slice(0,100),kind:w.kind==="assistant"?"assistant":"personal",ownerUserId:String(w.ownerUserId||""),inviteCode:String(w.inviteCode||""),role:w.role==="assistant"?"assistant":"owner",status:w.status==="inactive"?"inactive":"active",updatedAt:w.updatedAt||stamp}));
     let personalId=String(assistantRaw.personalWorkspaceId||"");
@@ -2871,6 +2944,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
       assistantMembershipChecked=true;
       mergeAssistantWorkspaces(pulled.workspaces);
       (pulled.changes||[]).forEach(assistantApplyRemoteChange);
+      ensureOfficeEventCategories();
       state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
       state.assistant.lastSyncAt=now();
       assistantApplyingRemote=true;
@@ -3877,7 +3951,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
   window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200);return true}
 
-  function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
+  function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&categoryScope(c)!=="system"&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
   function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))||state.categories.find(c=>c.id==="inbox")}
   function catName(id){const c=cat(id);return c?c.name:"Sin categoría"}
   function catColor(id){const c=cat(id);return c?c.color:"#8e8e93"}
@@ -3900,8 +3974,8 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   function renderCategorySuggestions(picker,forceAll=false){
     const input=picker.querySelector(".categoryPickerInput"),box=picker.querySelector(".categorySuggestions");
     const q=forceAll?"":String(input.value||"").trim().toLowerCase();
-    const rows=activeCategories().filter(c=>!q||c.name.toLowerCase().includes(q));
-    box.innerHTML=rows.length?rows.map(c=>`<button class="categorySuggestion" type="button" data-category-id="${esc(c.id)}"><span class="dot" style="background:${esc(c.color)}"></span><span>${esc(c.name)}</span></button>`).join(""):`<div class="categoryEmpty">Sin coincidencias</div>`;
+    const rows=activeCategories().filter(c=>(picker.id==="taskCategory"||(picker.id==="quickCategory"&&currentWorkspace()?.kind==="assistant")||categoryScope(c)!=="event")&&(!q||c.name.toLowerCase().includes(q)));
+    box.innerHTML=rows.length?rows.map(c=>`<button class="categorySuggestion" type="button" data-category-id="${esc(c.id)}">${categorySymbolHtml(c)}<span>${esc(c.name)}</span></button>`).join(""):`<div class="categoryEmpty">Sin coincidencias</div>`;
     box.querySelectorAll("[data-category-id]").forEach(b=>b.addEventListener("click",()=>{
       setCategoryPicker(picker,b.dataset.categoryId);
       box.classList.add("hidden");
@@ -4440,7 +4514,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   }
   function calendarTaskRows(tasks,date=calendarDate){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span><i class="sideDot" style="display:inline-block;background:'+esc(catColor(t.category))+'"></i> '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span>'+categorySymbolHtml(cat(t.category))+' '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
   }
   function beginCalendarMove(id){
     const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
@@ -4531,9 +4605,11 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     $("calendarPeekPrimary").innerHTML='<span>'+taskMetaSvg("calendar")+esc(dateLabel)+'</span>'+
       (t.dueTime?'<span>'+taskMetaSvg("clock")+esc(timeLabel)+'</span>':"");
     const bits=[];
+    const eventCategory=cat(t.category);
+    if(eventCategory?.id!=="inbox")bits.push(eventCategory.name);
     if(t.locationText)bits.push(t.locationText);
     const duration=calendarPeekDurationLabel(t);if(duration)bits.push(duration);
-    $("calendarPeekMeta").textContent=bits.join(" · ");
+    $("calendarPeekMeta").innerHTML=(eventCategory?.id!=="inbox"?categorySymbolHtml(eventCategory):"")+esc(bits.join(" · "));
     $("calendarPeekMeta").classList.toggle("hidden",!bits.length);
     $("calendarPeekDayState").innerHTML=taskMetaSvg(checked?"check":"clock")+
       (taskMultiDay(t)?(checked?"Jornada realizada":"Jornada pendiente"):(checked?"Realizada":"Pendiente"));
@@ -4686,7 +4762,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
   function calendarTimeBlockHtml(t,date=calendarDate){
     const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
     const duration=end-start,top=start/60*CAL_HOUR_PX,height=Math.max(24,duration/60*CAL_HOUR_PX),lines=duration<=30?1:duration<=60?2:3,compact=duration<60;
-    return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+    return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
   }
   function calendarVisibleRange(){
     if(!["day","week"].includes(calendarView)||!state.preferences.calendarWeekWorkHoursOnly)return {start:0,end:1440};
@@ -4717,7 +4793,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     const blocks=tasks.filter(t=>{const m=calendarTaskStartMinutes(t);return m!==null&&m>=rangeStart&&m<rangeEnd}).map(t=>{
       const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
       const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*hourPx,height=Math.max(24,(visibleEnd-start)/60*hourPx),lines=height>=54?3:height>=31?2:1,compact=height<44;
-      return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+      return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
     }).join("");
     const googleBlocks=calendarGoogleFor(date).filter(e=>!e.allDay).map(event=>{
       const start=timeToMinutes(event.startTime),end=event.endTime==="24:00"?1440:timeToMinutes(event.endTime);
@@ -5036,7 +5112,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     const primary=[date?'<span class="taskMetaItem'+(isOverdue(t)?" overdueText":"")+'">'+taskMetaSvg("calendar")+esc(date)+'</span>':"",
       time?'<span class="taskMetaItem">'+taskMetaSvg("clock")+esc(time)+'</span>':""].filter(Boolean).join("");
     const context=[
-      '<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("tag")+esc(catName(t.category))+'</span>',
+      '<span class="taskMetaItem taskMetaSubtle">'+categorySymbolHtml(cat(t.category))+esc(catName(t.category))+'</span>',
       taskReminderOffsets(t).length?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("bell")+esc(reminderMinutesLabel(taskReminderOffsets(t)[0]))+'</span>':"",
       t.locationText?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("pin")+esc(t.locationText)+'</span>':"",
       t.priority!=="normal"?'<span class="taskMetaItem taskMetaSubtle '+esc(t.priority)+'">'+esc(priorityLabel(t.priority))+'</span>':"",
@@ -6224,10 +6300,11 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     const q=String(field.value||"").trim().toLocaleLowerCase("es");
     const current=getCategoryPickerValue("taskCategory");
     let cats=activeCategories().filter(c=>c.id!=="inbox");
-    cats=cats.filter(c=>!q||String(c.name||"").toLocaleLowerCase("es").includes(q)).slice(0,7);
+    cats.sort((a,b)=>Number(categoryScope(b)==="event")-Number(categoryScope(a)==="event"));
+    cats=cats.filter(c=>!q||String(c.name||"").toLocaleLowerCase("es").includes(q)).slice(0,q?8:12);
     const exact=q&&activeCategories().some(c=>String(c.name||"").toLocaleLowerCase("es")===q);
     let out='<div class="taskInlineCategoryHint">'+(q?"Sugerencias":"Elige una categoría")+'</div>';
-    out+=cats.map(c=>'<button class="taskInlineCategorySuggestion" type="button" role="option" data-task-category-suggestion="'+esc(c.id)+'"><span class="taskInlineCategorySuggestionDot" style="background:'+esc(c.color||"#8e8e93")+'"></span><span>'+esc(c.name)+'</span>'+(c.id===current?'<span style="margin-left:auto;color:#8e8e93">✓</span>':'')+'</button>').join("");
+    out+=cats.map(c=>'<button class="taskInlineCategorySuggestion" type="button" role="option" data-task-category-suggestion="'+esc(c.id)+'">'+categorySymbolHtml(c)+'<span>'+esc(c.name)+'</span>'+(c.id===current?'<span style="margin-left:auto;color:#8e8e93">✓</span>':'')+'</button>').join("");
     if(q&&!exact)out+='<button class="taskInlineCategorySuggestion taskInlineCategorySuggestionCreate" type="button" data-task-category-create="1"><span>＋</span><span>Crear “'+esc(String(field.value||"").trim())+'”</span></button>';
     if(!cats.length&&!q)out+='<div class="taskInlineCategoryHint">Escribe para crear una nueva.</div>';
     host.innerHTML=out;
@@ -6915,7 +6992,25 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     }
   }
 
-  function renderCategoryManage(){const box=$("categoryManage");box.innerHTML="";activeCategories().forEach(c=>{const r=document.createElement("div");r.className="settingsRow categoryManage";r.innerHTML=`<span class="colorSwatch" style="background:${esc(c.color)}"></span><span class="name">${esc(c.name)}</span>${c.id==="inbox"?"":`<button type="button" aria-label="Editar ${esc(c.name)}"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button>`}`;const b=r.querySelector("button");if(b)b.addEventListener("click",()=>openCategory(c));box.appendChild(r)})}
+  function renderCategoryManage(){
+    const general=$("categoryManage"),event=$("eventCategoryManage"),section=$("eventCategorySection");
+    if(!general||!event||!section)return;
+    const shared=currentWorkspace()?.kind==="assistant"&&assistantWorkspaceAuthorized(currentWorkspace());
+    section.classList.toggle("hidden",!shared);
+    function fill(host,rows){
+      host.replaceChildren();
+      for(const category of rows){
+        const r=document.createElement("div");r.className="settingsRow categoryManage";
+        r.innerHTML=categorySymbolHtml(category)+'<span class="name">'+esc(category.name)+'</span>'+
+          (category.id==="inbox"?"":'<button type="button" aria-label="Editar '+esc(category.name)+'"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button>');
+        const button=r.querySelector("button");
+        if(button)button.addEventListener("click",()=>openCategory(category));
+        host.appendChild(r);
+      }
+    }
+    fill(general,activeCategories().filter(c=>categoryScope(c)!=="event"));
+    if(shared)fill(event,eventCategories());
+  }
   function wakeStatus(){
     try{if(window.NottasNative&&NottasNative.wakeControlStatus)return JSON.parse(NottasNative.wakeControlStatus()||"{}")}catch(_){}
     return null;
@@ -7031,7 +7126,39 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
       }
     }
   }
-  function openCategory(c){editingCategoryId=c?c.id:null;$("categoryEditorTitle").textContent=c?"Editar categoría":"Nueva categoría";$("categoryName").value=c?c.name:"";$("categoryColor").value=c?c.color:palette[(activeCategories().length)%palette.length];$("deleteCategoryBtn").classList.toggle("hidden",!c||c.id==="inbox");openOverlay("categoryOverlay");setTimeout(()=>$("categoryName").focus(),80)}
+  let editingCategoryScope="general",editingCategoryIcon="";
+  function renderCategoryIconOptions(){
+    const parent=$("categoryIconOptions");if(!parent)return;
+    parent.innerHTML=EVENT_CATEGORY_ICONS.map(icon=>
+      '<button type="button" class="categoryIconOption" data-category-symbol="'+icon+'" aria-label="'+esc(EVENT_CATEGORY_DEFAULTS.find(x=>x[0]===icon)?.[1]||icon)+'" aria-pressed="'+(editingCategoryIcon===icon?'true':'false')+'">'+
+      '<svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-event-'+icon+'"></use></svg></button>'
+    ).join("");
+    parent.querySelectorAll("[data-category-symbol]").forEach(button=>button.addEventListener("click",()=>{
+      editingCategoryIcon=button.dataset.categorySymbol;
+      $("categoryEmoji").value="";
+      renderCategoryIconOptions();renderCategoryIconPreview();
+    }));
+  }
+  function renderCategoryIconPreview(){
+    const icon=editingCategoryIcon||"meeting";
+    const color=$("categoryColor").value||"#8e8e93",emoji=$("categoryEmoji").value.trim().slice(0,16);
+    $("categoryIconPreview").innerHTML=categorySymbolHtml({color,icon,emoji})+
+      '<span>'+(emoji?"Emoji personalizado":"Ícono vectorial")+'</span>';
+  }
+  function openCategory(c,scope="general"){
+    editingCategoryId=c?c.id:null;
+    editingCategoryScope=c?categoryScope(c):scope==="event"?"event":"general";
+    editingCategoryIcon=c?.icon&&EVENT_CATEGORY_ICONS.includes(c.icon)?c.icon:
+      (editingCategoryScope==="event"?"meeting":"activity");
+    $("categoryEditorTitle").textContent=(c?"Editar ":"Nueva ")+(editingCategoryScope==="event"?"categoría de evento":"categoría");
+    $("categoryName").value=c?c.name:"";
+    $("categoryColor").value=c?c.color:palette[activeCategories().length%palette.length];
+    $("categoryEmoji").value=c?.emoji||"";
+    renderCategoryIconOptions();renderCategoryIconPreview();
+    $("deleteCategoryBtn").classList.toggle("hidden",!c||c.id==="inbox");
+    openOverlay("categoryOverlay");
+    setTimeout(()=>$("categoryName").focus(),80);
+  }
   function closeCategory(){editingCategoryId=null;closeOverlay("categoryOverlay")}
 
   document.addEventListener("focusin",e=>{
@@ -7734,9 +7861,31 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
     $(id).addEventListener("change",update);
   });
   $("openTrashBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");trash=true;render()});
-  $("addCategoryBtn").addEventListener("click",()=>openCategory(null));$("categoryClose").addEventListener("click",closeCategory);$("categoryOverlay").addEventListener("click",e=>{if(e.target===$("categoryOverlay"))closeCategory()});
-  $("categoryForm").addEventListener("submit",e=>{e.preventDefault();const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";if(!name)return;if(activeCategories().some(c=>c.id!==editingCategoryId&&c.name.toLowerCase()===name.toLowerCase())){showToast("La categoría ya existe");return}if(editingCategoryId){const c=state.categories.find(x=>x.id===editingCategoryId);if(c){c.name=name;c.color=color;touch(c)}}else{const stamp=now(),id=makeId("c");state.categories.push({id,name,color,workspaceId:currentWorkspaceId(),createdBy:currentUserId(),updatedBy:currentUserId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});activeCategory=id}closeCategory();scheduleSave();render();showToast("Categoría guardada")});
-  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(itemInActiveWorkspace(t)&&t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(itemInActiveWorkspace(n)&&n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();showToast("Categoría eliminada")});
+  $("addCategoryBtn").addEventListener("click",()=>openCategory(null,"general"));
+  $("addEventCategoryBtn").addEventListener("click",()=>openCategory(null,"event"));
+  $("categoryEmoji").addEventListener("input",renderCategoryIconPreview);
+  $("categoryColor").addEventListener("input",renderCategoryIconPreview);$("categoryClose").addEventListener("click",closeCategory);$("categoryOverlay").addEventListener("click",e=>{if(e.target===$("categoryOverlay"))closeCategory()});
+  $("categoryForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const name=$("categoryName").value.trim(),color=$("categoryColor").value||"#1677ff";
+    if(!name)return;
+    const scope=editingCategoryScope==="event"?"event":"general";
+    const duplicate=activeCategories().some(c=>c.id!==editingCategoryId&&categoryScope(c)===scope&&c.name.toLocaleLowerCase("es")===name.toLocaleLowerCase("es"));
+    if(duplicate){showToast("La categoría ya existe");return}
+    const emoji=$("categoryEmoji").value.trim().slice(0,16);
+    const icon=EVENT_CATEGORY_ICONS.includes(editingCategoryIcon)?editingCategoryIcon:"meeting";
+    if(editingCategoryId){
+      const category=state.categories.find(c=>c.id===editingCategoryId);
+      if(category){category.name=name;category.color=color;category.icon=icon;category.emoji=emoji;category.scope=scope;touch(category)}
+    }else{
+      const stamp=now(),id=makeId("c");
+      state.categories.push({id,name,color,icon,emoji,scope,workspaceId:currentWorkspaceId(),
+        createdBy:currentUserId(),updatedBy:currentUserId(),createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
+      if(scope!=="event")activeCategory=id;
+    }
+    closeCategory();scheduleSave();render();renderCategoryManage();showToast("Categoría guardada");
+  });
+  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(itemInActiveWorkspace(t)&&t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(itemInActiveWorkspace(n)&&n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();renderCategoryManage();showToast("Categoría eliminada")});
 
   window.NottasImportData=async function(input){
     try{
