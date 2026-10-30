@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.67 — 30 de octubre de 2026
+
+- Corregida la superposición de la cabecera de navegación mediante cabecera fija, contenido desplazable independiente y accesos a Papelera/Ajustes anclados.
+- Icono de Ajustes reutilizado de la barra principal; icono de Papelera unificado con el símbolo de la aplicación; accesos inferiores con identidad gráfica y variantes claro/oscuro.
+- Nuevo panel «Filtrar y ordenar» junto a Pendientes: filtros rápidos y cinco órdenes, predeterminando fecha más reciente primero.
+- La ordenación se conserva entre aperturas; agrupación cronológica integrada al panel y coherente con el sentido de orden elegido.
+- Atrás en subapartados de Configuración vuelve primero a Configuración. Corrección equivalente al volver desde ajustes del equipo y al cerrar el nuevo selector de filtros.
+- JavaScript validado sintácticamente; pruebas de interacción Android pendientes.
+
 ## 0.27.66 — 30 de octubre de 2026
 
 - Añadido **No realizada** como estado de cierre independiente de Diferida, Cancelada y Realizada; mantiene los datos y el historial.
