@@ -1573,7 +1573,7 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
 .calendarOverlapGroup.week{padding:2px 1px;gap:2px;border-radius:5px}
 .calendarOverlapGroup.week .calendarOverlapSummary{text-align:center;font-size:9px}
 .calendarOverlapGroup.day{gap:6px}
-.calendarOverlapGroup.day.short{padding:3px 5px;gap:3px}
+.calendarOverlapGroup.day.short{padding:2px 4px;gap:2px}
 .calendarOverlapGroup.day.short .calendarOverlapPreviews{display:none}
 .calendarOverlapGroup.day.short .calendarOverlapSummary{font-size:10px;line-height:1.1}
 .calendarOverlapPreviews{display:flex;min-height:0;gap:6px;align-items:stretch}
@@ -5154,7 +5154,9 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       const main=document.createElement("span");main.className="calendarDayEventMain";
       const title=document.createElement("strong");title.textContent=item.title;
       const meta=document.createElement("small");
-      meta.textContent=(item.kind==="google"?calendarGoogleTimeLabel(item.value):calendarTaskRangeLabel(item.value))+" · "+item.category+(item.kind==="google"?" · solo lectura":"");
+      const origin=options.overlap?(item.kind==="google"?"Google Calendar":"Nottas"):"";
+      const category=origin&&item.category===origin?"":item.category;
+      meta.textContent=(item.kind==="google"?calendarGoogleTimeLabel(item.value):calendarTaskRangeLabel(item.value))+" · "+(origin?origin+(category?" · ":""):"")+category+(item.kind==="google"?" · solo lectura":"");
       main.append(title,meta);
       const arrow=document.createElement("span");arrow.className="calendarDayEventChevron";arrow.textContent="›";
       b.append(dot,main,arrow);b.addEventListener("click",()=>openCalendarDayEvent(item,date));list.appendChild(b);
@@ -5273,10 +5275,10 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
       if(item.kind==="local"){
         const t=item.value;
-        return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+        return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
       }
       const event=item.value;
-      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarGoogleTimeLabel(event))+'</div></div>';
+      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
     };
     const drawGroup=(group,index)=>{
       const key=date+"-"+index,week=calendarView==="week";
