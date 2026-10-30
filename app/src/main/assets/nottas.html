@@ -4353,6 +4353,16 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
     const wasDone=!!t.done;
     if(taskMultiDay(t)){if(!setTaskDayCompletion(t,date,done))return}
     else t.done=!!done;
+    if(meetingIsTracked(t)&&!taskMultiDay(t)){
+      const previous=t.meetingStatus||"scheduled",next=t.done?"realized":"scheduled";
+      if(previous!==next){
+        const from=meetingScheduleSnapshot(t);t.meetingStatus=next;
+        t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
+          at:Date.now(),by:currentUserId(),action:meetingStatusLabel(next),from,
+          to:meetingScheduleSnapshot(t),note:t.meetingNote||""
+        }]);
+      }
+    }
     if(t.done&&!wasDone){
       (t.items||[]).forEach(n=>setTaskNodeDone(n,true));
       syncTaskTreeDone(t.items||[]);
@@ -6908,7 +6918,7 @@ html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93
     const partial=taskMultiDay(t)&&taskCompletedDates(t).length>0&&!t.done;
     const visual=tracking==="scheduled"&&partial?"in_progress":tracking;
     const pendingDecision=["proposed","changes_requested","rejected"].includes(st);
-    const activeMeetingState=visual&&visual!=="scheduled"&&!pendingDecision;
+    const activeMeetingState=visual&&visual!=="scheduled"&&(["realized","not_realized","cancelled","deferred"].includes(visual)||!pendingDecision);
     const label=activeMeetingState?meetingStatusLabel(visual):assistantStatusLabel(st);
     return '<button type="button" class="taskMetaStatusAction" data-card-meta="status" aria-label="Cambiar estado: '+esc(label)+'">'+
       (activeMeetingState?meetingStatusChipHtml(visual):assistantStatusChipHtml(st))+'</button>';
