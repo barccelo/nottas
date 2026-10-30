@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.67** (`versionCode 148`).
+- Versión del código Android: **0.27.68** (`versionCode 149`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,14 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.68 — botones separados y coherencia gráfica
+
+- Se restaura en la barra superior de Tareas el botón independiente **Agrupar por fecha y hora**, con su icono original de reloj y líneas. Activa/desactiva la agrupación con un solo toque, sin abrir otro menú.
+- **Filtrar y ordenar** mantiene su propio botón adicional, inmediatamente después del botón de agrupación y antes de Pendientes; ambos tienen estados visuales independientes y ajustes para pantallas estrechas.
+- Selector de estados de eventos rediseñado con iconos, matices cromáticos apropiados, descripciones, grupos «Seguimiento del evento» y «Gestión de la propuesta», indicador de selección y confirmación de cancelación sin perder el diseño.
+- La hoja Filtrar y ordenar incorpora encabezado contextual, iconos en filtros y opciones de ordenación, elementos compactos con jerarquía y señal visual de la selección. Se conservan los cinco criterios de ordenación y la persistencia de preferencias.
+- Se revisaron los estilos claro/oscuro y el JavaScript embebido superó una comprobación de sintaxis; siguen pendientes pruebas visuales y táctiles en Android.
 
 ## Cambios v0.27.67 — menú lateral, filtros y navegación Atrás
 
@@ -77,7 +85,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.67 tras la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.68 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.

@@ -2,6 +2,14 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.68 — 30 de octubre de 2026
+
+- Restaurado el botón de agrupación rápida por fecha y hora, separado del botón adicional para Filtrar y ordenar.
+- Los dos botones mantienen estados activos independientes y dimensiones adaptadas a pantallas estrechas.
+- Selector de estado de evento: iconos, colores semánticos, textos descriptivos, grupos de opciones e indicador de selección; conserva todas las acciones y el segundo toque de cancelación.
+- Hoja Filtrar y ordenar: introducción con icono, iconos de filtros y ordenación, tarjetas compactas, marcas de selección y estilo claro/oscuro.
+- Preferencias de ordenación y agrupación continúan guardándose. Comprobación sintáctica de JavaScript satisfactoria; pendiente prueba táctil en dispositivos.
+
 ## 0.27.67 — 30 de octubre de 2026
 
 - Corregida la superposición de la cabecera de navegación mediante cabecera fija, contenido desplazable independiente y accesos a Papelera/Ajustes anclados.
