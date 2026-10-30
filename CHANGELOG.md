@@ -2,6 +2,12 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.70 — 30 de octubre de 2026
+
+- Eliminado el fondo blanco cuadrado que rodeaba el icono de la aplicación en Android; el símbolo azul queda recortado con esquinas exteriores transparentes.
+- Reemplazado exclusivamente el WebP del lanzador (256 × 256 con canal alfa), conservando intacto el símbolo de notificaciones «tt» y el comportamiento de Nottas.
+- Pendiente verificación visual en Android tras actualizar la APK.
+
 ## 0.27.69 — 30 de octubre de 2026
 
 - Nuevo icono del lanzador: diseño «N» azul suministrado por el usuario, como imagen WebP optimizada.
