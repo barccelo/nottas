@@ -2,6 +2,14 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.71 — 30 de octubre de 2026
+
+- Unificación del cálculo de colisiones entre eventos de Nottas y Google Calendar en las vistas Día y Semana; se elimina la prioridad visual involuntaria de Google Calendar.
+- En Día, eventos simultáneos ocupan columnas paralelas (hasta dos). Con tres o más solapamientos reales, aparecen dos vistas previas coloreadas, contador y acceso a la lista completa.
+- En Semana, los solapamientos se representan mediante franjas de los colores de origen y contador interactivo, conservando las tarjetas individuales cuando no existe colisión.
+- La lista reutiliza la hoja de eventos con nombre, hora, origen y acceso individual; Google Calendar sigue siendo de solo lectura y Nottas mantiene edición, completar, mover y redimensionar donde se muestran tarjetas individuales.
+- Se contemplan solapamientos parciales y eventos que cruzan los límites del horario laboral visible. Pendiente verificar fidelidad gráfica, tacto y compilación en Android.
+
 ## 0.27.70 — 30 de octubre de 2026
 
 - Eliminado el fondo blanco cuadrado que rodeaba el icono de la aplicación en Android; el símbolo azul queda recortado con esquinas exteriores transparentes.

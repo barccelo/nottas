@@ -6,10 +6,16 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 
 ## Prioridad inmediata
 
+- [ ] **Por verificar · Colisiones Día:** dos eventos simultáneos de fuentes distintas se ven paralelos; tres concurrentes muestran dos tarjetas y +1, y la hoja inferior abre cada evento correctamente.
+- [ ] **Por verificar · Colisiones Semana:** dos o más eventos coincidentes muestran franjas y contador; tocarlos abre una lista completa sin crear accidentalmente un nuevo evento.
+- [ ] **Por verificar · Rango horario:** comparar solapamientos parciales, eventos consecutivos, cambio de horario laboral, modo oscuro, fuentes ocultas y Google Calendar de solo lectura.
+- [ ] **Por verificar · Interacciones:** comprobar que tarjetas individuales mantienen completar, abrir, arrastrar y ajustar duración.
+
+
 - [ ] **Por verificar · Categorías:** probar en Android la recuperación de categorías compartidas después de actualizar a v0.27.62 y realizar una sincronización.
 - [ ] **Por verificar · Persistencia:** cerrar y reabrir Nottas; comprobar que las categorías mantienen espacio, nombre, color, icono y asignaciones.
 - [ ] **Por verificar · Dos dispositivos:** comprobar visibilidad y sincronización de categorías en el director y el asistente.
-- [ ] **Por verificar · Publicación:** comprobar que v0.27.70 se publique como APK firmada en Releases y sea detectada por Obtainium.
+- [ ] **Por verificar · Publicación:** comprobar que v0.27.71 se publique como APK firmada en Releases y sea detectada por Obtainium.
 - [ ] **Por verificar · Estados:** al realizar, diferir o cancelar un evento, comprobar que solo aparece el estado pertinente en la tarjeta.
 - [ ] **Por verificar · Categorías visuales:** comprobar los iconos y colores en tarjetas, incluso con dos categorías llamadas «Reunión».
 - [ ] **Por verificar · Eliminación:** borrar «Nottas» y «Reunión» del espacio elegido, sincronizar, reiniciar y comprobar que no reaparezcan en ambos dispositivos (sin afectar categorías de otro espacio).
