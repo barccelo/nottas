@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.65 — 30 de octubre de 2026
+
+- Barra lateral rediseñada: agrupación compacta, iconos para filtros y navegación, categorías con iconografía propia y estilos claros/oscuros.
+- Deslizamiento desde la izquierda en Tareas para abrir navegación, incluido el borde de las tarjetas sin sustituir su gesto normal de edición; deslizamiento inverso para cerrar.
+- En el editor a pantalla completa, el estado es pulsable y abre la misma hoja de selección disponible en las tarjetas.
+- El asistente y el director autorizados pueden modificar los estados y el seguimiento de eventos del espacio, independientemente del creador; el Worker conserva los cambios.
+- Cambio de fecha/hora del asistente sin degradación automática del evento a propuesta.
+- Pendiente de verificar experiencia en dispositivos; despliegue de Worker y APK mediante GitHub Actions.
+
 ## 0.27.64 — 30 de octubre de 2026
 
 - Eliminación inequívoca de categorías por ID y espacio, incluso con registros históricos duplicados.
