@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.66 — 30 de octubre de 2026
+
+- Añadido **No realizada** como estado de cierre independiente de Diferida, Cancelada y Realizada; mantiene los datos y el historial.
+- Selector de estados con las ocho acciones visibles en cualquier situación, dentro y fuera del editor.
+- Pulsación prolongada del check de nuevos eventos y eventos heredados sin marca de seguimiento abre el mismo selector.
+- No realizada queda fuera de Pendientes y sin nuevos recordatorios; su chip usa icono y color neutros.
+- El Worker admite y conserva No realizada y restituye el seguimiento a los eventos del espacio compartido.
+- Cambios en código pendientes de validación manual en los dos teléfonos.
+
 ## 0.27.65 — 30 de octubre de 2026
 
 - Barra lateral rediseñada: agrupación compacta, iconos para filtros y navegación, categorías con iconografía propia y estilos claros/oscuros.
