@@ -361,7 +361,7 @@ class ReminderReceiver : BroadcastReceiver() {
                 )
 
                 val notification = Notification.Builder(context, ReminderScheduler.channelId())
-                    .setSmallIcon(R.drawable.ic_nottas)
+                    .setSmallIcon(R.drawable.ic_nottas_status)
                     .setContentTitle(
                         if (group.length() > 1) {
                             "Recordatorio " + (i + 1) + " de " + group.length()

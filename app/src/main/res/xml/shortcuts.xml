@@ -3,7 +3,7 @@
     <shortcut
         android:shortcutId="quick_task"
         android:enabled="true"
-        android:icon="@drawable/ic_nottas"
+        android:icon="@drawable/ic_nottas_launcher"
         android:shortcutShortLabel="@string/shortcut_task"
         android:shortcutLongLabel="@string/shortcut_task">
         <intent
@@ -19,7 +19,7 @@
     <shortcut
         android:shortcutId="quick_note"
         android:enabled="true"
-        android:icon="@drawable/ic_nottas"
+        android:icon="@drawable/ic_nottas_launcher"
         android:shortcutShortLabel="@string/shortcut_note"
         android:shortcutLongLabel="@string/shortcut_note">
         <intent

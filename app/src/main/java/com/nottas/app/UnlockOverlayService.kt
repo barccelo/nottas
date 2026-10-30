@@ -185,7 +185,7 @@ class UnlockOverlayService : Service() {
         )
 
         val notification = android.app.Notification.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle("Nottas")
             .setContentText("Listo para aparecer al encender o desbloquear")
             .setContentIntent(pendingIntent)

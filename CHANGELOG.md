@@ -2,6 +2,14 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.69 — 30 de octubre de 2026
+
+- Nuevo icono del lanzador: diseño «N» azul suministrado por el usuario, como imagen WebP optimizada.
+- Nuevo recurso monocromático «tt» para la barra de notificaciones, vectorizado desde la segunda imagen y con check/calendario transparentes.
+- Sustitución de iconos pequeños en mensajes, llamadas del asistente, notificaciones del director, recordatorios y servicio persistente.
+- Ajustes rápidos y Firebase usan «tt»; los accesos directos usan la nueva «N».
+- Pendiente validación visual en Android.
+
 ## 0.27.68 — 30 de octubre de 2026
 
 - Restaurado el botón de agrupación rápida por fecha y hora, separado del botón adicional para Filtrar y ordenar.

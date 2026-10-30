@@ -55,7 +55,7 @@ object DirectorProposalNotifier {
             Notification.Builder(context)
         }
         val notification = builder
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle(header)
             .setContentText(text)
             .setContentIntent(pending)

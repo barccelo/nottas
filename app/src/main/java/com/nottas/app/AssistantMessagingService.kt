@@ -92,7 +92,7 @@ object AssistantNotification {
             Notification.Builder(context)
         }
         val notification = builder
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(pending)
@@ -144,7 +144,7 @@ object AssistantCallNotifier {
             Notification.Builder(context)
         }
         val notification = builder
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle(callerName + " te llama")
             .setContentText(workspaceName)
             .setContentIntent(pending)
@@ -220,7 +220,7 @@ object AssistantResponseNotifier {
             Notification.Builder(context)
         }
         val notification = builder
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle("Respuesta de " + fromName)
             .setContentText(label)
             .setContentIntent(pending)
@@ -291,7 +291,7 @@ object AssistantNoticeNotifier {
             Notification.Builder(context)
         }
         val notification = builder
-            .setSmallIcon(R.drawable.ic_nottas)
+            .setSmallIcon(R.drawable.ic_nottas_status)
             .setContentTitle("Aviso de " + fromName)
             .setContentText(message)
             .setStyle(Notification.BigTextStyle().bigText(message))
