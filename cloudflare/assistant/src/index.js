@@ -491,7 +491,7 @@ async function pullSync(url, auth, env) {
 
   if (full) {
     const items = await env.DB.prepare(
-      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items WHERE deleted_at IS NULL ORDER BY updated_at ASC LIMIT 5000"
+      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items WHERE deleted_at IS NULL OR entity_type='category' ORDER BY updated_at ASC LIMIT 5000"
     ).all();
     const snapshot = [];
     for (const row of (items.results || [])) {
@@ -554,7 +554,10 @@ async function pushSync(request, auth, env) {
     payload.workspaceId = workspaceId;
     payload.updatedBy = auth.userId;
     const incomingRev = Math.max(1, Number(change.rev || payload.rev || 1) || 1);
-    const incomingUpdatedAt = Math.max(1, Number(change.updatedAt || payload.updatedAt || Date.now()) || Date.now());
+    const rawUpdatedAt=change.updatedAt??payload.updatedAt;
+    const numericUpdatedAt=Number(rawUpdatedAt);
+    const parsedUpdatedAt=Number.isFinite(numericUpdatedAt)&&numericUpdatedAt>0?numericUpdatedAt:Date.parse(String(rawUpdatedAt||""));
+    const incomingUpdatedAt=Number.isFinite(parsedUpdatedAt)&&parsedUpdatedAt>0?Math.min(parsedUpdatedAt,Date.now()+300000):Date.now();
     const deletedAt = change.deletedAt || payload.deletedAt || null;
 
     const current = await env.DB.prepare(
@@ -639,7 +642,19 @@ async function pushSync(request, auth, env) {
       }
     }
 
-    if (current && Number(current.updated_at) > incomingUpdatedAt && Number(current.rev) >= incomingRev) {
+    // Deletion is terminal for a category: never let a second phone, an old
+    // export or a delayed offline edit silently recreate it.
+    if(entityType==="category"&&current?.deleted_at&&!deletedAt){
+      conflicts.push({
+        workspaceId,entityType,entityId,
+        payload:safeJson(current.payload_json,{}),
+        rev:current.rev,updatedAt:current.updated_at,deletedAt:current.deleted_at
+      });
+      continue;
+    }
+    // An explicit category deletion must win even if another device last
+    // updated the category later or has a higher revision.
+    if (current && !(entityType==="category"&&deletedAt) && Number(current.updated_at) > incomingUpdatedAt && Number(current.rev) >= incomingRev) {
       conflicts.push({
         workspaceId, entityType, entityId,
         payload: safeJson(current.payload_json, {}),

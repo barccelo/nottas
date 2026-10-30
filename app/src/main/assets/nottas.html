@@ -2441,7 +2441,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
   const GCAL_LOCAL_CACHE_KEY="nottas_google_event_cache_v1",GCAL_FRESH_MS=7*60*1000,GCAL_MAX_STALE_MS=7*24*60*60*1000;
   let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="",calendarOnlyEvents=false;
-  let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0;
+  let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0,categorySnapshotChecked=false;
 
   function setNativeSearchKeyboardMode(active){
     try{
@@ -2992,13 +2992,9 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if(!type||!change?.payload)return;
     const arr=type==="task"?state.tasks:type==="note"?state.notes:state.categories,payload={...change.payload,workspaceId:String(change.workspaceId||change.payload.workspaceId||""),syncState:"synced"};
     if(!payload.id)return;
-    const sameId=type==="category"?arr.filter(x=>x.id===payload.id):[];
-    const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId)||
-      (type==="category"&&sameId.length===1?sameId[0]:null);
-    // Shared category IDs survive local misassignment; reattach the remote copy
-    // rather than introducing a second record under the same ID.
-    if(existing&&type==="category"&&existing.workspaceId!==payload.workspaceId)
-      existing.workspaceId=payload.workspaceId;
+    // A historical workspace migration may have duplicated category IDs. Never
+    // move a Personal category to Oficina just because its ID matches remotely.
+    const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId);
     if(existing){
       // Never resurrect a locally deleted category from a stale full snapshot.
       // On a genuine push conflict, retry the explicit deletion with a newer rev.
@@ -3009,7 +3005,9 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
         }
         return;
       }
-      if(existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
+      // Cloud tombstones win over a stale local copy even if that copy was
+      // edited on an older phone after it missed the deletion.
+      if(!(type==="category"&&payload.deletedAt)&&existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
       const purgedAt=existing.deletedAt&&existing.purgedAt?existing.purgedAt:null;
       Object.assign(existing,payload,{syncState:"synced"});
@@ -3051,12 +3049,13 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
         assistantMarkAccepted(pushed.accepted);
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload,forceConflict:true}));
       }
-      const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!state.preferences.categoryWorkspaceRepair20261030)?"&full=1":"");
+      const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!categorySnapshotChecked)?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
       assistantAuthorizedIds=new Set((pulled.workspaces||[]).map(w=>w.id));
       assistantMembershipChecked=true;
       mergeAssistantWorkspaces(pulled.workspaces);
       (pulled.changes||[]).forEach(assistantApplyRemoteChange);
+      if(pulled.full)categorySnapshotChecked=true;
       ensureOfficeEventCategories();
       state.preferences.categoryWorkspaceRepair20261030=true;
       state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
@@ -7407,7 +7406,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       }
     }
   }
-  let editingCategoryScope="general",editingCategoryIcon="";
+  let editingCategoryScope="general",editingCategoryIcon="",editingCategoryWorkspaceId="";
   function renderCategoryIconOptions(){
     const parent=$("categoryIconOptions");if(!parent)return;
     parent.innerHTML=EVENT_CATEGORY_ICONS.map(icon=>
@@ -7428,6 +7427,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   }
   function openCategory(c,scope="general"){
     editingCategoryId=c?c.id:null;
+    editingCategoryWorkspaceId=c?.workspaceId||currentWorkspaceId();
     editingCategoryScope=c?categoryScope(c):scope==="event"?"event":"general";
     editingCategoryIcon=c?.icon&&EVENT_CATEGORY_ICONS.includes(c.icon)?c.icon:
       (editingCategoryScope==="event"?"meeting":"activity");
@@ -7440,7 +7440,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     openOverlay("categoryOverlay");
     setTimeout(()=>$("categoryName").focus(),80);
   }
-  function closeCategory(){editingCategoryId=null;closeOverlay("categoryOverlay")}
+  function closeCategory(){editingCategoryId=null;editingCategoryWorkspaceId="";closeOverlay("categoryOverlay")}
 
   document.addEventListener("focusin",e=>{
     if(!e.target.matches("input,textarea,select,[contenteditable=\"true\"]"))return;
@@ -8170,7 +8170,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     const emoji=$("categoryEmoji").value.trim().slice(0,16);
     const icon=EVENT_CATEGORY_ICONS.includes(editingCategoryIcon)?editingCategoryIcon:"meeting";
     if(editingCategoryId){
-      const category=state.categories.find(c=>c.id===editingCategoryId);
+      const category=state.categories.find(c=>c.id===editingCategoryId&&String(c.workspaceId||personalWorkspaceId())===editingCategoryWorkspaceId&&!c.deletedAt);
       if(category){category.name=name;category.color=color;category.icon=icon;category.emoji=emoji;category.scope=scope;touch(category)}
     }else{
       const stamp=now(),id=makeId("c");
@@ -8180,7 +8180,18 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     }
     closeCategory();scheduleSave();render();renderCategoryManage();showToast("Categoría guardada");
   });
-  $("deleteCategoryBtn").addEventListener("click",()=>{const c=state.categories.find(x=>x.id===editingCategoryId);if(!c||c.id==="inbox")return;state.tasks.forEach(t=>{if(itemInActiveWorkspace(t)&&t.category===c.id){t.category="inbox";touch(t)}});state.notes.forEach(n=>{if(itemInActiveWorkspace(n)&&n.category===c.id){n.category="inbox";touch(n)}});c.deletedAt=now();touch(c);if(activeCategory===c.id)activeCategory="all";closeCategory();scheduleSave();render();renderCategoryManage();showToast("Categoría eliminada")});
+  $("deleteCategoryBtn").addEventListener("click",()=>{
+    const c=state.categories.find(x=>x.id===editingCategoryId&&String(x.workspaceId||personalWorkspaceId())===editingCategoryWorkspaceId&&!x.deletedAt);
+    if(!c||c.id==="inbox")return;
+    const workspaceId=c.workspaceId,categoryId=c.id;
+    state.tasks.forEach(t=>{if(t.workspaceId===workspaceId&&t.category===categoryId&&!t.deletedAt){t.category="inbox";touch(t)}});
+    state.notes.forEach(n=>{if(n.workspaceId===workspaceId&&n.category===categoryId&&!n.deletedAt){n.category="inbox";touch(n)}});
+    c.deletedAt=now();touch(c);
+    if(activeCategory===categoryId)activeCategory="all";
+    closeCategory();scheduleSave();render();renderCategoryManage();
+    showToast(assistantConfigured()?"Categoría eliminada · sincronizando":"Categoría eliminada");
+    if(assistantConfigured())scheduleAssistantSync(250);
+  });
 
   window.NottasImportData=async function(input){
     try{

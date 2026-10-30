@@ -9,10 +9,10 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 - [ ] **Por verificar · Categorías:** probar en Android la recuperación de categorías compartidas después de actualizar a v0.27.62 y realizar una sincronización.
 - [ ] **Por verificar · Persistencia:** cerrar y reabrir Nottas; comprobar que las categorías mantienen espacio, nombre, color, icono y asignaciones.
 - [ ] **Por verificar · Dos dispositivos:** comprobar visibilidad y sincronización de categorías en el director y el asistente.
-- [ ] **Por verificar · Publicación:** comprobar que v0.27.63 se publique como APK firmada en Releases y sea detectada por Obtainium.
+- [ ] **Por verificar · Publicación:** comprobar que v0.27.64 se publique como APK firmada en Releases y sea detectada por Obtainium.
 - [ ] **Por verificar · Estados:** al realizar, diferir o cancelar un evento, comprobar que solo aparece el estado pertinente en la tarjeta.
 - [ ] **Por verificar · Categorías visuales:** comprobar los iconos y colores en tarjetas, incluso con dos categorías llamadas «Reunión».
-- [ ] **Por verificar · Eliminación:** borrar una categoría general, sincronizar, reiniciar y comprobar que no reaparezca en ambos dispositivos.
+- [ ] **Por verificar · Eliminación:** borrar «Nottas» y «Reunión» del espacio elegido, sincronizar, reiniciar y comprobar que no reaparezcan en ambos dispositivos (sin afectar categorías de otro espacio).
 
 ## Mejoras de interfaz y experiencia registradas en conversaciones previas
 
@@ -22,6 +22,8 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 - [ ] **Pendiente:** continuar afinando los cuadros emergentes para que se cierren correctamente al tocar fuera, sin ejecutar acciones involuntarias.
 - [ ] **En evaluación:** lista compacta/holgada y evolución de los filtros y navegación lateral.
 - [ ] **En evaluación:** seguimiento de eventos diferidos, atrasados y multidiarios, con sus estados y acciones rápidas.
+
+- [ ] **Por verificar · Cloudflare:** confirmar despliegue del Worker corregido con instantáneas que incluyen categorías eliminadas.
 
 ## Calidad y regresiones
 

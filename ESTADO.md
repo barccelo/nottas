@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.63** (`versionCode 144`).
+- Versión del código Android: **0.27.64** (`versionCode 145`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,15 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Corrección v0.27.64 — eliminación de categorías entre dispositivos
+
+- El botón Eliminar selecciona por **ID y workspaceId**, no solo por ID (históricamente podía haber IDs duplicados entre Personal y Oficina).
+- La sincronización deja de mover una categoría entre espacios solo porque coincida su ID.
+- El Worker conserva y devuelve las categorías eliminadas en las instantáneas completas, de forma que el otro teléfono conozca los borrados.
+- Las categorías borradas tienen prioridad sobre versiones antiguas, incluso si las otras versiones estaban editadas o procedían de respaldos.
+- Se consulta una instantánea completa una vez al abrir la aplicación y hay conexión, evitando consultas completas continuas.
+- Cambios tanto en la APK como en el Worker desplegable con GitHub Actions. No se borran automáticamente categorías por nombre.
 
 ## Cambios de v0.27.63: estados, iconos y borrado de categorías
 
@@ -40,7 +49,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar a v0.27.63 desde Obtainium una vez publicada la APK firmada.
+1. Actualizar ambos teléfonos a v0.27.64 cuando se confirme su publicación y el despliegue del Worker.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.

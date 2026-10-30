@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.64 — 30 de octubre de 2026
+
+- Eliminación inequívoca de categorías por ID y espacio, incluso con registros históricos duplicados.
+- Eliminada la reasignación automática por ID de categorías remotas al espacio incorrecto.
+- Cloudflare: las instantáneas completas incluyen categorías borradas; bloqueado el resurgimiento por datos antiguos de otros dispositivos.
+- Los borrados explícitos de categorías prevalecen ante revisiones antiguas; normalización de fechas ISO en el Worker.
+- Sincronización completa inicial una vez por apertura para recuperar borrados omitidos.
+- Requiere publicar APK y desplegar Worker. La comprobación en ambos dispositivos sigue pendiente.
+
 ## 0.27.63 — 30 de octubre de 2026
 
 - Tarjetas de eventos: mostrar solo un estado principal; las reuniones realizadas, diferidas o canceladas no conservan a la vez la etiqueta «Agendada».
