@@ -570,10 +570,8 @@ async function pushSync(request, auth, env) {
     if (entityType === "task" && membershipRoles.get(workspaceId) === "assistant") {
       const currentPayload = current ? safeJson(current.payload_json, {}) : null;
       const currentStatus = currentPayload?.approvalStatus || "confirmed";
-      const requestedStatus = payload.approvalStatus || currentStatus;
-      const assistantIsAuthor = !currentPayload || currentPayload.createdBy === auth.userId;
-      const requestsDirectScheduling = requestedStatus === "scheduled" && assistantIsAuthor;
-      const requestsProposal = requestedStatus === "proposed" && assistantIsAuthor;
+      const requestedStatus = ["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(payload.approvalStatus)
+        ? payload.approvalStatus : currentStatus;
       const scheduleChanged = !!currentPayload && (
         String(currentPayload.dueDate || "") !== String(payload.dueDate || "") ||
         String(currentPayload.endDate || "") !== String(payload.endDate || "") ||
@@ -599,7 +597,7 @@ async function pushSync(request, auth, env) {
         }))].slice(-50);
         if (scheduleChanged && payload.meetingTracked) {
           payload.meetingHistory = [...oldHistory, {
-            at: Date.now(), by: auth.userId, action: "Horario propuesto",
+            at: Date.now(), by: auth.userId, action: "Horario actualizado",
             from: {
               dueDate: String(currentPayload.dueDate || ""), endDate: String(currentPayload.endDate || ""),
               dueTime: String(currentPayload.dueTime || ""), endTime: String(currentPayload.endTime || ""),
@@ -617,29 +615,8 @@ async function pushSync(request, auth, env) {
         payload.meetingStatus = ["scheduled", "deferred", "realized", "cancelled"].includes(payload.meetingStatus) ? payload.meetingStatus : "scheduled";
         payload.meetingHistory = [];
       }
-      if (!currentPayload) {
-        // An assistant may explicitly schedule a new task without approval.
-        payload.approvalStatus = requestsDirectScheduling ? "scheduled" : "proposed";
-        payload.requiresApproval = !requestsDirectScheduling;
-      } else if (currentStatus === "confirmed" && scheduleChanged) {
-        // Changes to a task approved by the boss still require approval.
-        payload.approvalStatus = "proposed";
-        payload.requiresApproval = true;
-      } else if (currentStatus === "scheduled" && requestsProposal) {
-        payload.approvalStatus = "proposed";
-        payload.requiresApproval = true;
-      } else if (currentStatus === "proposed" && requestsDirectScheduling) {
-        // Only the task's original assistant may change its approval mode.
-        payload.approvalStatus = "scheduled";
-        payload.requiresApproval = false;
-      } else if (["changes_requested", "rejected"].includes(currentStatus) && requestedStatus === "proposed") {
-        payload.approvalStatus = "proposed";
-        payload.requiresApproval = true;
-      } else {
-        // Never let an assistant override the boss's confirmed/rejected state.
-        payload.approvalStatus = currentStatus;
-        payload.requiresApproval = currentStatus === "proposed" || currentStatus === "changes_requested";
-      }
+      payload.approvalStatus = requestedStatus;
+      payload.requiresApproval = ["proposed","changes_requested"].includes(requestedStatus);
     }
 
     // Deletion is terminal for a category: never let a second phone, an old

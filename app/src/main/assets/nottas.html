@@ -2350,7 +2350,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       <div class="cardMetaActions"><button id="cardMetaTimeClear" class="cardMetaSecondary" type="button">Sin hora</button><button id="cardMetaTimeSave" class="cardMetaPrimary" type="button">Guardar hora</button></div>
     </div>
     <div id="cardMetaStatus" class="cardMetaPanel hidden">
-      <div class="cardMetaHint">El estado de la propuesta es independiente de que el evento se haya realizado.</div>
+      <div id="cardMetaStatusHint" class="cardMetaHint">Elige el estado del evento.</div>
       <div id="cardMetaStatusOptions" class="cardMetaStatusOptions"></div>
     </div>
   </div>
@@ -4656,7 +4656,6 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       if(minute+duration>=1440)$("taskEndDate").value=addCalendarDays(date,1);
     }
     editorMeetingStatus="scheduled";editorMeetingStatusChanged=true;
-    setEditorTaskApproval("changes_requested");
     syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();
     cancelCalendarReschedule();commitTaskHistory();
     showToast("Horario seleccionado · revisa y guarda");
@@ -5242,7 +5241,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   function openCardMeta(task,part,source="card"){
     if(!["date","time","category","status"].includes(part))return;
     if(source!=="editor"&&(!task||!itemInActiveWorkspace(task)))return;
-    if(source==="editor"&&part!=="category")return;
+    if(source==="editor"&&!["category","status"].includes(part))return;
     hideMetadataKeyboard();
     cardMetaContext={source,part,taskId:task?.id||"",workspaceId:task?.workspaceId||currentWorkspaceId()};
     cardMetaCancelArmed="";
@@ -5309,9 +5308,6 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       t.endTime=value&&duration&&newStart+duration<1440?minutesToTime(newStart+duration):"";
       if(value&&!t.dueDate)t.dueDate=localDateISO();
     }
-    if(currentWorkspace()?.kind==="assistant"&&currentWorkspaceRole()==="assistant"&&(t.approvalStatus||"confirmed")==="confirmed"){
-      t.approvalStatus="proposed";t.requiresApproval=true;
-    }
     if(t.meetingTracked&&t.meetingStatus==="deferred"&&t.dueDate&&["confirmed","scheduled"].includes(t.approvalStatus||"confirmed"))t.meetingStatus="scheduled";
     if(t.meetingTracked){
       t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
@@ -5322,51 +5318,62 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     touch(t);scheduleSave();closeCardMeta();render();showToast("Horario actualizado");
   }
   function renderCardMetaStatuses(){
-    const t=cardMetaTask(),box=$("cardMetaStatusOptions");
-    box.replaceChildren();if(!t)return;
-    const role=currentWorkspaceRole(),st=t.approvalStatus||"confirmed",mine=t.createdBy===currentUserId();
-    const options=[];
-    if(role==="owner"){
-      options.push(["Agendada","approval","confirmed"],["Solicitar nueva fecha","approval","changes_requested"],["Rechazada","approval","rejected"]);
-    }else if(role==="assistant"&&mine&&["scheduled","proposed"].includes(st)){
-      options.push(["Agendada","approval","scheduled"],["Propuesta","approval","proposed"]);
-    }else if(role==="assistant"&&mine&&["changes_requested","rejected"].includes(st)){
-      options.push(["Proponer de nuevo","approval","proposed"]);
+    const editor=cardMetaContext?.source==="editor",t=editor?taskSnapshot():cardMetaTask();
+    const box=$("cardMetaStatusOptions");box.replaceChildren();if(!t)return;
+    if(!isSharedWorkspace()||!["owner","assistant"].includes(currentWorkspaceRole())){
+      box.textContent="Sin acceso a este espacio.";return;
     }
-    if(meetingIsTracked(t)){
-      const meeting=t.meetingStatus||"scheduled";
-      if(meeting==="cancelled"||meeting==="realized")options.push(["Reabrir evento","meeting","scheduled"]);
+    const st=editor?editorTaskApprovalStatus:(t.approvalStatus||"confirmed");
+    const meeting=editor?editorMeetingStatus:(t.meetingStatus||"scheduled");
+    $("cardMetaStatusHint").textContent="Estado actual: "+(meeting!=="scheduled"?meetingStatusLabel(meeting):assistantStatusLabel(st))+".";
+    const options=[["Agendada","approval","confirmed"],["Propuesta","approval","proposed"],
+      ["Solicitar nueva fecha","approval","changes_requested"],["Rechazada","approval","rejected"]];
+    if(editor?editorMeetingTracked:meetingIsTracked(t)){
+      if(["realized","cancelled"].includes(meeting))options.push(["Reabrir evento","meeting","scheduled"]);
       else if(meeting==="deferred"){
-        if(t.dueDate)options.push(["Confirmar nuevo horario","meeting","scheduled"]);
+        if(t.dueDate)options.push(["Confirmar horario","meeting","scheduled"]);
         options.push(["Cancelar evento","meeting","cancelled"]);
-      }else options.push(["Diferir evento","meeting","deferred"],["Cancelar evento","meeting","cancelled"]);
+      }else options.push(["Realizada","meeting","realized"],["Diferir evento","meeting","deferred"],["Cancelar evento","meeting","cancelled"]);
     }
-    if(!options.length){box.textContent="El estado solo puede cambiarlo una persona autorizada.";return}
     for(const [label,kind,value] of options){
-      const button=document.createElement("button");button.type="button";button.className="cardMetaStatusChoice";
-      button.textContent=label;
-      button.setAttribute("aria-pressed",String(kind==="approval"?st===value:t.meetingStatus===value));
+      const button=document.createElement("button");button.type="button";
+      button.className="cardMetaStatusChoice";button.textContent=label;
+      button.setAttribute("aria-pressed",String(kind==="approval"?st===value:meeting===value));
       button.addEventListener("click",()=>{
-        if(kind==="meeting"&&value==="cancelled"&&cardMetaCancelArmed!==t.id){
-          cardMetaCancelArmed=t.id;button.textContent="Confirmar cancelación";return;
+        if(kind==="meeting"&&value==="cancelled"&&cardMetaCancelArmed!==(t.id||"editor")){
+          cardMetaCancelArmed=t.id||"editor";button.textContent="Confirmar cancelación";return;
         }
-        if(kind==="approval"){
-          if(t.approvalStatus===value){closeCardMeta();return}
-          t.approvalStatus=value;t.requiresApproval=["proposed","changes_requested"].includes(value);
+        if(kind==="approval"&&st===value||kind==="meeting"&&meeting===value){closeCardMeta();return}
+        if(kind==="meeting"&&value==="scheduled"&&!t.dueDate){showToast("Selecciona una fecha para reabrir");return}
+        closeCardMeta();
+        if(editor){
+          if(kind==="approval")setEditorTaskApproval(value);
+          else setEditorMeetingStatus(value);
+          syncTaskInlineForm();syncAssistantTaskStrip();
         }else{
-          if(t.meetingStatus===value){closeCardMeta();return}
-          const before=meetingScheduleSnapshot(t);
-          if(value==="deferred"){
-            t.dueDate="";t.endDate="";t.dueTime="";t.endTime="";
-            t.reminders=[];t.reminder="none";t.done=false;t.completedDates=[];
+          if(kind==="approval"){
+            t.approvalStatus=value;t.requiresApproval=["proposed","changes_requested"].includes(value);
+          }else{
+            const before=meetingScheduleSnapshot(t);
+            if(value==="deferred"){
+              t.dueDate="";t.endDate="";t.dueTime="";t.endTime="";
+              t.reminders=[];t.reminder="none";
+            }
+            t.done=value==="realized";
+            if(value==="realized"){
+              if(taskMultiDay(t))t.completedDates=taskDays(t);
+              (t.items||[]).forEach(n=>setTaskNodeDone(n,true));
+              syncTaskTreeDone(t.items||[]);t.subtasks=legacySubtasksFromItems(t.items||[]);
+            }else t.completedDates=[];
+            t.meetingStatus=value;
+            t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
+              at:Date.now(),by:currentUserId(),action:meetingStatusLabel(value),from:before,
+              to:meetingScheduleSnapshot(t),note:t.meetingNote||""
+            }]);
           }
-          if(value==="scheduled"){t.done=false;t.completedDates=[]}
-          t.meetingStatus=value;
-          t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
-            at:Date.now(),by:currentUserId(),action:meetingStatusLabel(value),from:before,to:meetingScheduleSnapshot(t),note:t.meetingNote||""
-          }]);
+          touch(t);scheduleSave();render();
         }
-        touch(t);scheduleSave();closeCardMeta();render();showToast("Estado actualizado");
+        showToast("Estado actualizado");
       });
       box.appendChild(button);
     }
@@ -6833,40 +6840,23 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     const strip=$("assistantTaskStrip"),status=$("assistantTaskStatus"),actions=$("assistantTaskActions"),hint=$("assistantTaskHint");
     if(!strip||!status||!actions||!hint)return;
     const shared=(editorTaskWorkspaceId||currentWorkspaceId())===currentWorkspaceId()&&isSharedWorkspace();
-    strip.classList.toggle("hidden",!shared);
-    if(!shared)return;
-    const st=editorTaskApprovalStatus||"confirmed",role=currentWorkspaceRole();
-    status.textContent=assistantStatusLabel(st);status.className="assistantTaskStatus "+st;
-    const toggleAllowed=role==="assistant"&&["proposed","scheduled"].includes(st)&&( !editingTaskId || !!state.tasks.find(t=>t.id===editingTaskId&&String(t.createdBy||"")===currentUserId()) );
-    status.disabled=!toggleAllowed;status.setAttribute("aria-pressed",st==="scheduled"?"true":"false");
-    status.title=toggleAllowed?(st==="proposed"?"Tocar para agendar sin aprobación":"Tocar para solicitar aprobación"):"Estado de la tarea";
-    actions.innerHTML="";
-    hint.textContent=role==="owner"?(st==="proposed"?"Pendiente de tu decisión.":st==="scheduled"?"Agendada directamente por el asistente.":st==="changes_requested"?"Esperando una nueva propuesta.":"Espacio compartido."):(st==="proposed"?"Toca Propuesta para agendar sin aprobación.":st==="scheduled"?"Toca Agendada para solicitar aprobación.":st==="changes_requested"?"El jefe pidió otra fecha u hora.":"Espacio compartido.");
-    const add=(label,cls,fn)=>{const b=document.createElement("button");b.type="button";b.textContent=label;if(cls)b.className=cls;b.addEventListener("click",fn);actions.appendChild(b)};
-    if(role==="owner"&&st==="proposed"){
-      add("Aprobar","approve",()=>setEditorTaskApproval("confirmed"));
-      add("Posponer","",openCalendarForReschedule);
-      add("Rechazar","reject",()=>setEditorTaskApproval("rejected"));
-    }else if(role==="owner"&&st==="changes_requested"){
-      add("Confirmar","approve",()=>setEditorTaskApproval("confirmed"));
-      add("Rechazar","reject",()=>setEditorTaskApproval("rejected"));
-    }else if(role==="assistant"&&["changes_requested","rejected"].includes(st)){
-      add("Proponer de nuevo","approve",()=>setEditorTaskApproval("proposed"));
-    }
+    strip.classList.toggle("hidden",!shared);if(!shared)return;
+    const approval=editorTaskApprovalStatus||"confirmed";
+    const meeting=editorMeetingTracked?editorMeetingStatus:"scheduled";
+    const label=meeting!=="scheduled"?meetingStatusLabel(meeting):assistantStatusLabel(approval);
+    const allowed=["assistant","owner"].includes(currentWorkspaceRole());
+    status.textContent=label;status.className="assistantTaskStatus "+approval;
+    status.disabled=!allowed;status.title=allowed?"Cambiar estado del evento":"Sin acceso al espacio";
+    status.setAttribute("aria-label",status.title+": "+label);
+    status.setAttribute("aria-pressed","false");
+    hint.textContent=allowed?"Toca el estado para cambiarlo.":"Sin acceso al espacio.";
+    actions.replaceChildren();
   }
   function setEditorTaskApproval(status){
     if(!["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
-    const previousStatus=editorTaskApprovalStatus;
-    const closeAfterApproval=status==="confirmed"&&currentWorkspaceRole()==="owner"&&
-      ["proposed","changes_requested"].includes(previousStatus);
-    editorTaskApprovalStatus=status;editorTaskRequiresApproval=status==="proposed"||status==="changes_requested";
+    editorTaskApprovalStatus=status;editorTaskRequiresApproval=["proposed","changes_requested"].includes(status);
     syncAssistantTaskStrip();
-    const saved=editingTaskId?persistOpenTask(false):false;
-    if(closeAfterApproval&&saved){
-      closeEditor({save:false});
-      showToast("Evento agendado");
-      return;
-    }
+    if(editingTaskId)persistOpenTask(false);
     renderMeetingFollowup();
   }
 
@@ -6886,7 +6876,6 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if($("taskForm").classList.contains("hidden"))return false;
     const snap=taskSnapshot();if(!snap.text)return false;
     const existing=editingTaskId?state.tasks.find(x=>x.id===editingTaskId):null;
-    if(existing&&isSharedWorkspace()&&currentWorkspaceRole()==="assistant"&&(existing.approvalStatus||"confirmed")==="confirmed"&&(existing.dueDate!==snap.dueDate||(existing.endDate||"")!==snap.endDate||existing.dueTime!==snap.dueTime||(existing.endTime||"")!==snap.endTime)){snap.approvalStatus="proposed";snap.requiresApproval=true;editorTaskApprovalStatus="proposed";editorTaskRequiresApproval=true;syncAssistantTaskStrip()}
     // A deferred meeting can only become scheduled again after the owner
     // sets a date (and, when appropriate, approves the assistant's proposal).
     if(existing&&existing.meetingStatus==="deferred"&&snap.meetingTracked&&snap.dueDate&&
@@ -7904,10 +7893,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   $("taskLocation").addEventListener("change",commitTaskHistory);
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
   $("assistantTaskStatus").addEventListener("click",()=>{
-    if($("assistantTaskStatus").disabled)return;
-    const st=editorTaskApprovalStatus==="scheduled"?"proposed":"scheduled";
-    setEditorTaskApproval(st);
-    showToast(st==="scheduled"?"Tarea agendada · sin aprobación":"Tarea como propuesta");
+    if(!$("assistantTaskStatus").disabled)openCardMeta(null,"status","editor");
   });
   const meetingCheck=$("taskDoneBtn");
   let meetingPressTimer=null,meetingPressStartX=0,meetingPressStartY=0,meetingPressFired=false,meetingPressUntil=0;
