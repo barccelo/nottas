@@ -1373,6 +1373,37 @@ html[data-theme="dark"] .cardMetaCategoryChoice[aria-pressed="true"],html[data-t
 html[data-theme="dark"] .cardMetaClose,html[data-theme="dark"] .cardMetaSecondary{background:#333337;color:#eaeaed}
 html[data-theme="dark"] .cardMetaPrimary{background:#dedee3;color:#171719}
 html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;color:#f5f5f7;border-color:#48484a}
+
+/* X9: compact, touch-friendly side navigation, shared category iconography. */
+.sidebarBackdrop{background:rgba(15,18,25,.34);transition:opacity .2s ease}
+.sidebarPanel{width:min(345px,88vw);padding:calc(14px + env(safe-area-inset-top)) 11px calc(20px + env(safe-area-inset-bottom));background:#f5f5f7;box-shadow:14px 0 36px rgba(0,0,0,.16);transition:transform .25s cubic-bezier(.22,.78,.18,1);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sidebarPanel::-webkit-scrollbar{display:none}
+.sidebarHeader{padding:5px 8px 13px;position:sticky;top:-14px;background:inherit;z-index:2}
+.sidebarHeaderText{display:flex;flex-direction:column;gap:3px}
+.sidebarHeader strong{font-size:23px;line-height:1.05;letter-spacing:-.045em}
+.sidebarHeaderSub{font-size:11px;color:#8e8e93;letter-spacing:.01em}
+.sidebarSection{margin:3px 0 8px;padding:5px 3px 8px}
+.sidebarSection+.sidebarSection{border-top:1px solid rgba(118,118,128,.14);padding-top:12px}
+.sidebarSectionTitle{font-size:10px;font-weight:740;letter-spacing:.09em;padding:5px 10px 9px}
+.sideItem{min-height:44px;border-radius:12px;padding:7px 10px;gap:9px;font-size:14px;font-weight:540;position:relative;line-height:1.25}
+.sideItem.active{background:rgba(0,122,255,.1);color:#0068d7;font-weight:690}
+.sideItem.active::before{content:"";position:absolute;top:11px;bottom:11px;left:1px;width:3px;background:#007aff;border-radius:3px}
+.sideGlyph{width:30px;height:30px;flex:0 0 30px;border-radius:9px;display:grid;place-items:center;background:rgba(118,118,128,.075);color:#787882}
+.sideGlyph svg{width:18px;height:18px}
+.sideItem.active .sideGlyph{background:rgba(0,122,255,.12);color:#007aff}
+.sideItem .sideCount{font-size:11px;font-weight:630;font-variant-numeric:tabular-nums}
+.sideItem.active .sideCount{color:#007aff}
+#sidebarCategories .categoryDisplayIcon{width:25px;height:25px;flex:0 0 25px;border-radius:7px}
+#sidebarCategories .categoryDisplayIcon .nsIcon{width:17px;height:17px}
+#sidebarWorkspaces .sideItem{min-height:49px}
+#sidebarWorkspaces .workspaceRole{font-size:10px;max-width:98px;text-align:right}
+#sidebarTrash,#sidebarSettings{min-height:47px}
+html[data-theme="dark"] .sidebarPanel{background:#171719}
+html[data-theme="dark"] .sidebarSection+.sidebarSection{border-color:#35353a}
+html[data-theme="dark"] .sideItem.active{background:rgba(10,132,255,.17);color:#93c8ff}
+html[data-theme="dark"] .sideGlyph{background:#2a2a30;color:#a4a4ae}
+html[data-theme="dark"] .sideItem.active .sideGlyph{background:#203b59;color:#93c8ff}
+@media(prefers-reduced-motion:reduce){.sidebarBackdrop,.sidebarPanel{transition:none}}
 </style>
 </head>
 <body>
@@ -1461,9 +1492,9 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
 <input id="importFile" class="hidden" type="file" accept="application/json,.json">
 
 <div id="sidebarBackdrop" class="sidebarBackdrop" aria-hidden="true">
-  <aside id="sidebarPanel" class="sidebarPanel" aria-label="Navegación">
+  <aside id="sidebarPanel" class="sidebarPanel" role="navigation" aria-label="Navegación">
     <div class="sidebarHeader">
-      <strong>Nottas</strong>
+      <div class="sidebarHeaderText"><strong>Nottas</strong><span class="sidebarHeaderSub">Espacios y organización</span></div>
       <button id="sidebarClose" class="closeBtn" type="button" aria-label="Cerrar menú"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
     <div class="sidebarSection">
@@ -4345,11 +4376,41 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     activeCategories().forEach(c=>{const count=mode==="tasks"?state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&t.category===c.id).length:state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt&&n.category===c.id).length;const b=document.createElement("button");b.type="button";b.className="chip"+(activeCategory===c.id?" active":"");b.innerHTML=`<span class="dot" style="background:${esc(c.color)}"></span>${esc(c.name)} <span class="count">${count||""}</span>`;b.addEventListener("click",()=>{activeCategory=c.id;activeTag="";saveUI();render()});box.appendChild(b)});
   }
 
-  function openSidebar(){renderSidebar();$("sidebarBackdrop").classList.add("show");$("sidebarBackdrop").setAttribute("aria-hidden","false")}
-  function closeSidebar(){$("sidebarBackdrop").classList.remove("show");$("sidebarBackdrop").setAttribute("aria-hidden","true")}
+  function openSidebar(){
+    if($("sidebarBackdrop").classList.contains("show"))return;
+    closeRevealedCards();
+    try{document.activeElement?.blur?.()}catch(_){}
+    renderSidebar();
+    $("sidebarBackdrop").classList.add("show");$("sidebarBackdrop").setAttribute("aria-hidden","false");
+    $("sidebarBtn").setAttribute("aria-expanded","true");
+  }
+  function closeSidebar(){
+    $("sidebarBackdrop").classList.remove("show");$("sidebarBackdrop").setAttribute("aria-hidden","true");
+    $("sidebarBtn").setAttribute("aria-expanded","false");
+  }
+  function sidebarGlyph(kind){
+    const paths={
+      today:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18M8 15h8"/>',
+      pending:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      pinned:'<path d="M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6ZM12 15v6"/>',
+      all:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+      done:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      notes:'<path d="M5 3h11l4 4v14H5zM16 3v5h4M8 12h9M8 16h9"/>',
+      trash:'<path d="M4 7h16M9 4h6M7 7l1 13h8l1-13M10 11v5M14 11v5"/>',
+      settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>'
+    };
+    return '<span class="sideGlyph" aria-hidden="true"><svg viewBox="0 0 24 24">'+(paths[kind]||paths.all)+'</svg></span>';
+  }
   function renderSidebar(){
     if(!state)return;
     const liveTasks=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt),liveNotes=state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt);
+    document.querySelectorAll("[data-sidebar-task-filter],[data-sidebar-note-filter],#sidebarTrash,#sidebarSettings").forEach(button=>{
+      if(button.querySelector(".sideGlyph"))return;
+      const kind=button.dataset.sidebarTaskFilter||
+        (button.dataset.sidebarNoteFilter?(button.dataset.sidebarNoteFilter==="all"?"notes":"pinned"):
+        button.id==="sidebarTrash"?"trash":"settings");
+      button.insertAdjacentHTML("afterbegin",sidebarGlyph(kind));
+    });
     const wsBox=$("sidebarWorkspaces");wsBox.innerHTML="";
     state.workspaces.filter(w=>w.status!=="inactive"&&!assistantWorkspaceHidden(w)).forEach(w=>{
       const b=document.createElement("button");b.type="button";b.className="sideItem"+(w.id===currentWorkspaceId()?" active":"");
@@ -4378,7 +4439,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     const box=$("sidebarCategories");box.innerHTML="";
     const all=document.createElement("button");all.type="button";all.className="sideItem"+(activeCategory==="all"&&!activeTag&&!trash?" active":"");all.innerHTML='<span class="sideDot" style="background:#8e8e93"></span><span>Todas las categorías</span>';all.addEventListener("click",()=>{activeCategory="all";activeTag="";trash=false;saveUI();closeSidebar();render()});box.appendChild(all);
     activeCategories().forEach(c=>{
-      const b=document.createElement("button");b.type="button";b.className="sideItem"+(activeCategory===c.id&&!activeTag&&!trash?" active":"");b.innerHTML='<span class="sideDot" style="background:'+esc(c.color)+'"></span><span>'+esc(c.name)+'</span>';b.addEventListener("click",()=>{activeCategory=c.id;activeTag="";trash=false;saveUI();closeSidebar();render()});box.appendChild(b);
+      const b=document.createElement("button");b.type="button";b.className="sideItem"+(activeCategory===c.id&&!activeTag&&!trash?" active":"");b.innerHTML=categorySymbolHtml(c)+'<span>'+esc(c.name)+'</span>';b.addEventListener("click",()=>{activeCategory=c.id;activeTag="";trash=false;saveUI();closeSidebar();render()});box.appendChild(b);
     });
     const tagCounts=new Map();
     [...liveTasks,...liveNotes].forEach(item=>normalizeTags(item.tags).forEach(tag=>tagCounts.set(tag,(tagCounts.get(tag)||0)+1)));
@@ -7520,7 +7581,8 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       const p=touchPoint(e);if(!p)return;
       const revealed=row.classList.contains("reveal-delete");
       closeRevealedCards(row);
-      g={sx:p.x,sy:p.y,x:p.x,y:p.y,axis:null,mode:null,base:revealed?-SWIPE_WIDTH:0,started:performance.now()};
+      g={sx:p.x,sy:p.y,x:p.x,y:p.y,axis:null,mode:null,base:revealed?-SWIPE_WIDTH:0,
+         fromEdge:mode==="tasks"&&p.x<=34,started:performance.now()};
     },{passive:true});
 
     item.addEventListener("touchmove",e=>{
@@ -7532,13 +7594,15 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       if(!g.axis&&(Math.abs(dx)>SWIPE_LOCK||Math.abs(dy)>SWIPE_LOCK)){
         if(Math.abs(dx)>Math.abs(dy)*SWIPE_ANGLE){
           g.axis="x";
-          if(g.base<0&&dx>0)g.mode="close-delete";
+          if(g.fromEdge&&dx>0)g.mode="sidebar";
+          else if(g.base<0&&dx>0)g.mode="close-delete";
           else g.mode=dx>0?"edit":"delete";
         }else g.axis="y";
       }
       if(g.axis!=="x")return;
 
       e.preventDefault();
+      if(g.mode==="sidebar")return;
       let tx=g.base;
       if(g.mode==="edit"){
         tx=resisted(Math.max(0,dx));
@@ -7567,6 +7631,11 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       row.classList.remove("swiping-edit","swiping-delete","reveal-delete");
 
       if(axis!=="x"){resetSwipeRow(row);return}
+      if(mode==="sidebar"){
+        resetSwipeRow(row);
+        if(dx>48||(dx>26&&velocity>.55)){suppressClickUntil=Date.now()+420;openSidebar()}
+        return;
+      }
 
       if(mode==="edit"){
         resetSwipeRow(row);
@@ -7621,6 +7690,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if(Math.abs(dx)<48&&!(Math.abs(dx)>28&&velocity>.5))return;
     suppressClickUntil=Date.now()+350;
     if(dx<0&&mode==="tasks")setMode("notes");
+    else if(dx>0&&mode==="tasks")openSidebar();
     else if(dx>0&&mode==="notes")setMode("tasks");
   },{passive:true});
   appRoot.addEventListener("touchcancel",()=>{modeSwipe=null},{passive:true});
@@ -7649,6 +7719,18 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   $("assistantNoticeQuickBtn").addEventListener("click",openAssistantNotice);
   $("sidebarClose").addEventListener("click",closeSidebar);
   $("sidebarBackdrop").addEventListener("click",e=>{if(e.target===$("sidebarBackdrop"))closeSidebar()});
+  let sidebarCloseSwipe=null;
+  $("sidebarPanel").addEventListener("touchstart",e=>{
+    if(e.touches.length!==1)return;
+    const p=touchPoint(e);sidebarCloseSwipe=p?{x:p.x,y:p.y}:null;
+  },{passive:true});
+  $("sidebarPanel").addEventListener("touchend",e=>{
+    if(!sidebarCloseSwipe)return;
+    const p=touchPoint(e),g=sidebarCloseSwipe;sidebarCloseSwipe=null;if(!p)return;
+    const dx=p.x-g.x,dy=p.y-g.y;
+    if(dx< -64&&Math.abs(dx)>Math.abs(dy)*1.3){suppressClickUntil=Date.now()+350;closeSidebar()}
+  },{passive:true});
+  $("sidebarPanel").addEventListener("touchcancel",()=>{sidebarCloseSwipe=null},{passive:true});
   document.querySelectorAll("[data-sidebar-task-filter]").forEach(b=>b.addEventListener("click",()=>{mode="tasks";trash=false;activeTag="";applyTaskFilterChoice(b.dataset.sidebarTaskFilter);saveUI();closeSidebar();render()}));
   document.querySelectorAll("[data-sidebar-note-filter]").forEach(b=>b.addEventListener("click",()=>{mode="notes";trash=false;activeTag="";noteFilter=b.dataset.sidebarNoteFilter;saveUI();closeSidebar();render()}));
   $("sidebarTrash").addEventListener("click",()=>{activeTag="";trash=true;closeSidebar();render()});
