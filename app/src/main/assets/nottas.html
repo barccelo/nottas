@@ -1576,11 +1576,11 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
 .calendarOverlapGroup.day.short{padding:2px 4px;gap:2px}
 .calendarOverlapGroup.day.short .calendarOverlapPreviews{display:none}
 .calendarOverlapGroup.day.short .calendarOverlapSummary{font-size:10px;line-height:1.1}
-.calendarOverlapPreviews{display:flex;min-height:0;gap:6px;align-items:stretch}
+.calendarOverlapPreviews{display:flex;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}
 .calendarOverlapPreview{display:flex;flex:1 1 0;flex-direction:column;gap:3px;min-width:0;overflow:hidden;border-radius:6px;background:#fff;border-left:3px solid var(--preview-color);padding:6px 5px 7px}
 .calendarOverlapPreview strong{font-size:11px;line-height:1.2;font-weight:690;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 .calendarOverlapPreview small{font-size:9px;line-height:1.2;color:#737780;overflow:hidden;text-overflow:ellipsis}
-.calendarOverlapGroup.day .calendarOverlapSummary{font-size:10px;color:#495a70}
+.calendarOverlapGroup.day .calendarOverlapSummary{font-size:10px;color:#495a70;align-self:flex-end}
 .calendarDayPanel.calendarOverlapPanel{top:auto;bottom:0;width:100%;max-width:540px;max-height:min(70vh,600px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom);background:#f5f5f7}
 .calendarDayPanel.calendarOverlapPanel .calendarDayPanelHead{padding-top:19px}
 .calendarDayPanel.calendarOverlapPanel .calendarDayPanelList{padding:10px 12px 16px}
@@ -5290,7 +5290,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       const count=group.items.length,label=count+" eventos";
       if(week)return '<button type="button" class="calendarOverlapGroup week" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+label+'</span></button>';
       const previews=group.items.slice(0,2).map(item=>'<span class="calendarOverlapPreview" style="--preview-color:'+esc(item.color)+'"><strong>'+esc(item.title)+'</strong><small>'+esc(item.kind==="local"?calendarTaskRangeLabel(item.value):calendarGoogleTimeLabel(item.value))+'</small></span>').join("");
-      return '<button type="button" class="calendarOverlapGroup day '+(compact?"short":"")+'" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapPreviews">'+previews+'</span><span class="calendarOverlapSummary">'+(compact?label+" · Ver":"+"+(count-2)+" más · Ver todos")+'</span></button>';
+      return '<button type="button" class="calendarOverlapGroup day '+(compact?"short":"")+'" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+(compact?label+" · Ver":"+"+(count-2)+" más · Ver todos")+'</span><span class="calendarOverlapPreviews">'+previews+'</span></button>';
     };
     const blocks=groups.map((group,index)=>{
       if((calendarView==="week"&&group.items.length>1)||(calendarView==="day"&&group.laneCount>2))return drawGroup(group,index);
