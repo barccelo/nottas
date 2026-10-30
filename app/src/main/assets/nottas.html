@@ -1551,6 +1551,13 @@ html[data-theme="dark"] .taskSortOrderList button.selected .sortGlyph{background
 html[data-theme="dark"] .taskSortOrderList button .sortTick{border-color:#62626c}
 html[data-theme="dark"] .taskSortFilter.selected{background:#264567;color:#add3ff}
 html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
+
+/* Keep grouping copy legible after introducing a leading icon. */
+.taskSortGroup>span.sortGlyph{display:grid;flex:0 0 37px;width:37px;height:37px}
+.taskSortGroup>span:nth-child(2){display:flex;flex:1 1 auto;flex-direction:column;gap:4px;min-width:0}
+.taskSortGroup>span:nth-child(2) strong{font-size:13px;font-weight:650}
+.taskSortGroup>span:nth-child(2) small{font-size:11px;color:#8e8e93}
+@media(max-width:375px){#taskFilters{gap:4px}#taskFilters [data-filter]{padding:7px 7px;font-size:11.5px}#taskGroupToggle,#taskFilterSortBtn{flex-basis:31px;width:31px;height:33px}}
 </style>
 </head>
 <body>
