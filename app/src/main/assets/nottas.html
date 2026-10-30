@@ -5620,14 +5620,41 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
       ["Cancelada","meeting","cancelled"],["Propuesta","approval","proposed"],
       ["Solicitar nueva fecha","approval","changes_requested"],["Rechazada","approval","rejected"]
     ];
+    const iconPaths={
+      scheduled:'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3.5 10h17M9 15l2 2 4-4"/>',
+      realized:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      not_realized:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+      deferred:'<circle cx="12" cy="12" r="8.7"/><path d="M12 7v5l3 2M5 3.5 2.5 6M19 3.5 21.5 6"/>',
+      cancelled:'<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+      proposed:'<path d="M4 20h16M5 17V5h14v12M8 10h8M8 13.5h5"/>',
+      changes_requested:'<path d="M20 7a8.5 8.5 0 0 0-15-1L3 9M3 4v5h5M4 17a8.5 8.5 0 0 0 15 1l2-3M21 20v-5h-5"/>',
+      rejected:'<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6-6"/>'
+    };
+    const details={
+      scheduled:"Confirmada en el calendario",realized:"El evento se llevó a cabo",
+      not_realized:"No se realizó; queda en el historial",deferred:"Aplazar para una nueva fecha",
+      cancelled:"Dar por cancelado",proposed:"Pendiente de aprobación",
+      changes_requested:"Solicitar reprogramación",rejected:"Propuesta no aceptada"
+    };
+    let currentSection="";
     for(const [label,kind,value] of options){
+      if(kind!==currentSection){
+        currentSection=kind;
+        const heading=document.createElement("div");
+        heading.className="cardMetaStatusSection";
+        heading.textContent=kind==="meeting"?"Seguimiento del evento":"Gestión de la propuesta";
+        box.appendChild(heading);
+      }
       const button=document.createElement("button");button.type="button";
-      button.className="cardMetaStatusChoice";button.textContent=label;
+      button.className="cardMetaStatusChoice tone-"+value;
+      button.innerHTML='<span class="stateGlyph" aria-hidden="true"><svg viewBox="0 0 24 24">'+iconPaths[value]+'</svg></span>'+
+        '<span class="stateCopy"><strong>'+esc(label)+'</strong><small>'+esc(details[value])+'</small></span>'+
+        '<span class="stateIndicator" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m3 8 3.4 3.4L13 4.6"/></svg></span>';
       button.setAttribute("aria-pressed",String(kind==="meeting"?
         meeting===value&&(value!=="scheduled"||approval==="confirmed"):approval===value));
       button.addEventListener("click",()=>{
         if(kind==="meeting"&&value==="cancelled"&&cardMetaCancelArmed!==(t.id||"editor")){
-          cardMetaCancelArmed=t.id||"editor";button.textContent="Confirmar cancelación";return;
+          cardMetaCancelArmed=t.id||"editor";button.querySelector(".stateCopy strong").textContent="Confirmar cancelación";return;
         }
         if(kind==="approval"&&approval===value){closeCardMeta();return}
         if(kind==="meeting"&&meeting===value&&(value!=="scheduled"||approval==="confirmed")){
@@ -8061,15 +8088,43 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
+  function taskSortIcon(kind){
+    const paths={
+      pending:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      all:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+      today:'<rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7 3v4M17 3v4M3.5 10h17M8 15h8"/>',
+      pinned:'<path d="M9 3h6l-1 6 4 4v2H6v-2l4-4-1-6ZM12 15v6"/>',
+      done:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+      recent:'<path d="M4 7h16M7 12h10M10 17h4"/><path d="m18 17 3 3m0 0v-6m0 6h-6"/>',
+      soon:'<path d="M4 7h16M7 12h10M10 17h4"/><path d="m18 16 3-3m0 0v6m0-6h-6"/>',
+      updated:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2M4 4 2 7"/>',
+      priority:'<path d="M6 20V4M6 5h12l-3 5 3 5H6"/>',
+      title:'<path d="M3 19h10M3 5h10M3 12h10M17 5v14m-3-3 3 3 3-3"/>',
+      group:'<circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2M16 6h6M16 12h6M14 18h8"/>'
+    };
+    return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[kind]||paths.all)+'</svg>';
+  }
   function renderTaskSortPanel(){
     document.querySelectorAll("[data-sort-filter]").forEach(b=>{
+      if(!b.querySelector("svg"))b.insertAdjacentHTML("afterbegin",taskSortIcon(b.dataset.sortFilter));
       const active=b.dataset.sortFilter===taskSelectedFilter;
       b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
     });
     document.querySelectorAll("[data-task-sort]").forEach(b=>{
+      if(!b.querySelector(".sortGlyph")){
+        const title=b.querySelector("span"),hint=b.querySelector("small");
+        const copy=document.createElement("span");copy.className="sortCopy";
+        copy.append(title,hint);
+        b.replaceChildren();
+        b.insertAdjacentHTML("beforeend",'<span class="sortGlyph">'+taskSortIcon(b.dataset.taskSort)+'</span>');
+        b.appendChild(copy);
+        b.insertAdjacentHTML("beforeend",'<span class="sortTick" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m3 8 3.4 3.4L13 4.6"/></svg></span>');
+      }
       const active=b.dataset.taskSort===taskSortMode;
       b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
     });
+    const group=$("taskSortGroupCheck").closest(".taskSortGroup");
+    if(!group.querySelector(".sortGlyph"))group.insertAdjacentHTML("afterbegin",'<span class="sortGlyph" aria-hidden="true">'+taskSortIcon("group")+'</span>');
     const chronological=["recent","soon"].includes(taskSortMode);
     $("taskSortGroupCheck").disabled=!chronological;
     $("taskSortGroupCheck").checked=chronological&&taskGroupedByTime;
