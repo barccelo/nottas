@@ -2733,14 +2733,37 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     const stamp=now();const o=raw&&typeof raw==="object"?raw:{};
     let cats=Array.isArray(o.categories)?o.categories:[];
     if(!cats.some(c=>c&&c.id==="inbox"))cats.unshift({id:"inbox",name:"Sin categoría",color:"#8e8e93"});
-    o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),scope:c.scope==="event"?"event":c.scope==="system"?"system":"general",icon:String(c.icon||"").slice(0,32),emoji:String(c.emoji||"").slice(0,16),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
+    o.categories=cats.filter(Boolean).map((c,i)=>({id:String(c.id||makeId("c")),name:String(c.name||"Categoría"),color:String(c.color||palette[i%palette.length]),scope:c.scope==="event"?"event":c.scope==="system"?"system":"general",icon:String(c.icon||"").slice(0,32),emoji:String(c.emoji||"").slice(0,16),workspaceId:String(c.workspaceId||""),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||""),createdAt:c.createdAt||c.updatedAt||stamp,updatedAt:c.updatedAt||c.createdAt||stamp,deletedAt:c.deletedAt||null,rev:Number(c.rev)||1,syncState:c.syncState||"pending"}));
     const assistantRaw=o.assistant&&typeof o.assistant==="object"?o.assistant:{};
     let workspaces=(Array.isArray(o.workspaces)?o.workspaces:[]).filter(Boolean).map(w=>({id:String(w.id||makeId("w")),name:String(w.name||"Espacio").slice(0,100),kind:w.kind==="assistant"?"assistant":"personal",ownerUserId:String(w.ownerUserId||""),inviteCode:String(w.inviteCode||""),role:w.role==="assistant"?"assistant":"owner",status:w.status==="inactive"?"inactive":"active",updatedAt:w.updatedAt||stamp}));
     let personalId=String(assistantRaw.personalWorkspaceId||"");
     let personal=workspaces.find(w=>w.id===personalId&&w.kind==="personal")||workspaces.find(w=>w.kind==="personal");
     if(!personal){personal={id:personalId||"personal_local",name:"Personal",kind:"personal",ownerUserId:String(assistantRaw.userId||""),inviteCode:"",role:"owner",status:"active",updatedAt:stamp};workspaces.unshift(personal)}
     personalId=personal.id;
-    o.categories=o.categories.map(c=>({...c,workspaceId:c.id==="inbox"?"*":String(c.workspaceId||personalId),createdBy:String(c.createdBy||""),updatedBy:String(c.updatedBy||"")}));
+    // Recover categories moved to Personal by older normalization logic.
+    // Reassign only when an existing task, note or stable ID identifies the owner.
+    const knownWorkspaces=new Set(workspaces.map(w=>w.id));
+    const usedByWorkspace=new Map();
+    for(const item of [...(Array.isArray(o.tasks)?o.tasks:[]),...(Array.isArray(o.notes)?o.notes:[])]){
+      const categoryId=String(item?.category||""),wid=String(item?.workspaceId||personalId);
+      if(!categoryId||categoryId==="inbox"||!knownWorkspaces.has(wid))continue;
+      if(!usedByWorkspace.has(categoryId))usedByWorkspace.set(categoryId,new Set());
+      usedByWorkspace.get(categoryId).add(wid);
+    }
+    const sharedWorkspaces=workspaces.filter(w=>w.kind==="assistant"&&w.status!=="inactive");
+    o.categories=o.categories.map(c=>{
+      if(c.id==="inbox")return {...c,workspaceId:"*"};
+      let wid=String(c.workspaceId||personalId);
+      if(wid===personalId){
+        const encoded=sharedWorkspaces.find(w=>c.id==="eventcats_v1_"+w.id||
+          (c.id.startsWith("eventcat_v1_")&&c.id.endsWith("_"+w.id)));
+        const users=usedByWorkspace.get(c.id);
+        if(encoded)wid=encoded.id;
+        else if(users?.size===1&&!users.has(personalId))wid=[...users][0];
+        else if(categoryScope(c)==="event"&&sharedWorkspaces.length===1)wid=sharedWorkspaces[0].id;
+      }
+      return {...c,workspaceId:wid};
+    });
     o.workspaces=workspaces;
     o.assistant={serverUrl:String(assistantRaw.serverUrl||""),userId:String(assistantRaw.userId||""),displayName:String(assistantRaw.displayName||""),cursor:Number(assistantRaw.cursor)||0,personalWorkspaceId:personalId,lastSyncAt:assistantRaw.lastSyncAt||null,pushRegisteredAt:assistantRaw.pushRegisteredAt||null,hiddenWorkspaceIds:Array.isArray(assistantRaw.hiddenWorkspaceIds)?assistantRaw.hiddenWorkspaceIds.filter(x=>typeof x==="string").slice(0,100):[],firebase:assistantRaw.firebase&&typeof assistantRaw.firebase==="object"?assistantRaw.firebase:{}};
     o.tasks=(Array.isArray(o.tasks)?o.tasks:[]).filter(Boolean).map(t=>{const items=normalizeTaskItems(t.items,t.subtasks);syncTaskTreeDone(items);const blocks=normalizeNoteBlocks(t.blocks,t.body);const body=noteBlocksText(blocks)||String(t.body||"");const text=String(t.text??t.title??"");return {id:String(t.id||makeId("t")),text,textHtml:sanitizeInlineHtml(t.textHtml||plainToInlineHtml(text)),body,blocks,workspaceId:String(t.workspaceId||personalId),createdBy:String(t.createdBy||""),updatedBy:String(t.updatedBy||""),approvalStatus:["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(t.approvalStatus)?t.approvalStatus:"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:String(t.assignedTo||""),proposalMessage:String(t.proposalMessage||""),locationText:String(t.locationText||"").slice(0,200),
@@ -2962,7 +2985,13 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if(!type||!change?.payload)return;
     const arr=type==="task"?state.tasks:type==="note"?state.notes:state.categories,payload={...change.payload,workspaceId:String(change.workspaceId||change.payload.workspaceId||""),syncState:"synced"};
     if(!payload.id)return;
-    const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId);
+    const sameId=type==="category"?arr.filter(x=>x.id===payload.id):[];
+    const existing=arr.find(x=>x.id===payload.id&&String(x.workspaceId||personalWorkspaceId())===payload.workspaceId)||
+      (type==="category"&&sameId.length===1?sameId[0]:null);
+    // Shared category IDs survive local misassignment; reattach the remote copy
+    // rather than introducing a second record under the same ID.
+    if(existing&&type==="category"&&existing.workspaceId!==payload.workspaceId)
+      existing.workspaceId=payload.workspaceId;
     if(existing){
       if(existing.syncState==="pending"&&Number(existing.updatedAt||0)>Number(payload.updatedAt||0))return;
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
@@ -3006,13 +3035,14 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
         assistantMarkAccepted(pushed.accepted);
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload}));
       }
-      const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+(full?"&full=1":"");
+      const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!state.preferences.categoryWorkspaceRepair20261030)?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
       assistantAuthorizedIds=new Set((pulled.workspaces||[]).map(w=>w.id));
       assistantMembershipChecked=true;
       mergeAssistantWorkspaces(pulled.workspaces);
       (pulled.changes||[]).forEach(assistantApplyRemoteChange);
       ensureOfficeEventCategories();
+      state.preferences.categoryWorkspaceRepair20261030=true;
       state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
       state.assistant.lastSyncAt=now();
       assistantApplyingRemote=true;
