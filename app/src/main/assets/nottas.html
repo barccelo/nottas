@@ -1205,6 +1205,105 @@ html[data-theme="dark"] .teamWorkspaceButton[aria-current="true"]{background:#17
 html[data-theme="dark"] .teamMinorButton{background:#2c2c2e;color:#64a9ff;border-color:#3a3a3c}
 html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,html[data-theme="dark"] .teamInlineForm{border-color:#3a3a3c;color:#f5f5f7}
 
+
+/* Nottas settings design system: consistent stroked symbols, neutral surfaces,
+   responsive navigation, compact copy, safe keyboard handling. */
+.nsIcon{display:block;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;width:22px;height:22px;flex:none}
+#settingsOverlay .settingsRootSheet{height:min(740px,calc(var(--vv-height,100vh) - 4px));max-height:calc(var(--vv-height,100vh) - 4px);display:flex;flex-direction:column;overflow:hidden;padding:12px 15px calc(12px + env(safe-area-inset-bottom));box-sizing:border-box}
+#settingsOverlay .settingsRootHeader{min-height:49px;flex:none;display:flex;align-items:center;justify-content:flex-start;gap:5px;margin-bottom:3px;padding:0 2px}
+#settingsOverlay .settingsRootHeader h2{flex:1;min-width:0;font-size:21px;font-weight:690;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#settingsOverlay .settingsHeaderAction{width:38px;height:38px;flex:0 0 38px;border:0;background:transparent;border-radius:50%;padding:7px;color:#636366;display:grid;place-items:center;margin-left:-6px}
+#settingsOverlay .settingsHeaderAction:active{background:rgba(120,120,128,.13)}
+#settingsOverlay .settingsCloseButton{margin-left:auto}
+#settingsOverlay .settingsRootHeader .closeBtn{flex:0 0 35px;width:35px;height:35px;margin:0}
+#settingsOverlay .settingsRootHeader .closeBtn .nsIcon{width:16px;height:16px}
+#settingsOverlay .settingsScreen{display:block;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:1px 1px 20px;scrollbar-width:none}
+#settingsOverlay .settingsScreen::-webkit-scrollbar{width:0}
+#settingsOverlay .settingsIntro{font-size:13px;color:#8e8e93;margin:9px 8px 19px;line-height:1.45}
+#settingsOverlay .settingsNavGroup{background:#fff;border-radius:18px;overflow:hidden}
+#settingsOverlay .settingsNavItem{appearance:none;border:0;border-bottom:1px solid #ececf0;background:transparent;color:inherit;padding:15px 13px;display:flex;align-items:center;gap:14px;width:100%;min-width:0;text-align:left;min-height:76px;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#settingsOverlay .settingsNavItem:last-child{border-bottom:0}
+#settingsOverlay .settingsNavItem:active{background:rgba(118,118,128,.09)}
+#settingsOverlay .settingsNavIcon{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;color:#5e5e65;background:#f5f5f7;border-radius:11px}
+#settingsOverlay .settingsNavIcon .nsIcon{width:21px;height:21px}
+#settingsOverlay .settingsNavCopy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#settingsOverlay .settingsNavTitle{font-size:15px;font-weight:650;letter-spacing:-.012em;line-height:1.28}
+#settingsOverlay .settingsNavDesc{font-size:12px;line-height:1.35;color:#8e8e93;min-width:0;overflow-wrap:anywhere}
+#settingsOverlay .settingsNavChevron{color:#c7c7cc;flex:none}
+#settingsOverlay .settingsNavChevron .nsIcon{width:16px;height:16px;stroke-width:1.8}
+#settingsOverlay .settingsPageIntro{display:flex;align-items:center;gap:12px;padding:11px 5px 21px}
+#settingsOverlay .settingsPageIcon{width:45px;height:45px;flex:0 0 45px;border-radius:14px;background:#eaeaee;color:#55555f;display:grid;place-items:center}
+#settingsOverlay .settingsPageIcon .nsIcon{width:23px;height:23px}
+#settingsOverlay .settingsPageIntro p{margin:0;font-size:13px;line-height:1.42;color:#77777e}
+#settingsOverlay .sectionTitle{font-size:11px;color:#8e8e93;font-weight:670;letter-spacing:.055em;margin:10px 9px 9px}
+#settingsOverlay .settingsGroup{border-radius:16px;margin:0 0 20px;overflow:hidden}
+#settingsOverlay .settingsRow{min-height:57px;box-sizing:border-box;padding:13px 14px;gap:10px}
+#settingsOverlay .settingsRow .left{flex:1;min-width:0}
+#settingsOverlay .settingsRow .title{font-size:14px;line-height:1.3;font-weight:610;letter-spacing:-.012em}
+#settingsOverlay .settingsRow .desc{font-size:11px;line-height:1.42;margin-top:4px}
+#settingsOverlay .settingsRow button{padding:7px 9px;font-size:13px;white-space:nowrap}
+#settingsOverlay .settingsRow .settingsChevron{color:#b0b0b7}
+#settingsOverlay .iosSwitch input:checked+span{background:#1677ff}
+#settingsOverlay .settingsTimeInput{width:112px;max-width:43%;height:37px}
+#settingsOverlay #headerPlacementSelect{max-width:40%;width:117px!important;height:37px;font-size:12px}
+#settingsOverlay #addCategoryBtn{margin:3px 0 24px;min-height:44px}
+#settingsOverlay .assistantPresetSettingsGroup{border-radius:16px;border:0;box-shadow:none;padding:14px;background:#fff}
+#settingsOverlay #assistantQuickPresetsHelp{font-size:12px;line-height:1.45;color:#8e8e93;margin:5px 5px 12px}
+#settingsOverlay .assistantPresetSettingsHeading{font-size:14px;font-weight:660}
+#settingsOverlay .assistantPresetEditRow input{border-radius:11px;height:44px}
+#settingsOverlay .assistantPresetRemove{width:38px;height:38px;flex-basis:38px}
+#settingsOverlay .assistantPresetSettings{margin-bottom:12px}
+#settingsOverlay .settingsAboutHero{text-align:center;padding:28px 8px 25px}
+#settingsOverlay .settingsAboutLogo{width:68px;height:68px;margin:0 auto 10px;border-radius:20px;background:#202025;color:#fff;font-size:36px;font-weight:750;display:grid;place-items:center;letter-spacing:-.085em}
+#settingsOverlay .settingsAboutHero h3{font-size:22px;margin:0 0 4px;letter-spacing:-.02em}
+#settingsOverlay .settingsAboutHero p{color:#8e8e93;font-size:12px;margin:0}
+#settingsOverlay .settingsAboutAction{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px;border:0;background:transparent;color:inherit;text-align:left;font:inherit}
+#settingsOverlay .settingsAboutAction>span{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:620}
+#settingsOverlay .settingsAboutAction>span .nsIcon{color:#636366}
+#settingsOverlay .settingsAboutAction small{display:block;margin-top:4px;color:#8e8e93;font-size:11px;font-weight:400;line-height:1.35}
+#settingsOverlay .settingsAboutAction>.nsIcon{color:#b0b0b7;width:17px;height:17px}
+#settingsOverlay .settingsAboutAction:active{background:rgba(118,118,128,.1)}
+@media(max-width:365px){#settingsOverlay .settingsRootSheet{padding-left:10px;padding-right:10px}#settingsOverlay .settingsNavItem{padding:14px 10px;gap:10px}#settingsOverlay .settingsNavIcon{width:33px;height:33px;flex-basis:33px}#settingsOverlay .settingsNavTitle{font-size:14px}}
+html[data-theme="dark"] #settingsOverlay .settingsNavGroup{background:#1c1c1e}
+html[data-theme="dark"] #settingsOverlay .settingsNavItem{border-bottom-color:#2f2f32}
+html[data-theme="dark"] #settingsOverlay .settingsNavIcon{color:#d3d3d9;background:#2c2c2e}
+html[data-theme="dark"] #settingsOverlay .settingsPageIcon{background:#2c2c2e;color:#d3d3d9}
+html[data-theme="dark"] #settingsOverlay .settingsPageIntro p{color:#aeaeb2}
+html[data-theme="dark"] #settingsOverlay .settingsNavChevron{color:#8e8e93}
+html[data-theme="dark"] #settingsOverlay .assistantPresetSettingsGroup{background:#1c1c1e}
+html[data-theme="dark"] #settingsOverlay .settingsAboutLogo{background:#f5f5f7;color:#17171b}
+/* Team page shares the same symbol weights, not an iOS color palette. */
+#assistantOverlay .sheet{padding:13px 15px calc(12px + env(safe-area-inset-bottom))}
+#assistantOverlay .sheetHeader h2{font-size:21px;font-weight:690;letter-spacing:-.025em}
+#assistantOverlay .teamHome{gap:14px}
+#assistantOverlay .teamHero{padding:20px 12px 18px}
+#assistantOverlay .teamHeroIcon{display:grid;place-items:center;width:55px;height:55px;border-radius:17px;background:#eaeaee;color:#55555f;margin:0 auto 12px;font-size:unset}
+#assistantOverlay .teamHeroIcon .nsIcon{width:27px;height:27px}
+#assistantOverlay .teamHero strong{font-size:20px;letter-spacing:-.025em}
+#assistantOverlay .teamHero p{font-size:13px;max-width:310px;margin:8px auto 0;line-height:1.4}
+#assistantOverlay .teamPanel{border-radius:17px;padding:16px;gap:11px}
+#assistantOverlay .teamPanelTitle{font-size:15px;letter-spacing:-.012em;font-weight:690}
+#assistantOverlay .teamAccountCard{border-radius:17px;padding:14px 16px;gap:13px}
+#assistantOverlay .teamAvatar{background:#ededf0;color:#55555f;border-radius:13px}
+#assistantOverlay .teamAvatar .nsIcon{width:23px;height:23px}
+#assistantOverlay .teamMinorButton{border:1px solid #e5e5ea;border-radius:13px;background:#f8f8fa;color:inherit;padding:13px 10px;min-height:91px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;justify-content:center;text-align:left}
+#assistantOverlay .teamMinorButton .nsIcon{width:21px;height:21px;color:#636366}
+#assistantOverlay .teamMinorButton strong{font-size:13px;font-weight:670}
+#assistantOverlay .teamMinorButton small{font-size:11px;color:#8e8e93;font-weight:400;line-height:1.25}
+#assistantOverlay .teamMinorButton:active{background:#ececf0}
+#assistantOverlay .teamWorkspaceButton{border-radius:12px;min-height:51px;padding:12px}
+#assistantOverlay .teamWorkspaceButton .nsIcon{width:20px;height:20px;color:#636366}
+#assistantOverlay .teamWorkspaceButton strong{font-size:14px}
+#assistantOverlay .teamWorkspaceButton small{font-size:11px}
+#assistantOverlay .teamInviteCode strong{font-size:16px}
+#assistantOverlay .teamKeyResult code{font-family:ui-monospace,monospace}
+#assistantOverlay .teamOptionRow{min-height:50px;font-size:13px}
+#assistantOverlay .teamOptionRow .nsIcon{width:18px;height:18px;color:#aeaeb2}
+#assistantOverlay #teamAdvancedToggle{display:none!important}
+html[data-theme="dark"] #assistantOverlay .teamHeroIcon,html[data-theme="dark"] #assistantOverlay .teamAvatar{background:#2c2c2e;color:#d3d3d9}
+html[data-theme="dark"] #assistantOverlay .teamMinorButton{background:#2c2c2e;border-color:#3a3a3c;color:#f5f5f7}
+html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9}
+
 </style>
 </head>
 <body>
@@ -1857,27 +1956,46 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
   </div>
 </div>
 
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs><symbol id="ns-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7a9.3 9.3 0 0 0 0 18.6h1.2a2.1 2.1 0 0 0 2.1-2.1c0-.9-.6-1.4-.6-2.1 0-.8.7-1.4 1.5-1.4h1.2c2.5 0 4.2-1.7 4.2-4.1A9.3 9.3 0 0 0 12 2.7Z"/><path d="M7 10.4h.01M9.2 6.7h.01M14 6.5h.01M17.2 10h.01" stroke-width="3" stroke-linecap="round"/></symbol><symbol id="ns-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18.2 8.9a6.2 6.2 0 0 0-12.4 0c0 7-2 7.2-2 8.1h16.4c0-.9-2-1.1-2-8.1ZM9.4 20a2.8 2.8 0 0 0 5.2 0"/></symbol><symbol id="ns-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15.7 20.6v-1.9a4 4 0 0 0-4-4H6.3a4 4 0 0 0-4 4v1.9M9 11.4a3.7 3.7 0 1 0 0-7.4 3.7 3.7 0 0 0 0 7.4ZM17.4 5a3.3 3.3 0 0 1 0 6.4M17.6 14.7a4 4 0 0 1 4 4v1.9"/></symbol><symbol id="ns-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.7 11.4c0 4.8-4 8.6-8.9 8.6-1.3 0-2.6-.3-3.8-.8l-4.8 1.1 1.2-4.3a8.2 8.2 0 0 1-1.4-4.6c0-4.8 4-8.7 8.8-8.7 4.9 0 8.9 3.9 8.9 8.7Z"/><path d="M7.9 10.6h8M7.9 13.7h5.6"/></symbol><symbol id="ns-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8.5" ry="3.2"/><path d="M3.5 5.5v10.3c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3V5.5M3.5 10.7c0 1.8 3.8 3.3 8.5 3.3s8.5-1.5 8.5-3.3"/></symbol><symbol id="ns-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 10.7v6.2M12 6.9h.01" stroke-width="2.5"/></symbol><symbol id="ns-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></symbol><symbol id="ns-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></symbol><symbol id="ns-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5.3 5.3 18.7 18.7M18.7 5.3 5.3 18.7"/></symbol><symbol id="ns-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="ns-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3.5h4.7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H13"/><path d="m11 7 5 5-5 5M16 12H3.8"/></symbol><symbol id="ns-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.3" r="4"/><path d="M4.3 21v-2.3a7.7 7.7 0 0 1 15.4 0V21"/></symbol><symbol id="ns-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.2" width="18" height="16" rx="2.6"/><path d="M7.5 2.8v5.1M16.5 2.8v5.1M3 10.4h18M8.6 15.8h6.8"/></symbol><symbol id="ns-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.7" width="14" height="10.7" rx="2.2"/><path d="M8 10.7V7a4 4 0 0 1 8 0v3.7M12 14.3v3.4"/></symbol><symbol id="ns-suitcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7.2" width="19" height="13.3" rx="2.4"/><path d="M8.3 7.2V5a2 2 0 0 1 2-2h3.4a2 2 0 0 1 2 2v2.2M2.5 12.6h19M11.6 12.6v2.6"/></symbol><symbol id="ns-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m4.8 12.5 4.8 4.7L19 7.7"/></symbol><symbol id="ns-device" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.3" width="12" height="19.4" rx="2.5"/><path d="M10 18.6h4"/></symbol><symbol id="ns-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a2 2 0 0 1 2-2h5l2.2 2.7H19a2 2 0 0 1 2 2v9.3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol><symbol id="ns-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.3"/><path d="M12 6.5v5.8l4 2.5"/></symbol><symbol id="ns-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.7h15M9.3 6.7V4.4h5.4v2.3M6.5 6.7l.8 13a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-13M10 10.3v6.6M14 10.3v6.6"/></symbol></defs></svg>
 <div id="settingsOverlay" class="overlay" aria-hidden="true">
-  <div class="sheet">
+  <div class="sheet settingsRootSheet">
     <div class="sheetHandle"></div>
-    <div class="sheetHeader"><h2>Ajustes</h2><button id="settingsClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
+    <div class="sheetHeader settingsRootHeader">
+      <button id="settingsBackBtn" type="button" class="settingsHeaderAction hidden" aria-label="Volver a Ajustes"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-back"></use></svg></button>
+      <h2 id="settingsPageTitle">Ajustes</h2>
+      <button id="settingsClose" class="closeBtn" type="button" aria-label="Cerrar"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-close"></use></svg></button>
+    </div>
+    <div id="settingsMain" class="settingsScreen">
+      <p class="settingsIntro">Organiza Nottas a tu manera.</p>
+      <div class="settingsNavGroup">
+        <button data-settings-open="appearance" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Apariencia</span><span class="settingsNavDesc">Tema, barra y categorías</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="alerts" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-bell"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Notificaciones y recordatorios</span><span class="settingsNavDesc">Avisos, horarios y desbloqueo</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button id="assistantSettingsBtn" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-users"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Equipo de trabajo</span><span class="settingsNavDesc" id="assistantSummaryDesc">Cuenta y espacios compartidos</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="messages" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chat"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Mensajes rápidos</span><span class="settingsNavDesc">Respuestas predeterminadas</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="backup" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-database"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Datos y respaldo</span><span class="settingsNavDesc">Copias de seguridad y papelera</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="about" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-info"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Acerca de Nottas</span><span class="settingsNavDesc">Versión e información de la aplicación</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+      </div>
+    </div>
+    <section class="settingsScreen hidden" data-settings-page="appearance" aria-label="Apariencia">
+      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg></span><p>Configura cómo se ve y se organiza Nottas.</p></div>
+      <div class="sectionTitle">Visualización</div>
+    <div class="settingsGroup">
+      <div class="settingsRow"><div class="left"><div class="title">Tema oscuro</div><div class="desc">Usa una apariencia de tonos oscuros.</div></div><label class="iosSwitch"><input id="themeDarkToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Posición de la barra principal</div><div class="desc">Elige dónde mostrar los controles principales.</div></div><select id="headerPlacementSelect" class="select" style="width:120px;max-width:40%" aria-label="Posición de la barra principal"><option value="top">Arriba</option><option value="bottom">Abajo</option></select></div>
+    </div>
 
-    <div class="sectionTitle">Categorías</div>
+    
+      <div class="sectionTitle">Categorías</div>
     <div id="categoryManage" class="settingsGroup"></div>
     <button id="addCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría</button>
 
-    <div class="sectionTitle" style="margin-top:16px">Apariencia</div>
+    
+    </section>
+    <section class="settingsScreen hidden" data-settings-page="alerts" aria-label="Notificaciones y recordatorios">
+      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-bell"></use></svg></span><p>Elige cuándo y cómo recibir tus avisos.</p></div>
+      <div class="sectionTitle">Recordatorios predeterminados</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Tema oscuro</div><div class="desc">Cambia la interfaz de Nottas a una apariencia oscura.</div></div><label class="iosSwitch"><input id="themeDarkToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
-      <div class="settingsRow"><div class="left"><div class="title">Posición de la barra principal</div><div class="desc">Arriba o debajo de Buscar y Crear.</div></div><select id="headerPlacementSelect" class="select" style="width:120px;max-width:40%" aria-label="Posición de la barra principal"><option value="top">Arriba</option><option value="bottom">Abajo</option></select></div>
-    </div>
-
-    <div class="sectionTitle">Mensajes rápidos</div>
-    <div id="assistantQuickPresetsHelp" class="assistantSectionHint">Edita únicamente los mensajes rápidos que envía este dispositivo. Toca para enviar y mantén pulsado para modificar antes de enviar.</div>
-    <div id="assistantQuickPresetsSettings" class="assistantPresetSettings"></div>
-    <div class="sectionTitle">Recordatorios predeterminados</div>
-    <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">A la hora del evento</div><div class="desc">Se aplicará automáticamente a nuevas tareas o eventos con hora.</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="0"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">A la hora del evento</div><div class="desc">Para nuevas tareas y eventos con hora.</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="0"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">5 min antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="5"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">10 min antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="10"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">1 hora antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="60"><span aria-hidden="true"></span></label></div>
@@ -1885,42 +2003,61 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
       <div class="settingsRow"><div class="left"><div class="title">Resumen</div><div id="defaultRemindersDesc" class="desc">Sin recordatorios predeterminados.</div></div></div>
     </div>
 
-    <div class="sectionTitle">Horario de trabajo</div>
+    
+      <div class="sectionTitle">Horario de trabajo</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Limita “Mostrar al desbloquear” a esta franja. Fuera del horario, Nottas no aparece automáticamente.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Establece cuándo Nottas puede aparecer al desbloquear.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">Inicio</div><div class="desc">Hora habitual de comienzo.</div></div><input id="workHoursStart" class="settingsTimeInput" type="time" value="08:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Fin</div><div class="desc">Hora habitual de cierre.</div></div><input id="workHoursEnd" class="settingsTimeInput" type="time" value="17:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Estado actual</div><div id="workHoursNativeStatus" class="desc">Comprobando…</div></div></div>
     </div>
 
-    <div class="sectionTitle">Equipo de trabajo</div>
-    <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Equipos y cuenta</div><div id="assistantSummaryDesc" class="desc">Tus espacios y compañeros.</div></div><button id="assistantSettingsBtn" type="button">Abrir</button></div>
-    </div>
-
-    <div class="sectionTitle">Datos</div>
-    <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Papelera</div><div id="trashCountDesc" class="desc"></div></div><button id="openTrashBtn" type="button" aria-label="Abrir Papelera"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Exportar copia</div><div class="desc">Guarda todas tus notas, tareas y categorías en un archivo JSON.</div></div><button id="exportBtn" type="button">Exportar</button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Importar copia</div><div class="desc">Reemplaza los datos locales con un JSON válido.</div></div><button id="importBtn" type="button">Importar</button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Plantilla de importación</div><div class="desc">Crea un JSON de ejemplo para adaptar datos de otras aplicaciones a Nottas.</div></div><button id="importTemplateBtn" type="button">Crear</button></div>
-    </div>
-
-    <div id="androidSettings" class="hidden">
+    
+      <div id="androidSettings" class="hidden">
       <div class="sectionTitle">Android</div>
       <div class="settingsGroup">
-        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Permiso general. El horario de trabajo y un snooze temporal pueden bloquearlo.</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
-        <div class="settingsRow"><div class="left"><div class="title">Aviso del servicio</div><div id="unlockNotificationDesc" class="desc">Android puede mostrar un aviso permanente mientras el servicio de desbloqueo está activo.</div></div><button id="unlockNotificationBtn" type="button">Configurar</button></div>
+        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Abre Nottas según tu horario y tus pausas.</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+        <div class="settingsRow"><div class="left"><div class="title">Aviso del servicio</div><div id="unlockNotificationDesc" class="desc">Controla el aviso del servicio en Android.</div></div><button id="unlockNotificationBtn" type="button">Configurar</button></div>
       </div>
     </div>
 
-    <div class="sectionTitle">Sincronización</div>
+    
+    </section>
+    <section class="settingsScreen hidden" data-settings-page="messages" aria-label="Mensajes rápidos">
+      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chat"></use></svg></span><p>Personaliza las respuestas de tu rol en el equipo.</p></div>
+      <div class="sectionTitle">Mensajes rápidos</div>
+    <div id="assistantQuickPresetsHelp" class="assistantSectionHint">Edita las respuestas que envías desde este equipo.</div>
+    <div id="assistantQuickPresetsSettings" class="assistantPresetSettings"></div>
+    
+    </section>
+    <section class="settingsScreen hidden" data-settings-page="backup" aria-label="Datos y respaldo">
+      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-database"></use></svg></span><p>Gestiona tus datos y conserva una copia segura.</p></div>
+      <div class="sectionTitle">Datos</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Web</div><div class="desc">No configurada. La app sigue funcionando completamente offline.</div></div><span style="font-size:12px;color:#8e8e93">Local</span></div>
+      <div class="settingsRow"><div class="left"><div class="title">Papelera</div><div id="trashCountDesc" class="desc"></div></div><button id="openTrashBtn" type="button" aria-label="Abrir Papelera"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Exportar copia</div><div class="desc">Descarga tus datos en un archivo de respaldo.</div></div><button id="exportBtn" type="button">Exportar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Importar copia</div><div class="desc">Recupera los datos desde un archivo de respaldo.</div></div><button id="importBtn" type="button">Importar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Plantilla de importación</div><div class="desc">Genera un archivo para importar desde otras apps.</div></div><button id="importTemplateBtn" type="button">Crear</button></div>
+    </div>
+
+    
+      <div class="sectionTitle">Protección local</div>
+      
+    <div class="settingsGroup">
+      
       <div class="settingsRow"><div class="left"><div class="title">Copia secundaria</div><div id="backupDesc" class="desc">Copia automática local + historial interno.</div></div><span id="backupBadge" style="font-size:12px;color:#8e8e93">Activa</span></div>
       <div class="settingsRow"><div class="left"><div class="title">Historial interno</div><div id="backupHistoryDesc" class="desc">Buscando copias anteriores…</div></div><button id="restoreBackupBtn" class="hidden" type="button">Recuperar</button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Versión</div><div class="desc">Build instalado en este dispositivo.</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
     </div>
+    </section>
+    <section class="settingsScreen hidden" data-settings-page="about" aria-label="Acerca de Nottas">
+      <div class="settingsAboutHero"><div class="settingsAboutLogo">N</div><h3>Nottas</h3><p>Notas, tareas y trabajo compartido.</p></div>
+      <div class="sectionTitle">Aplicación</div>
+      <div class="settingsGroup">
+      <div class="settingsRow"><div class="left"><div class="title">Versión</div><div class="desc">Versión instalada.</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
+    </div>
+      <div class="sectionTitle">Asistencia</div>
+      <div class="settingsGroup"><button id="settingsAdvancedBtn" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-folder"></use></svg> <span>Soporte y diagnóstico<small>Herramientas técnicas para resolver incidencias</small></span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
+    </section>
   </div>
 </div>
 
@@ -1932,7 +2069,7 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
 
     <div class="teamHome" id="teamHome">
       <div id="teamAccountOnboarding" class="teamOnboarding">
-        <div class="teamHero"><div class="teamHeroIcon">◎</div><strong>Trabaja en equipo</strong><p>Comparte tareas, citas y mensajes en un solo espacio.</p></div>
+        <div class="teamHero"><div class="teamHeroIcon"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-users"></use></svg></div><strong>Trabaja en equipo</strong><p>Comparte tareas, citas y mensajes en un solo espacio.</p></div>
         <div class="teamPanel">
           <div class="teamPanelTitle">Empezar</div>
           <label class="teamLabel" for="teamNewAccountName">Tu nombre</label>
@@ -1947,15 +2084,15 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
         </div>
       </div>
       <div id="teamConnectedPanel" class="hidden">
-        <div class="teamAccountCard"><span class="teamAvatar" aria-hidden="true">◉</span><div><strong id="teamAccountName">Cuenta</strong><small id="teamAccountHint">Conectada</small></div><span class="teamOnlineDot" title="Conectado"></span></div>
+        <div class="teamAccountCard"><span class="teamAvatar" aria-hidden="true"><svg class="nsIcon" viewBox="0 0 24 24"><use href="#ns-user"></use></svg></span><div><strong id="teamAccountName">Cuenta</strong><small id="teamAccountHint">Conectada</small></div><span class="teamOnlineDot" title="Conectado"></span></div>
         <div class="teamPanel">
-          <div class="teamPanelTitle">Mis equipos</div>
+          <div class="teamPanelTitle">Espacios compartidos</div>
           <div id="teamWorkspaceList" class="teamWorkspaceList"></div>
           <div class="teamActionGrid">
-            <button id="teamShowCreate" type="button" class="teamMinorButton">+ Crear equipo</button>
-            <button id="teamShowJoin" type="button" class="teamMinorButton">Unirme con código</button>
+            <button id="teamShowCreate" type="button" class="teamMinorButton"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-plus"></use></svg><strong>Crear un equipo</strong><small>Nuevo espacio compartido</small></button>
+            <button id="teamShowJoin" type="button" class="teamMinorButton"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-enter"></use></svg><strong>Unirme a un equipo</strong><small>Introducir invitación</small></button>
           </div>
-          <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button><p class="teamHint">Quien crea el equipo puede administrar integrantes y asignar después al director.</p></div>
+          <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button><p class="teamHint">Podrás invitar al director y asignarle su rol.</p></div>
           <div id="teamJoinForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceCode">Código de invitación</label><input id="teamWorkspaceCode" class="teamInput" autocapitalize="characters" maxlength="16" placeholder="Código"><button id="teamJoinWorkspace" class="btn primary full" type="button">Unirme al equipo</button></div>
         </div>
         <div id="teamWorkspaceDetail" class="teamPanel hidden">
@@ -1964,7 +2101,7 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
           <div id="teamInviteArea" class="teamInviteArea hidden">
             <div class="teamPanelCaption">Invitar a otra persona</div>
             <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar invitación">Copiar</button></div>
-            <small>El código permite unirse como integrante. Solo la persona que administra el equipo puede asignar el rol de director.</small>
+            <small>El código permite unirse como integrante. El director se asigna desde Integrantes.</small>
           </div>
           <div class="teamPanelCaption">Integrantes</div>
           <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
@@ -1974,9 +2111,9 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
         </div>
         <div class="teamPanel">
           <div class="teamPanelTitle">Acceso a mi cuenta</div>
-          <p class="teamHint">Tus equipos pertenecen a tu cuenta, no a este teléfono. Guarda una clave de recuperación en un lugar seguro.</p>
-          <button id="teamIssueRecovery" class="teamOptionRow" type="button"><span>Crear o renovar clave de recuperación</span><span>›</span></button>
-          <button id="teamIssueLink" class="teamOptionRow" type="button"><span>Iniciar sesión en otro dispositivo</span><span>›</span></button>
+          <p class="teamHint">Recupera tu cuenta en otro dispositivo sin crear un equipo nuevo.</p>
+          <button id="teamIssueRecovery" class="teamOptionRow" type="button"><span>Clave de recuperación</span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
+          <button id="teamIssueLink" class="teamOptionRow" type="button"><span>Acceder desde otro teléfono</span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
           <div id="teamKeyResult" class="teamKeyResult hidden"><p id="teamKeyDescription" class="teamHint"></p><div class="teamKeyValue"><code id="teamKeyValue"></code></div><button id="teamCopyKey" class="btn secondary" type="button">Copiar clave</button></div>
         </div>
       </div>
@@ -2852,7 +2989,7 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
     if(hint)hint.textContent=(role==="owner"?
       "Mensajes que el director envía al asistente.":
       "Mensajes que el asistente envía al director.")+
-      " Estos ajustes se guardan en este dispositivo. Toca para enviar y mantén pulsado para editar antes de enviar.";
+      " Mantén pulsado para editar antes de enviar.";
     parent.innerHTML=
       '<div class="assistantPresetSettingsGroup"><div class="assistantPresetSettingsHeading">'+title+'</div>'+
       getAssistantPresets(role).map((message,index)=>
@@ -3231,7 +3368,7 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
   function renderAssistantSummary(){
     const el=$("assistantSummaryDesc");if(!el||!state)return;
     const ws=currentWorkspace(),connected=assistantConfigured();
-    el.textContent=connected?((ws?.kind==="assistant"?(ws.name+" · "+(ws.role==="owner"?"Jefe":"Asistente")):"Cuenta conectada")+" · "+(state.assistant.lastSyncAt?"sync "+new Date(state.assistant.lastSyncAt).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}):"sin sincronizar")):"No configurado. Los datos siguen solo en este dispositivo.";
+    el.textContent=connected?(ws?.kind==="assistant"?(ws.name+" · "+(ws.role==="owner"?"Director":"Asistente")):"Cuenta conectada"):"Cuenta y espacios compartidos.";
   }
   function assistantActivityText(row){
     if(row.kind==="call"){
@@ -3454,7 +3591,7 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
     const list=$("teamWorkspaceList");
     list.innerHTML=teams.length?teams.map(w=>
       '<button type="button" class="teamWorkspaceButton" data-team-select="'+esc(w.id)+'" aria-current="'+(currentWorkspaceId()===w.id?"true":"false")+'">'+
-      '<strong>'+esc(w.name)+'</strong><small>'+(w.role==="owner"?"Director":"Asistente")+'</small></button>'
+      '<svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-suitcase"></use></svg><strong>'+esc(w.name)+'</strong><small>'+(w.role==="owner"?"Director":"Asistente")+'</small><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;color:#8e8e93"><use href="#ns-chevron"></use></svg></button>'
     ).join(""):'<p class="teamHint">Todavía no perteneces a ningún equipo. Puedes crear uno o unirte con una invitación.</p>';
     list.querySelectorAll("[data-team-select]").forEach(button=>button.addEventListener("click",()=>{
       activeWorkspaceId=button.dataset.teamSelect;activeCategory="all";activeTag="";
@@ -6806,14 +6943,14 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
   function refreshWorkHoursNativeStatus(){
     const el=$("workHoursNativeStatus");if(!el)return;
     const prefs=state&&state.preferences?state.preferences:{};
-    if(!prefs.workHoursEnabled){el.textContent="Desactivado: el overlay puede aparecer en cualquier hora.";return}
+    if(!prefs.workHoursEnabled){el.textContent="Sin horario: Nottas puede abrirse al desbloquear.";return}
     try{
       if(window.NottasNative&&NottasNative.workHoursStatus){
         const status=JSON.parse(NottasNative.workHoursStatus()||"{}");
-        if(status.start===status.end){el.textContent="Inicio y fin son iguales: la ventana está vacía y el overlay automático queda bloqueado.";return}
+        if(status.start===status.end){el.textContent="El inicio y el fin deben ser diferentes.";return}
         el.textContent=status.allowsWakeOverlay
-          ?"Ahora estás dentro del horario: overlay de desbloqueo habilitado."
-          :"Ahora estás fuera del horario: overlay de desbloqueo bloqueado.";
+          ?"Dentro del horario: apertura al desbloquear disponible."
+          :"Fuera del horario: apertura automática pausada.";
         return;
       }
     }catch(_){}
@@ -6836,6 +6973,33 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
     $("workHoursStart").disabled=!enabled;$("workHoursEnd").disabled=!enabled;
     $("themeDarkToggle").checked=uiTheme==="dark";
     refreshWorkHoursNativeStatus();
+  }
+  let currentSettingsPage="home",returnToSettingsFromTeam=false;
+  const settingsPageNames={
+    home:"Ajustes",appearance:"Apariencia",alerts:"Notificaciones",
+    messages:"Mensajes rápidos",backup:"Datos y respaldo",about:"Acerca de Nottas"
+  };
+  function showSettingsPage(page){
+    const target=Object.prototype.hasOwnProperty.call(settingsPageNames,page)?page:"home";
+    currentSettingsPage=target;
+    $("settingsMain").classList.toggle("hidden",target!=="home");
+    document.querySelectorAll("#settingsOverlay [data-settings-page]").forEach(el=>
+      el.classList.toggle("hidden",el.dataset.settingsPage!==target)
+    );
+    $("settingsPageTitle").textContent=settingsPageNames[target];
+    $("settingsBackBtn").classList.toggle("hidden",target==="home");
+    const active=target==="home"?$("settingsMain"):
+      document.querySelector('#settingsOverlay [data-settings-page="'+target+'"]');
+    if(active)active.scrollTop=0;
+  }
+  function closeTeamSettings(){
+    closeOverlay("assistantOverlay");
+    if(returnToSettingsFromTeam){
+      returnToSettingsFromTeam=false;
+      renderSettingsSummary();
+      showSettingsPage("home");
+      openOverlay("settingsOverlay");
+    }
   }
   function renderSettingsSummary(){
     syncWorkHoursSettings();renderDefaultReminderSettings();renderAssistantSummary();renderAssistantPresetSettings();applyHeaderPlacement();
@@ -7485,10 +7649,22 @@ html[data-theme="dark"] .teamOptionRow,html[data-theme="dark"] .teamMemberEntry,
   $("wakeOnBtn").addEventListener("click",()=>{try{NottasNative.setWakeEnabled(true)}catch(_){}refreshWakeControlUI();showToast("Mostrar al desbloquear: On")});
   $("wakeOffBtn").addEventListener("click",()=>{try{NottasNative.setWakeEnabled(false)}catch(_){}refreshWakeControlUI();showToast("Mostrar al desbloquear: Off")});
   document.querySelectorAll("[data-wake-snooze]").forEach(b=>b.addEventListener("click",()=>{const minutes=Number(b.dataset.wakeSnooze)||15;try{NottasNative.snoozeWake(minutes)}catch(_){}refreshWakeControlUI();closeOverlay("wakeControlOverlay");showToast("Pausado "+(minutes<60?minutes+" min":minutes/60+" h"))}));
-  $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();openOverlay("settingsOverlay")});$("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
-  $("assistantSettingsBtn").addEventListener("click",()=>{closeOverlay("settingsOverlay");openAssistantSettings()});
-  $("assistantClose").addEventListener("click",()=>closeOverlay("assistantOverlay"));
-  $("assistantOverlay").addEventListener("click",e=>{if(e.target===$("assistantOverlay"))closeOverlay("assistantOverlay")});
+  $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();showSettingsPage("home");openOverlay("settingsOverlay")});
+  $("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));
+  $("settingsBackBtn").addEventListener("click",()=>showSettingsPage("home"));
+  document.querySelectorAll("#settingsOverlay [data-settings-open]").forEach(button=>
+    button.addEventListener("click",()=>{renderSettingsSummary();showSettingsPage(button.dataset.settingsOpen)})
+  );
+  $("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
+  $("assistantSettingsBtn").addEventListener("click",()=>{returnToSettingsFromTeam=true;closeOverlay("settingsOverlay");openAssistantSettings()});
+  $("settingsAdvancedBtn").addEventListener("click",()=>{
+    returnToSettingsFromTeam=true;
+    closeOverlay("settingsOverlay");openAssistantSettings();toggleTeamAdvanced(true);
+    const advanced=$("assistantAdvanced");
+    if(advanced)requestAnimationFrame(()=>advanced.scrollIntoView({block:"start",behavior:"smooth"}));
+  });
+  $("assistantClose").addEventListener("click",closeTeamSettings);
+  $("assistantOverlay").addEventListener("click",e=>{if(e.target===$("assistantOverlay"))closeTeamSettings()});
   $("assistantRegisterBtn").addEventListener("click",assistantRegisterDevice);
   $("assistantSyncBtn").addEventListener("click",()=>assistantSync(false,false));
   $("assistantRecoverBtn").addEventListener("click",assistantRecoverOwner);
