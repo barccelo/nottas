@@ -1558,6 +1558,39 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
 .taskSortGroup>span:nth-child(2) strong{font-size:13px;font-weight:650}
 .taskSortGroup>span:nth-child(2) small{font-size:11px;color:#8e8e93}
 @media(max-width:375px){#taskFilters{gap:4px}#taskFilters [data-filter]{padding:7px 7px;font-size:11.5px}#taskGroupToggle,#taskFilterSortBtn{flex-basis:31px;width:31px;height:33px}}
+
+/* Unified Day/Week collision layout — local Nottas events and read-only Google events. */
+.calendarTimeBlock.calendarSideBySide{right:auto!important;box-sizing:border-box;min-width:0}
+.calendarWeekTimeViewport .calendarTimeBlock.calendarSideBySide{right:auto!important}
+.calendarTimeBlock.calendarSideBySide .calendarTimeBlockTitle{padding-right:13px}
+.calendarGoogleBlock.calendarSideBySide .calendarTimeBlockTitle{padding-right:0}
+.calendarOverlapGroup{position:absolute;left:2px;right:2px;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:5px;overflow:hidden;z-index:6;padding:6px 6px 8px;border-radius:9px;border:1px solid #d6dce6;background:#f5f7fb;color:#202a38;box-shadow:0 1px 3px rgba(0,0,0,.09);text-align:left;font:inherit;cursor:pointer;touch-action:manipulation}
+.calendarOverlapGroup:focus-visible{outline:2px solid #007aff;outline-offset:1px}
+.calendarOverlapGroup:active{background:#eaf1fc}
+.calendarOverlapStripes{display:flex;align-items:center;gap:3px;flex:none;height:5px;width:100%}
+.calendarOverlapStripes i{display:block;height:5px;min-width:2px;flex:1;border-radius:5px}
+.calendarOverlapSummary{font-size:10px;font-weight:720;line-height:1.16;white-space:normal;overflow-wrap:anywhere}
+.calendarOverlapGroup.week{padding:2px 1px;gap:2px;border-radius:5px}
+.calendarOverlapGroup.week .calendarOverlapSummary{text-align:center;font-size:9px}
+.calendarOverlapGroup.day{gap:6px}
+.calendarOverlapGroup.day.short{padding:2px 4px;gap:2px}
+.calendarOverlapGroup.day.short .calendarOverlapPreviews{display:none}
+.calendarOverlapGroup.day.short .calendarOverlapSummary{font-size:10px;line-height:1.1}
+.calendarOverlapPreviews{display:flex;flex:1 1 auto;min-height:0;gap:6px;align-items:stretch}
+.calendarOverlapPreview{display:flex;flex:1 1 0;flex-direction:column;gap:3px;min-width:0;overflow:hidden;border-radius:6px;background:#fff;border-left:3px solid var(--preview-color);padding:6px 5px 7px}
+.calendarOverlapPreview strong{font-size:11px;line-height:1.2;font-weight:690;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.calendarOverlapPreview small{font-size:9px;line-height:1.2;color:#737780;overflow:hidden;text-overflow:ellipsis}
+.calendarOverlapGroup.day .calendarOverlapSummary{font-size:10px;color:#495a70;align-self:flex-end}
+.calendarDayPanel.calendarOverlapPanel{top:auto;bottom:0;width:100%;max-width:540px;max-height:min(70vh,600px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom);background:#f5f5f7}
+.calendarDayPanel.calendarOverlapPanel .calendarDayPanelHead{padding-top:19px}
+.calendarDayPanel.calendarOverlapPanel .calendarDayPanelList{padding:10px 12px 16px}
+.calendarDayPanel.calendarOverlapPanel .calendarDayPanelFooter{display:none}
+html[data-theme="dark"] .calendarOverlapGroup{background:#252d39;border-color:#465064;color:#f5f5f7}
+html[data-theme="dark"] .calendarOverlapGroup:active{background:#303e51}
+html[data-theme="dark"] .calendarOverlapPreview{background:#343f4f;color:#f5f5f7}
+html[data-theme="dark"] .calendarOverlapPreview small,html[data-theme="dark"] .calendarOverlapGroup.day .calendarOverlapSummary{color:#c9d1dd}
+html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1e}
+
 </style>
 </head>
 <body>
@@ -5088,7 +5121,7 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
     bindCalendarMoveCancel();
   }
   function closeCalendarDayPanel(){
-    $("calendarDayPanel").classList.add("hidden");$("calendarDayBackdrop").classList.add("hidden");
+    $("calendarDayPanel").classList.add("hidden");$("calendarDayPanel").classList.remove("calendarOverlapPanel");$("calendarDayBackdrop").classList.add("hidden");
   }
   function openCalendarDayEvent(item,date){
     closeCalendarDayPanel();
@@ -5099,18 +5132,20 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
       return;
     }
     if(item.kind==="local"){openTaskFromCalendar(item.value,date);return}
-    const anchor=$("calendarBody").querySelector('[data-calendar-date="'+date+'"]')||$("calendarToday");
+    const anchor=$("calendarBody").querySelector('[data-calendar-overlap-date="'+date+'"]')||$("calendarBody").querySelector('[data-calendar-date="'+date+'"]')||$("calendarToday");
     showGoogleCalendarPeek(item.value,anchor);
   }
-  function showCalendarDayList(date,tasks,google){
+  function showCalendarDayList(date,tasks,google,options={}){
     closeCalendarEye();closeCalendarPeek();
     const items=[
       ...tasks.map(t=>({kind:"local",value:t,title:t.text||"Sin título",time:t.dueTime||"",color:catColor(t.category),category:catName(t.category)})),
       ...google.map(g=>({kind:"google",value:g,title:g.title||"Ocupado",time:g.allDay?"":g.startTime,color:calendarGoogleColor(g),category:g.calendarName||"Google Calendar"}))
     ].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")||a.title.localeCompare(b.title,"es"));
     $("calendarDayNumber").textContent=String(dateFromISO(date).getDate());
-    $("calendarDayHeading").textContent=calendarDateLabel(date,{weekday:"long",month:"long",year:"numeric"});
-    $("calendarDayCount").textContent=items.length+" elementos";
+    $("calendarDayPanel").classList.toggle("calendarOverlapPanel",!!options.overlap);
+    $("calendarDayPanel").setAttribute("aria-label",options.overlap?"Eventos simultáneos":"Eventos del día");
+    $("calendarDayHeading").textContent=options.overlap?"Eventos simultáneos":calendarDateLabel(date,{weekday:"long",month:"long",year:"numeric"});
+    $("calendarDayCount").textContent=options.overlap?calendarDateLabel(date,{weekday:"short",day:"numeric",month:"short"})+" · "+minutesToTime(options.startMinute)+" · "+items.length+" eventos":items.length+" elementos";
     $("calendarDayAddText").textContent="Añadir el "+calendarDateLabel(date,{day:"numeric",month:"short"});
     const list=$("calendarDayPanelList");list.replaceChildren();
     for(const item of items){
@@ -5119,7 +5154,9 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
       const main=document.createElement("span");main.className="calendarDayEventMain";
       const title=document.createElement("strong");title.textContent=item.title;
       const meta=document.createElement("small");
-      meta.textContent=(item.kind==="google"?calendarGoogleTimeLabel(item.value):calendarTaskRangeLabel(item.value))+" · "+item.category+(item.kind==="google"?" · solo lectura":"");
+      const origin=options.overlap?(item.kind==="google"?"Google Calendar":"Nottas"):"";
+      const category=origin&&item.category===origin?"":item.category;
+      meta.textContent=(item.kind==="google"?calendarGoogleTimeLabel(item.value):calendarTaskRangeLabel(item.value))+" · "+(origin?origin+(category?" · ":""):"")+category+(item.kind==="google"?" · solo lectura":"");
       main.append(title,meta);
       const arrow=document.createElement("span");arrow.className="calendarDayEventChevron";arrow.textContent="›";
       b.append(dot,main,arrow);b.addEventListener("click",()=>openCalendarDayEvent(item,date));list.appendChild(b);
@@ -5139,7 +5176,7 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
     showCalendarDayList(date,tasks,google);
   }
   function bindCalendarDateTargets(){
-    $("calendarBody").querySelectorAll("[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{
+    $("calendarBody").querySelectorAll(".calendarDay[data-calendar-date],.calendarWeekDay[data-calendar-date],.agendaGroupTitle[data-calendar-date]").forEach(b=>b.addEventListener("click",()=>{
       if(Date.now()<suppressClickUntil)return;
       const date=b.dataset.calendarDate;if(!date)return;
       activateCalendarDate(date)
@@ -5200,24 +5237,70 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
     }
     return html+'</div>';
   }
+  // All sources take part in one collision calculation. Neither source has a visual priority.
+  let calendarOverlapGroups=new Map();
   function calendarTimeColumnHtml(date,tasks,rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
-    const blocks=tasks.filter(t=>{const m=calendarTaskStartMinutes(t);return m!==null&&m>=rangeStart&&m<rangeEnd}).map(t=>{
-      const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
-      const duration=end-start,visibleEnd=Math.min(end,rangeEnd),top=(start-rangeStart)/60*hourPx,height=Math.max(24,(visibleEnd-start)/60*hourPx),lines=height>=54?3:height>=31?2:1,compact=height<44;
-      return '<div class="calendarTimeBlock '+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(catColor(t.category))+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
-    }).join("");
-    const googleBlocks=calendarGoogleFor(date).filter(e=>!e.allDay).map(event=>{
+    const items=[];
+    const add=(kind,value,start,end,color,title)=>{
+      if(start===null||end===null||start>=rangeEnd||end<=rangeStart)return;
+      const from=Math.max(rangeStart,start),to=Math.min(rangeEnd,end);
+      if(to<=from)return;
+      const minVisualMinutes=24/hourPx*60;
+      items.push({kind,value,start:from,end:to,visualEnd:Math.min(rangeEnd,Math.max(to,from+minVisualMinutes)),color,title});
+    };
+    tasks.forEach(t=>{
+      const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);
+      if(start!==null&&end!==null)add("local",t,start,end,catColor(t.category),t.text||"Sin título");
+    });
+    calendarGoogleFor(date).filter(e=>!e.allDay).forEach(event=>{
       const start=timeToMinutes(event.startTime),end=event.endTime==="24:00"?1440:timeToMinutes(event.endTime);
-      if(start===null||start>=rangeEnd)return "";
-      const from=Math.max(rangeStart,start),to=Math.min(rangeEnd,end===null?start+60:end);
-      if(to<=from)return "";
-      const top=(from-rangeStart)/60*hourPx,height=Math.max(24,(to-from)/60*hourPx),color=calendarGoogleColor(event);
-      return '<div class="calendarTimeBlock calendarGoogleBlock" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(height<44?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+color+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc(calendarGoogleTimeLabel(event))+'</div></div>';
+      if(start!==null)add("google",event,start,end!==null&&end>start?end:Math.min(1440,start+60),calendarGoogleColor(event),event.title||"Ocupado");
+    });
+    items.sort((a,b)=>a.start-b.start||b.visualEnd-a.visualEnd||(a.kind==="local"?-1:1)-(b.kind==="local"?-1:1)||a.title.localeCompare(b.title,"es"));
+    const groups=[];
+    items.forEach(item=>{
+      let group=groups[groups.length-1];
+      if(!group||item.start>=group.visualEnd){group={items:[],visualEnd:item.visualEnd,laneEnds:[]};groups.push(group)}
+      group.items.push(item);group.visualEnd=Math.max(group.visualEnd,item.visualEnd);
+      let lane=group.laneEnds.findIndex(end=>end<=item.start);
+      if(lane<0){lane=group.laneEnds.length;group.laneEnds.push(item.visualEnd)}
+      else group.laneEnds[lane]=item.visualEnd;
+      item.lane=lane;
+      group.laneCount=Math.max(group.laneCount||0,group.laneEnds.length);
+    });
+    const drawEvent=(item,laneCount)=>{
+      const top=(item.start-rangeStart)/60*hourPx,height=Math.max(24,(item.end-item.start)/60*hourPx);
+      const lines=height>=54?3:height>=31?2:1,compact=height<44;
+      const paired=laneCount>1&&calendarView==="day";
+      const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
+      if(item.kind==="local"){
+        const t=item.value;
+        return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+      }
+      const event=item.value;
+      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
+    };
+    const drawGroup=(group,index)=>{
+      const key=date+"-"+index,week=calendarView==="week";
+      calendarOverlapGroups.set(key,{date,items:group.items,start:group.items[0].start});
+      const start=Math.min(...group.items.map(item=>item.start)),end=Math.max(...group.items.map(item=>item.end));
+      const top=(start-rangeStart)/60*hourPx,height=Math.max(24,(end-start)/60*hourPx);
+      const compact=height<84;
+      const stripes='<span class="calendarOverlapStripes" aria-hidden="true">'+group.items.slice(0,6).map(item=>'<i style="background:'+esc(item.color)+'"></i>').join("")+'</span>';
+      const count=group.items.length,label=count+" eventos";
+      if(week)return '<button type="button" class="calendarOverlapGroup week" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+label+'</span></button>';
+      const previews=group.items.slice(0,2).map(item=>'<span class="calendarOverlapPreview" style="--preview-color:'+esc(item.color)+'"><strong>'+esc(item.title)+'</strong><small>'+esc(item.kind==="local"?calendarTaskRangeLabel(item.value):calendarGoogleTimeLabel(item.value))+'</small></span>').join("");
+      return '<button type="button" class="calendarOverlapGroup day '+(compact?"short":"")+'" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+(compact?label+" · Ver":"+"+(count-2)+" más · Ver todos")+'</span><span class="calendarOverlapPreviews">'+previews+'</span></button>';
+    };
+    const blocks=groups.map((group,index)=>{
+      if((calendarView==="week"&&group.items.length>1)||(calendarView==="day"&&group.laneCount>2))return drawGroup(group,index);
+      return group.items.map(item=>drawEvent(item,group.laneCount)).join("");
     }).join("");
-    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+googleBlocks+'</div>';
+    return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+'</div>';
   }
   function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440,hourPx=calendarHourPxForRange(rangeStart,rangeEnd)){
     const height=Math.max(hourPx,(rangeEnd-rangeStart)/60*hourPx);
+    calendarOverlapGroups=new Map();
     const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date),rangeStart,rangeEnd,hourPx)).join("");
     return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
   }
@@ -5337,13 +5420,22 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
     $("taskTimeButton").dataset.reminderActive="0";
     taskInlineTimeTarget="start";taskInlineOpenPanel="";syncTaskTimeButton();syncTaskEditorMeta();taskInlineMonth=dateFromISO(date);syncTaskInlineForm();
   }
+  function showCalendarOverlapGroup(key){
+    const group=calendarOverlapGroups.get(key);if(!group)return;
+    const local=group.items.filter(item=>item.kind==="local").map(item=>item.value);
+    const google=group.items.filter(item=>item.kind==="google").map(item=>item.value);
+    showCalendarDayList(group.date,local,google,{overlap:true,startMinute:group.start});
+  }
   function bindCalendarTimeGrid(){
     $("calendarBody").querySelectorAll(".calendarTimeColumn").forEach(col=>{
       col.addEventListener("click",e=>{
-        if(Date.now()<suppressClickUntil||e.target.closest(".calendarTimeBlock"))return;
+        if(Date.now()<suppressClickUntil||e.target.closest(".calendarTimeBlock,.calendarOverlapGroup"))return;
         const minute=calendarMinutesFromPointer(col,e.clientY);
         createTaskOnCalendarSlot(col.dataset.calendarTimeDate||calendarDate,minute);
       });
+    });
+    $("calendarBody").querySelectorAll("[data-calendar-overlap-id]").forEach(group=>{
+      group.addEventListener("click",e=>{e.stopPropagation();if(Date.now()>=suppressClickUntil)showCalendarOverlapGroup(group.dataset.calendarOverlapId)});
     });
     $("calendarBody").querySelectorAll("[data-calendar-time-task]").forEach(block=>{
       const t=state.tasks.find(x=>x.id===block.dataset.calendarTimeTask);if(!t)return;
@@ -8065,7 +8157,7 @@ html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
-  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
+  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarOverlapGroup,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
   $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25){calendarViewSwipe.horizontal=true;$("calendarBody").classList.add("calendarViewSwiping")}if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
   const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
   $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform=""}});
