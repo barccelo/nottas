@@ -2,6 +2,14 @@
 
 Aplicación Android local-first de notas y tareas con interfaz inspirada en la MiniApp y un overlay al encender/desbloquear el dispositivo.
 
+## Continuidad técnica entre versiones y chats
+
+- [ESTADO.md](ESTADO.md): versión vigente del código, funciones, diagnóstico y punto de continuación.
+- [PENDIENTES.md](PENDIENTES.md): mejoras, errores y verificaciones pendientes.
+- [CHANGELOG.md](CHANGELOG.md): historial de los cambios incluidos en cada versión.
+
+**Regla de publicación:** actualizar los tres archivos junto con cada cambio de versión. Confirmar la APK en GitHub Actions/Releases antes de indicar que ya está publicada.
+
 ## Incluye
 
 - Tareas y notas, categorías, filtros, búsqueda y prioridades.
