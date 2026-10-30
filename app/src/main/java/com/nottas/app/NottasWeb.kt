@@ -22,6 +22,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.view.HapticFeedbackConstants
 import android.view.WindowManager
+import android.view.WindowInsets
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import java.io.File
 import org.json.JSONObject
@@ -190,6 +192,25 @@ object NottasWeb {
 
         @JavascriptInterface
         fun workHoursStatus(): String = WorkHoursPolicy.status(context)
+
+        @JavascriptInterface
+        fun hideKeyboard() {
+            mainHandler.post {
+                val activity = context as? Activity ?: return@post
+                val focus = activity.currentFocus
+                val token = focus?.windowToken ?: activity.window.decorView.windowToken
+                try {
+                    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    imm?.hideSoftInputFromWindow(token, 0)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        activity.window.insetsController?.hide(WindowInsets.Type.ime())
+                    }
+                    focus?.clearFocus()
+                } catch (_: Exception) {
+                    // The category picker remains functional without an IME controller.
+                }
+            }
+        }
 
         @JavascriptInterface
         fun setSearchKeyboardMode(active: Boolean) {

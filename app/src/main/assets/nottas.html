@@ -1332,6 +1332,46 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
 #calendarOverlay .calendarTimeBlockTitle .categoryDisplayIcon{width:15px;height:15px;flex:0 0 15px;background:transparent;margin-right:3px;vertical-align:-2px}
 #calendarOverlay .calendarTimeBlockTitle .categoryDisplayIcon .nsIcon{width:14px;height:14px}
 #calendarOverlay .calendarPeekMeta .categoryDisplayIcon{width:17px;height:17px;display:inline-flex;vertical-align:-3px;background:transparent;margin-right:4px}
+
+/* Contextual card metadata: only the tapped metadata opens, without full edit. */
+.taskInlineCategoryEntry .taskInlineText[readonly]{cursor:pointer}
+.taskMetaAction,.taskMetaStatusAction{display:inline-flex;align-items:center;gap:4px;min-height:26px;max-width:100%;font:inherit;border:0;background:none;padding:2px 2px;margin:-2px -2px;border-radius:8px;color:inherit;text-align:left;cursor:pointer;touch-action:manipulation}
+.taskMetaAction:active,.taskMetaStatusAction:active{background:rgba(118,118,128,.12)}
+.taskMetaAction:focus-visible,.taskMetaStatusAction:focus-visible{outline:2px solid #1677ff;outline-offset:1px}
+.taskMetaAction.taskMetaSubtle{color:#8e8e93;font-size:11px;font-weight:400}
+.taskMetaAction svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:#7a7a83}
+.taskMetaAction .categoryDisplayIcon{width:17px;height:17px;flex:0 0 17px}
+.taskMetaStatusAction .metaTag{margin:0}
+#cardMetaOverlay{z-index:85}
+#cardMetaOverlay .cardMetaSheet{width:min(540px,100%);max-height:min(73vh,calc(var(--vv-height,100vh) - 18px));display:flex;flex-direction:column;overflow:hidden;border-radius:22px 22px 0 0;padding:18px 15px calc(18px + env(safe-area-inset-bottom));background:#f5f5f7}
+.cardMetaTop{flex:none;display:flex;align-items:start;justify-content:space-between;gap:15px;margin-bottom:14px}
+.cardMetaCaption{font-size:11px;letter-spacing:.03em;color:#8e8e93}
+.cardMetaTop h2{font-size:20px;letter-spacing:-.025em;font-weight:680;margin:3px 0 0}
+.cardMetaClose{flex:0 0 32px;border:0;background:#e5e5ea;color:#636366;font-size:22px;line-height:30px;border-radius:50%;height:32px;width:32px}
+.cardMetaPanel{display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:2px}
+.cardMetaHint{color:#8e8e93;font-size:12px;line-height:1.4}
+.cardMetaCategoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.cardMetaCategoryChoice{min-height:57px;display:flex;align-items:center;gap:9px;border:1px solid transparent;border-radius:13px;background:#fff;color:inherit;padding:10px;min-width:0;text-align:left;font:inherit;font-size:12px;font-weight:610}
+.cardMetaCategoryChoice .categoryDisplayIcon{flex:0 0 26px;width:26px;height:26px}
+.cardMetaCategoryChoice .categoryDisplayIcon .nsIcon{width:19px;height:19px}
+.cardMetaCategoryChoice>span:last-child{overflow-wrap:anywhere}
+.cardMetaCategoryChoice[aria-pressed="true"]{border-color:#90b8ed;background:#e8f2ff}
+.cardMetaCategoryChoice:active{transform:scale(.98)}
+.cardMetaStatusOptions{display:flex;flex-direction:column;gap:7px}
+.cardMetaStatusChoice{background:#fff;color:inherit;border:1px solid transparent;border-radius:12px;text-align:left;min-height:50px;padding:10px 13px;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cardMetaStatusChoice[aria-pressed="true"]{border-color:#90b8ed;background:#e8f2ff}
+.cardMetaInput{box-sizing:border-box;width:100%;min-height:48px;border:1px solid #d1d1d6;border-radius:12px;background:#fff;color:#1d1d1f;font:inherit;font-size:18px;padding:10px 12px;color-scheme:light}
+.cardMetaPanel label{font-size:12px;color:#8e8e93;font-weight:650}
+.cardMetaActions{display:flex;gap:8px;justify-content:space-between;padding-top:7px}
+.cardMetaPrimary,.cardMetaSecondary{min-height:43px;padding:10px 13px;border-radius:12px;border:0;font:inherit;font-size:13px;font-weight:650}
+.cardMetaPrimary{background:#202025;color:#fff;flex:1}
+.cardMetaSecondary{background:#e7e7eb;color:#343438}
+html[data-theme="dark"] #cardMetaOverlay .cardMetaSheet{background:#161618}
+html[data-theme="dark"] .cardMetaCategoryChoice,html[data-theme="dark"] .cardMetaStatusChoice{background:#2c2c2e;color:#f5f5f7}
+html[data-theme="dark"] .cardMetaCategoryChoice[aria-pressed="true"],html[data-theme="dark"] .cardMetaStatusChoice[aria-pressed="true"]{background:#183751;border-color:#568aca}
+html[data-theme="dark"] .cardMetaClose,html[data-theme="dark"] .cardMetaSecondary{background:#333337;color:#eaeaed}
+html[data-theme="dark"] .cardMetaPrimary{background:#dedee3;color:#171719}
+html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;color:#f5f5f7;border-color:#48484a}
 </style>
 </head>
 <body>
@@ -2287,6 +2327,34 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
     <div id="directorInboxFooter" class="directorInboxFooter"></div>
   </div>
 </div>
+<div id="cardMetaOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet cardMetaSheet" role="dialog" aria-modal="true" aria-labelledby="cardMetaHeading">
+    <div class="cardMetaTop">
+      <div><div class="cardMetaCaption" id="cardMetaCaption">Edición rápida</div><h2 id="cardMetaHeading">Categoría</h2></div>
+      <button id="cardMetaClose" type="button" class="cardMetaClose" aria-label="Cerrar">×</button>
+    </div>
+    <div id="cardMetaCategory" class="cardMetaPanel hidden">
+      <div class="cardMetaHint">Selecciona una categoría. Puedes desplazarte verticalmente.</div>
+      <div id="cardMetaCategoryGrid" class="cardMetaCategoryGrid"></div>
+      <button id="cardMetaNewCategory" class="cardMetaSecondary" type="button">+ Nueva categoría</button>
+    </div>
+    <div id="cardMetaDate" class="cardMetaPanel hidden">
+      <label for="cardMetaDateInput">Fecha</label>
+      <input id="cardMetaDateInput" class="cardMetaInput" type="date">
+      <div class="cardMetaActions"><button id="cardMetaDateClear" class="cardMetaSecondary" type="button">Sin fecha</button><button id="cardMetaDateSave" class="cardMetaPrimary" type="button">Guardar fecha</button></div>
+    </div>
+    <div id="cardMetaTime" class="cardMetaPanel hidden">
+      <label for="cardMetaTimeInput">Hora de inicio</label>
+      <input id="cardMetaTimeInput" class="cardMetaInput" type="time" step="300">
+      <div class="cardMetaActions"><button id="cardMetaTimeClear" class="cardMetaSecondary" type="button">Sin hora</button><button id="cardMetaTimeSave" class="cardMetaPrimary" type="button">Guardar hora</button></div>
+    </div>
+    <div id="cardMetaStatus" class="cardMetaPanel hidden">
+      <div class="cardMetaHint">El estado de la propuesta es independiente de que el evento se haya realizado.</div>
+      <div id="cardMetaStatusOptions" class="cardMetaStatusOptions"></div>
+    </div>
+  </div>
+</div>
+
 <div id="categoryOverlay" class="overlay" aria-hidden="true">
   <div class="sheet">
     <div class="sheetHandle"></div>
@@ -5107,12 +5175,158 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
     return taskMultiDay(t)&&start.getMonth()===end.getMonth()&&start.getFullYear()===end.getFullYear()
       ?start.getDate()+"–"+fmt(end):taskMultiDay(t)?fmt(start)+" – "+fmt(end):fmt(start);
   }
+  let cardMetaContext=null,cardMetaCancelArmed="";
+  function hideMetadataKeyboard(){
+    try{document.activeElement?.blur?.()}catch(_){}
+    try{window.NottasNative?.hideKeyboard?.()}catch(_){}
+  }
+  function closeCardMeta(){
+    if(!$("cardMetaOverlay").classList.contains("show"))return;
+    closeOverlay("cardMetaOverlay");
+    cardMetaContext=null;cardMetaCancelArmed="";
+  }
+  function cardMetaTask(){
+    if(!cardMetaContext||cardMetaContext.source==="editor")return null;
+    return state.tasks.find(t=>t.id===cardMetaContext.taskId&&!t.deletedAt&&t.workspaceId===cardMetaContext.workspaceId)||null;
+  }
+  function openCardMeta(task,part,source="card"){
+    if(!["date","time","category","status"].includes(part))return;
+    if(source!=="editor"&&(!task||!itemInActiveWorkspace(task)))return;
+    if(source==="editor"&&part!=="category")return;
+    hideMetadataKeyboard();
+    cardMetaContext={source,part,taskId:task?.id||"",workspaceId:task?.workspaceId||currentWorkspaceId()};
+    cardMetaCancelArmed="";
+    const labels={date:"Fecha",time:"Hora",category:"Categoría",status:"Estado del evento"};
+    $("cardMetaHeading").textContent=labels[part];
+    $("cardMetaCaption").textContent=source==="editor"?"Herramientas del evento":"Editar sin abrir la tarjeta";
+    for(const k of ["Date","Time","Category","Status"])$("cardMeta"+k).classList.toggle("hidden",k.toLowerCase()!==part);
+    if(part==="date")$("cardMetaDateInput").value=task?.dueDate||localDateISO();
+    if(part==="time")$("cardMetaTimeInput").value=task?.dueTime||"09:00";
+    if(part==="category")renderCardMetaCategories();
+    if(part==="status")renderCardMetaStatuses();
+    openOverlay("cardMetaOverlay");
+    // Focus a non-text control, avoiding Android IME reopening.
+    $("cardMetaClose").focus({preventScroll:true});
+  }
+  function renderCardMetaCategories(){
+    const ctx=cardMetaContext;if(!ctx)return;
+    const selected=ctx.source==="editor"?getCategoryPickerValue("taskCategory"):cardMetaTask()?.category||"inbox";
+    const items=activeCategories().filter(c=>c.id==="inbox"||categoryScope(c)!=="system").slice().sort((a,b)=>
+      Number(b.id!=="inbox"&&categoryScope(b)==="event")-Number(a.id!=="inbox"&&categoryScope(a)==="event"));
+    $("cardMetaCategoryGrid").innerHTML=items.map(cat=>
+      '<button type="button" class="cardMetaCategoryChoice" data-card-category="'+esc(cat.id)+'" aria-pressed="'+(cat.id===selected?'true':'false')+'">'+
+      categorySymbolHtml(cat)+'<span>'+esc(cat.name)+'</span></button>').join("");
+    $("cardMetaCategoryGrid").querySelectorAll("[data-card-category]").forEach(button=>button.addEventListener("click",()=>{
+      const id=button.dataset.cardCategory;
+      if(!activeCategories().some(c=>c.id===id))return;
+      if(ctx.source==="editor"){
+        setCategoryPicker("taskCategory",id);
+        $("taskInlineCategory").value=id==="inbox"?"":catName(id);
+        hideTaskInlineCategorySuggestions();
+        syncTaskEditorMeta();syncTaskInlineForm();
+        commitTaskHistory();
+        if(editingTaskId)persistOpenTask(false);
+      }else{
+        const t=cardMetaTask();if(!t)return;
+        if(t.category!==id){t.category=id;touch(t);scheduleSave();render()}
+      }
+      closeCardMeta();
+    }));
+    $("cardMetaNewCategory").classList.toggle("hidden",currentWorkspace()?.kind!=="assistant");
+  }
+  function commitCardMetaSchedule(value){
+    const ctx=cardMetaContext,t=cardMetaTask();
+    if(!ctx||!t||!["date","time"].includes(ctx.part))return;
+    const before=meetingScheduleSnapshot(t);
+    const oldDate=t.dueDate||"",oldTime=t.dueTime||"";
+    if(ctx.part==="date"){
+      if(value&&!/^\d{4}-\d{2}-\d{2}$/.test(value))return;
+      if(value===oldDate){closeCardMeta();return}
+      const span=oldDate&&t.endDate&&t.endDate>oldDate?taskDaysBetween(oldDate,t.endDate):0;
+      const priorCompleted=Array.isArray(t.completedDates)?t.completedDates.slice():[];
+      t.dueDate=value;
+      t.endDate=value&&span?addCalendarDays(value,span):"";
+      t.completedDates=value&&oldDate?priorCompleted.map(d=>
+        /^\d{4}-\d{2}-\d{2}$/.test(d)?addCalendarDays(value,taskDaysBetween(oldDate,d)):d):[];
+      if(!value){t.dueTime="";t.endTime="";t.reminders=[];t.reminder="none"}
+    }else{
+      if(value&&!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value))return;
+      if(value===oldTime){closeCardMeta();return}
+      const oldStart=timeToMinutes(oldTime),oldEnd=timeToMinutes(t.endTime||"");
+      const duration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:0;
+      t.dueTime=value;
+      const newStart=timeToMinutes(value);
+      t.endTime=value&&duration&&newStart+duration<1440?minutesToTime(newStart+duration):"";
+      if(value&&!t.dueDate)t.dueDate=localDateISO();
+    }
+    if(currentWorkspace()?.kind==="assistant"&&currentWorkspaceRole()==="assistant"&&(t.approvalStatus||"confirmed")==="confirmed"){
+      t.approvalStatus="proposed";t.requiresApproval=true;
+    }
+    if(t.meetingTracked&&t.meetingStatus==="deferred"&&t.dueDate&&["confirmed","scheduled"].includes(t.approvalStatus||"confirmed"))t.meetingStatus="scheduled";
+    if(t.meetingTracked){
+      t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
+        at:Date.now(),by:currentUserId(),action:"Reprogramada",from:before,
+        to:meetingScheduleSnapshot(t),note:t.meetingNote||""
+      }]);
+    }
+    touch(t);scheduleSave();closeCardMeta();render();showToast("Horario actualizado");
+  }
+  function renderCardMetaStatuses(){
+    const t=cardMetaTask(),box=$("cardMetaStatusOptions");
+    box.replaceChildren();if(!t)return;
+    const role=currentWorkspaceRole(),st=t.approvalStatus||"confirmed",mine=t.createdBy===currentUserId();
+    const options=[];
+    if(role==="owner"){
+      options.push(["Agendada","approval","confirmed"],["Solicitar nueva fecha","approval","changes_requested"],["Rechazada","approval","rejected"]);
+    }else if(role==="assistant"&&mine&&["scheduled","proposed"].includes(st)){
+      options.push(["Agendada","approval","scheduled"],["Propuesta","approval","proposed"]);
+    }else if(role==="assistant"&&mine&&["changes_requested","rejected"].includes(st)){
+      options.push(["Proponer de nuevo","approval","proposed"]);
+    }
+    if(meetingIsTracked(t)){
+      const meeting=t.meetingStatus||"scheduled";
+      if(meeting==="cancelled"||meeting==="realized")options.push(["Reabrir evento","meeting","scheduled"]);
+      else if(meeting==="deferred"){
+        if(t.dueDate)options.push(["Confirmar nuevo horario","meeting","scheduled"]);
+        options.push(["Cancelar evento","meeting","cancelled"]);
+      }else options.push(["Diferir evento","meeting","deferred"],["Cancelar evento","meeting","cancelled"]);
+    }
+    if(!options.length){box.textContent="El estado solo puede cambiarlo una persona autorizada.";return}
+    for(const [label,kind,value] of options){
+      const button=document.createElement("button");button.type="button";button.className="cardMetaStatusChoice";
+      button.textContent=label;
+      button.setAttribute("aria-pressed",String(kind==="approval"?st===value:t.meetingStatus===value));
+      button.addEventListener("click",()=>{
+        if(kind==="meeting"&&value==="cancelled"&&cardMetaCancelArmed!==t.id){
+          cardMetaCancelArmed=t.id;button.textContent="Confirmar cancelación";return;
+        }
+        if(kind==="approval"){
+          if(t.approvalStatus===value){closeCardMeta();return}
+          t.approvalStatus=value;t.requiresApproval=["proposed","changes_requested"].includes(value);
+        }else{
+          if(t.meetingStatus===value){closeCardMeta();return}
+          const before=meetingScheduleSnapshot(t);
+          if(value==="deferred"){
+            t.dueDate="";t.endDate="";t.dueTime="";t.endTime="";
+            t.reminders=[];t.reminder="none";t.done=false;t.completedDates=[];
+          }
+          if(value==="scheduled"){t.done=false;t.completedDates=[]}
+          t.meetingStatus=value;
+          t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
+            at:Date.now(),by:currentUserId(),action:meetingStatusLabel(value),from:before,to:meetingScheduleSnapshot(t),note:t.meetingNote||""
+          }]);
+        }
+        touch(t);scheduleSave();closeCardMeta();render();showToast("Estado actualizado");
+      });
+      box.appendChild(button);
+    }
+  }
   function taskMetaRowsHtml(t){
     const date=taskCompactDateLabel(t),time=t.dueTime?(t.dueTime+(t.endTime?"–"+t.endTime:"")):"";
-    const primary=[date?'<span class="taskMetaItem'+(isOverdue(t)?" overdueText":"")+'">'+taskMetaSvg("calendar")+esc(date)+'</span>':"",
-      time?'<span class="taskMetaItem">'+taskMetaSvg("clock")+esc(time)+'</span>':""].filter(Boolean).join("");
+    const primary=[date?'<button type="button" class="taskMetaAction taskMetaItem'+(isOverdue(t)?" overdueText":"")+'" data-card-meta="date" aria-label="Cambiar fecha: '+esc(date)+'">'+taskMetaSvg("calendar")+esc(date)+'</button>':"",
+      time?'<button type="button" class="taskMetaAction taskMetaItem" data-card-meta="time" aria-label="Cambiar hora: '+esc(time)+'">'+taskMetaSvg("clock")+esc(time)+'</button>':""].filter(Boolean).join("");
     const context=[
-      '<span class="taskMetaItem taskMetaSubtle">'+categorySymbolHtml(cat(t.category))+esc(catName(t.category))+'</span>',
+      '<button class="taskMetaAction taskMetaItem taskMetaSubtle" type="button" data-card-meta="category" aria-label="Cambiar categoría: '+esc(catName(t.category))+'">'+categorySymbolHtml(cat(t.category))+esc(catName(t.category))+'</button>',
       taskReminderOffsets(t).length?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("bell")+esc(reminderMinutesLabel(taskReminderOffsets(t)[0]))+'</span>':"",
       t.locationText?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("pin")+esc(t.locationText)+'</span>':"",
       t.priority!=="normal"?'<span class="taskMetaItem taskMetaSubtle '+esc(t.priority)+'">'+esc(priorityLabel(t.priority))+'</span>':"",
@@ -5171,7 +5385,12 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
     list.querySelectorAll("[data-task]").forEach(el=>{
       const t=state.tasks.find(x=>x.id===el.dataset.task);if(!t)return;
       const ck=el.querySelector(".check");if(ck)ck.addEventListener("change",e=>completeTask(t,e.target.checked));
-      const open=el.querySelector(".taskOpen");if(open&&!trash)open.addEventListener("click",()=>{expandedTaskDaysId=null;openTask(t)});
+      const open=el.querySelector(".taskOpen");if(open&&!trash)open.addEventListener("click",e=>{if(e.target.closest("[data-card-meta],button,input"))return;expandedTaskDaysId=null;openTask(t)});
+      if(!trash)el.querySelectorAll("[data-card-meta]").forEach(button=>button.addEventListener("click",e=>{
+        e.preventDefault();e.stopPropagation();
+        if(Date.now()<suppressClickUntil)return;
+        openCardMeta(t,button.dataset.cardMeta);
+      }));
       const expand=el.querySelector("[data-task-days-toggle]");
       if(expand)expand.addEventListener("click",e=>{
         e.preventDefault();e.stopPropagation();
@@ -6195,6 +6414,12 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
   }
   function selectTaskTool(key){
     if(!TASK_TOOL_DEFS.some(([name])=>name===key))return;
+    if(key==="category"){
+      taskActiveTool="";taskToolsExpanded=false;
+      syncTaskToolsLayout();
+      openCardMeta(null,"category","editor");
+      return;
+    }
     const focused=document.activeElement;
     if(focused?.closest?.("#taskToolSections")&&focused.blur)focused.blur();
     const wasOpen=!taskToolsExpanded&&taskActiveTool===key;
@@ -6547,7 +6772,8 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
     const tracking=meetingIsTracked(t)?meetingEffectiveStatus(t):"";
     const partial=taskMultiDay(t)&&taskCompletedDates(t).length>0&&!t.done;
     const visual=tracking==="scheduled"&&partial?"in_progress":tracking;
-    return assistantStatusChipHtml(st)+(visual&&visual!=="scheduled"?meetingStatusChipHtml(visual):"");
+    return '<button type="button" class="taskMetaStatusAction" data-card-meta="status" aria-label="Cambiar estado: '+esc(assistantStatusLabel(st))+'">'+assistantStatusChipHtml(st)+'</button>'+
+      (visual&&visual!=="scheduled"?meetingStatusChipHtml(visual):"");
   }
   function syncAssistantTaskStrip(){
     const strip=$("assistantTaskStrip"),status=$("assistantTaskStatus"),actions=$("assistantTaskActions"),hint=$("assistantTaskHint");
@@ -7508,6 +7734,16 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
   $("quickTaskText").addEventListener("input",syncQuickFromText);
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("quickMore").addEventListener("click",expandQuickCapture);
+  $("cardMetaClose").addEventListener("click",closeCardMeta);
+  $("cardMetaOverlay").addEventListener("click",e=>{if(e.target===$("cardMetaOverlay"))closeCardMeta()});
+  $("cardMetaDateSave").addEventListener("click",()=>commitCardMetaSchedule($("cardMetaDateInput").value));
+  $("cardMetaDateClear").addEventListener("click",()=>commitCardMetaSchedule(""));
+  $("cardMetaTimeSave").addEventListener("click",()=>commitCardMetaSchedule($("cardMetaTimeInput").value));
+  $("cardMetaTimeClear").addEventListener("click",()=>commitCardMetaSchedule(""));
+  $("cardMetaNewCategory").addEventListener("click",()=>{
+    const context=cardMetaContext,scope=currentWorkspace()?.kind==="assistant"?"event":"general";
+    closeCardMeta();openCategory(null,scope);
+  });
   $("backBtn").addEventListener("click",()=>{trash=false;render()});
   let emptyTrashConfirmUntil=0;
   $("emptyTrashBtn").addEventListener("click",()=>{
@@ -7598,7 +7834,11 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
   $("taskCustomReminderAdd").addEventListener("click",()=>{const minutes=Math.max(1,customReminderAmount)*Math.max(1,customReminderUnit);if(!editorTaskReminders.includes(minutes))setEditorTaskReminders([...editorTaskReminders,minutes]);$("taskCustomReminderPanel").classList.add("hidden");commitTaskHistory()});
   $("taskInlineRecurrence").addEventListener("change",()=>{commitTaskHistory();$("taskRecurrence").value=$("taskInlineRecurrence").value;commitTaskHistory()});
   $("taskInlinePriority").addEventListener("change",()=>{commitTaskHistory();$("taskPriority").value=$("taskInlinePriority").value;commitTaskHistory()});
-  $("taskInlineCategory").addEventListener("focus",renderTaskInlineCategorySuggestions);
+  $("taskInlineCategory").readOnly=true;
+  $("taskInlineCategory").setAttribute("aria-label","Seleccionar categoría");
+  $("taskInlineCategory").addEventListener("pointerdown",e=>{e.preventDefault();openCardMeta(null,"category","editor")});
+  $("taskInlineCategory").addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();openCardMeta(null,"category","editor")}});
+  $("taskInlineCategory").addEventListener("focus",()=>{});
   $("taskInlineCategory").addEventListener("input",renderTaskInlineCategorySuggestions);
   $("taskInlineCategory").addEventListener("change",commitTaskInlineCategory);
   $("taskInlineCategory").addEventListener("blur",()=>setTimeout(()=>{commitTaskInlineCategory();hideTaskInlineCategorySuggestions()},120));
@@ -7952,6 +8192,7 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
 
   window.NottasHandleBack=function(){
     if(closeNottasChoice())return true;
+    if($("cardMetaOverlay").classList.contains("show")){closeCardMeta();return true}
     const active=document.activeElement;
     if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       active.blur();
