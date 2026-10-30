@@ -1428,6 +1428,37 @@ html[data-theme="dark"] .sidebarFooter .sideItem{background:#27272b;border-color
 html[data-theme="dark"] .sidebarFooter .sideItem:active{background:#37373b}
 html[data-theme="dark"] .sidebarFooter #sidebarTrash .sideGlyph{background:#443035;color:#f0a0aa}
 html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#263b58;color:#99bdff}
+
+/* Unified filter / ordering sheet; compact controls with clear selected states. */
+#taskGroupToggle{margin-right:auto;border-radius:11px;flex-basis:38px;width:38px;height:35px}
+#taskGroupToggle.hasCustomSort{background:#e6f0ff;color:#1873da;border-color:#b6d0f3}
+#taskGroupToggle[aria-expanded="true"]{background:#1677ff;color:#fff;border-color:#1677ff}
+.taskSortOverlay{z-index:84}
+.taskSortSheet{width:min(580px,100%);max-height:min(86vh,calc(var(--vv-height,100vh) - 12px));display:flex;flex-direction:column;overflow:hidden;padding:12px 15px calc(16px + env(safe-area-inset-bottom))}
+.taskSortSheet .sheetHeader{margin-bottom:6px}
+.taskSortBody{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:0 0 12px}
+.taskSortSectionTitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#86868b;margin:17px 3px 9px}
+.taskSortChoiceGrid{display:flex;flex-wrap:wrap;gap:7px}
+.taskSortFilter{border:1px solid #dedee4;border-radius:100px;padding:9px 14px;min-height:38px;background:#fff;color:#35353a;font-size:13px;font-weight:600}
+.taskSortFilter.selected{background:#e5efff;border-color:#abc7f0;color:#176bca}
+.taskSortOrderList{border-radius:15px;overflow:hidden;background:#fff}
+.taskSortOrderList button{width:100%;display:flex;flex-direction:column;gap:3px;text-align:left;min-height:57px;padding:10px 15px 10px 42px;border:0;border-bottom:1px solid #f0f0f3;color:#29292e;background:transparent;position:relative}
+.taskSortOrderList button:last-child{border-bottom:0}
+.taskSortOrderList button span{font-size:14px;font-weight:620}
+.taskSortOrderList button small{font-size:11px;color:#8e8e93}
+.taskSortOrderList button.selected{background:#eef5ff}
+.taskSortOrderList button.selected::before{content:"✓";position:absolute;left:15px;top:17px;color:#1677ff;font-size:17px;font-weight:720}
+.taskSortGroup{margin-top:15px;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:14px;background:#fff;border-radius:14px}
+.taskSortGroup>span:first-child{display:flex;flex-direction:column;gap:4px}
+.taskSortGroup strong{font-size:14px;font-weight:610}
+.taskSortGroup small{font-size:11px;color:#8e8e93}
+.taskSortGroup.disabled{opacity:.44}
+.taskSortDone{flex:0 0 auto;width:100%;min-height:43px;background:#1677ff;border:0;border-radius:13px;color:#fff;font-size:15px;font-weight:680;margin-top:5px}
+html[data-theme="dark"] #taskGroupToggle.hasCustomSort{background:#163653;color:#9bcaff;border-color:#386b9c}
+html[data-theme="dark"] .taskSortSheet{background:#171719}
+html[data-theme="dark"] .taskSortFilter,html[data-theme="dark"] .taskSortOrderList,html[data-theme="dark"] .taskSortGroup{background:#29292d;color:#f1f1f5;border-color:#414147}
+html[data-theme="dark"] .taskSortFilter.selected,html[data-theme="dark"] .taskSortOrderList button.selected{background:#203d5e;border-color:#416fa8;color:#a9d2ff}
+html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d3d41}
 </style>
 </head>
 <body>
@@ -1478,8 +1509,8 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
 
   <div id="taskFilters" class="scroller">
     <button class="chip" data-filter="today" type="button">Hoy <span class="count" id="countToday"></span></button>
-    <button id="taskGroupToggle" type="button" aria-label="Agrupar por fecha y hora" aria-pressed="false" title="Agrupar por fecha y hora">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="5.5"></circle><path d="M9 4.7v3.6l2.4 1.6M17 6h5M17 12h5M14 18h8"></path></svg>
+    <button id="taskGroupToggle" type="button" aria-label="Filtrar y ordenar tareas" aria-expanded="false" aria-controls="taskSortOverlay" title="Filtrar y ordenar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
     </button>
     <button class="chip active" data-filter="pending" type="button">Pendientes <span class="count" id="countPending"></span></button>
     <button class="chip" data-filter="pinned" type="button">Destacadas <span class="count" id="countPinnedTasks"></span></button>
@@ -1553,6 +1584,38 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
       <button id="sidebarSettings" class="sideItem" type="button"><span class="sideItemCopy"><strong>Ajustes</strong><small>Preferencias y configuración</small></span></button>
     </div>
   </aside>
+</div>
+
+<div id="taskSortOverlay" class="overlay taskSortOverlay" aria-hidden="true">
+  <div class="sheet taskSortSheet" role="dialog" aria-modal="true" aria-labelledby="taskSortHeading">
+    <div class="sheetHandle" aria-hidden="true"></div>
+    <div class="sheetHeader"><h2 id="taskSortHeading">Filtrar y ordenar</h2>
+      <button id="taskSortClose" class="closeBtn" type="button" aria-label="Cerrar filtros"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
+    </div>
+    <div class="taskSortBody">
+      <div class="taskSortSectionTitle">Mostrar</div>
+      <div class="taskSortChoiceGrid" role="group" aria-label="Filtrar tareas">
+        <button type="button" class="taskSortFilter" data-sort-filter="pending">Pendientes</button>
+        <button type="button" class="taskSortFilter" data-sort-filter="all">Todas</button>
+        <button type="button" class="taskSortFilter" data-sort-filter="today">Hoy</button>
+        <button type="button" class="taskSortFilter" data-sort-filter="pinned">Destacadas</button>
+        <button type="button" class="taskSortFilter" data-sort-filter="done">Completadas</button>
+      </div>
+      <div class="taskSortSectionTitle">Ordenar por</div>
+      <div class="taskSortOrderList" role="group" aria-label="Ordenación de tareas">
+        <button type="button" data-task-sort="recent"><span>Fecha: más recientes primero</span><small>De la fecha más nueva a la más antigua</small></button>
+        <button type="button" data-task-sort="soon"><span>Fecha: más antiguas primero</span><small>Orden cronológico ascendente</small></button>
+        <button type="button" data-task-sort="updated"><span>Modificadas recientemente</span><small>Últimos cambios arriba</small></button>
+        <button type="button" data-task-sort="priority"><span>Prioridad</span><small>Alta, normal y baja</small></button>
+        <button type="button" data-task-sort="title"><span>Título: A–Z</span><small>Orden alfabético</small></button>
+      </div>
+      <label class="taskSortGroup" for="taskSortGroupCheck">
+        <span><strong>Agrupar por fecha y hora</strong><small>Disponible con orden cronológico</small></span>
+        <span class="iosSwitch"><input id="taskSortGroupCheck" type="checkbox"><span aria-hidden="true"></span></span>
+      </label>
+    </div>
+    <button id="taskSortDone" class="taskSortDone" type="button">Listo</button>
+  </div>
 </div>
 
 <div id="wakeControlOverlay" class="overlay" aria-hidden="true">
@@ -2487,7 +2550,7 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
-  let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
+  let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="recent",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
@@ -2874,7 +2937,7 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
     applyTaskFilterChoice(taskSelectedFilter);saveUI();render();
     showToast(taskPinnedFilters.has(choice)?"Filtro fijado":"Filtro desfijado");
   }
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskToolsExpanded=u.taskToolsExpanded===true;
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskSortMode=["recent","soon","updated","priority","title"].includes(u.taskSortMode)?u.taskSortMode:"recent";taskToolsExpanded=u.taskToolsExpanded===true;
     taskPinnedFilters=new Set((Array.isArray(u.taskPinnedFilters)?u.taskPinnedFilters:[]).filter(x=>["today","pending","all"].includes(x)));
     applyTaskFilterChoice(["today","pending","all","pinned","done"].includes(u.taskSelectedFilter)?u.taskSelectedFilter:(taskTodayOnly?"today":taskFilter));
     if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme;if(typeof u.calendarOnlyEvents==="boolean")calendarOnlyEvents=u.calendarOnlyEvents;
@@ -2886,7 +2949,7 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
       }
     }
     }catch(_){}applyTheme();applyHeaderPlacement()}
-  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,taskToolsExpanded,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme,calendarOnlyEvents,headerPlacement,assistantQuickPresets}))}catch(_){}}
+  function saveUI(){try{localStorage.setItem(UI_KEY,JSON.stringify({mode,taskFilter,taskTodayOnly,taskSelectedFilter,taskPinnedFilters:[...taskPinnedFilters],taskGroupedByTime,taskSortMode,taskToolsExpanded,noteFilter,activeCategory,activeTag,activeWorkspaceId,theme:uiTheme,calendarOnlyEvents,headerPlacement,assistantQuickPresets}))}catch(_){}}
   function parseState(text){if(!text)return null;try{const raw=JSON.parse(text);return raw&&typeof raw==="object"?normalize(raw):null}catch(_){return null}}
   function nativeBackup(){
     try{
@@ -4398,7 +4461,30 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
 
   function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskTodayOnly&&taskFilter==="pending"&&taskDayDone(t,localDateISO()))return false;if(taskFilter==="pending"&&(t.done||meetingOutcomeClosed(t)))return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,t.locationText,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
   function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
-  function sortTasks(a,b){if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);if(a.done!==b.done)return Number(a.done)-Number(b.done);if(a.dueDate&&b.dueDate&&a.dueDate!==b.dueDate)return a.dueDate.localeCompare(b.dueDate);if(a.dueDate&&!b.dueDate)return -1;if(!a.dueDate&&b.dueDate)return 1;const w={high:0,normal:1,low:2};if(w[a.priority]!==w[b.priority])return w[a.priority]-w[b.priority];return String(b.updatedAt).localeCompare(String(a.updatedAt))}
+  function taskSortTime(value){const n=Number(value);return Number.isFinite(n)&&n>0?n:(Date.parse(String(value||""))||0)}
+  function sortTasks(a,b){
+    // Keep user-pinned items prominent, then honor the explicit sort.
+    if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
+    const recent=taskSortMode==="recent",soon=taskSortMode==="soon";
+    if(recent||soon){
+      const ad=a.dueDate||"",bd=b.dueDate||"";
+      if(!!ad!==!!bd)return ad?-1:1;
+      if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
+      const at=a.dueTime||"",bt=b.dueTime||"";
+      if(at!==bt)return recent?bt.localeCompare(at):at.localeCompare(bt);
+    }else if(taskSortMode==="updated"){
+      const changed=taskSortTime(b.updatedAt)-taskSortTime(a.updatedAt);
+      if(changed)return changed;
+    }else if(taskSortMode==="priority"){
+      const rank={high:0,normal:1,low:2};
+      const diff=(rank[a.priority]??1)-(rank[b.priority]??1);if(diff)return diff;
+    }else if(taskSortMode==="title"){
+      const diff=String(a.text||"").localeCompare(String(b.text||""),"es",{sensitivity:"base"});
+      if(diff)return diff;
+    }
+    const fallback=taskSortTime(b.updatedAt)-taskSortTime(a.updatedAt);
+    return fallback||String(a.id||"").localeCompare(String(b.id||""));
+  }
 
   function updateCounts(){
     const live=state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt),notes=state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt);const today=localDateISO();
@@ -5284,15 +5370,14 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
   function taskGroupDate(t){return taskTodayOnly&&t.dueDate?localDateISO():(t.dueDate||"")}
   function taskGroupHour(t){const time=String(t.dueTime||"");return /^[0-2][0-9]:[0-5][0-9]$/.test(time)?time:""}
   function sortTasksByDateTime(a,b){
+    const recent=taskSortMode==="recent";
     const ad=taskGroupDate(a),bd=taskGroupDate(b);
-    if(ad!==bd)return ad?bd?ad.localeCompare(bd):-1:1;
+    if(!!ad!==!!bd)return ad?-1:1;
+    if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
     const at=taskGroupHour(a),bt=taskGroupHour(b);
-    if(at!==bt)return at?bt?at.localeCompare(bt):-1:1;
-    if(a.done!==b.done)return Number(a.done)-Number(b.done);
-    if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
-    const w={high:0,normal:1,low:2};
-    if(w[a.priority]!==w[b.priority])return (w[a.priority]??1)-(w[b.priority]??1);
-    return String(b.updatedAt).localeCompare(String(a.updatedAt));
+    if(!!at!==!!bt)return at?-1:1;
+    if(at!==bt)return recent?bt.localeCompare(at):at.localeCompare(bt);
+    return sortTasks(a,b);
   }
   function taskGroupDateLabel(date){
     if(!date)return "Sin fecha";
@@ -5513,8 +5598,8 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
       }).join("")+'</div>':"");
   }
   function renderTasks(){
-    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(taskGroupedByTime&&!trash?sortTasksByDateTime:sortTasks);
-    const groupEnabled=taskGroupedByTime&&!trash;
+    const groupEnabled=taskGroupedByTime&&!trash&&["recent","soon"].includes(taskSortMode);
+    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(groupEnabled?sortTasksByDateTime:sortTasks);
     const dayCounts=new Map(),hourCounts=new Map();
     if(groupEnabled)rows.forEach(t=>{
       const day=taskGroupDate(t),hour=taskGroupHour(t);
@@ -5618,7 +5703,7 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
     renderDirectorBell();
-    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-pressed",taskGroupedByTime?"true":"false");$("taskGroupToggle").title=taskGroupedByTime?"Desactivar agrupación":"Agrupar por fecha y hora";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-expanded",$("taskSortOverlay").classList.contains("show")?"true":"false");$("taskGroupToggle").classList.toggle("hasCustomSort",taskSortMode!=="recent"||taskGroupedByTime);$("taskGroupToggle").title="Filtrar y ordenar";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -7877,7 +7962,43 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
   $("calendarWeekWorkHoursToggle").addEventListener("change",()=>{state.preferences.calendarWeekWorkHoursOnly=$("calendarWeekWorkHoursToggle").checked;scheduleSave();renderCalendar()});
   $("calendarWeekWeekendToggle").addEventListener("change",()=>{if(calendarView==="month")state.preferences.calendarMonthShowWeekends=$("calendarWeekWeekendToggle").checked;else state.preferences.calendarWeekShowWeekends=$("calendarWeekWeekendToggle").checked;scheduleSave();renderCalendar()});
   $("calendarAgendaCompletedToggle").addEventListener("change",()=>{state.preferences.calendarAgendaShowCompleted=$("calendarAgendaCompletedToggle").checked;scheduleSave();renderCalendar()});
-  $("taskGroupToggle").addEventListener("click",()=>{taskGroupedByTime=!taskGroupedByTime;saveUI();render()});
+  function renderTaskSortPanel(){
+    document.querySelectorAll("[data-sort-filter]").forEach(b=>{
+      const active=b.dataset.sortFilter===taskSelectedFilter;
+      b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
+    });
+    document.querySelectorAll("[data-task-sort]").forEach(b=>{
+      const active=b.dataset.taskSort===taskSortMode;
+      b.classList.toggle("selected",active);b.setAttribute("aria-pressed",String(active));
+    });
+    const chronological=["recent","soon"].includes(taskSortMode);
+    $("taskSortGroupCheck").disabled=!chronological;
+    $("taskSortGroupCheck").checked=chronological&&taskGroupedByTime;
+    $("taskSortGroupCheck").closest(".taskSortGroup").classList.toggle("disabled",!chronological);
+  }
+  function openTaskSort(){
+    renderTaskSortPanel();openOverlay("taskSortOverlay");
+    $("taskGroupToggle").setAttribute("aria-expanded","true");
+  }
+  function closeTaskSort(){
+    closeOverlay("taskSortOverlay");$("taskGroupToggle").setAttribute("aria-expanded","false");
+  }
+  $("taskGroupToggle").addEventListener("click",openTaskSort);
+  $("taskSortDone").addEventListener("click",closeTaskSort);
+  $("taskSortClose").addEventListener("click",closeTaskSort);
+  $("taskSortOverlay").addEventListener("click",e=>{if(e.target===$("taskSortOverlay"))closeTaskSort()});
+  document.querySelectorAll("[data-sort-filter]").forEach(b=>b.addEventListener("click",()=>{
+    taskPinnedFilters.clear();chooseTaskFilter(b.dataset.sortFilter);renderTaskSortPanel();
+  }));
+  document.querySelectorAll("[data-task-sort]").forEach(b=>b.addEventListener("click",()=>{
+    taskSortMode=b.dataset.taskSort;
+    if(!["recent","soon"].includes(taskSortMode))taskGroupedByTime=false;
+    saveUI();render();renderTaskSortPanel();
+  }));
+  $("taskSortGroupCheck").addEventListener("change",e=>{
+    if(!["recent","soon"].includes(taskSortMode))return;
+    taskGroupedByTime=e.target.checked;saveUI();render();renderTaskSortPanel();
+  });
   document.querySelectorAll("[data-filter]").forEach(b=>{
     let fired=false,x=0,y=0,timer=null;
     const stop=()=>{clearTimeout(timer);timer=null};
@@ -8389,6 +8510,10 @@ html[data-theme="dark"] .sidebarFooter #sidebarSettings .sideGlyph{background:#2
     }
     if($("timeOverlay").classList.contains("show")){
       closeTimePicker();
+      return true;
+    }
+    if($("taskSortOverlay").classList.contains("show")){
+      closeTaskSort();
       return true;
     }
     if($("sidebarBackdrop").classList.contains("show")){
