@@ -5197,7 +5197,7 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
       if(!handle||handle.dataset.dragReady==="1")return;
       handle.dataset.dragReady="1";
       handle.setAttribute("role","button");
-      handle.setAttribute("aria-label","Desliza hacia arriba para expandir o hacia abajo para cerrar");
+      handle.setAttribute("aria-label",sheet.closest("#quickOverlay")?"Desliza hacia arriba para más opciones o hacia abajo para cerrar":"Desliza hacia arriba para expandir o hacia abajo para cerrar");
       let drag=null;
       handle.addEventListener("pointerdown",e=>{
         if(e.pointerType==="mouse"&&e.button!==0)return;
@@ -5222,6 +5222,14 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9
         const dy=endY-g.startY;
         const velocity=dy/Math.max(1,performance.now()-g.started);
         if(dy<-48||velocity<-.55){
+          // Quick Capture's upward gesture is identical to tapping "Más opciones".
+          // Its existing handler preserves draft text, date, time, reminders and category.
+          if(sheet.closest("#quickOverlay")&&$("quickOverlay").classList.contains("show")){
+            sheet.classList.remove("sheetDragging");
+            sheet.style.removeProperty("--sheet-drag-y");
+            $("quickMore").click();
+            return;
+          }
           const active=document.activeElement;
           if(active&&active!==document.body&&active.blur)active.blur();
           settleSheetPosition(sheet,true);
