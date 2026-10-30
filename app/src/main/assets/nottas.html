@@ -1459,6 +1459,98 @@ html[data-theme="dark"] .taskSortSheet{background:#171719}
 html[data-theme="dark"] .taskSortFilter,html[data-theme="dark"] .taskSortOrderList,html[data-theme="dark"] .taskSortGroup{background:#29292d;color:#f1f1f5;border-color:#414147}
 html[data-theme="dark"] .taskSortFilter.selected,html[data-theme="dark"] .taskSortOrderList button.selected{background:#203d5e;border-color:#416fa8;color:#a9d2ff}
 html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d3d41}
+
+/* X9 0.27.68: two independent toolbar actions and consistent Nottas option design. */
+#taskFilters{gap:6px;align-items:center}
+#taskGroupToggle,#taskFilterSortBtn{flex:0 0 36px;width:36px;height:36px;padding:0;border:1px solid #d5d5da;border-radius:11px;background:#fff;color:#636366;display:grid;place-items:center;margin-right:0;cursor:pointer}
+#taskGroupToggle svg,#taskFilterSortBtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+#taskGroupToggle[aria-pressed="true"]{background:#1677ff;border-color:#1677ff;color:#fff}
+#taskFilterSortBtn{margin-right:auto}
+#taskFilterSortBtn.hasCustomSort{background:#e6f0ff;color:#1873da;border-color:#b6d0f3}
+#taskFilterSortBtn[aria-expanded="true"]{background:#1677ff;border-color:#1677ff;color:#fff}
+@media(max-width:410px){
+  #taskFilters{gap:5px}
+  #taskFilters [data-filter]{padding:7px 9px;font-size:12px}
+  #taskGroupToggle,#taskFilterSortBtn{flex-basis:33px;width:33px;height:34px}
+  #taskGroupToggle svg,#taskFilterSortBtn svg{width:17px;height:17px}
+}
+html[data-theme="dark"] #taskGroupToggle,html[data-theme="dark"] #taskFilterSortBtn{background:#2c2c2e;border-color:#48484a;color:#d1d1d6}
+html[data-theme="dark"] #taskGroupToggle[aria-pressed="true"],html[data-theme="dark"] #taskFilterSortBtn[aria-expanded="true"]{background:#1677ff;border-color:#1677ff;color:#fff}
+html[data-theme="dark"] #taskFilterSortBtn.hasCustomSort:not([aria-expanded="true"]){background:#163653;color:#9bcaff;border-color:#386b9c}
+/* Status chooser: graphic identity with differentiated semantic accents. */
+#cardMetaOverlay .cardMetaSheet{max-height:min(86vh,calc(var(--vv-height,100vh) - 12px));padding:17px 15px calc(16px + env(safe-area-inset-bottom))}
+#cardMetaOverlay .cardMetaPanel{gap:9px;scrollbar-width:none}
+#cardMetaOverlay .cardMetaPanel::-webkit-scrollbar{display:none}
+.cardMetaStatusOptions{gap:8px}
+.cardMetaStatusSection{font-size:10px;font-weight:750;text-transform:uppercase;letter-spacing:.09em;color:#8e8e93;padding:7px 4px 1px}
+.cardMetaStatusChoice{--status-tint:#edf1f7;--status-ink:#5a6678;min-height:62px;padding:9px 12px 9px 10px;border:1px solid rgba(118,118,128,.08);border-radius:15px;gap:11px;background:#fff;justify-content:flex-start;transition:background .12s,border-color .12s}
+.cardMetaStatusChoice .stateGlyph{width:40px;height:40px;border-radius:12px;flex:0 0 40px;display:grid;place-items:center;background:var(--status-tint);color:var(--status-ink)}
+.cardMetaStatusChoice .stateGlyph svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.cardMetaStatusChoice .stateCopy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.cardMetaStatusChoice .stateCopy strong{font-size:14px;font-weight:670;line-height:1.25}
+.cardMetaStatusChoice .stateCopy small{font-size:11px;color:#8e8e93;line-height:1.3}
+.cardMetaStatusChoice .stateIndicator{width:19px;height:19px;border:1.6px solid #d1d1d6;border-radius:50%;flex:0 0 19px;display:grid;place-items:center;color:#fff}
+.cardMetaStatusChoice .stateIndicator svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.6;opacity:0}
+.cardMetaStatusChoice[aria-pressed="true"]{background:color-mix(in srgb,var(--status-tint) 46%,#fff);border-color:color-mix(in srgb,var(--status-ink) 40%,#fff)}
+.cardMetaStatusChoice[aria-pressed="true"] .stateIndicator{background:var(--status-ink);border-color:var(--status-ink)}
+.cardMetaStatusChoice[aria-pressed="true"] .stateIndicator svg{opacity:1}
+.cardMetaStatusChoice:active{transform:scale(.993)}
+.cardMetaStatusChoice.tone-scheduled{--status-tint:#e8f3ea;--status-ink:#38734a}
+.cardMetaStatusChoice.tone-realized{--status-tint:#e7f0ff;--status-ink:#366bb1}
+.cardMetaStatusChoice.tone-not_realized{--status-tint:#ededf1;--status-ink:#707078}
+.cardMetaStatusChoice.tone-deferred{--status-tint:#f1eafb;--status-ink:#7950a8}
+.cardMetaStatusChoice.tone-cancelled,.cardMetaStatusChoice.tone-rejected{--status-tint:#fbe9eb;--status-ink:#b75161}
+.cardMetaStatusChoice.tone-proposed{--status-tint:#e8f3fa;--status-ink:#4b7ea1}
+.cardMetaStatusChoice.tone-changes_requested{--status-tint:#fff2e1;--status-ink:#a46b25}
+html[data-theme="dark"] .cardMetaStatusChoice{background:#262629;border-color:#37373b}
+html[data-theme="dark"] .cardMetaStatusChoice .stateGlyph{background:color-mix(in srgb,var(--status-ink) 24%,#222226);color:color-mix(in srgb,var(--status-ink) 52%,#fff)}
+html[data-theme="dark"] .cardMetaStatusChoice[aria-pressed="true"]{background:color-mix(in srgb,var(--status-ink) 22%,#222226);border-color:var(--status-ink)}
+html[data-theme="dark"] .cardMetaStatusChoice .stateCopy small{color:#aaaab2}
+html[data-theme="dark"] .cardMetaStatusChoice .stateIndicator{border-color:#64646d}
+/* Filter/sort editor: visual labels, symbolic icons and compact option rows. */
+.taskSortSheet{background:#f5f5f7;max-height:min(88vh,calc(var(--vv-height,100vh) - 9px))}
+.taskSortIntro{display:flex;gap:11px;align-items:center;padding:12px;border-radius:15px;background:#e9eff9;border:1px solid #dbe5f6;margin:2px 0 12px}
+.taskSortIntroIcon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:0 0 42px;background:#d8e7fb;color:#2f73cb}
+.taskSortIntroIcon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.taskSortIntro>span:last-child{display:flex;flex-direction:column;gap:3px}
+.taskSortIntro strong{font-size:14px;font-weight:690}
+.taskSortIntro small{font-size:11px;color:#65758c;line-height:1.3}
+.taskSortChoiceGrid{gap:8px}
+.taskSortFilter{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:12px;min-height:40px;font-size:12px}
+.taskSortFilter svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.taskSortFilter.selected{background:#e8f1ff;border-color:#a6c4eb;color:#246cbf}
+.taskSortOrderList{display:flex;flex-direction:column;gap:7px;border-radius:0;background:transparent;overflow:visible}
+.taskSortOrderList button{border:1px solid rgba(118,118,128,.09);border-radius:14px;background:#fff;min-height:63px;padding:9px 11px;display:flex;flex-direction:row;align-items:center;gap:11px;text-align:left;color:inherit}
+.taskSortOrderList button:last-child{border-bottom:1px solid rgba(118,118,128,.09)}
+.taskSortOrderList button::before,.taskSortOrderList button.selected::before{display:none}
+.taskSortOrderList button .sortGlyph{width:39px;height:39px;flex:0 0 39px;background:#eeeef3;color:#71788a;border-radius:12px;display:grid;place-items:center}
+.taskSortOrderList button .sortGlyph svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round}
+.taskSortOrderList button .sortCopy{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.taskSortOrderList button .sortCopy span{font-size:13px;font-weight:650}
+.taskSortOrderList button .sortCopy small{font-size:11px;color:#8e8e93}
+.taskSortOrderList button .sortTick{flex:0 0 18px;width:18px;height:18px;border:1.6px solid #d1d1d6;border-radius:50%;display:grid;place-items:center;color:#fff}
+.taskSortOrderList button .sortTick svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.5;opacity:0}
+.taskSortOrderList button.selected{background:#eaf2ff;border-color:#b6cff2}
+.taskSortOrderList button.selected .sortGlyph{background:#d9e8ff;color:#367bd2}
+.taskSortOrderList button.selected .sortTick{background:#2675d3;border-color:#2675d3}
+.taskSortOrderList button.selected .sortTick svg{opacity:1}
+.taskSortGroup{border:1px solid rgba(118,118,128,.09);gap:12px}
+.taskSortGroup .sortGlyph{width:37px;height:37px;flex:0 0 37px;display:grid;place-items:center;background:#e5eefc;border-radius:11px;color:#3077cd}
+.taskSortGroup .sortGlyph svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8}
+.taskSortGroup>span:first-of-type{flex:1;min-width:0}
+.taskSortGroup>span:first-of-type strong{font-size:13px}
+.taskSortDone{min-height:46px}
+html[data-theme="dark"] .taskSortIntro{background:#223247;border-color:#2b415e}
+html[data-theme="dark"] .taskSortIntroIcon{background:#2e4970;color:#a5cfff}
+html[data-theme="dark"] .taskSortIntro small{color:#9aafcb}
+html[data-theme="dark"] .taskSortOrderList{background:transparent}
+html[data-theme="dark"] .taskSortOrderList button{background:#29292d;border:1px solid #3a3a41;color:#f2f2f5}
+html[data-theme="dark"] .taskSortOrderList button.selected{background:#203c5b;border-color:#527eae}
+html[data-theme="dark"] .taskSortOrderList button .sortGlyph{background:#35353c;color:#c5c9d5}
+html[data-theme="dark"] .taskSortOrderList button.selected .sortGlyph{background:#2b4d77;color:#b0d2ff}
+html[data-theme="dark"] .taskSortOrderList button .sortTick{border-color:#62626c}
+html[data-theme="dark"] .taskSortFilter.selected{background:#264567;color:#add3ff}
+html[data-theme="dark"] .taskSortGroup{border-color:#3a3a41}
 </style>
 </head>
 <body>
@@ -1509,7 +1601,10 @@ html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d
 
   <div id="taskFilters" class="scroller">
     <button class="chip" data-filter="today" type="button">Hoy <span class="count" id="countToday"></span></button>
-    <button id="taskGroupToggle" type="button" aria-label="Filtrar y ordenar tareas" aria-expanded="false" aria-controls="taskSortOverlay" title="Filtrar y ordenar">
+    <button id="taskGroupToggle" type="button" aria-label="Agrupar por fecha y hora" aria-pressed="false" title="Agrupar por fecha y hora">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="5.5"/><path d="M9 4.7v3.6l2.4 1.6M17 6h5M17 12h5M14 18h8"/></svg>
+    </button>
+    <button id="taskFilterSortBtn" type="button" aria-label="Filtrar y ordenar" aria-expanded="false" aria-controls="taskSortOverlay" title="Filtrar y ordenar">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
     </button>
     <button class="chip active" data-filter="pending" type="button">Pendientes <span class="count" id="countPending"></span></button>
@@ -1593,6 +1688,10 @@ html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d
       <button id="taskSortClose" class="closeBtn" type="button" aria-label="Cerrar filtros"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
     <div class="taskSortBody">
+      <div class="taskSortIntro">
+        <span class="taskSortIntroIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/></svg></span>
+        <span><strong>Tu lista, a tu manera</strong><small>Personaliza qué aparece y en qué orden.</small></span>
+      </div>
       <div class="taskSortSectionTitle">Mostrar</div>
       <div class="taskSortChoiceGrid" role="group" aria-label="Filtrar tareas">
         <button type="button" class="taskSortFilter" data-sort-filter="pending">Pendientes</button>
@@ -5703,7 +5802,7 @@ html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
     renderDirectorBell();
-    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-expanded",$("taskSortOverlay").classList.contains("show")?"true":"false");$("taskGroupToggle").classList.toggle("hasCustomSort",taskSortMode!=="recent"||taskGroupedByTime);$("taskGroupToggle").title="Filtrar y ordenar";$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
+    const ws=currentWorkspace();$("mainTitle").textContent=activeTag?"#"+activeTag:(ws?.kind==="assistant"?"Asistente":"Nottas");$("workspaceContextBtn").textContent=ws?.name||"Personal";$("workspaceContextBtn").classList.toggle("shared",ws?.kind==="assistant");$("assistantCallQuickBtn").classList.toggle("hidden",!(assistantWorkspaceIsOwner(ws)&&assistantConfigured()));$("assistantNoticeQuickBtn").classList.toggle("hidden",!(ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured()));$("mainHeader").classList.toggle("hidden",trash);$("backbar").classList.toggle("show",trash);$("tabs").classList.toggle("hidden",trash);$("fab").classList.toggle("hidden",trash);$("calendarBtn").classList.toggle("hidden",trash);$("taskFilters").classList.toggle("hidden",mode!=="tasks"||trash);$("taskGroupToggle").setAttribute("aria-pressed",String(taskGroupedByTime));$("taskGroupToggle").title=taskGroupedByTime?"Desactivar agrupación por fecha y hora":"Agrupar por fecha y hora";$("taskFilterSortBtn").setAttribute("aria-expanded",$("taskSortOverlay").classList.contains("show")?"true":"false");$("taskFilterSortBtn").classList.toggle("hasCustomSort",taskSortMode!=="recent"||taskPinnedFilters.size>0);$("noteFilters").classList.toggle("hidden",mode!=="notes"||trash);$("tabTasks").classList.toggle("active",mode==="tasks");$("tabNotes").classList.toggle("active",mode==="notes");document.querySelectorAll("[data-filter]").forEach(b=>{const active=b.dataset.filter===taskSelectedFilter||taskPinnedFilters.has(b.dataset.filter),pinned=taskPinnedFilters.has(b.dataset.filter);b.classList.toggle("active",active);b.classList.toggle("filterPinned",pinned);b.setAttribute("aria-pressed",active?"true":"false");b.setAttribute("aria-label",b.textContent.trim()+(pinned?" · Fijado":" · Mantén pulsado para fijar"))});document.querySelectorAll("[data-nfilter]").forEach(b=>b.classList.toggle("active",b.dataset.nfilter===noteFilter));renderCategories();renderSidebar();mode==="tasks"?renderTasks():renderNotes();renderSettingsSummary();
   }
 
   function resetSheetState(overlay){
@@ -7978,12 +8077,18 @@ html[data-theme="dark"] .taskSortOrderList button{color:#f1f1f5;border-color:#3d
   }
   function openTaskSort(){
     renderTaskSortPanel();openOverlay("taskSortOverlay");
-    $("taskGroupToggle").setAttribute("aria-expanded","true");
+    $("taskFilterSortBtn").setAttribute("aria-expanded","true");
   }
   function closeTaskSort(){
-    closeOverlay("taskSortOverlay");$("taskGroupToggle").setAttribute("aria-expanded","false");
+    closeOverlay("taskSortOverlay");$("taskFilterSortBtn").setAttribute("aria-expanded","false");
   }
-  $("taskGroupToggle").addEventListener("click",openTaskSort);
+  $("taskGroupToggle").addEventListener("click",()=>{
+    if(!["recent","soon"].includes(taskSortMode))taskSortMode="recent";
+    taskGroupedByTime=!taskGroupedByTime;
+    saveUI();render();
+    if($("taskSortOverlay").classList.contains("show"))renderTaskSortPanel();
+  });
+  $("taskFilterSortBtn").addEventListener("click",openTaskSort);
   $("taskSortDone").addEventListener("click",closeTaskSort);
   $("taskSortClose").addEventListener("click",closeTaskSort);
   $("taskSortOverlay").addEventListener("click",e=>{if(e.target===$("taskSortOverlay"))closeTaskSort()});
