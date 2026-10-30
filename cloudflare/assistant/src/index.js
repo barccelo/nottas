@@ -582,8 +582,8 @@ async function pushSync(request, auth, env) {
       if (currentPayload) {
         const oldHistory = Array.isArray(currentPayload.meetingHistory)
           ? currentPayload.meetingHistory.slice(-49) : [];
-        payload.meetingTracked = typeof currentPayload.meetingTracked === "boolean" ? currentPayload.meetingTracked : !!(currentPayload.dueDate && currentPayload.dueTime);
-        payload.meetingStatus = ["scheduled", "deferred", "realized", "cancelled"].includes(payload.meetingStatus)
+        payload.meetingTracked = true;
+        payload.meetingStatus = ["scheduled", "deferred", "realized", "not_realized", "cancelled"].includes(payload.meetingStatus)
           ? payload.meetingStatus : (currentPayload.meetingStatus || "scheduled");
         payload.meetingNote = String(payload.meetingNote || "").slice(0,500);
         const proposedHistory = Array.isArray(payload.meetingHistory) ? payload.meetingHistory : [];
@@ -612,7 +612,7 @@ async function pushSync(request, auth, env) {
           }];
         }
       } else {
-        payload.meetingStatus = ["scheduled", "deferred", "realized", "cancelled"].includes(payload.meetingStatus) ? payload.meetingStatus : "scheduled";
+        payload.meetingStatus = ["scheduled", "deferred", "realized", "not_realized", "cancelled"].includes(payload.meetingStatus) ? payload.meetingStatus : "scheduled";
         payload.meetingHistory = [];
       }
       payload.approvalStatus = requestedStatus;
