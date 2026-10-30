@@ -1340,7 +1340,8 @@ html[data-theme="dark"] .categoryIconOption[aria-pressed="true"]{border-color:#6
 .taskMetaAction:focus-visible,.taskMetaStatusAction:focus-visible{outline:2px solid #1677ff;outline-offset:1px}
 .taskMetaAction.taskMetaSubtle{color:#8e8e93;font-size:11px;font-weight:400}
 .taskMetaAction svg{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;color:#7a7a83}
-.taskMetaAction .categoryDisplayIcon{width:17px;height:17px;flex:0 0 17px}
+.taskMetaAction .categoryDisplayIcon{width:17px;height:17px;flex:0 0 17px;color:var(--category-color,#8e8e93)}
+.taskMetaAction .categoryDisplayIcon .nsIcon{color:inherit;stroke:currentColor}
 .taskMetaStatusAction .metaTag{margin:0}
 #cardMetaOverlay{z-index:85}
 #cardMetaOverlay .cardMetaSheet{width:min(540px,100%);max-height:min(73vh,calc(var(--vv-height,100vh) - 18px));display:flex;flex-direction:column;overflow:hidden;border-radius:22px 22px 0 0;padding:18px 15px calc(18px + env(safe-area-inset-bottom));background:#f5f5f7}
@@ -2980,6 +2981,12 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     clearTimeout(assistantSyncTimer);
     assistantSyncTimer=setTimeout(()=>{assistantSyncTimer=null;assistantSync(false,true)},Math.max(100,Number(delay)||600));
   }
+  function syncTimestamp(value){
+    const numeric=Number(value);
+    if(Number.isFinite(numeric)&&numeric>0)return numeric;
+    const parsed=Date.parse(String(value||""));
+    return Number.isFinite(parsed)?parsed:0;
+  }
   function assistantApplyRemoteChange(change){
     const type=change?.entityType==="note"?"note":change?.entityType==="task"?"task":change?.entityType==="category"?"category":"";
     if(!type||!change?.payload)return;
@@ -2993,7 +3000,16 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if(existing&&type==="category"&&existing.workspaceId!==payload.workspaceId)
       existing.workspaceId=payload.workspaceId;
     if(existing){
-      if(existing.syncState==="pending"&&Number(existing.updatedAt||0)>Number(payload.updatedAt||0))return;
+      // Never resurrect a locally deleted category from a stale full snapshot.
+      // On a genuine push conflict, retry the explicit deletion with a newer rev.
+      if(type==="category"&&existing.deletedAt&&existing.syncState==="pending"&&!payload.deletedAt){
+        if(change.forceConflict){
+          existing.rev=Math.max(Number(existing.rev)||1,Number(payload.rev)||1)+1;
+          existing.updatedAt=now();scheduleSave();scheduleAssistantSync(300);
+        }
+        return;
+      }
+      if(existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
       const purgedAt=existing.deletedAt&&existing.purgedAt?existing.purgedAt:null;
       Object.assign(existing,payload,{syncState:"synced"});
@@ -3005,7 +3021,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     (Array.isArray(rows)?rows:[]).forEach(a=>{
       const arr=a.entityType==="note"?state.notes:a.entityType==="category"?state.categories:state.tasks;
       const item=arr.find(x=>x.id===a.entityId&&String(x.workspaceId||personalWorkspaceId())===String(a.workspaceId||""));
-      if(item&&Number(item.updatedAt||0)<=Number(a.updatedAt||0)){if(a.payload&&typeof a.payload==="object")Object.assign(item,a.payload);item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
+      if(item&&syncTimestamp(item.updatedAt)<=syncTimestamp(a.updatedAt)){if(a.payload&&typeof a.payload==="object")Object.assign(item,a.payload);item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
     });
   }
   async function assistantSync(full=false,silent=false){
@@ -3033,7 +3049,7 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
       if(pending.length){
         const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
         assistantMarkAccepted(pushed.accepted);
-        (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload}));
+        (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload,forceConflict:true}));
       }
       const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!state.preferences.categoryWorkspaceRepair20261030)?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
@@ -4066,8 +4082,11 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   function getCategoryPickerValue(id){
     const picker=categoryPickerEl(id);if(!picker)return "inbox";
     const input=picker.querySelector(".categoryPickerInput");
-    const exact=categoryByName(input?.value);
-    return exact?.id||picker.dataset.value||"inbox";
+    const name=String(input?.value||"").trim().toLocaleLowerCase("es");
+    // Names need not be unique across General and Event: preserve the chosen ID.
+    const chosen=activeCategories().find(c=>c.id===picker.dataset.value);
+    if(chosen&&chosen.name.trim().toLocaleLowerCase("es")===name)return chosen.id;
+    return categoryByName(name)?.id||"inbox";
   }
   function renderCategorySuggestions(picker,forceAll=false){
     const input=picker.querySelector(".categoryPickerInput"),box=picker.querySelector(".categorySuggestions");
@@ -4083,7 +4102,9 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
   function syncCategoryPicker(picker,showSuggestions=true){
     if(!picker)return;
     const input=picker.querySelector(".categoryPickerInput"),add=picker.querySelector(".categoryAdd"),box=picker.querySelector(".categorySuggestions");
-    const name=String(input.value||"").trim(),exact=categoryByName(name);
+    const name=String(input.value||"").trim();
+    const previouslyChosen=activeCategories().find(c=>c.id===picker.dataset.value&&c.name.trim().toLocaleLowerCase("es")===name.toLocaleLowerCase("es"));
+    const exact=previouslyChosen||categoryByName(name);
     if(exact)picker.dataset.value=exact.id;
     else picker.dataset.value="";
     add.classList.toggle("hidden",!name||!!exact);
@@ -6579,7 +6600,8 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     if(!name){
       setCategoryPicker("taskCategory","inbox");
     }else{
-      const existing=categoryByName(name);
+      const chosen=activeCategories().find(c=>c.id===getCategoryPickerValue("taskCategory")&&c.name.trim().toLocaleLowerCase("es")===name.toLocaleLowerCase("es"));
+      const existing=chosen||categoryByName(name);
       if(existing){
         setCategoryPicker("taskCategory",existing.id);
       }else{
@@ -6802,8 +6824,11 @@ html[data-theme="dark"] .cardMetaInput{color-scheme:dark;background:#2c2c2e;colo
     const tracking=meetingIsTracked(t)?meetingEffectiveStatus(t):"";
     const partial=taskMultiDay(t)&&taskCompletedDates(t).length>0&&!t.done;
     const visual=tracking==="scheduled"&&partial?"in_progress":tracking;
-    return '<button type="button" class="taskMetaStatusAction" data-card-meta="status" aria-label="Cambiar estado: '+esc(assistantStatusLabel(st))+'">'+assistantStatusChipHtml(st)+'</button>'+
-      (visual&&visual!=="scheduled"?meetingStatusChipHtml(visual):"");
+    const pendingDecision=["proposed","changes_requested","rejected"].includes(st);
+    const activeMeetingState=visual&&visual!=="scheduled"&&!pendingDecision;
+    const label=activeMeetingState?meetingStatusLabel(visual):assistantStatusLabel(st);
+    return '<button type="button" class="taskMetaStatusAction" data-card-meta="status" aria-label="Cambiar estado: '+esc(label)+'">'+
+      (activeMeetingState?meetingStatusChipHtml(visual):assistantStatusChipHtml(st))+'</button>';
   }
   function syncAssistantTaskStrip(){
     const strip=$("assistantTaskStrip"),status=$("assistantTaskStatus"),actions=$("assistantTaskActions"),hint=$("assistantTaskHint");

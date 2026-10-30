@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.63 — 30 de octubre de 2026
+
+- Tarjetas de eventos: mostrar solo un estado principal; las reuniones realizadas, diferidas o canceladas no conservan a la vez la etiqueta «Agendada».
+- Corregida la pérdida de color en los iconos de categorías dentro de las tarjetas.
+- Corregida la selección de categorías con el mismo nombre en ámbitos diferentes mediante preservación del ID.
+- Corregidas las comparaciones de fechas ISO frente a marcas de tiempo numéricas en la sincronización.
+- Protegidas las eliminaciones locales pendientes de categorías frente a instantáneas remotas antiguas, y reintentos de borrado frente a conflictos remotos.
+- Pendiente de validar en dispositivos. La APK se publica mediante GitHub Actions.
+
 ## 0.27.62 — 30 de octubre de 2026
 
 - Se preservan el espacio (`workspaceId`) y la autoría de las categorías al normalizar los datos guardados.

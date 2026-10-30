@@ -9,7 +9,10 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 - [ ] **Por verificar · Categorías:** probar en Android la recuperación de categorías compartidas después de actualizar a v0.27.62 y realizar una sincronización.
 - [ ] **Por verificar · Persistencia:** cerrar y reabrir Nottas; comprobar que las categorías mantienen espacio, nombre, color, icono y asignaciones.
 - [ ] **Por verificar · Dos dispositivos:** comprobar visibilidad y sincronización de categorías en el director y el asistente.
-- [ ] **Por verificar · Publicación:** revisar que la APK firmada de v0.27.62 esté publicada correctamente en GitHub Releases.
+- [ ] **Por verificar · Publicación:** comprobar que v0.27.63 se publique como APK firmada en Releases y sea detectada por Obtainium.
+- [ ] **Por verificar · Estados:** al realizar, diferir o cancelar un evento, comprobar que solo aparece el estado pertinente en la tarjeta.
+- [ ] **Por verificar · Categorías visuales:** comprobar los iconos y colores en tarjetas, incluso con dos categorías llamadas «Reunión».
+- [ ] **Por verificar · Eliminación:** borrar una categoría general, sincronizar, reiniciar y comprobar que no reaparezca en ambos dispositivos.
 
 ## Mejoras de interfaz y experiencia registradas en conversaciones previas
 

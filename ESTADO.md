@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.62** (`versionCode 143`).
+- Versión del código Android: **0.27.63** (`versionCode 144`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,14 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios de v0.27.63: estados, iconos y borrado de categorías
+
+- La tarjeta muestra un único estado principal: «Realizada», «Diferida», «Cancelada» o «Pendiente de verificar» sustituyen «Agendada» cuando corresponde; las propuestas y solicitudes de cambios mantienen prioridad.
+- Los iconos de las categorías en las tarjetas recuperan su color propio.
+- La selección entre categorías generales y de eventos del mismo nombre conserva el ID escogido.
+- La sincronización interpreta correctamente fechas ISO y milisegundos. Las eliminaciones de categorías locales pendientes no se revierten al recibir copias antiguas, y pueden reintentarse ante conflictos remotos.
+- Cambios implementados en código; las interacciones y recuperación de datos requieren comprobación en Android.
 
 ## Incidencia más reciente: categorías invisibles
 
@@ -32,7 +40,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Instalar y abrir la versión 0.27.62 cuando aparezca su APK firmada.
+1. Actualizar a v0.27.63 desde Obtainium una vez publicada la APK firmada.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.
