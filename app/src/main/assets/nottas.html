@@ -1603,6 +1603,20 @@ body.trashMode .bottomDock .search{height:44px}
 html[data-theme="dark"] .searchGroupHeader{color:#c1c6d1}
 html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1}
 
+
+/* Denser timeline and horizontal Google-Calendar-like lanes for Day. */
+.calendarBody[data-calendar-body-view="day"]{touch-action:pan-x pan-y}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeViewport{overflow-x:auto!important;overflow-y:auto;touch-action:pan-x pan-y;overscroll-behavior-x:contain}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeStage{width:max(100%,var(--calendar-day-min-width,0px))!important;min-width:0!important}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeAxis{position:sticky;left:0;z-index:9}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock{border-radius:8px;padding:6px 6px 9px 8px}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlockTitle{font-size:11px;line-height:1.22}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlockMeta{font-size:9px}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock.calendarSideBySide{box-shadow:0 1px 3px rgba(0,0,0,.10)}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock.calendarSideBySide .calendarTimeBlockMeta{white-space:normal}
+.calendarTimeBlock.calendarEventPast,.calendarOverlapGroup.calendarEventPast,.calendarTaskRow.calendarEventPast,.calendarAllDayChip.calendarEventPast{filter:grayscale(1);opacity:.62}
+.calendarTimeBlock.calendarEventPast:active,.calendarTaskRow.calendarEventPast:active{opacity:.8}
+
 </style>
 </head>
 <body>
@@ -5323,9 +5337,10 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440,hourPx=calendarHourPxForRange(rangeStart,rangeEnd)){
     const height=Math.max(hourPx,(rangeEnd-rangeStart)/60*hourPx);
-    calendarOverlapGroups=new Map();
+    calendarOverlapGroups=new Map();calendarDayMaxLanes=1;
     const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date),rangeStart,rangeEnd,hourPx)).join("");
-    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
+    const dayMinWidth=calendarView==="day"?48+calendarDayMaxLanes*162:0;
+    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;--calendar-day-min-width:'+dayMinWidth+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
   }
   function scrollCalendarTimeViewport(){
     const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
@@ -8192,7 +8207,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
-  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarOverlapGroup,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
+  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarOverlapGroup,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;if(calendarView==="day"){const v=e.target.closest(".calendarTimeViewport");if(v&&v.scrollWidth>v.clientWidth)return;}calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
   $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25){calendarViewSwipe.horizontal=true;$("calendarBody").classList.add("calendarViewSwiping")}if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
   const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
   $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform=""}});
