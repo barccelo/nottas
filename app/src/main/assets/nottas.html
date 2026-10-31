@@ -2821,6 +2821,11 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
     document.body.classList.remove("keyboardOpen");
     return availableHeight;
   }
+  window.NottasKeyboardHiddenByBack=function(){
+    const active=document.activeElement;
+    if(active&&active!==document.body&&active.blur)active.blur();
+    nativeImeHeightCss=0;
+  };
   window.NottasSetImeOffset=function(px){
     const nativePx=Math.max(0,Number(px)||0);
     const dpr=Math.max(1,Number(window.devicePixelRatio)||1);
