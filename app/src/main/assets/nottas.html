@@ -1648,6 +1648,20 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
 .calendarEyeSource:disabled{opacity:.5}
 html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calendarEyeShowAll{background:rgba(10,132,255,.16);color:#80bdff}
 
+
+/* Short events stay tappable; long event titles use available height. */
+#calendarOverlay .calendarTimeBlock{min-height:38px}
+#calendarOverlay .calendarTimeBlock[data-calendar-compact="1"]{padding-top:5px;padding-bottom:4px}
+#calendarOverlay .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockMeta{display:none!important}
+#calendarOverlay .calendarTimeBlock .calendarTimeBlockTitle{
+  white-space:normal!important;display:-webkit-box!important;-webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--title-lines,2);line-clamp:var(--title-lines,2);
+  overflow:hidden;overflow-wrap:anywhere;text-overflow:ellipsis;
+}
+#calendarOverlay .calendarTimeBlock.calendarGoogleBlock .calendarTimeBlockTitle{padding-right:0}
+#calendarOverlay .calendarTimeBlock.calendarGoogleBlock{border-left-width:3px}
+#calendarOverlay .calendarWeekTimeViewport .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockTitle{line-height:1.12}
+
 </style>
 </head>
 <body>
@@ -5323,7 +5337,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       if(start===null||end===null||start>=rangeEnd||end<=rangeStart)return;
       const from=Math.max(rangeStart,start),to=Math.min(rangeEnd,end);
       if(to<=from)return;
-      const minVisualMinutes=24/hourPx*60;
+      const minVisualMinutes=38/hourPx*60;
       items.push({kind,value,start:from,end:to,visualEnd:Math.min(rangeEnd,Math.max(to,from+minVisualMinutes)),color,title});
     };
     tasks.forEach(t=>{
@@ -5348,8 +5362,10 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
     });
     if(calendarView==="day")calendarDayMaxLanes=Math.max(calendarDayMaxLanes,...groups.map(g=>g.laneCount||1));
     const drawEvent=(item,laneCount)=>{
-      const top=(item.start-rangeStart)/60*hourPx,height=Math.max(24,(item.end-item.start)/60*hourPx);
-      const lines=height>=54?3:height>=31?2:1,compact=height<44;
+      const top=(item.start-rangeStart)/60*hourPx,height=Math.max(38,(item.end-item.start)/60*hourPx);
+      const compact=height<49;
+      const linePx=calendarView==="week"?10:14;
+      const lines=Math.max(1,Math.min(22,Math.floor((height-(compact?8:28))/linePx)));
       const paired=laneCount>1&&calendarView==="day";
       const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
       if(item.kind==="local"){
@@ -5357,13 +5373,13 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
         return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+(calendarTaskPast(t,date)?" calendarEventPast":"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
       }
       const event=item.value;
-      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+(calendarGooglePast(event)?" calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
+      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+(calendarGooglePast(event)?" calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
     };
     const drawGroup=(group,index)=>{
       const key=date+"-"+index,week=calendarView==="week",past=group.items.every(item=>item.kind==="local"?calendarTaskPast(item.value,date):calendarGooglePast(item.value));
       calendarOverlapGroups.set(key,{date,items:group.items,start:group.items[0].start});
       const start=Math.min(...group.items.map(item=>item.start)),end=Math.max(...group.items.map(item=>item.end));
-      const top=(start-rangeStart)/60*hourPx,height=Math.max(24,(end-start)/60*hourPx);
+      const top=(start-rangeStart)/60*hourPx,height=Math.max(38,(end-start)/60*hourPx);
       const compact=height<84;
       const stripes='<span class="calendarOverlapStripes" aria-hidden="true">'+group.items.slice(0,6).map(item=>'<i style="background:'+esc(item.color)+'"></i>').join("")+'</span>';
       const count=group.items.length,label=count+" eventos";
@@ -5453,7 +5469,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
         }
         document.body.appendChild(preview);
         if(col&&targetMinute!==null)updatePreview(col,targetMinute);
-      },280);
+      },240);
     });
     block.addEventListener("pointermove",e=>{
       if(!active){
