@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 30 de octubre de 2026 · X9.
+Última revisión: 31 de octubre de 2026 · X9.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Por verificar · Título:** campo del título centrado verticalmente con el check circular tanto en una línea como con texto largo en pantallas estrechas.
+- [ ] **Por verificar · Checks circulares:** uniformidad de bordes, tamaños, color y marca en Inicio, Agenda, Día, subtareas, notas con casillas, selección múltiple y preferencias.
+- [ ] **Por verificar · Interruptores:** iosSwitch y miniSwitch siguen mostrando la forma de interruptor y no adoptan el aspecto de checkbox.
+- [ ] **Por verificar · Funcionalidad:** completar y desmarcar tareas y subtareas sigue guardando/sincronizando correctamente; casillas del calendario y listas mantienen su área táctil.
+
 
 - [ ] **Por verificar · Pantalla completa:** Día/Semana sin horario laboral deben ocupar toda la altura; con horario laboral, las filas deben ampliarse sin perder el scroll vertical.
 - [ ] **Por verificar · Editor:** descripción inmediatamente después de añadir subtareas y sección de marcadas, sin margen fantasma; el teclado y la barra inferior no deben cubrir texto.
