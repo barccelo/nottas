@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.73** (`versionCode 154`).
+- Versión del código Android: **0.27.74** (`versionCode 155`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,15 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.74 — densidad, espacio e iconografía
+
+- Día y Semana: la cuadrícula se estira hasta el borde inferior disponible; la escala por hora se calcula según espacio útil, con scroll cuando corresponde.
+- Papelera: icono Restaurar rediseñado con flecha de retorno y geometría de toque consistente.
+- Editor de tareas: se suprime el margen inferior fijo de 110 px en subtareas y el padding de 110 px en bloques para quitar el hueco entre lista y descripción.
+- Elementos marcados y selección de fechas: sustituidos símbolos genéricos por SVG vectoriales (check, chevron y calendario).
+- Menor espacio superior en calendario y editor, sin cambiar los insets de Android del sistema.
+- Pendiente verificación en Android (pantallas diferentes, teclado y horario laboral).
 
 ## Cambios v0.27.73 — editor, navegación y calendario
 
@@ -126,7 +135,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.73 tras verificar la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.74 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.
