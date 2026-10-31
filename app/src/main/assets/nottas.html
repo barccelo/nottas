@@ -1667,6 +1667,58 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
 .sheetHeader,.noteActionPanelHandle,.taskListToggleText{touch-action:none}
 .sheetHeader button,.sheetHeader input{touch-action:manipulation}
 
+
+/* v0.27.74 — fill the calendar sheet without scaling the entire application. */
+#calendarOverlay .calendarSheet{padding-top:5px!important;padding-bottom:8px!important}
+#calendarOverlay .calendarSheet .sheetHandle{height:17px;margin:-5px auto 1px}
+#calendarOverlay .calendarSheet .sheetHandle::after{top:6px}
+#calendarOverlay .calendarSheet .sheetHeader{margin-bottom:5px}
+#calendarOverlay .calendarModes{margin-bottom:7px}
+#calendarOverlay .calendarNav{margin-bottom:5px}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"],
+#calendarOverlay .calendarBody[data-calendar-body-view="week"]{
+  flex:1 1 auto;display:flex;flex-direction:column;
+  min-height:0;overflow:hidden;padding-bottom:0!important;
+}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarSelectedTitle{flex:0 0 auto;margin:4px 4px 6px}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarAllDay{flex:0 0 auto}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarTimeViewport,
+#calendarOverlay .calendarBody[data-calendar-body-view="week"] .calendarWeekTimeViewport,
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarTimeViewport.workHoursOnly,
+#calendarOverlay .calendarBody[data-calendar-body-view="week"] .calendarWeekTimeViewport.workHoursOnly{
+  flex:1 1 auto!important;height:auto!important;max-height:none!important;min-height:0!important;
+  overflow-y:auto!important;overscroll-behavior-y:contain;
+  box-sizing:border-box;margin-bottom:0;
+}
+/* The timeline itself can grow beyond the viewport for a full day. */
+#calendarOverlay .calendarTimeStage{flex:none}
+#editorOverlay.taskEditorMode .editorSheet,
+#editorOverlay.noteEditorMode .editorSheet{padding-top:10px!important}
+/* In task mode the generic note editor padding and legacy checklist margin
+   must not create a 220px void between subtasks and the description. */
+#editorOverlay.taskEditorMode #taskBlocksEditor{padding-bottom:0!important}
+#editorOverlay.taskEditorMode .taskSubtasksBox{margin-bottom:8px!important}
+#editorOverlay.taskEditorMode .taskContentArea{margin-top:4px!important;margin-bottom:8px!important}
+#editorOverlay.taskEditorMode .taskCheckedSection{margin-top:7px;margin-bottom:3px}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle{gap:10px;min-height:38px;padding:4px 2px;border-radius:9px}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle:active{background:rgba(118,118,128,.09)}
+#editorOverlay.taskEditorMode .taskCheckedIcon,
+#editorOverlay.taskEditorMode .taskCheckedChevron{display:grid;place-items:center;flex:0 0 20px;width:20px;height:22px;color:#8e8e93}
+#editorOverlay.taskEditorMode .taskCheckedIcon svg,
+#editorOverlay.taskEditorMode .taskCheckedChevron svg{height:19px;width:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode .taskCheckedChevron{margin-left:auto;transition:transform .15s}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle[aria-expanded="false"] .taskCheckedChevron{transform:rotate(-90deg)}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle[aria-expanded="true"] .taskCheckedChevron{transform:none}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"]{position:relative;padding:7px 6px 5px;border-radius:11px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] .taskScheduleCalendarIcon{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:#8e8e93}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] strong{display:inline;font-size:14px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] .taskInlineScheduleLabel{margin-bottom:5px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"]:not(:disabled):active{background:rgba(22,119,255,.10)}
+.miniBtn.restore{width:40px;height:40px;flex-basis:40px;background:rgba(22,119,255,.07);border-radius:12px}
+.miniBtn.restore svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.miniBtn.restore:active{background:rgba(22,119,255,.17)}
+html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
+
 </style>
 </head>
 <body>
@@ -5327,7 +5379,15 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
     return {start:Math.max(0,start),end:Math.min(1440,end)};
   }
   function calendarHourPxForRange(rangeStart=0,rangeEnd=1440){
-    return CAL_HOUR_PX;
+    const hours=Math.max(.25,(rangeEnd-rangeStart)/60);
+    const body=$("calendarBody");
+    const sheet=$("calendarOverlay")?.querySelector(".calendarSheet");
+    const contentHeight=body?.clientHeight||Math.max(450,(sheet?.clientHeight||window.innerHeight)-215);
+    // Allow the time rows to use free vertical space. Full-day views remain
+    // vertically scrollable; short work-hour windows can expand their rows.
+    const reserved=calendarView==="week"?76:42;
+    const available=Math.max(320,contentHeight-reserved);
+    return Math.max(54,Math.min(112,Math.floor(available/hours)));
   }
   function calendarTimeAxisHtml(rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     let html='<div class="calendarTimeAxis">';
