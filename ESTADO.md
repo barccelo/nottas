@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.71** (`versionCode 152`).
+- Versión del código Android: **0.27.72** (`versionCode 153`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,14 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.72 — búsqueda y calendario
+
+- Papelera: cuadro de búsqueda bajo su cabecera y filtrado funcional en notas y tareas eliminadas.
+- Búsquedas en el espacio activo: coincidencias de filtro primero, después coincidencias de otros filtros, sin alterar la selección actual.
+- Calendario: escala de 40 px/h sin estiramiento por horas laborales; eventos finalizados aparecen grisados, pero no quedan marcados como realizados.
+- Día: carriles individuales para todos los solapamientos, con scroll horizontal; Semana mantiene indicadores de colores con lista desplegable.
+- El código superó revisión sintáctica y pruebas lógicas; falta validar la experiencia visual en Android.
 
 ## Cambios v0.27.71 — distribución conjunta de eventos simultáneos
 
@@ -108,7 +116,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.71 tras verificar la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.72 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.
