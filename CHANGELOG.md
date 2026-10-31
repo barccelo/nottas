@@ -2,6 +2,15 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.72 — 30 de octubre de 2026
+
+- **Papelera:** la búsqueda filtra por texto entre tareas y notas eliminadas, y el campo aparece inmediatamente después del encabezado, sin desalineaciones con las acciones inferiores.
+- **Búsqueda en Tareas y Notas:** muestra primero coincidencias del filtro activo y después «Otras coincidencias», incluidas completadas o pertenecientes a otra categoría/fecha; mantiene intacto el filtro elegido y limita resultados al espacio actual.
+- **Calendario más compacto:** escala temporal de 40 px por hora en Día y Semana, sin ampliar artificialmente las horas laborales.
+- **Eventos anteriores:** color gris y opacidad atenuada para eventos que terminaron, también en listas y puntos del mes; su estado de realizado/no realizado no cambia.
+- **Vista Día:** cada evento simultáneo ocupa un carril propio (sin ocultar el tercero tras un indicador); se habilita desplazamiento horizontal cuando falta espacio. Semana conserva los grupos cromáticos compactos.
+- Validación de sintaxis completa del JavaScript y pruebas lógicas de búsquedas, solapamientos y fuentes ocultas; pendiente prueba visual/táctil en Android y verificación de la APK firmada.
+
 ## 0.27.71 — 30 de octubre de 2026
 
 - Unificación del cálculo de colisiones entre eventos de Nottas y Google Calendar en las vistas Día y Semana; se elimina la prioridad visual involuntaria de Google Calendar.

@@ -1591,6 +1591,32 @@ html[data-theme="dark"] .calendarOverlapPreview{background:#343f4f;color:#f5f5f7
 html[data-theme="dark"] .calendarOverlapPreview small,html[data-theme="dark"] .calendarOverlapGroup.day .calendarOverlapSummary{color:#c9d1dd}
 html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1e}
 
+
+/* Search and trash: visible search field and primary/secondary results. */
+body.trashMode .bottomDock{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%;max-width:none;margin:0 0 15px;transform:none!important;z-index:5;display:block}
+body.trashMode .bottomDock .fabStack{display:none!important}
+body.trashMode .bottomDock .searchWrap{width:100%}
+body.trashMode .bottomDock .search{height:44px}
+.searchGroupHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:11px 3px 1px;padding:8px 7px 5px;color:#626b7a;font-size:11px;font-weight:750;letter-spacing:.025em}
+.searchGroupHeader span{font-size:10px;font-weight:650;border-radius:999px;background:#e5e8f0;padding:3px 7px;color:#56637a}
+.searchGroupEmpty{font-size:12px;padding:13px 9px 4px;color:#8e8e93}
+html[data-theme="dark"] .searchGroupHeader{color:#c1c6d1}
+html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1}
+
+
+/* Denser timeline and horizontal Google-Calendar-like lanes for Day. */
+.calendarBody[data-calendar-body-view="day"]{touch-action:pan-x pan-y}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeViewport{overflow-x:auto!important;overflow-y:auto;touch-action:pan-x pan-y;overscroll-behavior-x:contain}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeStage{width:max(100%,var(--calendar-day-min-width,0px))!important;min-width:0!important}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeAxis{position:sticky;left:0;z-index:9}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock{border-radius:8px;padding:6px 6px 9px 8px;touch-action:pan-x}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlockTitle{font-size:11px;line-height:1.22}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlockMeta{font-size:9px}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock.calendarSideBySide{box-shadow:0 1px 3px rgba(0,0,0,.10)}
+.calendarBody[data-calendar-body-view="day"] .calendarTimeBlock.calendarSideBySide .calendarTimeBlockMeta{white-space:normal}
+.calendarTimeBlock.calendarEventPast,.calendarOverlapGroup.calendarEventPast,.calendarTaskRow.calendarEventPast,.calendarAllDayChip.calendarEventPast{filter:grayscale(1);opacity:.62}
+.calendarTimeBlock.calendarEventPast:active,.calendarTaskRow.calendarEventPast:active{opacity:.8}
+
 </style>
 </head>
 <body>
@@ -4454,6 +4480,9 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
   }
   function hapticTick(){try{if(window.NottasNative&&NottasNative.hapticTick)NottasNative.hapticTick()}catch(_){}}
   function matchesText(...parts){if(!query)return true;return parts.join(" ").toLowerCase().includes(query)}
+  function taskSearchMatches(t){return matchesText(t.text,t.body,t.locationText,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
+  function noteSearchMatches(n){return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
+  function searchGroupHeading(label,count){return '<div class="searchGroupHeader"><strong>'+esc(label)+'</strong><span>'+count+'</span></div>'}
   function taskRangeEnd(t){return t?.dueDate&&String(t.endDate||"")>t.dueDate?t.endDate:(t?.dueDate||"")}
   function taskOccursOn(t,date){return !!t?.dueDate&&t.dueDate<=date&&date<=taskRangeEnd(t)}
   function taskDaysBetween(a,b){const x=Date.parse(a+"T12:00:00Z"),y=Date.parse(b+"T12:00:00Z");return Number.isFinite(x)&&Number.isFinite(y)?Math.round((y-x)/86400000):0}
@@ -4598,8 +4627,8 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
     touch(t);scheduleSave();render();
   }
 
-  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt;if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskTodayOnly&&taskFilter==="pending"&&taskDayDone(t,localDateISO()))return false;if(taskFilter==="pending"&&(t.done||meetingOutcomeClosed(t)))return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return matchesText(t.text,t.body,t.locationText,catName(t.category),tagsText(t.tags),t.dueDate,t.endDate,t.priority,recurrenceLabel(t.recurrence),taskItemsText(t.items||[]))}
-  function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt;if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return matchesText(n.title,n.body,catName(n.category),tagsText(n.tags))}
+  function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt&&taskSearchMatches(t);if(t.deletedAt)return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskTodayOnly&&taskFilter==="pending"&&taskDayDone(t,localDateISO()))return false;if(taskFilter==="pending"&&(t.done||meetingOutcomeClosed(t)))return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return taskSearchMatches(t)}
+  function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt&&noteSearchMatches(n);if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return noteSearchMatches(n)}
   function taskSortTime(value){const n=Number(value);return Number.isFinite(n)&&n>0?n:(Date.parse(String(value||""))||0)}
   function sortTasks(a,b){
     // Keep user-pinned items prominent, then honor the explicit sort.
@@ -4742,7 +4771,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
   }
   function calendarGoogleRows(events){
     if(!events.length)return "";
-    return '<div class="calendarAgenda">'+events.map(g=>'<div class="calendarTaskRow calendarGoogleRow" role="button" tabindex="0" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'"><span class="calendarGoogleMarker" aria-hidden="true">•</span><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(g.title)+'</span><span class="calendarTaskMeta"><span>'+esc(calendarGoogleTimeLabel(g))+'</span><span><i class="sideDot" style="display:inline-block;background:'+calendarGoogleColor(g)+'"></i> '+esc(g.calendarName||"Google Calendar")+'</span><span>Google · solo lectura</span></span></span></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+events.map(g=>'<div class="calendarTaskRow calendarGoogleRow '+(calendarGooglePast(g)?"calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'"><span class="calendarGoogleMarker" aria-hidden="true">•</span><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(g.title)+'</span><span class="calendarTaskMeta"><span>'+esc(calendarGoogleTimeLabel(g))+'</span><span><i class="sideDot" style="display:inline-block;background:'+calendarGoogleColor(g)+'"></i> '+esc(g.calendarName||"Google Calendar")+'</span><span>Google · solo lectura</span></span></span></div>').join("")+'</div>';
   }
   function calendarCombinedRows(date,tasks){
     const google=calendarGoogleFor(date),own=tasks.length?calendarTaskRows(tasks,date):"";
@@ -4959,7 +4988,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
   }
   function calendarTaskRows(tasks,date=calendarDate){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span>'+categorySymbolHtml(cat(t.category))+' '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow '+(calendarTaskPast(t,date)?"calendarEventPast":"")+'" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span>'+categorySymbolHtml(cat(t.category))+' '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
   }
   function beginCalendarMove(id){
     const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
@@ -5196,16 +5225,29 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       const d=new Date(start);d.setDate(start.getDate()+i);if(!showWeekends&&(d.getDay()===0||d.getDay()===6))continue;
       const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
       const google=calendarGoogleFor(iso);
-      const dotColors=tasks.slice(0,google.length?2:3).map(t=>catColor(t.category)).concat(google.slice(0,2).map(calendarGoogleColor)).slice(0,4);
+      const dotColors=tasks.slice(0,google.length?2:3).map(t=>calendarTaskPast(t,iso)?"#a1a1a6":catColor(t.category)).concat(google.slice(0,2).map(g=>calendarGooglePast(g)?"#a1a1a6":calendarGoogleColor(g))).slice(0,4);
       const dots=dotColors.map(color=>'<i style="background:'+esc(color)+'"></i>').join("");
       html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
     }
     html+='</div><div class="calendarSelectedTitle">'+calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"})+'</div>'+calendarCombinedRows(calendarDate,calendarTasksFor(calendarDate));
     $("calendarBody").innerHTML=html;bindCalendarDateTargets();bindCalendarTasks();bindCalendarGoogleEvents();
   }
-  const CAL_HOUR_PX=48,CAL_SNAP_MINUTES=15;
+  const CAL_HOUR_PX=40,CAL_SNAP_MINUTES=15;
   function calendarTaskStartMinutes(t){const start=timeToMinutes(t?.dueTime);return start===null?null:start}
   function calendarTaskVisualEndMinutes(t){const start=calendarTaskStartMinutes(t);if(start===null)return null;const end=timeToMinutes(t?.endTime);return end!==null&&end>start?end:Math.min(1440,start+60)}
+  function calendarEventPast(date,endTime="",allDay=false){
+    const current=new Date(),today=localDateISO(current);
+    if(date<today)return true;
+    if(date>today||allDay)return false;
+    const end=endTime==="24:00"?1440:timeToMinutes(endTime);
+    return end!==null&&end<=current.getHours()*60+current.getMinutes();
+  }
+  function calendarTaskPast(t,date){
+    if(taskMultiDay(t)&&t.endDate>=date)return calendarEventPast(t.endDate,t.endTime,!t.dueTime);
+    const end=t.dueTime?(t.endTime||minutesToTime(calendarTaskVisualEndMinutes(t))):"";
+    return calendarEventPast(date,end,!t.dueTime);
+  }
+  function calendarGooglePast(g){return calendarEventPast(g.date,g.endTime,!!g.allDay)}
   function calendarTaskRangeLabel(t){if(!t?.dueTime)return "Sin hora";return t.dueTime+(t.endTime?"–"+t.endTime:"")}
   function calendarTimeBlockHtml(t,date=calendarDate){
     const start=calendarTaskStartMinutes(t),end=calendarTaskVisualEndMinutes(t);if(start===null||end===null)return "";
@@ -5219,13 +5261,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
     return {start:Math.max(0,start),end:Math.min(1440,end)};
   }
   function calendarHourPxForRange(rangeStart=0,rangeEnd=1440){
-    if(!state?.preferences?.calendarWeekWorkHoursOnly||!["day","week"].includes(calendarView))return CAL_HOUR_PX;
-    const hours=Math.max(1,(rangeEnd-rangeStart)/60),body=$("calendarBody");
-    const bodyHeight=Math.max(0,body?.clientHeight||0);
-    const reserved=calendarView==="week"?74:48;
-    const usable=Math.max(0,bodyHeight-reserved);
-    const fitted=usable>0?usable/hours:CAL_HOUR_PX;
-    return Math.max(CAL_HOUR_PX,Math.min(84,fitted));
+    return CAL_HOUR_PX;
   }
   function calendarTimeAxisHtml(rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     let html='<div class="calendarTimeAxis">';
@@ -5238,7 +5274,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
     return html+'</div>';
   }
   // All sources take part in one collision calculation. Neither source has a visual priority.
-  let calendarOverlapGroups=new Map();
+  let calendarOverlapGroups=new Map(),calendarDayMaxLanes=1;
   function calendarTimeColumnHtml(date,tasks,rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     const items=[];
     const add=(kind,value,start,end,color,title)=>{
@@ -5268,6 +5304,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       item.lane=lane;
       group.laneCount=Math.max(group.laneCount||0,group.laneEnds.length);
     });
+    if(calendarView==="day")calendarDayMaxLanes=Math.max(calendarDayMaxLanes,...groups.map(g=>g.laneCount||1));
     const drawEvent=(item,laneCount)=>{
       const top=(item.start-rangeStart)/60*hourPx,height=Math.max(24,(item.end-item.start)/60*hourPx);
       const lines=height>=54?3:height>=31?2:1,compact=height<44;
@@ -5275,34 +5312,35 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
       if(item.kind==="local"){
         const t=item.value;
-        return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
+        return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+(calendarTaskPast(t,date)?" calendarEventPast":"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
       }
       const event=item.value;
-      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
+      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+(calendarGooglePast(event)?" calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
     };
     const drawGroup=(group,index)=>{
-      const key=date+"-"+index,week=calendarView==="week";
+      const key=date+"-"+index,week=calendarView==="week",past=group.items.every(item=>item.kind==="local"?calendarTaskPast(item.value,date):calendarGooglePast(item.value));
       calendarOverlapGroups.set(key,{date,items:group.items,start:group.items[0].start});
       const start=Math.min(...group.items.map(item=>item.start)),end=Math.max(...group.items.map(item=>item.end));
       const top=(start-rangeStart)/60*hourPx,height=Math.max(24,(end-start)/60*hourPx);
       const compact=height<84;
       const stripes='<span class="calendarOverlapStripes" aria-hidden="true">'+group.items.slice(0,6).map(item=>'<i style="background:'+esc(item.color)+'"></i>').join("")+'</span>';
       const count=group.items.length,label=count+" eventos";
-      if(week)return '<button type="button" class="calendarOverlapGroup week" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+label+'</span></button>';
+      if(week)return '<button type="button" class="calendarOverlapGroup week '+(past?"calendarEventPast":"")+'" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+label+'</span></button>';
       const previews=group.items.slice(0,2).map(item=>'<span class="calendarOverlapPreview" style="--preview-color:'+esc(item.color)+'"><strong>'+esc(item.title)+'</strong><small>'+esc(item.kind==="local"?calendarTaskRangeLabel(item.value):calendarGoogleTimeLabel(item.value))+'</small></span>').join("");
       return '<button type="button" class="calendarOverlapGroup day '+(compact?"short":"")+'" data-calendar-overlap-id="'+esc(key)+'" data-calendar-overlap-date="'+esc(date)+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px" aria-label="'+esc(label+" simultáneos, mostrar lista")+'">'+stripes+'<span class="calendarOverlapSummary">'+(compact?label+" · Ver":"+"+(count-2)+" más · Ver todos")+'</span><span class="calendarOverlapPreviews">'+previews+'</span></button>';
     };
     const blocks=groups.map((group,index)=>{
-      if((calendarView==="week"&&group.items.length>1)||(calendarView==="day"&&group.laneCount>2))return drawGroup(group,index);
+      if(calendarView==="week"&&group.items.length>1)return drawGroup(group,index);
       return group.items.map(item=>drawEvent(item,group.laneCount)).join("");
     }).join("");
     return '<div class="calendarTimeColumn" data-calendar-time-date="'+esc(date)+'" data-calendar-start-minute="'+rangeStart+'" data-calendar-end-minute="'+rangeEnd+'" data-calendar-hour-px="'+hourPx+'">'+blocks+'</div>';
   }
   function calendarTimeGridHtml(dates,rangeStart=0,rangeEnd=1440,hourPx=calendarHourPxForRange(rangeStart,rangeEnd)){
     const height=Math.max(hourPx,(rangeEnd-rangeStart)/60*hourPx);
-    calendarOverlapGroups=new Map();
+    calendarOverlapGroups=new Map();calendarDayMaxLanes=1;
     const cols=dates.map(date=>calendarTimeColumnHtml(date,calendarTasksFor(date),rangeStart,rangeEnd,hourPx)).join("");
-    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
+    const dayMinWidth=calendarView==="day"?48+calendarDayMaxLanes*162:0;
+    return '<div class="calendarTimeStage" style="--calendar-cols:'+dates.length+';--calendar-grid-height:'+height+'px;--calendar-hour-px:'+hourPx+'px;--calendar-day-min-width:'+dayMinWidth+'px;height:'+height+'px">'+calendarTimeAxisHtml(rangeStart,rangeEnd,hourPx)+'<div class="calendarTimeColumns" style="--calendar-cols:'+dates.length+';--calendar-hour-px:'+hourPx+'px">'+cols+'</div></div>';
   }
   function scrollCalendarTimeViewport(){
     const viewport=$("calendarBody").querySelector(".calendarTimeViewport");if(!viewport)return;
@@ -5453,7 +5491,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
     html+='</div>';
     if(hasAllDay){
       html+='<div class="calendarWeekAllDayWrap"><div class="calendarWeekAllDayLabel">Sin<br>hora</div><div class="calendarWeekAllDay" style="--week-cols:'+dates.length+'">';
-      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(dates[i])+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
+      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip '+(calendarTaskPast(t,dates[i])?"calendarEventPast":"")+'" type="button" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(dates[i])+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay '+(calendarGooglePast(g)?"calendarEventPast":"")+'" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
       html+='</div></div>';
     }
     const hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
@@ -5823,8 +5861,11 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       }).join("")+'</div>':"");
   }
   function renderTasks(){
-    const groupEnabled=taskGroupedByTime&&!trash&&["recent","soon"].includes(taskSortMode);
-    const list=$("list"),rows=state.tasks.filter(visibleTask).slice().sort(groupEnabled?sortTasksByDateTime:sortTasks);
+    const searching=!!query&&!trash,groupEnabled=taskGroupedByTime&&!trash&&!searching&&["recent","soon"].includes(taskSortMode);
+    const list=$("list"),sorter=groupEnabled?sortTasksByDateTime:sortTasks;
+    const primary=state.tasks.filter(visibleTask).slice().sort(sorter);
+    const secondary=searching?state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&!visibleTask(t)&&taskSearchMatches(t)).sort(sorter):[];
+    const rows=primary.concat(secondary);
     const dayCounts=new Map(),hourCounts=new Map();
     if(groupEnabled)rows.forEach(t=>{
       const day=taskGroupDate(t),hour=taskGroupHour(t);
@@ -5833,10 +5874,10 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
     });
     const showDateHeaders=groupEnabled&&(dayCounts.size>1||dayCounts.has(""));
     let lastDay=null,lastHour=null;
-    if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay tareas eliminadas.":taskTodayOnly?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
-    list.innerHTML=rows.map(t=>{
+    if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${query?"Sin coincidencias":trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${query?"Prueba con otro término.":trash?"No hay tareas eliminadas.":taskTodayOnly?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
+    list.innerHTML=(searching&&!primary.length?'<div class="searchGroupEmpty">Sin coincidencias en el filtro actual</div>':"")+rows.map((t,index)=>{
       const d=dueLabel(t),p=priorityLabel(t.priority),dayDone=taskDayDone(t,taskRelevantDay(t));
-      let groupHtml="";
+      let groupHtml=searching?(index===0&&primary.length?searchGroupHeading("Filtro actual",primary.length):"")+(index===primary.length?searchGroupHeading("Otras coincidencias",secondary.length):""):"";
       if(groupEnabled){
         const day=taskGroupDate(t),hour=taskGroupHour(t);
         if(day!==lastDay){
@@ -5889,11 +5930,16 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
   }
 
   function renderNotes(){
-    const list=$("list"),rows=state.notes.filter(visibleNote).slice().sort((a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt)));
-    if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${trash?"No hay notas eliminadas.":"Crea una nota con el botón +."}</div></div>`;return}
-    list.innerHTML=rows.map(n=>{
+    const list=$("list"),searching=!!query&&!trash;
+    const sorter=(a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt));
+    const primary=state.notes.filter(visibleNote).slice().sort(sorter);
+    const secondary=searching?state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt&&!visibleNote(n)&&noteSearchMatches(n)).sort(sorter):[];
+    const rows=primary.concat(secondary);
+    if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${query?"Sin coincidencias":trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${query?"Prueba con otro término.":trash?"No hay notas eliminadas.":"Crea una nota con el botón +."}</div></div>`;return}
+    list.innerHTML=(searching&&!primary.length?'<div class="searchGroupEmpty">Sin coincidencias en el filtro actual</div>':"")+rows.map((n,index)=>{
+      const groupHtml=searching?(index===0&&primary.length?searchGroupHeading("Filtro actual",primary.length):"")+(index===primary.length?searchGroupHeading("Otras coincidencias",secondary.length):""):"";
       if(trash)return `<div class="item" data-note="${esc(n.id)}"><div class="content"><div class="noteTitle">${n.title?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"Sin título"}</div><div class="preview">${esc(n.body||"")}</div><div class="meta"><span class="metaTag"><span class="dot" style="background:${esc(catColor(n.category))}"></span>${esc(catName(n.category))}</span>${tagsMeta(n.tags)}</div></div><div class="rowActions"><button class="miniBtn restore restoreNote" type="button" aria-label="Restaurar">${iconRestore}</button></div></div>`;
-      return `<div class="swipeRow" data-swipe-note="${esc(n.id)}">
+      return groupHtml+`<div class="swipeRow" data-swipe-note="${esc(n.id)}">
         <button class="swipeAction swipeEdit" type="button" aria-label="Editar nota">${iconEdit}</button>
         <button class="swipeAction swipeDelete" type="button" aria-label="Eliminar nota">${iconTrash}</button>
         <div class="item swipeCard" data-note="${esc(n.id)}">
@@ -5924,6 +5970,10 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
       if(!tagStillExists)activeTag="";
     }
     updateCounts();
+    document.body.classList.toggle("trashMode",trash);
+    const bottomDock=$("bottomDock"),backbar=$("backbar"),mainApp=document.querySelector(".app");
+    if(trash){if(bottomDock.previousElementSibling!==backbar)backbar.after(bottomDock)}
+    else if(mainApp.nextElementSibling!==bottomDock)mainApp.after(bottomDock);
     const trashCount=state.tasks.filter(t=>itemInActiveWorkspace(t)&&t.deletedAt&&!t.purgedAt).length+state.notes.filter(n=>itemInActiveWorkspace(n)&&n.deletedAt&&!n.purgedAt).length;
     $("emptyTrashBtn").classList.toggle("hidden",!trash||trashCount===0);
     if(!trash){$("emptyTrashBtn").textContent="Vaciar";$("emptyTrashBtn").classList.remove("armed")}
@@ -8157,7 +8207,7 @@ html[data-theme="dark"] .calendarDayPanel.calendarOverlapPanel{background:#1c1c1
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
-  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarOverlapGroup,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
+  $("calendarBody").addEventListener("pointerdown",e=>{if(e.pointerType==="mouse"&&e.button!==0)return;if(e.target.closest(".calendarTimeBlock,.calendarOverlapGroup,.calendarResizeHandle,.calendarBlockCheck,input,select,textarea"))return;if(calendarView==="day"){const v=e.target.closest(".calendarTimeViewport");if(v&&v.scrollWidth>v.clientWidth)return;}calendarViewSwipe={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,horizontal:false}});
   $("calendarBody").addEventListener("pointermove",e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const dx=e.clientX-calendarViewSwipe.x,dy=e.clientY-calendarViewSwipe.y;calendarViewSwipe.lastX=e.clientX;if(!calendarViewSwipe.horizontal&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.25){calendarViewSwipe.horizontal=true;$("calendarBody").classList.add("calendarViewSwiping")}if(calendarViewSwipe.horizontal){e.preventDefault();$("calendarBody").style.transform="translateX("+Math.max(-44,Math.min(44,dx*.18))+"px)"}},{passive:false});
   const finishCalendarViewSwipe=e=>{if(!calendarViewSwipe||e.pointerId!==calendarViewSwipe.id)return;const g=calendarViewSwipe;calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform="";const dx=(Number.isFinite(e.clientX)?e.clientX:g.lastX)-g.x;if(g.horizontal&&Math.abs(dx)>58){suppressClickUntil=Date.now()+420;changeCalendarViewBySwipe(dx<0?1:-1)}};
   $("calendarBody").addEventListener("pointerup",finishCalendarViewSwipe);$("calendarBody").addEventListener("pointercancel",e=>{if(calendarViewSwipe&&e.pointerId===calendarViewSwipe.id){calendarViewSwipe=null;$("calendarBody").classList.remove("calendarViewSwiping");$("calendarBody").style.transform=""}});
