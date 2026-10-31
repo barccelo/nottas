@@ -1719,6 +1719,62 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
 .miniBtn.restore:active{background:rgba(22,119,255,.17)}
 html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
 
+
+/* v0.27.75 — One circular checkbox design across tasks, note checklists,
+   calendar/agenda, bulk selection, reminder settings and Google selections.
+   Switches are intentionally excluded: they are on/off controls, not checkmarks. */
+input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input){
+  -webkit-appearance:none!important;appearance:none!important;
+  box-sizing:border-box;width:22px;height:22px;
+  min-width:22px;min-height:22px;
+  border:1.6px solid #a8a8ad!important;border-radius:50%!important;
+  background:#fff!important;box-shadow:none!important;
+  position:relative;flex-shrink:0;
+  cursor:pointer;vertical-align:middle;
+  transition:background-color .12s,border-color .12s,transform .1s;
+}
+input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):checked{
+  background:#007aff!important;border-color:#007aff!important;
+}
+input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):checked::after{
+  content:"";position:absolute;display:block;
+  width:9px;height:5px;left:5px;top:6px;
+  border-left:2px solid #fff;border-bottom:2px solid #fff;
+  transform:rotate(-45deg);
+}
+input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):active{
+  transform:scale(.92);
+}
+input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):focus-visible{
+  outline:2px solid #007aff;outline-offset:3px;
+}
+html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):not(:checked){
+  background:#1c1c1e!important;border-color:#77777d!important;
+}
+html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSwitch input):checked{
+  background:#0a84ff!important;border-color:#0a84ff!important;
+}
+/* The top-row check matches the rest; its larger hit target stays intact. */
+#editorOverlay.taskEditorMode .taskDoneBtn.active{color:#007aff}
+#editorOverlay.taskEditorMode .taskDoneBtn svg{width:26px;height:26px;stroke-width:1.75}
+/* Align the visual center of the editable first line with the check circle. */
+#editorOverlay.taskEditorMode .taskTitleRow{
+  align-items:center;
+}
+#editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{
+  align-self:center;
+  min-height:36px;
+  padding:6px 0 2px;
+  margin:0;
+  box-sizing:border-box;
+}
+#editorOverlay.taskEditorMode .taskTitleRow .taskDoneBtn{
+  align-self:center;
+}
+@media(max-width:360px){
+  #editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{padding:6px 0 2px}
+}
+
 </style>
 </head>
 <body>
