@@ -1617,6 +1617,28 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
 .calendarTimeBlock.calendarEventPast,.calendarOverlapGroup.calendarEventPast,.calendarTaskRow.calendarEventPast,.calendarAllDayChip.calendarEventPast{filter:grayscale(1);opacity:.62}
 .calendarTimeBlock.calendarEventPast:active,.calendarTaskRow.calendarEventPast:active{opacity:.8}
 
+
+/* Inline task editor header: Back, check, title and star share one row. */
+#editorOverlay.taskEditorMode .sheetHeader{display:none!important}
+#editorOverlay.taskEditorMode #taskForm>.card{padding-top:0!important}
+#editorOverlay.taskEditorMode .taskTitleRow{
+  display:grid;grid-template-columns:34px 34px minmax(0,1fr) 38px;
+  align-items:start;column-gap:3px;min-height:44px;
+  padding:0;margin:0 0 4px;
+}
+#editorOverlay.taskEditorMode .taskTitleRow .noteBackBtn{width:34px;height:40px;display:grid;grid-column:1;grid-row:1}
+#editorOverlay.taskEditorMode .taskTitleRow .noteBackBtn svg{width:24px;height:24px}
+#editorOverlay.taskEditorMode .taskTitleRow .taskDoneBtn{width:34px;height:40px;grid-column:2;grid-row:1;margin:0}
+#editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{grid-column:3;grid-row:1;font-size:23px;line-height:1.25;padding:4px 0 5px;min-width:0}
+#editorOverlay.taskEditorMode .taskTitleRow .editorPinBtn{width:38px;height:40px;grid-column:4;grid-row:1;align-self:start;display:grid;place-items:center}
+#editorOverlay.taskEditorMode .taskTitleRow .editorPinBtn svg{width:21px;height:21px}
+#editorOverlay.taskEditorMode .taskDayTracker{margin-left:0}
+#editorOverlay.taskEditorMode .taskMetaChips{margin-left:0}
+@media(max-width:360px){
+  #editorOverlay.taskEditorMode .taskTitleRow{grid-template-columns:30px 30px minmax(0,1fr) 33px;gap:2px}
+  #editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{font-size:21px}
+}
+
 </style>
 </head>
 <body>
@@ -7451,7 +7473,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function openTask(t,selectedDate=null,options={}){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
-    $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
+    $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");arrangeEditorTop(true);hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
     editorMeetingTracked=isSharedWorkspace()||(t?!!t.meetingTracked:false);
@@ -7470,10 +7492,22 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     },80);
     else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   }
+  function arrangeEditorTop(taskMode){
+    const back=$("noteBackBtn"),pin=$("editorPinBtn"),header=$("editorOverlay").querySelector(".sheetHeader");
+    const actions=header?.querySelector(".sheetHeaderActions"),row=$("taskForm").querySelector(".taskTitleRow");
+    if(!header||!actions||!row||!back||!pin)return;
+    if(taskMode){
+      row.prepend(back);
+      row.append(pin);
+    }else{
+      header.prepend(back);
+      actions.prepend(pin);
+    }
+  }
   function openNote(n){
     closeTaskMeetingMenu();
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
-    $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
+    $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");arrangeEditorTop(false);hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
@@ -8813,7 +8847,9 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     if(closeNottasChoice())return true;
     if($("cardMetaOverlay").classList.contains("show")){closeCardMeta();return true}
     const active=document.activeElement;
-    if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
+    // Android already dismisses the IME on the first Back. Do not consume a second
+    // Back merely because the WebView's contenteditable retains focus.
+    if(nativeImeHeightCss>1&&active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       active.blur();
       return true;
     }
