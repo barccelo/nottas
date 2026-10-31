@@ -5375,7 +5375,8 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       const top=(item.start-rangeStart)/60*hourPx,height=Math.max(38,(item.end-item.start)/60*hourPx);
       const compact=height<49;
       const linePx=calendarView==="week"?10:14;
-      const lines=Math.max(1,Math.min(22,Math.floor((height-(compact?8:28))/linePx)));
+      const reserved=calendarView==="week"?(compact?7:12):(compact?8:28);
+      const lines=Math.max(1,Math.min(22,Math.floor((height-reserved)/linePx)));
       const paired=laneCount>1&&calendarView==="day";
       const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
       if(item.kind==="local"){
@@ -6095,14 +6096,19 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
         if(e.target!==sheet&&!e.target.closest(".sheetHandle,.sheetHeader"))return;
         if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".sheetHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
-        drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now(),expanded:sheet.classList.contains("sheetExpanded")};
-        sheet.classList.add("sheetDragging");
-        try{sheet.setPointerCapture(e.pointerId)}catch(_){}
+        drag={id:e.pointerId,startY:e.clientY,startX:e.clientX,lastY:e.clientY,active:false,started:performance.now(),expanded:sheet.classList.contains("sheetExpanded")};
+
       });
       sheet.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=e.clientY-drag.startY;
+        if(!drag.active){
+          if(Math.abs(e.clientX-drag.startX)>Math.abs(dy)*1.25){drag=null;return}
+          if(Math.abs(dy)<9)return;
+          drag.active=true;sheet.classList.add("sheetDragging");
+          try{sheet.setPointerCapture(e.pointerId)}catch(_){}
+        }
         const maxDown=Math.max(window.innerHeight||0,sheet.getBoundingClientRect().height+64);
         const visual=Math.max(-110,Math.min(maxDown,dy));
         sheet.style.setProperty("--sheet-drag-y",visual+"px");
@@ -6111,6 +6117,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
+        if(!g.active)return;
         try{sheet.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=endY-g.startY;
@@ -6163,20 +6170,27 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
         if(e.target!==panel&&!e.target.closest(".noteActionPanelHandle,.taskListToggleText,.taskListToggleTitle,.taskListToggleDesc"))return;
         if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".noteActionPanelHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
-        drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now()};
-        panel.classList.add("panelDragging");
-        try{panel.setPointerCapture(e.pointerId)}catch(_){}
+        drag={id:e.pointerId,startY:e.clientY,startX:e.clientX,lastY:e.clientY,active:false,started:performance.now()};
+
       });
       panel.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
-        const dy=Math.max(0,e.clientY-drag.startY);
+        const vertical=e.clientY-drag.startY;
+        if(!drag.active){
+          if(Math.abs(e.clientX-drag.startX)>Math.abs(vertical)*1.25){drag=null;return}
+          if(vertical<9)return;
+          drag.active=true;panel.classList.add("panelDragging");
+          try{panel.setPointerCapture(e.pointerId)}catch(_){}
+        }
+        const dy=Math.max(0,vertical);
         panel.style.setProperty("--panel-drag-y",dy+"px");
         if(dy>2)e.preventDefault();
       },{passive:false});
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
+        if(!g.active)return;
         try{panel.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=Math.max(0,endY-g.startY);
