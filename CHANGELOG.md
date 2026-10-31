@@ -2,6 +2,16 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.74 — 31 de octubre de 2026
+
+- Día y Semana aprovechan toda la altura disponible de la hoja, sin un espacio muerto bajo la cuadrícula; el desplazamiento vertical se conserva cuando las horas exceden el alto de la pantalla.
+- Escala horaria adaptable al alto disponible: se mantiene un mínimo legible en vista de 24 horas y crecen las filas cuando el intervalo laboral es corto; los eventos mantienen fecha y duración originales.
+- Icono de restauración de Papelera redibujado como flecha de retorno estilizada, con superficie de toque y estados coherentes.
+- Eliminados el margen inferior heredado de 110 px en subtareas y el padding de 110 px del editor de bloques de tareas; descripción y casillas quedan más próximas.
+- «Elementos marcados» usa un check circular y un chevron vectorial en lugar del símbolo genérico; iconos de calendario vectoriales en los campos de fecha de inicio y fin.
+- Reducidos la separación superior, alto del handle y márgenes del encabezado de Calendario, y el padding superior duplicado de los editores de tareas/notas.
+- Validación: sintaxis JS y escenarios de escala 24 h / 9 h; pendiente prueba visual en Android y comprobación de compilación/publicación APK.
+
 ## 0.27.73 — 30 de octubre de 2026
 
 - Cabecera del editor de tareas y eventos compactada en una sola fila real: Atrás, completar, título editable y estrella. Se recolocan los mismos controles, sin duplicados; las notas conservan su cabecera original.

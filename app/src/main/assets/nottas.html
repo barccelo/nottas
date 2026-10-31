@@ -1667,6 +1667,58 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
 .sheetHeader,.noteActionPanelHandle,.taskListToggleText{touch-action:none}
 .sheetHeader button,.sheetHeader input{touch-action:manipulation}
 
+
+/* v0.27.74 — fill the calendar sheet without scaling the entire application. */
+#calendarOverlay .calendarSheet{padding-top:5px!important;padding-bottom:8px!important}
+#calendarOverlay .calendarSheet .sheetHandle{height:17px;margin:-5px auto 1px}
+#calendarOverlay .calendarSheet .sheetHandle::after{top:6px}
+#calendarOverlay .calendarSheet .sheetHeader{margin-bottom:5px}
+#calendarOverlay .calendarModes{margin-bottom:7px}
+#calendarOverlay .calendarNav{margin-bottom:5px}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"],
+#calendarOverlay .calendarBody[data-calendar-body-view="week"]{
+  flex:1 1 auto;display:flex;flex-direction:column;
+  min-height:0;overflow:hidden;padding-bottom:0!important;
+}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarSelectedTitle{flex:0 0 auto;margin:4px 4px 6px}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarAllDay{flex:0 0 auto}
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarTimeViewport,
+#calendarOverlay .calendarBody[data-calendar-body-view="week"] .calendarWeekTimeViewport,
+#calendarOverlay .calendarBody[data-calendar-body-view="day"] .calendarTimeViewport.workHoursOnly,
+#calendarOverlay .calendarBody[data-calendar-body-view="week"] .calendarWeekTimeViewport.workHoursOnly{
+  flex:1 1 auto!important;height:auto!important;max-height:none!important;min-height:0!important;
+  overflow-y:auto!important;overscroll-behavior-y:contain;
+  box-sizing:border-box;margin-bottom:0;
+}
+/* The timeline itself can grow beyond the viewport for a full day. */
+#calendarOverlay .calendarTimeStage{flex:none}
+#editorOverlay.taskEditorMode .editorSheet,
+#editorOverlay.noteEditorMode .editorSheet{padding-top:10px!important}
+/* In task mode the generic note editor padding and legacy checklist margin
+   must not create a 220px void between subtasks and the description. */
+#editorOverlay.taskEditorMode #taskBlocksEditor{padding-bottom:0!important}
+#editorOverlay.taskEditorMode .taskSubtasksBox{margin-bottom:8px!important}
+#editorOverlay.taskEditorMode .taskContentArea{margin-top:4px!important;margin-bottom:8px!important}
+#editorOverlay.taskEditorMode .taskCheckedSection{margin-top:7px;margin-bottom:3px}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle{gap:10px;min-height:38px;padding:4px 2px;border-radius:9px}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle:active{background:rgba(118,118,128,.09)}
+#editorOverlay.taskEditorMode .taskCheckedIcon,
+#editorOverlay.taskEditorMode .taskCheckedChevron{display:grid;place-items:center;flex:0 0 20px;width:20px;height:22px;color:#8e8e93}
+#editorOverlay.taskEditorMode .taskCheckedIcon svg,
+#editorOverlay.taskEditorMode .taskCheckedChevron svg{height:19px;width:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#editorOverlay.taskEditorMode .taskCheckedChevron{margin-left:auto;transition:transform .15s}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle[aria-expanded="false"] .taskCheckedChevron{transform:rotate(-90deg)}
+#editorOverlay.taskEditorMode .taskCheckedSectionToggle[aria-expanded="true"] .taskCheckedChevron{transform:none}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"]{position:relative;padding:7px 6px 5px;border-radius:11px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] .taskScheduleCalendarIcon{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:4px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:#8e8e93}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] strong{display:inline;font-size:14px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"] .taskInlineScheduleLabel{margin-bottom:5px}
+#editorOverlay.taskEditorMode .taskInlineScheduleBtn[id$="DateBtn"]:not(:disabled):active{background:rgba(22,119,255,.10)}
+.miniBtn.restore{width:40px;height:40px;flex-basis:40px;background:rgba(22,119,255,.07);border-radius:12px}
+.miniBtn.restore svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.miniBtn.restore:active{background:rgba(22,119,255,.17)}
+html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
+
 </style>
 </head>
 <body>
@@ -2065,12 +2117,12 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
           </div>
           <div class="taskInlineSchedule">
             <div class="taskInlineScheduleColumn">
-              <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha inicial"><span class="taskInlineScheduleLabel">Inicio</span><strong id="taskInlineDateText">Sin fecha</strong></button>
+              <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha inicial"><span class="taskInlineScheduleLabel">Inicio</span><svg class="taskScheduleCalendarIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.6"/><path d="M8 3.2v3.8M16 3.2v3.8M3.8 10h16.4"/></svg><strong id="taskInlineDateText">Sin fecha</strong></button>
               <button id="taskInlineStartBtn" class="taskInlineScheduleBtn taskInlineTimeBtn" type="button" aria-label="Seleccionar hora de inicio"><strong id="taskInlineStartText">Sin hora</strong></button>
             </div>
             <span class="taskInlineArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"></path></svg></span>
             <div class="taskInlineScheduleColumn">
-              <button id="taskInlineEndDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha final"><span class="taskInlineScheduleLabel">Fin</span><strong id="taskInlineEndDateText">Sin fecha</strong></button>
+              <button id="taskInlineEndDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha final"><span class="taskInlineScheduleLabel">Fin</span><svg class="taskScheduleCalendarIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.6"/><path d="M8 3.2v3.8M16 3.2v3.8M3.8 10h16.4"/></svg><strong id="taskInlineEndDateText">Sin fecha</strong></button>
               <button id="taskInlineEndBtn" class="taskInlineScheduleBtn taskInlineTimeBtn" type="button" aria-label="Seleccionar hora de finalización"><strong id="taskInlineEndText">—</strong></button>
             </div>
           </div>
@@ -2761,7 +2813,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
   }
   const iconTrash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>';
   const iconEdit='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>';
-  const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v5h5M5.5 12.5a7 7 0 1 0 2-5"></path></svg>';
+  const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 7.3 4.8 11.7l4.4 4.4"/><path d="M5.3 11.7h10.1a4.2 4.2 0 0 1 0 8.4h-2"/><path d="M15.6 4.2h3.2a1.2 1.2 0 0 1 1.2 1.2v3.2"/></svg>';
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
@@ -5327,7 +5379,15 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
     return {start:Math.max(0,start),end:Math.min(1440,end)};
   }
   function calendarHourPxForRange(rangeStart=0,rangeEnd=1440){
-    return CAL_HOUR_PX;
+    const hours=Math.max(.25,(rangeEnd-rangeStart)/60);
+    const body=$("calendarBody");
+    const sheet=$("calendarOverlay")?.querySelector(".calendarSheet");
+    const contentHeight=body?.clientHeight||Math.max(450,(sheet?.clientHeight||window.innerHeight)-215);
+    // Allow the time rows to use free vertical space. Full-day views remain
+    // vertically scrollable; short work-hour windows can expand their rows.
+    const reserved=calendarView==="week"?76:42;
+    const available=Math.max(320,contentHeight-reserved);
+    return Math.max(54,Math.min(112,Math.floor(available/hours)));
   }
   function calendarTimeAxisHtml(rangeStart=0,rangeEnd=1440,hourPx=CAL_HOUR_PX){
     let html='<div class="calendarTimeAxis">';
@@ -6609,7 +6669,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       const complete=editorSubtasks.length-firstDone,expanded=taskCompletedItemsExpanded||taskCopyMode;
       const label=complete===1?"1 elemento marcado":complete+" elementos marcados";
       box.innerHTML=taskNodesHtml(editorSubtasks.slice(0,firstDone))+
-        '<div class="taskCheckedSection"><button class="taskCheckedSectionToggle" type="button" aria-expanded="'+expanded+'"><span class="taskCheckedChevron">⌄</span><span>'+label+'</span></button>'+
+        '<div class="taskCheckedSection"><button class="taskCheckedSectionToggle" type="button" aria-expanded="'+expanded+'"><span class="taskCheckedIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.3 12.1 2.5 2.6 5.1-5.3"/></svg></span><span>'+label+'</span><span class="taskCheckedChevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span></button>'+
         '<div class="taskCheckedSectionItems'+(expanded?'':' hidden')+'">'+taskNodesHtml(editorSubtasks.slice(firstDone),0,"",firstDone)+'</div></div>';
       box.querySelector(".taskCheckedSectionToggle")?.addEventListener("click",()=>{taskCompletedItemsExpanded=!taskCompletedItemsExpanded;renderEditorSubtasks()});
     }else box.innerHTML=taskNodesHtml(editorSubtasks);
