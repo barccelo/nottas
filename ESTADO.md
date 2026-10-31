@@ -1,11 +1,11 @@
 # Estado actual de Nottas
 
-Última actualización: 30 de octubre de 2026 · Chat de continuidad X9.
+Última actualización: 31 de octubre de 2026 · Chat de continuidad X9.
 
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.74** (`versionCode 155`).
+- Versión del código Android: **0.27.75** (`versionCode 156`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,14 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.75 — checks circulares y alineación del título
+
+- El campo editable del título queda alineado verticalmente con el botón circular de completar, sin mover el botón Atrás ni la estrella de su fila.
+- Se aplica un diseño circular único de 22 px, borde fino y marca azul a las casillas de tareas, subtareas, listas enriquecidas, Agenda, calendario, selección múltiple y configuraciones con casillas.
+- Se conservan los interruptores deslizantes (iosSwitch y miniSwitch) y todos los manejadores originales de cada casilla; no hay cambios en los estados guardados ni en sincronización.
+- El check circular del editor mantiene su área táctil y utiliza el color azul común cuando está marcado.
+- Pendiente verificar visualmente el resultado en Android en modo claro/oscuro, con títulos de una o varias líneas y casillas dentro de eventos de calendario.
 
 ## Cambios v0.27.74 — densidad, espacio e iconografía
 
@@ -135,7 +143,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.74 tras verificar la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.75 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.
