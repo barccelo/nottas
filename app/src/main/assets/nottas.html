@@ -1662,6 +1662,11 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
 #calendarOverlay .calendarTimeBlock.calendarGoogleBlock{border-left-width:3px}
 #calendarOverlay .calendarWeekTimeViewport .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockTitle{line-height:1.12}
 
+
+/* Gestures on empty sheet headers as well as handles, without stealing button taps. */
+.sheetHeader,.noteActionPanelHandle,.taskListToggleText{touch-action:none}
+.sheetHeader button,.sheetHeader input{touch-action:manipulation}
+
 </style>
 </head>
 <body>
@@ -6081,13 +6086,15 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       handle.setAttribute("role","button");
       handle.setAttribute("aria-label",sheet.closest("#quickOverlay")?"Desliza hacia arriba para más opciones o hacia abajo para cerrar":"Desliza hacia arriba para expandir o hacia abajo para cerrar");
       let drag=null;
-      handle.addEventListener("pointerdown",e=>{
+      sheet.addEventListener("pointerdown",e=>{
+        if(e.target!==sheet&&!e.target.closest(".sheetHandle,.sheetHeader"))return;
+        if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".sheetHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
         drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now(),expanded:sheet.classList.contains("sheetExpanded")};
         sheet.classList.add("sheetDragging");
-        try{handle.setPointerCapture(e.pointerId)}catch(_){}
+        try{sheet.setPointerCapture(e.pointerId)}catch(_){}
       });
-      handle.addEventListener("pointermove",e=>{
+      sheet.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=e.clientY-drag.startY;
@@ -6099,7 +6106,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
-        try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+        try{sheet.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=endY-g.startY;
         const velocity=dy/Math.max(1,performance.now()-g.started);
@@ -6124,8 +6131,8 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
         }
         settleSheetPosition(sheet,g.expanded);
       };
-      handle.addEventListener("pointerup",finish,{passive:false});
-      handle.addEventListener("pointercancel",e=>{
+      sheet.addEventListener("pointerup",finish,{passive:false});
+      sheet.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const expanded=drag.expanded;drag=null;
         settleSheetPosition(sheet,expanded);
@@ -6147,13 +6154,15 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       handle.setAttribute("role","button");
       handle.setAttribute("aria-label","Desliza hacia abajo para cerrar");
       let drag=null;
-      handle.addEventListener("pointerdown",e=>{
+      panel.addEventListener("pointerdown",e=>{
+        if(e.target!==panel&&!e.target.closest(".noteActionPanelHandle,.taskListToggleText,.taskListToggleTitle,.taskListToggleDesc"))return;
+        if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".noteActionPanelHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
         drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now()};
         panel.classList.add("panelDragging");
-        try{handle.setPointerCapture(e.pointerId)}catch(_){}
+        try{panel.setPointerCapture(e.pointerId)}catch(_){}
       });
-      handle.addEventListener("pointermove",e=>{
+      panel.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=Math.max(0,e.clientY-drag.startY);
@@ -6163,7 +6172,7 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
-        try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+        try{panel.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=Math.max(0,endY-g.startY);
         const velocity=dy/Math.max(1,performance.now()-g.started);
@@ -6175,8 +6184,8 @@ html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calenda
           setTimeout(()=>panel.style.removeProperty("--panel-drag-y"),210);
         }
       };
-      handle.addEventListener("pointerup",finish,{passive:false});
-      handle.addEventListener("pointercancel",e=>{
+      panel.addEventListener("pointerup",finish,{passive:false});
+      panel.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag=null;
         panel.classList.remove("panelDragging");
