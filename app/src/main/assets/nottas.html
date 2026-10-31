@@ -1617,6 +1617,56 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
 .calendarTimeBlock.calendarEventPast,.calendarOverlapGroup.calendarEventPast,.calendarTaskRow.calendarEventPast,.calendarAllDayChip.calendarEventPast{filter:grayscale(1);opacity:.62}
 .calendarTimeBlock.calendarEventPast:active,.calendarTaskRow.calendarEventPast:active{opacity:.8}
 
+
+/* Inline task editor header: Back, check, title and star share one row. */
+#editorOverlay.taskEditorMode .sheetHeader{display:none!important}
+#editorOverlay.taskEditorMode #taskForm>.card{padding-top:0!important}
+#editorOverlay.taskEditorMode .taskTitleRow{
+  display:grid;grid-template-columns:34px 34px minmax(0,1fr) 38px;
+  align-items:start;column-gap:3px;min-height:44px;
+  padding:0;margin:0 0 4px;
+}
+#editorOverlay.taskEditorMode .taskTitleRow .noteBackBtn{width:34px;height:40px;display:grid;grid-column:1;grid-row:1}
+#editorOverlay.taskEditorMode .taskTitleRow .noteBackBtn svg{width:24px;height:24px}
+#editorOverlay.taskEditorMode .taskTitleRow .taskDoneBtn{width:34px;height:40px;grid-column:2;grid-row:1;margin:0}
+#editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{grid-column:3;grid-row:1;font-size:23px;line-height:1.25;padding:4px 0 5px;min-width:0}
+#editorOverlay.taskEditorMode .taskTitleRow .editorPinBtn{width:38px;height:40px;grid-column:4;grid-row:1;align-self:start;display:grid;place-items:center}
+#editorOverlay.taskEditorMode .taskTitleRow .editorPinBtn svg{width:21px;height:21px}
+#editorOverlay.taskEditorMode .taskDayTracker{margin-left:0}
+#editorOverlay.taskEditorMode .taskMetaChips{margin-left:0}
+@media(max-width:360px){
+  #editorOverlay.taskEditorMode .taskTitleRow{grid-template-columns:30px 30px minmax(0,1fr) 33px;gap:2px}
+  #editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{font-size:21px}
+}
+
+
+/* Eye is a temporary view filter: a selected Google source is not deactivated. */
+.calendarEyeSettingsBtn{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:39px;padding:9px 10px;margin-top:6px;border:0;border-radius:10px;background:rgba(22,119,255,.08);color:#1677ff;font:inherit;font-size:12px;font-weight:650;text-align:left}
+.calendarEyeSettingsBtn span{font-size:21px;font-weight:400}
+.calendarEyeShowAll{border:0;border-radius:8px;background:rgba(22,119,255,.09);color:#1677ff;padding:5px 7px;font-size:11px;font-weight:650}
+.calendarEyeSource.solo{background:rgba(22,119,255,.10)}
+.calendarEyeSource:disabled{opacity:.5}
+html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calendarEyeShowAll{background:rgba(10,132,255,.16);color:#80bdff}
+
+
+/* Short events stay tappable; long event titles use available height. */
+#calendarOverlay .calendarTimeBlock{min-height:38px}
+#calendarOverlay .calendarTimeBlock[data-calendar-compact="1"]{padding-top:5px;padding-bottom:4px}
+#calendarOverlay .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockMeta{display:none!important}
+#calendarOverlay .calendarTimeBlock .calendarTimeBlockTitle{
+  white-space:normal!important;display:-webkit-box!important;-webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--title-lines,2);line-clamp:var(--title-lines,2);
+  overflow:hidden;overflow-wrap:anywhere;text-overflow:ellipsis;
+}
+#calendarOverlay .calendarTimeBlock.calendarGoogleBlock .calendarTimeBlockTitle{padding-right:0}
+#calendarOverlay .calendarTimeBlock.calendarGoogleBlock{border-left-width:3px}
+#calendarOverlay .calendarWeekTimeViewport .calendarTimeBlock[data-calendar-compact="1"] .calendarTimeBlockTitle{line-height:1.12}
+
+
+/* Gestures on empty sheet headers as well as handles, without stealing button taps. */
+.sheetHeader,.noteActionPanelHandle,.taskListToggleText{touch-action:none}
+.sheetHeader button,.sheetHeader input{touch-action:manipulation}
+
 </style>
 </head>
 <body>
@@ -1870,7 +1920,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     </div>
     <div id="calendarEyePopover" class="calendarEyePopover hidden" role="dialog" aria-label="Visibilidad de calendarios">
       <div class="calendarEyePopoverHead"><strong>Calendarios</strong><button id="calendarEyeClose" class="calendarEyeClose" type="button" aria-label="Cerrar">×</button></div>
-      <div id="calendarEyeContents" aria-live="polite"></div>
+      <div id="calendarEyeContents" aria-live="polite"></div><button id="calendarEyeSettingsBtn" class="calendarEyeSettingsBtn" type="button">Administrar calendarios de Google <span aria-hidden="true">›</span></button>
     </div>
     <div id="calendarGoogleStatus" class="calendarGoogleStatus hidden" aria-live="polite"></div>
     <button id="calendarGoogleReloadBtn" class="calendarGoogleReload hidden" type="button">Actualizar Google Calendar</button>
@@ -2725,7 +2775,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   let directorProposalsSeq=0,directorProposalsFetching=false,directorProposalsError="",directorNativeLastCount=-1,directorInboxTab="proposals";
   let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
   const GCAL_LOCAL_CACHE_KEY="nottas_google_event_cache_v1",GCAL_FRESH_MS=7*60*1000,GCAL_MAX_STALE_MS=7*24*60*60*1000;
-  let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="",calendarOnlyEvents=false;
+  let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="",calendarOnlyEvents=false,calendarEyeHiddenIds=new Set(),calendarEyeSoloId="",calendarEyeVisibilityWorkspace="";
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0,categorySnapshotChecked=false;
 
   function setNativeSearchKeyboardMode(active){
@@ -2771,6 +2821,11 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     document.body.classList.remove("keyboardOpen");
     return availableHeight;
   }
+  window.NottasKeyboardHiddenByBack=function(){
+    const active=document.activeElement;
+    if(active&&active!==document.body&&active.blur)active.blur();
+    nativeImeHeightCss=0;
+  };
   window.NottasSetImeOffset=function(px){
     const nativePx=Math.max(0,Number(px)||0);
     const dpr=Math.max(1,Number(window.devicePixelRatio)||1);
@@ -4760,9 +4815,18 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     const end=new Date(d.getFullYear(),d.getMonth()+(calendarView==="agenda"?4:2),1,12);
     return {start:localDateISO(start),end:localDateISO(end)};
   }
+  function ensureCalendarEyeWorkspace(){
+    const ws=currentWorkspaceId();
+    if(calendarEyeVisibilityWorkspace!==ws){
+      calendarEyeVisibilityWorkspace=ws;calendarEyeHiddenIds.clear();calendarEyeSoloId="";
+    }
+  }
   function calendarGoogleFor(date){
     if(state?.preferences?.calendarGoogleVisible===false)return [];
-    return googleCalendarRequestKey.startsWith(currentWorkspaceId()+"|")?(googleCalendarByDay.get(date)||[]):[];
+    ensureCalendarEyeWorkspace();
+    if(!googleCalendarRequestKey.startsWith(currentWorkspaceId()+"|"))return [];
+    const events=googleCalendarByDay.get(date)||[];
+    return events.filter(e=>calendarEyeSoloId?e.calendarId===calendarEyeSoloId:!calendarEyeHiddenIds.has(e.calendarId));
   }
   function calendarGoogleColor(event){return /^#[0-9a-fA-F]{6}$/.test(event?.color||"")?event.color:"#4285f4"}
   function calendarGoogleTimeLabel(event){
@@ -4816,13 +4880,10 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function renderCalendarEyeSources(){
     const target=$("calendarEyeContents");target.replaceChildren();
+    ensureCalendarEyeWorkspace();
     const hint=document.createElement("div");hint.className="calendarEyeHint";
-    const owner=assistantWorkspaceIsOwner(currentWorkspace());
     if(calendarEyeLoading){hint.textContent="Consultando calendarios…";target.appendChild(hint);return}
     if(calendarEyeMessage){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent=calendarEyeMessage;target.appendChild(empty);return}
-    const count=calendarEyeSources.filter(c=>c.selected).length;
-    hint.textContent=count+" de "+calendarEyeSources.length+" activos · máximo "+googleCalendarSelectionLimit+(owner?"":" · solo el propietario puede cambiarlos");
-    target.appendChild(hint);
     if(!calendarEyeSources.length){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent="No hay calendarios disponibles. Comprueba la conexión en Ajustes → Asistente.";target.appendChild(empty);return}
     for(const selected of [true,false]){
       const sources=calendarEyeSources.filter(c=>c.selected===selected).sort((a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base"}));
@@ -4830,6 +4891,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       const section=document.createElement("div");section.className="calendarEyeSection";
       const title=document.createElement("div");title.className="calendarEyeSectionTitle";
       const heading=document.createElement("span");heading.textContent=(selected?"Activos":"Inactivos")+" · "+sources.length;title.appendChild(heading);
+      if(selected&&calendarEyeSoloId){const reset=document.createElement("button");reset.type="button";reset.className="calendarEyeShowAll";reset.textContent="Mostrar todos";reset.addEventListener("click",()=>{calendarEyeSoloId="";renderCalendar();renderCalendarEyeSources()});title.appendChild(reset)}
       if(selected){
         const label=document.createElement("label");label.setAttribute("aria-label","Mostrar calendarios activos");
         const txt=document.createElement("span");txt.textContent="Mostrar";
@@ -4844,15 +4906,35 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       }
       section.appendChild(title);
       for(const calendar of sources){
-        const button=document.createElement("button");button.type="button";button.className="calendarEyeSource"+(calendar.selected?" selected":"");
-        button.setAttribute("aria-pressed",calendar.selected?"true":"false");
-        button.setAttribute("aria-label",(calendar.selected?"Ocultar ":"Mostrar ")+calendar.name);
-        button.disabled=!owner||calendarEyeSaving;
+        const visible=calendarEyeSoloId?calendarEyeSoloId===calendar.id:!calendarEyeHiddenIds.has(calendar.id);
+        const button=document.createElement("button");button.type="button";
+        button.className="calendarEyeSource"+(selected&&visible?" selected":"")+(calendarEyeSoloId===calendar.id?" solo":"");
+        button.setAttribute("aria-pressed",selected?String(visible):"false");
+        button.setAttribute("aria-label",selected?(visible?"Ocultar temporalmente ":"Mostrar temporalmente ")+calendar.name:calendar.name+" · administrar en Ajustes");
+        button.title=selected?"Mantén pulsado para mostrar solo este calendario":"Actívalo desde Ajustes";
+        button.disabled=!selected;
         const dot=document.createElement("i");dot.className="calendarEyeSourceDot";dot.style.background=/^#[0-9a-fA-F]{6}$/.test(calendar.color)?calendar.color:"#4f90e8";
         const name=document.createElement("span");name.className="calendarEyeSourceName";name.textContent=calendar.name;
         const check=document.createElement("span");check.className="calendarEyeSourceCheck";check.textContent="✓";
         button.append(dot,name,check);
-        button.addEventListener("click",()=>toggleCalendarEyeSource(calendar.id));
+        if(selected){
+          let holdTimer=null,held=false,downX=0,downY=0;
+          const clear=()=>{if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null}};
+          button.addEventListener("pointerdown",e=>{
+            if(e.pointerType==="mouse"&&e.button!==0)return;
+            held=false;downX=e.clientX;downY=e.clientY;clear();
+            holdTimer=setTimeout(()=>{
+              holdTimer=null;held=true;
+              calendarEyeSoloId=calendarEyeSoloId===calendar.id?"":calendar.id;
+              renderCalendar();renderCalendarEyeSources();
+            },520);
+          });
+          button.addEventListener("pointermove",e=>{if(Math.hypot(e.clientX-downX,e.clientY-downY)>9)clear()});
+          button.addEventListener("pointerup",clear);
+          button.addEventListener("pointercancel",clear);
+          button.addEventListener("contextmenu",e=>e.preventDefault());
+          button.addEventListener("click",e=>{if(held){e.preventDefault();held=false;return}toggleCalendarEyeSource(calendar.id)});
+        }
         section.appendChild(button);
       }
       target.appendChild(section);
@@ -4883,41 +4965,25 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       if(seq===calendarEyeLoadSeq){calendarEyeLoading=false;renderCalendarEyeSources()}
     }
   }
-  async function toggleCalendarEyeSource(id){
-    const ws=currentWorkspace();if(calendarEyeSaving||!assistantWorkspaceIsOwner(ws)||ws?.id!==calendarEyeWorkspace)return;
-    const source=calendarEyeSources.find(c=>c.id===id);if(!source)return;
-    const next=!source.selected;
-    if(next&&calendarEyeSources.filter(c=>c.selected).length>=googleCalendarSelectionLimit){showToast("Máximo "+googleCalendarSelectionLimit+" calendarios");return}
-    source.selected=next;calendarEyeSaving=true;renderCalendarEyeSources();
-    try{
-      const ids=calendarEyeSources.filter(c=>c.selected).map(c=>c.id);
-      await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/selection",{method:"POST",body:{calendarIds:ids}});
-      if(ws.id===currentWorkspaceId()){
-        invalidateGoogleCalendarCache(ws.id);resetGoogleCalendarEvents();
-        renderCalendar(); // Fetch selected events and update all four views.
-      }
-    }catch(error){
-      source.selected=!next;
-      showToast("No se pudo actualizar: "+String(error?.message||error).slice(0,85));
-    }finally{
-      calendarEyeSaving=false;
-      if(ws.id===currentWorkspaceId()&&!$("calendarEyePopover").classList.contains("hidden"))renderCalendarEyeSources();
-    }
+  function toggleCalendarEyeSource(id){
+    // This eye control never changes the Google Calendar subscription on the server.
+    ensureCalendarEyeWorkspace();
+    const source=calendarEyeSources.find(c=>c.id===id&&c.selected);
+    if(!source)return;
+    if(calendarEyeSoloId)calendarEyeSoloId="";
+    if(calendarEyeHiddenIds.has(id))calendarEyeHiddenIds.delete(id);
+    else calendarEyeHiddenIds.add(id);
+    renderCalendar();renderCalendarEyeSources();
   }
   function calendarGoogleStatus(){
     const ws=currentWorkspace(),status=$("calendarGoogleStatus"),reload=$("calendarGoogleReloadBtn");
     const show=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured();
-    status.classList.toggle("hidden",!show);reload.classList.toggle("hidden",!show||!assistantWorkspaceIsOwner(ws));
-    if(!show)return;
-    if(state.preferences.calendarGoogleVisible===false){
-      status.classList.remove("error");
-      status.textContent="Google Calendar · oculto temporalmente desde el ojito";
-      return;
-    }
+    const warning=show&&(googleCalendarLoading||!!googleCalendarError);
+    status.classList.toggle("hidden",!warning);
+    reload.classList.toggle("hidden",!show||!googleCalendarError||!assistantWorkspaceIsOwner(ws));
+    if(!warning)return;
     status.classList.toggle("error",!!googleCalendarError);
-    if(googleCalendarLoading){status.textContent=googleCalendarItems.length?"Google Calendar · actualizando (mostrando eventos guardados)…":"Google Calendar · cargando eventos…";return}
-    if(googleCalendarError){status.textContent="Google Calendar · "+googleCalendarError+(googleCalendarItems.length?" · mostrando copia guardada":"");return}
-    status.textContent=googleCalendarSelected?("Google Calendar · "+googleCalendarSelected+" calendarios · "+googleCalendarItems.length+" eventos (solo lectura)"):"Google Calendar · conecta la cuenta y elige calendarios en Ajustes → Asistente";
+    status.textContent=googleCalendarError?"Google Calendar · "+googleCalendarError+(googleCalendarItems.length?" · mostrando copia guardada":""):"Actualizando calendarios…";
   }
   async function scheduleGoogleCalendarFetch(force=false){
     const ws=currentWorkspace();
@@ -5281,7 +5347,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       if(start===null||end===null||start>=rangeEnd||end<=rangeStart)return;
       const from=Math.max(rangeStart,start),to=Math.min(rangeEnd,end);
       if(to<=from)return;
-      const minVisualMinutes=24/hourPx*60;
+      const minVisualMinutes=38/hourPx*60;
       items.push({kind,value,start:from,end:to,visualEnd:Math.min(rangeEnd,Math.max(to,from+minVisualMinutes)),color,title});
     };
     tasks.forEach(t=>{
@@ -5306,8 +5372,11 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     });
     if(calendarView==="day")calendarDayMaxLanes=Math.max(calendarDayMaxLanes,...groups.map(g=>g.laneCount||1));
     const drawEvent=(item,laneCount)=>{
-      const top=(item.start-rangeStart)/60*hourPx,height=Math.max(24,(item.end-item.start)/60*hourPx);
-      const lines=height>=54?3:height>=31?2:1,compact=height<44;
+      const top=(item.start-rangeStart)/60*hourPx,height=Math.max(38,(item.end-item.start)/60*hourPx);
+      const compact=height<49;
+      const linePx=calendarView==="week"?10:14;
+      const reserved=calendarView==="week"?(compact?7:12):(compact?8:28);
+      const lines=Math.max(1,Math.min(22,Math.floor((height-reserved)/linePx)));
       const paired=laneCount>1&&calendarView==="day";
       const geometry=paired?';left:calc('+((item.lane/laneCount)*100).toFixed(4)+'% + 2px);width:calc('+(100/laneCount).toFixed(4)+'% - 4px);right:auto':"";
       if(item.kind==="local"){
@@ -5315,13 +5384,13 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
         return '<div class="calendarTimeBlock '+(paired?"calendarSideBySide ":"")+(isSharedWorkspace()?"assistant-"+esc(t.approvalStatus||"confirmed"):"")+(calendarTaskPast(t,date)?" calendarEventPast":"")+'" data-calendar-time-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+categorySymbolHtml(cat(t.category))+esc(t.text)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Nottas · ":"")+calendarTaskRangeLabel(t)+(isSharedWorkspace()?" · "+assistantStatusLabel(t.approvalStatus||"confirmed"):""))+'</div><input class="calendarBlockCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><div class="calendarResizeHandle" aria-label="Cambiar duración"></div></div>';
       }
       const event=item.value;
-      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+(calendarGooglePast(event)?" calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:2;--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
+      return '<div class="calendarTimeBlock calendarGoogleBlock '+(paired?"calendarSideBySide":"")+(calendarGooglePast(event)?" calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(event.key)+'" data-calendar-compact="'+(compact?"1":"0")+'" style="top:'+top.toFixed(2)+'px;height:'+height.toFixed(2)+'px;--title-lines:'+lines+';--task-color:'+esc(item.color)+geometry+'"><div class="calendarTimeBlockTitle">'+esc(event.title)+'</div><div class="calendarTimeBlockMeta">'+esc((paired?"Google Calendar · ":"")+calendarGoogleTimeLabel(event))+'</div></div>';
     };
     const drawGroup=(group,index)=>{
       const key=date+"-"+index,week=calendarView==="week",past=group.items.every(item=>item.kind==="local"?calendarTaskPast(item.value,date):calendarGooglePast(item.value));
       calendarOverlapGroups.set(key,{date,items:group.items,start:group.items[0].start});
       const start=Math.min(...group.items.map(item=>item.start)),end=Math.max(...group.items.map(item=>item.end));
-      const top=(start-rangeStart)/60*hourPx,height=Math.max(24,(end-start)/60*hourPx);
+      const top=(start-rangeStart)/60*hourPx,height=Math.max(38,(end-start)/60*hourPx);
       const compact=height<84;
       const stripes='<span class="calendarOverlapStripes" aria-hidden="true">'+group.items.slice(0,6).map(item=>'<i style="background:'+esc(item.color)+'"></i>').join("")+'</span>';
       const count=group.items.length,label=count+" eventos";
@@ -5411,7 +5480,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
         }
         document.body.appendChild(preview);
         if(col&&targetMinute!==null)updatePreview(col,targetMinute);
-      },280);
+      },240);
     });
     block.addEventListener("pointermove",e=>{
       if(!active){
@@ -6023,16 +6092,23 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       handle.setAttribute("role","button");
       handle.setAttribute("aria-label",sheet.closest("#quickOverlay")?"Desliza hacia arriba para más opciones o hacia abajo para cerrar":"Desliza hacia arriba para expandir o hacia abajo para cerrar");
       let drag=null;
-      handle.addEventListener("pointerdown",e=>{
+      sheet.addEventListener("pointerdown",e=>{
+        if(e.target!==sheet&&!e.target.closest(".sheetHandle,.sheetHeader"))return;
+        if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".sheetHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
-        drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now(),expanded:sheet.classList.contains("sheetExpanded")};
-        sheet.classList.add("sheetDragging");
-        try{handle.setPointerCapture(e.pointerId)}catch(_){}
+        drag={id:e.pointerId,startY:e.clientY,startX:e.clientX,lastY:e.clientY,active:false,started:performance.now(),expanded:sheet.classList.contains("sheetExpanded")};
+
       });
-      handle.addEventListener("pointermove",e=>{
+      sheet.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
         const dy=e.clientY-drag.startY;
+        if(!drag.active){
+          if(Math.abs(e.clientX-drag.startX)>Math.abs(dy)*1.25){drag=null;return}
+          if(Math.abs(dy)<9)return;
+          drag.active=true;sheet.classList.add("sheetDragging");
+          try{sheet.setPointerCapture(e.pointerId)}catch(_){}
+        }
         const maxDown=Math.max(window.innerHeight||0,sheet.getBoundingClientRect().height+64);
         const visual=Math.max(-110,Math.min(maxDown,dy));
         sheet.style.setProperty("--sheet-drag-y",visual+"px");
@@ -6041,7 +6117,8 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
-        try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+        if(!g.active)return;
+        try{sheet.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=endY-g.startY;
         const velocity=dy/Math.max(1,performance.now()-g.started);
@@ -6066,8 +6143,8 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
         }
         settleSheetPosition(sheet,g.expanded);
       };
-      handle.addEventListener("pointerup",finish,{passive:false});
-      handle.addEventListener("pointercancel",e=>{
+      sheet.addEventListener("pointerup",finish,{passive:false});
+      sheet.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const expanded=drag.expanded;drag=null;
         settleSheetPosition(sheet,expanded);
@@ -6089,23 +6166,32 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       handle.setAttribute("role","button");
       handle.setAttribute("aria-label","Desliza hacia abajo para cerrar");
       let drag=null;
-      handle.addEventListener("pointerdown",e=>{
+      panel.addEventListener("pointerdown",e=>{
+        if(e.target!==panel&&!e.target.closest(".noteActionPanelHandle,.taskListToggleText,.taskListToggleTitle,.taskListToggleDesc"))return;
+        if(e.target.closest("button,input,textarea,select,a,[contenteditable],[role=button]")&&!e.target.closest(".noteActionPanelHandle"))return;
         if(e.pointerType==="mouse"&&e.button!==0)return;
-        drag={id:e.pointerId,startY:e.clientY,lastY:e.clientY,started:performance.now()};
-        panel.classList.add("panelDragging");
-        try{handle.setPointerCapture(e.pointerId)}catch(_){}
+        drag={id:e.pointerId,startY:e.clientY,startX:e.clientX,lastY:e.clientY,active:false,started:performance.now()};
+
       });
-      handle.addEventListener("pointermove",e=>{
+      panel.addEventListener("pointermove",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag.lastY=e.clientY;
-        const dy=Math.max(0,e.clientY-drag.startY);
+        const vertical=e.clientY-drag.startY;
+        if(!drag.active){
+          if(Math.abs(e.clientX-drag.startX)>Math.abs(vertical)*1.25){drag=null;return}
+          if(vertical<9)return;
+          drag.active=true;panel.classList.add("panelDragging");
+          try{panel.setPointerCapture(e.pointerId)}catch(_){}
+        }
+        const dy=Math.max(0,vertical);
         panel.style.setProperty("--panel-drag-y",dy+"px");
         if(dy>2)e.preventDefault();
       },{passive:false});
       const finish=e=>{
         if(!drag||e.pointerId!==drag.id)return;
         const g=drag;drag=null;
-        try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+        if(!g.active)return;
+        try{panel.releasePointerCapture(e.pointerId)}catch(_){}
         const endY=Number.isFinite(e.clientY)?e.clientY:g.lastY;
         const dy=Math.max(0,endY-g.startY);
         const velocity=dy/Math.max(1,performance.now()-g.started);
@@ -6117,8 +6203,8 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
           setTimeout(()=>panel.style.removeProperty("--panel-drag-y"),210);
         }
       };
-      handle.addEventListener("pointerup",finish,{passive:false});
-      handle.addEventListener("pointercancel",e=>{
+      panel.addEventListener("pointerup",finish,{passive:false});
+      panel.addEventListener("pointercancel",e=>{
         if(!drag||e.pointerId!==drag.id)return;
         drag=null;
         panel.classList.remove("panelDragging");
@@ -7451,7 +7537,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function openTask(t,selectedDate=null,options={}){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
-    $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
+    $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");arrangeEditorTop(true);hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
     editorMeetingTracked=isSharedWorkspace()||(t?!!t.meetingTracked:false);
@@ -7470,10 +7556,22 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     },80);
     else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   }
+  function arrangeEditorTop(taskMode){
+    const back=$("noteBackBtn"),pin=$("editorPinBtn"),header=$("editorOverlay").querySelector(".sheetHeader");
+    const actions=header?.querySelector(".sheetHeaderActions"),row=$("taskForm").querySelector(".taskTitleRow");
+    if(!header||!actions||!row||!back||!pin)return;
+    if(taskMode){
+      row.prepend(back);
+      row.append(pin);
+    }else{
+      header.prepend(back);
+      actions.prepend(pin);
+    }
+  }
   function openNote(n){
     closeTaskMeetingMenu();
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
-    $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
+    $("editorOverlay").classList.remove("taskEditorMode");$("editorOverlay").classList.add("noteEditorMode");arrangeEditorTop(false);hideTaskPanels();hideNotePanels();$("taskRichToolbar").classList.add("hidden");$("richToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
@@ -8204,6 +8302,11 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     e.preventDefault();handleCalendarBack();
   });
   $("calendarEyeClose").addEventListener("click",closeCalendarEye);
+  $("calendarEyeSettingsBtn").addEventListener("click",()=>{
+    closeCalendarEye();closeOverlay("calendarOverlay");
+    returnToSettingsFromTeam=false;openAssistantSettings();
+    requestAnimationFrame(()=>$("assistantGoogleSection")?.scrollIntoView({block:"start",behavior:"smooth"}));
+  });
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
@@ -8813,7 +8916,9 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     if(closeNottasChoice())return true;
     if($("cardMetaOverlay").classList.contains("show")){closeCardMeta();return true}
     const active=document.activeElement;
-    if(active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
+    // Android already dismisses the IME on the first Back. Do not consume a second
+    // Back merely because the WebView's contenteditable retains focus.
+    if(nativeImeHeightCss>1&&active&&active!==document.body&&active.matches&&active.matches("input,textarea,select,[contenteditable=\"true\"]")){
       active.blur();
       return true;
     }

@@ -172,6 +172,11 @@ class MainActivity : Activity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val insets = window.decorView.rootWindowInsets
             if (insets?.isVisible(WindowInsets.Type.ime()) == true) {
+                // Keep DOM and Android keyboard focus in sync to avoid a phantom Back.
+                webView.evaluateJavascript(
+                    "window.NottasKeyboardHiddenByBack && window.NottasKeyboardHiddenByBack()",
+                    null
+                )
                 currentFocus?.clearFocus()
                 window.insetsController?.hide(WindowInsets.Type.ime())
                 return
