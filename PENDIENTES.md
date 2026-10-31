@@ -6,6 +6,14 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 
 ## Prioridad inmediata
 
+- [ ] **Por verificar · Editor:** Atrás, completar, título y estrella en una línea en pantallas estrechas; sin espacios vacíos en la parte superior.
+- [ ] **Por verificar · Teclado/Atrás:** tras cerrar el teclado con Atrás, el siguiente Atrás debe regresar al calendario o inicio sin pulsación fantasma.
+- [ ] **Por verificar · Ojito:** el toque oculta/muestra calendarios sin desactivarlos en el servidor; mantener pulsado muestra solo ese calendario y «Mostrar todos» recupera la vista.
+- [ ] **Por verificar · Ajustes Google:** desde el ojito se abre la sección de administración, con permisos intactos del propietario.
+- [ ] **Por verificar · Arrastre:** los encabezados y áreas no interactivas desplazan hojas sin interceptar botones ni scroll.
+- [ ] **Por verificar · Eventos cortos y largos:** 15/30 minutos deben verse y poder tocarse; eventos extensos deben mostrar más líneas de título.
+
+
 - [ ] **Por verificar · Papelera:** buscar por nombre y contenido de tareas/notas eliminadas; comprobar posición del buscador y restauración.
 - [ ] **Por verificar · Filtros de búsqueda:** con Pendientes vacío, la búsqueda debe seguir mostrando coincidencias de Completadas en «Otras coincidencias».
 - [ ] **Por verificar · Calendario Día:** tres o más eventos simultáneos individuales deben verse mediante scroll horizontal, sin interferir con abrir, marcar o arrastrar.
@@ -22,7 +30,7 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 - [ ] **Por verificar · Categorías:** probar en Android la recuperación de categorías compartidas después de actualizar a v0.27.62 y realizar una sincronización.
 - [ ] **Por verificar · Persistencia:** cerrar y reabrir Nottas; comprobar que las categorías mantienen espacio, nombre, color, icono y asignaciones.
 - [ ] **Por verificar · Dos dispositivos:** comprobar visibilidad y sincronización de categorías en el director y el asistente.
-- [ ] **Por verificar · Publicación:** comprobar que v0.27.72 se publique como APK firmada en Releases y sea detectada por Obtainium.
+- [ ] **Por verificar · Publicación:** comprobar que v0.27.73 se publique como APK firmada en Releases y sea detectada por Obtainium.
 - [ ] **Por verificar · Estados:** al realizar, diferir o cancelar un evento, comprobar que solo aparece el estado pertinente en la tarjeta.
 - [ ] **Por verificar · Categorías visuales:** comprobar los iconos y colores en tarjetas, incluso con dos categorías llamadas «Reunión».
 - [ ] **Por verificar · Eliminación:** borrar «Nottas» y «Reunión» del espacio elegido, sincronizar, reiniciar y comprobar que no reaparezcan en ambos dispositivos (sin afectar categorías de otro espacio).

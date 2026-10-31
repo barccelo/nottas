@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.72** (`versionCode 153`).
+- Versión del código Android: **0.27.73** (`versionCode 154`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,16 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.73 — editor, navegación y calendario
+
+- Editor: Atrás, check, título y estrella comparten fila compacta; las notas recuperan su estructura normal al cambiar de modo.
+- Android + WebView: se sincroniza el cierre del teclado con el foco para que Atrás no se consuma una segunda vez.
+- Ojito de calendario: visibilidad por fuente solo temporal en memoria, pulsación prolongada para mostrar un calendario y enlace directo a su configuración; no se alteran suscripciones/selecciones remotas.
+- Se eliminan dos leyendas informativas redundantes del calendario y se conserva únicamente estado de carga/error cuando procede.
+- Hojas y paneles: arrastre por encabezado y zonas no interactivas con umbral antes de capturar el gesto.
+- Bloques horarios cortos con altura mínima de 38 px; títulos con más líneas cuando queda altura aprovechable.
+- Pendiente probar en dispositivos reales y comprobar que la APK firmada llegue a Releases/Obtainium.
 
 ## Cambios v0.27.72 — búsqueda y calendario
 
@@ -116,7 +126,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.72 tras verificar la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.73 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.

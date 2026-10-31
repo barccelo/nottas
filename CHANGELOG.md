@@ -2,6 +2,17 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.73 — 30 de octubre de 2026
+
+- Cabecera del editor de tareas y eventos compactada en una sola fila real: Atrás, completar, título editable y estrella. Se recolocan los mismos controles, sin duplicados; las notas conservan su cabecera original.
+- Corregido el retroceso fantasma tras cerrar el teclado Android: el host notifica la ocultación a la WebView y el manejador web ya no consume Atrás por foco residual sin teclado.
+- Ocultado el texto normal de contador/solo lectura de Google Calendar sobre la cuadrícula y el texto de conteo/límite/propietario del panel del ojito; los errores de conexión y estados de carga relevantes siguen visibles.
+- El ojito ya solo filtra temporalmente fuentes Google en la vista: ocultar/mostrar con toque, pulsación prolongada para ver exclusivamente una fuente y «Mostrar todos» para salir del modo solitario. No cambia calendarios activos ni llama al endpoint de selección; calendarios inactivos se administran solo desde Ajustes.
+- Añadido acceso «Administrar calendarios de Google» desde el panel del ojo hacia Ajustes → Equipo de trabajo → Google Calendar.
+- Los paneles pueden arrastrarse desde el encabezado y superficies no interactivas además del handle, con umbral de movimiento vertical para no cancelar los toques precisos.
+- Los eventos de 30 minutos o menos reciben altura táctil mínima y distribución que tiene en cuenta dicha altura; los títulos de eventos largos usan un número dinámico de líneas proporcional al espacio realmente disponible, incluido Google Calendar.
+- Sintaxis JavaScript comprobada; pendiente comprobar compilación, publicación y gestos/maquetación en Android.
+
 ## 0.27.72 — 30 de octubre de 2026
 
 - **Papelera:** la búsqueda filtra por texto entre tareas y notas eliminadas, y el campo aparece inmediatamente después del encabezado, sin desalineaciones con las acciones inferiores.
