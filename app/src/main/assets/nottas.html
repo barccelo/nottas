@@ -2117,12 +2117,12 @@ html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
           </div>
           <div class="taskInlineSchedule">
             <div class="taskInlineScheduleColumn">
-              <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha inicial"><span class="taskInlineScheduleLabel">Inicio</span><strong id="taskInlineDateText">Sin fecha</strong></button>
+              <button id="taskInlineDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha inicial"><span class="taskInlineScheduleLabel">Inicio</span><svg class="taskScheduleCalendarIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.6"/><path d="M8 3.2v3.8M16 3.2v3.8M3.8 10h16.4"/></svg><strong id="taskInlineDateText">Sin fecha</strong></button>
               <button id="taskInlineStartBtn" class="taskInlineScheduleBtn taskInlineTimeBtn" type="button" aria-label="Seleccionar hora de inicio"><strong id="taskInlineStartText">Sin hora</strong></button>
             </div>
             <span class="taskInlineArrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"></path></svg></span>
             <div class="taskInlineScheduleColumn">
-              <button id="taskInlineEndDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha final"><span class="taskInlineScheduleLabel">Fin</span><strong id="taskInlineEndDateText">Sin fecha</strong></button>
+              <button id="taskInlineEndDateBtn" class="taskInlineScheduleBtn" type="button" aria-label="Seleccionar fecha final"><span class="taskInlineScheduleLabel">Fin</span><svg class="taskScheduleCalendarIcon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.6"/><path d="M8 3.2v3.8M16 3.2v3.8M3.8 10h16.4"/></svg><strong id="taskInlineEndDateText">Sin fecha</strong></button>
               <button id="taskInlineEndBtn" class="taskInlineScheduleBtn taskInlineTimeBtn" type="button" aria-label="Seleccionar hora de finalización"><strong id="taskInlineEndText">—</strong></button>
             </div>
           </div>
@@ -2813,7 +2813,7 @@ html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
   }
   const iconTrash='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"></path></svg>';
   const iconEdit='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>';
-  const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8v5h5M5.5 12.5a7 7 0 1 0 2-5"></path></svg>';
+  const iconRestore='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 7.3 4.8 11.7l4.4 4.4"/><path d="M5.3 11.7h10.1a4.2 4.2 0 0 1 0 8.4h-2"/><path d="M15.6 4.2h3.2a1.2 1.2 0 0 1 1.2 1.2v3.2"/></svg>';
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
@@ -6669,7 +6669,7 @@ html[data-theme="dark"] .miniBtn.restore{background:rgba(10,132,255,.15)}
       const complete=editorSubtasks.length-firstDone,expanded=taskCompletedItemsExpanded||taskCopyMode;
       const label=complete===1?"1 elemento marcado":complete+" elementos marcados";
       box.innerHTML=taskNodesHtml(editorSubtasks.slice(0,firstDone))+
-        '<div class="taskCheckedSection"><button class="taskCheckedSectionToggle" type="button" aria-expanded="'+expanded+'"><span class="taskCheckedChevron">⌄</span><span>'+label+'</span></button>'+
+        '<div class="taskCheckedSection"><button class="taskCheckedSectionToggle" type="button" aria-expanded="'+expanded+'"><span class="taskCheckedIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.3 12.1 2.5 2.6 5.1-5.3"/></svg></span><span>'+label+'</span><span class="taskCheckedChevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span></button>'+
         '<div class="taskCheckedSectionItems'+(expanded?'':' hidden')+'">'+taskNodesHtml(editorSubtasks.slice(firstDone),0,"",firstDone)+'</div></div>';
       box.querySelector(".taskCheckedSectionToggle")?.addEventListener("click",()=>{taskCompletedItemsExpanded=!taskCompletedItemsExpanded;renderEditorSubtasks()});
     }else box.innerHTML=taskNodesHtml(editorSubtasks);
