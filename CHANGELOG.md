@@ -2,6 +2,14 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.75 — 31 de octubre de 2026
+
+- Centrado vertical del campo editable de título respecto al check de completar en la cabecera del editor de tareas y eventos, conservando la flecha Atrás y la estrella en su posición.
+- Unificación del lenguaje visual de todas las casillas de verificación: círculos con borde gris y estado marcado azul, siguiendo el aspecto de la lista principal.
+- Incluye checkboxes de subtareas, listas de notas, Agenda, tarjetas de calendario, selección múltiple, casillas de recordatorios y configuración de Google Calendar.
+- Los interruptores de activación/desactivación permanecen intactos y los checkboxes conservan su lógica de estado y persistencia.
+- Revisión de sintaxis JavaScript. Pendiente prueba visual y táctil en Android, además de confirmar la compilación y la publicación de la APK firmada.
+
 ## 0.27.74 — 31 de octubre de 2026
 
 - Día y Semana aprovechan toda la altura disponible de la hoja, sin un espacio muerto bajo la cuadrícula; el desplazamiento vertical se conserva cuando las horas exceden el alto de la pantalla.
