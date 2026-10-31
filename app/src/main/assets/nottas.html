@@ -4771,7 +4771,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function calendarGoogleRows(events){
     if(!events.length)return "";
-    return '<div class="calendarAgenda">'+events.map(g=>'<div class="calendarTaskRow calendarGoogleRow" role="button" tabindex="0" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'"><span class="calendarGoogleMarker" aria-hidden="true">•</span><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(g.title)+'</span><span class="calendarTaskMeta"><span>'+esc(calendarGoogleTimeLabel(g))+'</span><span><i class="sideDot" style="display:inline-block;background:'+calendarGoogleColor(g)+'"></i> '+esc(g.calendarName||"Google Calendar")+'</span><span>Google · solo lectura</span></span></span></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+events.map(g=>'<div class="calendarTaskRow calendarGoogleRow '+(calendarGooglePast(g)?"calendarEventPast":"")+'" role="button" tabindex="0" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'"><span class="calendarGoogleMarker" aria-hidden="true">•</span><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(g.title)+'</span><span class="calendarTaskMeta"><span>'+esc(calendarGoogleTimeLabel(g))+'</span><span><i class="sideDot" style="display:inline-block;background:'+calendarGoogleColor(g)+'"></i> '+esc(g.calendarName||"Google Calendar")+'</span><span>Google · solo lectura</span></span></span></div>').join("")+'</div>';
   }
   function calendarCombinedRows(date,tasks){
     const google=calendarGoogleFor(date),own=tasks.length?calendarTaskRows(tasks,date):"";
@@ -4988,7 +4988,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function calendarTaskRows(tasks,date=calendarDate){
     if(!tasks.length)return '<div class="calendarEmpty">No hay tareas para esta fecha.</div>';
-    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span>'+categorySymbolHtml(cat(t.category))+' '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
+    return '<div class="calendarAgenda">'+tasks.map(t=>'<div class="calendarTaskRow '+(calendarTaskPast(t,date)?"calendarEventPast":"")+'" role="button" tabindex="0" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(date)+'"><input class="calendarTaskCheck" type="checkbox" '+(taskDayDone(t,date)?"checked":"")+' aria-label="Completar"><span class="calendarTaskMain"><span class="calendarTaskTitle">'+esc(t.text)+'</span><span class="calendarTaskMeta">'+(t.dueTime?'<span>'+esc(t.dueTime+(t.endTime?"–"+t.endTime:""))+'</span>':"<span>Sin hora</span>")+'<span>'+categorySymbolHtml(cat(t.category))+' '+esc(catName(t.category))+'</span>'+(isSharedWorkspace()?assistantStatusChipHtml(t.approvalStatus||"confirmed"):"")+'</span></span><button class="calendarMoveBtn" type="button" aria-label="Reprogramar tarea"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15h6"></path></svg></button></div>').join("")+'</div>';
   }
   function beginCalendarMove(id){
     const t=state.tasks.find(x=>x.id===id&&!x.deletedAt);if(!t)return;
@@ -5225,7 +5225,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       const d=new Date(start);d.setDate(start.getDate()+i);if(!showWeekends&&(d.getDay()===0||d.getDay()===6))continue;
       const iso=localDateISO(d),tasks=calendarTasksFor(iso),outside=d.getMonth()!==selected.getMonth(),today=iso===localDateISO(),sel=iso===calendarDate;
       const google=calendarGoogleFor(iso);
-      const dotColors=tasks.slice(0,google.length?2:3).map(t=>catColor(t.category)).concat(google.slice(0,2).map(calendarGoogleColor)).slice(0,4);
+      const dotColors=tasks.slice(0,google.length?2:3).map(t=>calendarTaskPast(t,iso)?"#a1a1a6":catColor(t.category)).concat(google.slice(0,2).map(g=>calendarGooglePast(g)?"#a1a1a6":calendarGoogleColor(g))).slice(0,4);
       const dots=dotColors.map(color=>'<i style="background:'+esc(color)+'"></i>').join("");
       html+='<button class="calendarDay '+(outside?"outside ":"")+(today?"today ":"")+(sel?"selected ":"")+(calendarMoveTaskId?"moveTarget":"")+'" type="button" data-calendar-date="'+iso+'"><span class="calendarDayNum">'+d.getDate()+'</span><span class="calendarDots">'+dots+'</span></button>';
     }
@@ -5491,7 +5491,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     html+='</div>';
     if(hasAllDay){
       html+='<div class="calendarWeekAllDayWrap"><div class="calendarWeekAllDayLabel">Sin<br>hora</div><div class="calendarWeekAllDay" style="--week-cols:'+dates.length+'">';
-      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip" type="button" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(dates[i])+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
+      allDayByDate.forEach((rows,i)=>{html+='<div class="calendarWeekAllDayCol">'+rows.map(t=>'<button class="calendarAllDayChip '+(calendarTaskPast(t,dates[i])?"calendarEventPast":"")+'" type="button" data-calendar-task="'+esc(t.id)+'" data-calendar-date="'+esc(dates[i])+'">'+esc(t.text)+'</button>').join("")+googleAllDayByDate[i].map(g=>'<button class="calendarAllDayChip calendarGoogleAllDay '+(calendarGooglePast(g)?"calendarEventPast":"")+'" type="button" data-google-event-key="'+esc(g.key)+'" style="--gcal-color:'+calendarGoogleColor(g)+'">'+esc(g.title)+'</button>').join("")+'</div>'});
       html+='</div></div>';
     }
     const hourPx=calendarHourPxForRange(range.start,range.end),gridHeight=Math.max(hourPx,(range.end-range.start)/60*hourPx);
