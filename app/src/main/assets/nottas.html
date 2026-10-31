@@ -1639,6 +1639,15 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   #editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{font-size:21px}
 }
 
+
+/* Eye is a temporary view filter: a selected Google source is not deactivated. */
+.calendarEyeSettingsBtn{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:39px;padding:9px 10px;margin-top:6px;border:0;border-radius:10px;background:rgba(22,119,255,.08);color:#1677ff;font:inherit;font-size:12px;font-weight:650;text-align:left}
+.calendarEyeSettingsBtn span{font-size:21px;font-weight:400}
+.calendarEyeShowAll{border:0;border-radius:8px;background:rgba(22,119,255,.09);color:#1677ff;padding:5px 7px;font-size:11px;font-weight:650}
+.calendarEyeSource.solo{background:rgba(22,119,255,.10)}
+.calendarEyeSource:disabled{opacity:.5}
+html[data-theme="dark"] .calendarEyeSettingsBtn,html[data-theme="dark"] .calendarEyeShowAll{background:rgba(10,132,255,.16);color:#80bdff}
+
 </style>
 </head>
 <body>
@@ -1892,7 +1901,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     </div>
     <div id="calendarEyePopover" class="calendarEyePopover hidden" role="dialog" aria-label="Visibilidad de calendarios">
       <div class="calendarEyePopoverHead"><strong>Calendarios</strong><button id="calendarEyeClose" class="calendarEyeClose" type="button" aria-label="Cerrar">×</button></div>
-      <div id="calendarEyeContents" aria-live="polite"></div>
+      <div id="calendarEyeContents" aria-live="polite"></div><button id="calendarEyeSettingsBtn" class="calendarEyeSettingsBtn" type="button">Administrar calendarios de Google <span aria-hidden="true">›</span></button>
     </div>
     <div id="calendarGoogleStatus" class="calendarGoogleStatus hidden" aria-live="polite"></div>
     <button id="calendarGoogleReloadBtn" class="calendarGoogleReload hidden" type="button">Actualizar Google Calendar</button>
@@ -2747,7 +2756,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   let directorProposalsSeq=0,directorProposalsFetching=false,directorProposalsError="",directorNativeLastCount=-1,directorInboxTab="proposals";
   let googleCalendarItems=[],googleCalendarByDay=new Map(),googleCalendarByKey=new Map(),googleCalendarRequestKey="",googleCalendarLoadedAt=0,googleCalendarLoading=false,googleCalendarError="",googleCalendarSelected=0,googleCalendarFetchSeq=0,googleCalendarSelectionLimit=40;
   const GCAL_LOCAL_CACHE_KEY="nottas_google_event_cache_v1",GCAL_FRESH_MS=7*60*1000,GCAL_MAX_STALE_MS=7*24*60*60*1000;
-  let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="",calendarOnlyEvents=false;
+  let calendarEyeSources=[],calendarEyeWorkspace="",calendarEyeLoading=false,calendarEyeSaving=false,calendarEyeLoadSeq=0,calendarEyeMessage="",calendarOnlyEvents=false,calendarEyeHiddenIds=new Set(),calendarEyeSoloId="",calendarEyeVisibilityWorkspace="";
   let assistantAuthorizedIds=new Set(),assistantMembershipChecked=false,assistantRegistrationConfirmUntil=0,categorySnapshotChecked=false;
 
   function setNativeSearchKeyboardMode(active){
@@ -4782,9 +4791,18 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     const end=new Date(d.getFullYear(),d.getMonth()+(calendarView==="agenda"?4:2),1,12);
     return {start:localDateISO(start),end:localDateISO(end)};
   }
+  function ensureCalendarEyeWorkspace(){
+    const ws=currentWorkspaceId();
+    if(calendarEyeVisibilityWorkspace!==ws){
+      calendarEyeVisibilityWorkspace=ws;calendarEyeHiddenIds.clear();calendarEyeSoloId="";
+    }
+  }
   function calendarGoogleFor(date){
     if(state?.preferences?.calendarGoogleVisible===false)return [];
-    return googleCalendarRequestKey.startsWith(currentWorkspaceId()+"|")?(googleCalendarByDay.get(date)||[]):[];
+    ensureCalendarEyeWorkspace();
+    if(!googleCalendarRequestKey.startsWith(currentWorkspaceId()+"|"))return [];
+    const events=googleCalendarByDay.get(date)||[];
+    return events.filter(e=>calendarEyeSoloId?e.calendarId===calendarEyeSoloId:!calendarEyeHiddenIds.has(e.calendarId));
   }
   function calendarGoogleColor(event){return /^#[0-9a-fA-F]{6}$/.test(event?.color||"")?event.color:"#4285f4"}
   function calendarGoogleTimeLabel(event){
@@ -4838,13 +4856,10 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
   }
   function renderCalendarEyeSources(){
     const target=$("calendarEyeContents");target.replaceChildren();
+    ensureCalendarEyeWorkspace();
     const hint=document.createElement("div");hint.className="calendarEyeHint";
-    const owner=assistantWorkspaceIsOwner(currentWorkspace());
     if(calendarEyeLoading){hint.textContent="Consultando calendarios…";target.appendChild(hint);return}
     if(calendarEyeMessage){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent=calendarEyeMessage;target.appendChild(empty);return}
-    const count=calendarEyeSources.filter(c=>c.selected).length;
-    hint.textContent=count+" de "+calendarEyeSources.length+" activos · máximo "+googleCalendarSelectionLimit+(owner?"":" · solo el propietario puede cambiarlos");
-    target.appendChild(hint);
     if(!calendarEyeSources.length){const empty=document.createElement("div");empty.className="calendarEyeEmpty";empty.textContent="No hay calendarios disponibles. Comprueba la conexión en Ajustes → Asistente.";target.appendChild(empty);return}
     for(const selected of [true,false]){
       const sources=calendarEyeSources.filter(c=>c.selected===selected).sort((a,b)=>a.name.localeCompare(b.name,"es",{sensitivity:"base"}));
@@ -4852,6 +4867,7 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       const section=document.createElement("div");section.className="calendarEyeSection";
       const title=document.createElement("div");title.className="calendarEyeSectionTitle";
       const heading=document.createElement("span");heading.textContent=(selected?"Activos":"Inactivos")+" · "+sources.length;title.appendChild(heading);
+      if(selected&&calendarEyeSoloId){const reset=document.createElement("button");reset.type="button";reset.className="calendarEyeShowAll";reset.textContent="Mostrar todos";reset.addEventListener("click",()=>{calendarEyeSoloId="";renderCalendar();renderCalendarEyeSources()});title.appendChild(reset)}
       if(selected){
         const label=document.createElement("label");label.setAttribute("aria-label","Mostrar calendarios activos");
         const txt=document.createElement("span");txt.textContent="Mostrar";
@@ -4866,15 +4882,35 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       }
       section.appendChild(title);
       for(const calendar of sources){
-        const button=document.createElement("button");button.type="button";button.className="calendarEyeSource"+(calendar.selected?" selected":"");
-        button.setAttribute("aria-pressed",calendar.selected?"true":"false");
-        button.setAttribute("aria-label",(calendar.selected?"Ocultar ":"Mostrar ")+calendar.name);
-        button.disabled=!owner||calendarEyeSaving;
+        const visible=calendarEyeSoloId?calendarEyeSoloId===calendar.id:!calendarEyeHiddenIds.has(calendar.id);
+        const button=document.createElement("button");button.type="button";
+        button.className="calendarEyeSource"+(selected&&visible?" selected":"")+(calendarEyeSoloId===calendar.id?" solo":"");
+        button.setAttribute("aria-pressed",selected?String(visible):"false");
+        button.setAttribute("aria-label",selected?(visible?"Ocultar temporalmente ":"Mostrar temporalmente ")+calendar.name:calendar.name+" · administrar en Ajustes");
+        button.title=selected?"Mantén pulsado para mostrar solo este calendario":"Actívalo desde Ajustes";
+        button.disabled=!selected;
         const dot=document.createElement("i");dot.className="calendarEyeSourceDot";dot.style.background=/^#[0-9a-fA-F]{6}$/.test(calendar.color)?calendar.color:"#4f90e8";
         const name=document.createElement("span");name.className="calendarEyeSourceName";name.textContent=calendar.name;
         const check=document.createElement("span");check.className="calendarEyeSourceCheck";check.textContent="✓";
         button.append(dot,name,check);
-        button.addEventListener("click",()=>toggleCalendarEyeSource(calendar.id));
+        if(selected){
+          let holdTimer=null,held=false,downX=0,downY=0;
+          const clear=()=>{if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null}};
+          button.addEventListener("pointerdown",e=>{
+            if(e.pointerType==="mouse"&&e.button!==0)return;
+            held=false;downX=e.clientX;downY=e.clientY;clear();
+            holdTimer=setTimeout(()=>{
+              holdTimer=null;held=true;
+              calendarEyeSoloId=calendarEyeSoloId===calendar.id?"":calendar.id;
+              renderCalendar();renderCalendarEyeSources();
+            },520);
+          });
+          button.addEventListener("pointermove",e=>{if(Math.hypot(e.clientX-downX,e.clientY-downY)>9)clear()});
+          button.addEventListener("pointerup",clear);
+          button.addEventListener("pointercancel",clear);
+          button.addEventListener("contextmenu",e=>e.preventDefault());
+          button.addEventListener("click",e=>{if(held){e.preventDefault();held=false;return}toggleCalendarEyeSource(calendar.id)});
+        }
         section.appendChild(button);
       }
       target.appendChild(section);
@@ -4905,41 +4941,25 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
       if(seq===calendarEyeLoadSeq){calendarEyeLoading=false;renderCalendarEyeSources()}
     }
   }
-  async function toggleCalendarEyeSource(id){
-    const ws=currentWorkspace();if(calendarEyeSaving||!assistantWorkspaceIsOwner(ws)||ws?.id!==calendarEyeWorkspace)return;
-    const source=calendarEyeSources.find(c=>c.id===id);if(!source)return;
-    const next=!source.selected;
-    if(next&&calendarEyeSources.filter(c=>c.selected).length>=googleCalendarSelectionLimit){showToast("Máximo "+googleCalendarSelectionLimit+" calendarios");return}
-    source.selected=next;calendarEyeSaving=true;renderCalendarEyeSources();
-    try{
-      const ids=calendarEyeSources.filter(c=>c.selected).map(c=>c.id);
-      await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/google/selection",{method:"POST",body:{calendarIds:ids}});
-      if(ws.id===currentWorkspaceId()){
-        invalidateGoogleCalendarCache(ws.id);resetGoogleCalendarEvents();
-        renderCalendar(); // Fetch selected events and update all four views.
-      }
-    }catch(error){
-      source.selected=!next;
-      showToast("No se pudo actualizar: "+String(error?.message||error).slice(0,85));
-    }finally{
-      calendarEyeSaving=false;
-      if(ws.id===currentWorkspaceId()&&!$("calendarEyePopover").classList.contains("hidden"))renderCalendarEyeSources();
-    }
+  function toggleCalendarEyeSource(id){
+    // This eye control never changes the Google Calendar subscription on the server.
+    ensureCalendarEyeWorkspace();
+    const source=calendarEyeSources.find(c=>c.id===id&&c.selected);
+    if(!source)return;
+    if(calendarEyeSoloId)calendarEyeSoloId="";
+    if(calendarEyeHiddenIds.has(id))calendarEyeHiddenIds.delete(id);
+    else calendarEyeHiddenIds.add(id);
+    renderCalendar();renderCalendarEyeSources();
   }
   function calendarGoogleStatus(){
     const ws=currentWorkspace(),status=$("calendarGoogleStatus"),reload=$("calendarGoogleReloadBtn");
     const show=ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)&&assistantConfigured();
-    status.classList.toggle("hidden",!show);reload.classList.toggle("hidden",!show||!assistantWorkspaceIsOwner(ws));
-    if(!show)return;
-    if(state.preferences.calendarGoogleVisible===false){
-      status.classList.remove("error");
-      status.textContent="Google Calendar · oculto temporalmente desde el ojito";
-      return;
-    }
+    const warning=show&&(googleCalendarLoading||!!googleCalendarError);
+    status.classList.toggle("hidden",!warning);
+    reload.classList.toggle("hidden",!show||!googleCalendarError||!assistantWorkspaceIsOwner(ws));
+    if(!warning)return;
     status.classList.toggle("error",!!googleCalendarError);
-    if(googleCalendarLoading){status.textContent=googleCalendarItems.length?"Google Calendar · actualizando (mostrando eventos guardados)…":"Google Calendar · cargando eventos…";return}
-    if(googleCalendarError){status.textContent="Google Calendar · "+googleCalendarError+(googleCalendarItems.length?" · mostrando copia guardada":"");return}
-    status.textContent=googleCalendarSelected?("Google Calendar · "+googleCalendarSelected+" calendarios · "+googleCalendarItems.length+" eventos (solo lectura)"):"Google Calendar · conecta la cuenta y elige calendarios en Ajustes → Asistente";
+    status.textContent=googleCalendarError?"Google Calendar · "+googleCalendarError+(googleCalendarItems.length?" · mostrando copia guardada":""):"Actualizando calendarios…";
   }
   async function scheduleGoogleCalendarFetch(force=false){
     const ws=currentWorkspace();
@@ -8238,6 +8258,11 @@ html[data-theme="dark"] .searchGroupHeader span{background:#343640;color:#d0d5e1
     e.preventDefault();handleCalendarBack();
   });
   $("calendarEyeClose").addEventListener("click",closeCalendarEye);
+  $("calendarEyeSettingsBtn").addEventListener("click",()=>{
+    closeCalendarEye();closeOverlay("calendarOverlay");
+    returnToSettingsFromTeam=false;openAssistantSettings();
+    requestAnimationFrame(()=>$("assistantGoogleSection")?.scrollIntoView({block:"start",behavior:"smooth"}));
+  });
   $("calendarEyePopover").addEventListener("click",e=>e.stopPropagation());
   function changeCalendarViewBySwipe(dir){if(calendarMoveTaskId)return;const views=["day","week","month","agenda"],i=views.indexOf(calendarView),next=Math.max(0,Math.min(views.length-1,i+dir));if(next===i)return;calendarView=views[next];renderCalendar()}
   let calendarViewSwipe=null;
