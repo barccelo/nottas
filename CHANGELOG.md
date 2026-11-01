@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.79 — 1 de noviembre de 2026
+
+- Deslizar horizontalmente el controlador de un subelemento hacia la derecha lo subordina al elemento anterior; hacia la izquierda reduce su nivel.
+- Se mantienen pulsación larga para reordenar, el menú de jerarquía, las subtareas anidadas y el historial para deshacer.
+- Pendiente comprobar gestos táctiles en Android. La selección múltiple para mover grupos continúa pendiente.
+
+
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
 ## Ajuste de interfaz — 1 de noviembre de 2026 (sin cambio de versión)
