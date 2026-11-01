@@ -2,6 +2,14 @@
 
 Última actualización: 31 de octubre de 2026 · Chat de continuidad X9.
 
+
+## Ajuste de configuración del equipo — 1 de noviembre de 2026
+
+- La pantalla «Equipo de trabajo» conserva el lenguaje visual de Nottas, con separación uniforme entre sus tarjetas y controles más compactos.
+- «Calendarios» pasa a la sección propia «Integraciones», fuera de los detalles e integrantes del equipo; conserva el panel y las acciones existentes de Google Calendar.
+- La sección «Integraciones» solo se muestra al seleccionar un espacio, manteniendo estado de conexión y notificaciones.
+- Commit inicial del cambio: `b0ebb478de7756b32e9b1c7541f33755f256fb37`. Pendiente validación visual en Android; no se ha confirmado APK publicada.
+
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
