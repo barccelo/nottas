@@ -1307,6 +1307,32 @@ html[data-theme="dark"] #assistantOverlay .teamMinorButton{background:#2c2c2e;bo
 html[data-theme="dark"] #assistantOverlay .teamMinorButton .nsIcon{color:#d3d3d9}
 
 
+
+/* Equipo de trabajo: jerarquía y aire visual sin modificar el lenguaje de Nottas. */
+#assistantOverlay #teamConnectedPanel{display:flex;flex-direction:column;gap:15px;padding-bottom:8px}
+#assistantOverlay #teamConnectedPanel>.teamPanel,#assistantOverlay #teamConnectedPanel>.teamAccountCard{flex-shrink:0;margin:0}
+#assistantOverlay .teamActionGrid{gap:10px}
+#assistantOverlay .teamMinorButton{min-width:0;min-height:84px;padding:12px;gap:5px}
+#assistantOverlay .teamMinorButton strong{font-size:13px;line-height:1.3}
+#assistantOverlay .teamMinorButton small{font-size:11px;line-height:1.35}
+#assistantOverlay .teamPanel{gap:12px}
+#assistantOverlay .teamOptionRow{border-top:1px solid #e5e5ea}
+#assistantOverlay .teamOptionRow:first-of-type{border-top:0}
+#assistantOverlay .teamIntegrationAction{padding:13px 0;gap:8px}
+#assistantOverlay .teamIntegrationCopy{display:flex;align-items:center;gap:11px;min-width:0}
+#assistantOverlay .teamIntegrationCopy>.nsIcon{width:21px;height:21px;color:#6a6a70}
+#assistantOverlay .teamIntegrationCopy>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+#assistantOverlay .teamIntegrationCopy strong{font-size:14px;font-weight:650}
+#assistantOverlay .teamIntegrationCopy small{font-size:11px;color:#8e8e93;line-height:1.3}
+#assistantOverlay .teamIntegrationTail{display:flex;align-items:center;gap:7px;flex-shrink:0}
+#assistantOverlay .teamIntegrationTail small{font-size:11px;color:#8e8e93}
+#assistantOverlay .teamIntegrationTail .nsIcon{height:17px;width:17px;color:#a2a2a8;transition:transform .18s ease}
+#assistantOverlay .teamIntegrationAction[aria-expanded="true"] .teamIntegrationTail .nsIcon{transform:rotate(90deg)}
+#assistantOverlay #teamCalendarTools:not(.hidden){margin-top:3px;border-top:1px solid #e5e5ea;padding-top:14px;min-width:0}
+html[data-theme="dark"] #assistantOverlay .teamIntegrationCopy>.nsIcon{color:#c7c7cc}
+html[data-theme="dark"] #assistantOverlay .teamIntegrationAction,html[data-theme="dark"] #assistantOverlay #teamCalendarTools:not(.hidden){border-color:#3a3a3c}
+@media(max-width:350px){#assistantOverlay .teamIntegrationTail small{display:none}#assistantOverlay .teamMinorButton{padding:10px}}
+
 /* Shared event category visual treatment; colors stay in the Nottas palette. */
 .eventCategoryHelp{font-size:12px;line-height:1.45;color:#8e8e93;padding:0 6px;margin:3px 0 12px}
 #eventCategorySection{margin-top:8px}
@@ -2623,9 +2649,11 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
           </div>
           <div class="teamPanelCaption">Integrantes</div>
           <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
-          <div class="teamIntegrationStatus"><span>Google Calendar</span><span id="teamGoogleLabel">Sin conectar</span></div>
-          <div class="teamIntegrationStatus"><span>Notificaciones</span><span id="teamNotificationsLabel">Comprobando</span></div>
-          <button id="teamManageCalendar" class="teamInlineLink" type="button">Administrar calendarios</button>
+        </div>
+        <div id="teamIntegrationsPanel" class="teamPanel hidden">
+          <div class="teamPanelTitle">Integraciones</div>
+          <button id="teamManageCalendar" class="teamOptionRow teamIntegrationAction" type="button" aria-expanded="false"><span class="teamIntegrationCopy"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-calendar"></use></svg><span><strong>Calendarios</strong><small>Google Calendar y calendarios visibles</small></span></span><span class="teamIntegrationTail"><small id="teamGoogleLabel">Sin conectar</small><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+          <div class="teamIntegrationStatus"><span>Notificaciones del equipo</span><span id="teamNotificationsLabel">Comprobando</span></div>
         </div>
         <div class="teamPanel">
           <div class="teamPanelTitle">Acceso a mi cuenta</div>
@@ -4235,6 +4263,7 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     }));
     const ws=selectedSharedTeam();
     $("teamWorkspaceDetail").classList.toggle("hidden",!ws);
+    $("teamIntegrationsPanel").classList.toggle("hidden",!ws);
     if(!ws)return;
     $("teamCurrentName").textContent=ws.name;
     $("teamCurrentRole").textContent=ws.role==="owner"?"Director · administrador":"Asistente";
@@ -4381,11 +4410,12 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
       const section=$("assistantGoogleSection");
       if(section.classList.contains("hidden")){showToast("Selecciona un equipo para gestionar calendarios");return}
       section.classList.toggle("teamCalendarOpen");
+      $("teamManageCalendar").setAttribute("aria-expanded",String(section.classList.contains("teamCalendarOpen")));
       $("teamCalendarTools").classList.toggle("hidden",!section.classList.contains("teamCalendarOpen"));
       if(section.classList.contains("teamCalendarOpen"))assistantGoogleRefresh();
     });
     const tools=document.createElement("div");tools.id="teamCalendarTools";tools.className="hidden";
-    $("teamWorkspaceDetail").appendChild(tools);
+    $("teamIntegrationsPanel").appendChild(tools);
     tools.appendChild($("assistantGoogleSection"));
   }
   function renderAssistantSettings(){
