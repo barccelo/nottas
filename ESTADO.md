@@ -178,3 +178,6 @@ Toda nueva versión deberá actualizar este archivo, `PENDIENTES.md` y `CHANGELO
 
 ## Actualización 0.27.79
 El controlador de jerarquía permite sangría horizontal por swipe (derecha para anidar, izquierda para subir de nivel). Mantiene pulsación larga para arrastrar y controles del menú; verificar en Android tras publicación en Obtainium.
+
+## Actualización 0.27.80 — controlador de subtareas
+Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos a la derecha y no capturaba confiablemente el dedo. Ahora las subtareas tienen asa de seis puntos a la izquierda, swipe horizontal con vista previa y captura, pulsación prolongada vertical para ordenar; sin botón + por fila. Selección múltiple disponible desde «Opciones de subtareas > Seleccionar elementos > Acciones». Sintaxis JavaScript validada; pendiente prueba en Android y confirmar APK publicada en Releases para Obtainium.
