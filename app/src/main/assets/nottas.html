@@ -1810,6 +1810,15 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
 .taskSubtasksBox .taskTreeNode.gestureOutdented > .taskTreeRow{transform:translateX(-12px);transition:transform .1s ease;background:rgba(0,122,255,.06);border-radius:10px}
 .taskSubtasksBox.copyMode .taskTreeGrip{display:none}
 html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
+/* Unified task editing controls: one section menu and one row handle. */
+#editorOverlay.taskEditorMode .taskContentHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:34px}
+#editorOverlay.taskEditorMode .taskContentHeader .taskInlineSectionLabel{flex:1;min-width:0}
+#editorOverlay.taskEditorMode .taskContentHeader .taskSubtaskMoreBtn,.taskSubtasksBox .taskSubtaskMoreBtn{width:32px;height:32px;font-size:20px;color:#8e8e93}
+#editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeRow{grid-template-columns:28px 28px minmax(0,1fr);gap:3px;align-items:start}
+#editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeGrip{width:28px;height:40px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+#editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeGrip:active{cursor:grabbing}
+#editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeChildren{margin-left:23px}
+#editorOverlay.taskEditorMode .taskSubtasksBox.copyMode .taskTreeRow{grid-template-columns:28px minmax(0,1fr)}
 </style>
 </head>
 <body>
@@ -2265,7 +2274,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
         </div>
 
         <div class="taskContentArea">
-          <div class="taskInlineSectionLabel">Notas / descripción</div>
+          <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
           <button id="addTaskBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
@@ -2278,7 +2287,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
               <button id="taskCopyAllBtn" class="taskSubtaskHeadBtn hidden" type="button">Todo</button>
               <button id="taskCopyConfirmBtn" class="taskSubtaskHeadBtn hidden" type="button">Copiar</button>
               <button id="taskCopyCancelBtn" class="taskSubtaskHeadBtn hidden" type="button">Cancelar</button>
-              <button id="taskListToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de subtareas">⋮</button>
+              <button id="taskListToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de subtareas">⋯</button>
             </div>
           </div>
           <div id="subtasksEditor" class="subtasksEditor"></div>
@@ -6751,42 +6760,41 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       clearTimeout(hold);hold=null;clearHierarchyDropClasses();
       row?.classList.remove("hierarchyDragging","gestureIndented","gestureOutdented");
       ghost?.remove();ghost=null;
-      try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}
-      pointerId=null;tracking=false;mode="";ready=0;row=null;targetId=null;relation=null;
-      hierarchyDrag=null;
+      const captured=pointerId;
+      pointerId=null;tracking=false;mode="";ready=0;row=null;targetId=null;relation=null;hierarchyDrag=null;
+      try{if(captured!==null&&handle.hasPointerCapture(captured))handle.releasePointerCapture(captured)}catch(_){}
+    };
+    const beginDrag=()=>{
+      if(!tracking||mode==="drag"||!row)return;
+      clearTimeout(hold);hold=null;mode="drag";hierarchyDrag={scope:"task-items",id};
+      row.classList.add("hierarchyDragging");
+      const node=hierarchyFindLocation(editorSubtasks,id)?.node;
+      ghost=makeDragGhost(hierarchyNodeLabel("task-items",node));
+      moveDragGhost(ghost,lastX,lastY);
+      try{handle.performHapticFeedback?.()}catch(_){}
     };
     handle.addEventListener("pointerdown",e=>{
-      if(e.pointerType==="mouse"&&e.button!==0)return;
-      if(tracking)return;
+      if((e.pointerType==="mouse"&&e.button!==0)||tracking)return;
       e.stopPropagation();
       tracking=true;pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;
       mode="pending";row=handle.closest(".taskTreeNode");
       try{handle.setPointerCapture(pointerId)}catch(_){}
-      hold=setTimeout(()=>{
-        if(!tracking||mode!=="pending"||!row)return;
-        mode="drag";hierarchyDrag={scope:"task-items",id};
-        row.classList.add("hierarchyDragging");
-        const node=hierarchyFindLocation(editorSubtasks,id)?.node;
-        ghost=makeDragGhost(hierarchyNodeLabel("task-items",node));
-        moveDragGhost(ghost,lastX,lastY);
-        try{handle.performHapticFeedback?.()}catch(_){}
-      },300);
+      hold=setTimeout(()=>{if(tracking&&mode==="pending")beginDrag()},310);
     });
     handle.addEventListener("pointermove",e=>{
       if(!tracking||e.pointerId!==pointerId)return;
       e.stopPropagation();lastX=e.clientX;lastY=e.clientY;
-      const dx=e.clientX-startX,dy=e.clientY-startY;
+      const dx=e.clientX-startX,dy=e.clientY-startY,ax=Math.abs(dx),ay=Math.abs(dy);
       if(mode==="pending"){
-        if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.15){
-          clearTimeout(hold);hold=null;mode="swipe";
-        }else if(Math.abs(dy)>12){
-          clearTimeout(hold);hold=null;mode="scroll";
-        }
+        if(ax>11&&ax>ay*1.18){clearTimeout(hold);hold=null;mode="swipe"}
+        else if(ay>11&&ay>ax*1.1)beginDrag();
+        else if(Math.hypot(dx,dy)>22){clearTimeout(hold);hold=null;mode="cancel"}
       }
       if(mode==="swipe"){
         e.preventDefault();
         const direction=dx>0?1:-1;
-        const available=hierarchyCanSwipe("task-items",id,direction),next=Math.abs(dx)>=38&&available?direction:0;
+        const available=hierarchyCanSwipe("task-items",id,direction);
+        const next=ax>=38&&available?direction:0;
         if(next!==ready&&next!==0){try{handle.performHapticFeedback?.()}catch(_){}}
         ready=next;
         row?.classList.toggle("gestureIndented",ready===1);
@@ -6803,7 +6811,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       }
       const bounds=target.getBoundingClientRect();
       targetId=target.dataset.hierarchyId;
-      relation=dx>46?"child":(e.clientY<bounds.top+bounds.height/2?"before":"after");
+      relation=ax>46?"child":(e.clientY<bounds.top+bounds.height/2?"before":"after");
       target.classList.add(relation==="child"?"hierarchyDropChild":relation==="before"?"hierarchyDropBefore":"hierarchyDropAfter");
     },{passive:false});
     handle.addEventListener("pointerup",e=>{
@@ -6864,7 +6872,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
   function taskNodesHtml(nodes,depth=0,prefix="",offset=0){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i+offset),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}" data-hierarchy-scope="task-items" data-hierarchy-id="${esc(n.id)}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><button class="taskTreeGrip" type="button" aria-label="Deslizar para sangría o mantener pulsado para ordenar" title="Desliza para cambiar la sangría, mantén pulsado para ordenar"><svg viewBox="0 0 20 24" aria-hidden="true"><circle cx="7" cy="6" r="1.5"/><circle cx="13" cy="6" r="1.5"/><circle cx="7" cy="12" r="1.5"/><circle cx="13" cy="12" r="1.5"/><circle cx="7" cy="18" r="1.5"/><circle cx="13" cy="18" r="1.5"/></svg></button><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="hierarchyMoreBtn" type="button" aria-label="Opciones del elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}" data-hierarchy-scope="task-items" data-hierarchy-id="${esc(n.id)}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><button class="taskTreeGrip" type="button" aria-label="Deslizar para sangría o mantener pulsado para ordenar" title="Desliza para cambiar la sangría, mantén pulsado para ordenar"><svg viewBox="0 0 20 24" aria-hidden="true"><circle cx="7" cy="6" r="1.5"/><circle cx="13" cy="6" r="1.5"/><circle cx="7" cy="12" r="1.5"/><circle cx="13" cy="12" r="1.5"/><circle cx="7" cy="18" r="1.5"/><circle cx="13" cy="18" r="1.5"/></svg></button><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
   function syncTaskCopyUI(){
@@ -6886,7 +6894,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     }else box.innerHTML=taskNodesHtml(editorSubtasks);
     box.querySelectorAll("[data-task-path]").forEach(row=>{
       const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
-      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),grip=row.querySelector(":scope > .taskTreeRow .taskTreeGrip"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),more=row.querySelector(":scope > .taskTreeRow .hierarchyMoreBtn");
+      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),grip=row.querySelector(":scope > .taskTreeRow .taskTreeGrip"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput");
       copy.addEventListener("change",()=>{if(copy.checked)taskCopySelection.add(node.id);else taskCopySelection.delete(node.id);syncTaskCopyUI()});
       check.addEventListener("change",()=>{commitTaskHistory();setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
       input.contentEditable=taskCopyMode?"false":"true";
@@ -6895,7 +6903,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       input.addEventListener("keydown",e=>{if(e.key==="Tab"&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();const changed=hierarchySwipeIndent("task-items",node.id,e.shiftKey?-1:1);if(changed)requestAnimationFrame(()=>focusEditorSubtask(node.id));return}if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
       grip.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});
       installTaskGripGestures(grip,node.id);
-      more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});
+
     });
     syncTaskCopyUI();syncTaskEditorMeta();
   }
@@ -6965,7 +6973,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
   function noteBlocksHtml(nodes,depth=0,prefix="",scope="note"){
     return (nodes||[]).map((b,i)=>{
       const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked,hScope=scope==="task"?"task-blocks":"note-blocks";
-      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}" data-hierarchy-scope="${hScope}" data-hierarchy-id="${esc(b.id)}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button></div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path,scope)}</div>`:""}</div>`;
+      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}" data-hierarchy-scope="${hScope}" data-hierarchy-id="${esc(b.id)}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button>${scope==="task"?"":'<button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button>'}</div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path,scope)}</div>`:""}</div>`;
     }).join("");
   }
   function findNoteBlockById(nodes,id){for(const b of nodes||[]){if(b.id===id)return b;const found=findNoteBlockById(b.children||[],id);if(found)return found}return null}
@@ -7018,7 +7026,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       });
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
       child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
-      const hScope=scope==="task"?"task-blocks":"note-blocks";more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel(hScope,path)});installHierarchyDrag(more,hScope,b.id);
+      const hScope=scope==="task"?"task-blocks":"note-blocks";if(more){more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel(hScope,path)});installHierarchyDrag(more,hScope,b.id)};
     });
     if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
   }
@@ -8975,6 +8983,11 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     };
     state.tasks.push(copy);scheduleSave();render();hideTaskPanels();
     showToast("Copia creada");
+  });
+  $("taskDescriptionToolsBtn").addEventListener("click",()=>{
+    const box=$("taskBlocksEditor"),current=activeRichScope==="task"?[...box.querySelectorAll("[data-note-path]")].find(el=>el.dataset.hierarchyId===activeRichBlockId):null;
+    const row=current||box.querySelector("[data-note-path]");
+    if(row)showHierarchyPanel("task-blocks",row.dataset.notePath);
   });
   $("taskListToolsBtn").addEventListener("click",()=>{$("taskRichToolbar").classList.add("hidden");showTaskListPanel()});
   $("taskCompletedAtEndToggle").addEventListener("change",()=>{state.preferences.completedSubtasksAtEnd=$("taskCompletedAtEndToggle").checked;if(completedSubtasksAtEnd())sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();scheduleSave()});
