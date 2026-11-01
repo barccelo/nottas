@@ -6,6 +6,11 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 
 ## Prioridad inmediata
 
+- [ ] **Por verificar · Ícono v0.27.76:** comprobar en Android que el ícono de inicio usa la N azul con calendario, sin fondo blanco cuadrado; conservar el diseño monocromático de notificaciones.
+- [ ] **Por verificar · Obtainium:** confirmar compilación y publicación de APK firmada v0.27.76.
+
+
+
 - [ ] **Por verificar · Título:** campo del título centrado verticalmente con el check circular tanto en una línea como con texto largo en pantallas estrechas.
 - [ ] **Por verificar · Checks circulares:** uniformidad de bordes, tamaños, color y marca en Inicio, Agenda, Día, subtareas, notas con casillas, selección múltiple y preferencias.
 - [ ] **Por verificar · Interruptores:** iosSwitch y miniSwitch siguen mostrando la forma de interruptor y no adoptan el aspecto de checkbox.

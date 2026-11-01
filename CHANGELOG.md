@@ -2,6 +2,14 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.76 — 31 de octubre de 2026
+
+- Nuevo ícono principal de Nottas: se utiliza la ilustración suministrada de la N formada por cinta y lista de tareas, con calendario y check; fondo azul con diseño intacto.
+- Eliminado el fondo blanco externo mediante máscara de transparencia y recorte optimizado a 512 × 512 en WebP RGBA, sin bordes blancos cuadrados.
+- Sustituido únicamente `app/src/main/res/drawable-nodpi/ic_nottas_launcher.webp`; el ícono monocromático `ic_nottas_status.xml` para la barra de estado y notificaciones permanece sin cambios.
+- Conservados `AndroidManifest.xml` y los identificadores actuales de ícono y paquete para que la sustitución funcione como actualización normal.
+- Pendiente confirmar la compilación y publicación de la APK firmada en GitHub Releases / Obtainium.
+
 ## 0.27.75 — 31 de octubre de 2026
 
 - Centrado vertical del campo editable de título respecto al check de completar en la cabecera del editor de tareas y eventos, conservando la flecha Atrás y la estrella en su posición.
