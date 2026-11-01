@@ -115,3 +115,9 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Validar en Android swipe derecha/izquierda en el nuevo asa izquierda, reordenamiento por pulsación prolongada y desplazamiento de listas largas.
 - [ ] Comprobar la selección múltiple con elementos anidados, completados y desplazamientos entre niveles.
 - [ ] Revisar el menú contextual en pantallas estrechas y el foco al editar con teclado.
+
+## Seguimiento 0.27.81
+- [ ] Probar en Android reubicación vertical inmediata desde el controlador izquierdo, incluyendo primer/último elemento y subniveles.
+- [ ] Verificar que el gesto horizontal no compite con el arrastre vertical; deshacer reordenamiento y sangrías.
+- [ ] Verificar que el menú «Notas / descripción» actúa sobre el bloque actualmente enfocado y los menús generales siguen accesibles.
+- [ ] Validar el diseño compacto en móviles con zoom alto y listas anidadas.
