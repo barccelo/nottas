@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.81 — 1 de noviembre de 2026
+
+- Editor de tareas más compacto y coherente: sin botones «⋯» repetidos a la derecha de cada subtarea. El controlador izquierdo concentra tres acciones: tap para opciones, swipe horizontal para sangrar/desangrar y desplazamiento vertical sobre él para reordenar (también pulsación prolongada).
+- Corregido el bloqueo anterior: el movimiento vertical del asa ya no se interpreta como un scroll inerte; el resto de la lista sigue desplazándose normalmente.
+- Menús de las secciones «Notas / descripción» y «Subtareas» normalizados: mismo icono horizontal y ubicación en sus encabezados, sin iconos adicionales al final de cada línea descriptiva. El menú de descripción actúa sobre el bloque de texto enfocado (o el primero).
+- Se conservan añadir subtarea, opciones contextuales, selección múltiple, jerarquía, acciones por lotes y historial de deshacer. Validada sintaxis de JavaScript; falta prueba de gestos, visual y accesibilidad sobre Android.
+
 ## 0.27.80 — 1 de noviembre de 2026
 
 - Corrección de la interacción real de subtareas: controlador de seis puntos a la izquierda con captura de puntero desde el primer toque. Deslizar a la derecha anida bajo el elemento anterior; a la izquierda sube un nivel. Pulsación prolongada para reordenar.
