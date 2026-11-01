@@ -2299,11 +2299,23 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
           <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="17" rx="2"></rect></svg><span>Desmarcar todas</span>
         </button>
         <button id="taskSelectCopyBtn" class="noteActionRow" type="button">
-          <svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Seleccionar para copiar</span>
+          <svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Seleccionar elementos</span>
         </button>
         <button id="taskRemoveChecksBtn" class="noteActionRow" type="button">
           <svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"></path></svg><span>Eliminar casillas de verificación</span>
         </button>
+      </div>
+
+      <div id="taskSelectedPanel" class="noteActionPanel hidden" aria-hidden="true">
+        <div class="noteActionPanelHandle"></div>
+        <div class="hierarchyPanelTitle">ACCIONES SOBRE LA SELECCIÓN</div>
+        <button id="taskSelectedCopyBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg><span>Copiar seleccionadas</span></button>
+        <button id="taskSelectedIndentBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 19h18M10 9h11M10 15h11M3 9l4 3-4 3"></path></svg><span>Aumentar sangría</span></button>
+        <button id="taskSelectedOutdentBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 19h18M10 9h11M10 15h11M7 9l-4 3 4 3"></path></svg><span>Reducir sangría</span></button>
+        <button id="taskSelectedUpBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><path d="m7 14 5-5 5 5M4 20h16"></path></svg><span>Subir elementos</span></button>
+        <button id="taskSelectedDownBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5M4 4h16"></path></svg><span>Bajar elementos</span></button>
+        <button id="taskSelectedDoneBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m7 12 3 3 7-7"></path></svg><span>Marcar como realizadas</span></button>
+        <button id="taskSelectedUndoneBtn" class="noteActionRow" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle></svg><span>Marcar como pendientes</span></button>
       </div>
 
       <div id="taskMorePanel" class="noteActionPanel taskMorePanel hidden" aria-hidden="true">
@@ -6859,7 +6871,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     const box=$("taskSubtasksBox");if(box)box.classList.toggle("copyMode",taskCopyMode);
     $("taskListToolsBtn")?.classList.toggle("hidden",taskCopyMode);
     ["taskCopyAllBtn","taskCopyConfirmBtn","taskCopyCancelBtn"].forEach(id=>$(id)?.classList.toggle("hidden",!taskCopyMode));
-    const count=taskCopySelection.size,copy=$("taskCopyConfirmBtn");if(copy)copy.textContent=count?"Copiar ("+count+")":"Copiar";
+    const count=taskCopySelection.size,copy=$("taskCopyConfirmBtn");if(copy)copy.textContent=count?"Acciones ("+count+")":"Acciones";
   }
   function renderEditorSubtasks(){
     const box=$("subtasksEditor");if(!box)return;syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);
@@ -6886,6 +6898,52 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});
     });
     syncTaskCopyUI();syncTaskEditorMeta();
+  }
+  function modifySelectedTaskItems(action){
+    if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}
+    const selected=taskCopySelection;
+    let changed=0;
+    const visit=nodes=>(nodes||[]).forEach(n=>{if(selected.has(n.id)){setTaskNodeDone(n,action==="done");changed++}else visit(n.children||[])});
+    const move=(nodes,dir)=>{
+      (nodes||[]).forEach(n=>move(n.children||[],dir));
+      if(dir<0){
+        for(let i=1;i<nodes.length;i++)if(selected.has(nodes[i].id)&&!selected.has(nodes[i-1].id)){
+          [nodes[i-1],nodes[i]]=[nodes[i],nodes[i-1]];changed++;
+        }
+      }else{
+        for(let i=nodes.length-2;i>=0;i--)if(selected.has(nodes[i].id)&&!selected.has(nodes[i+1].id)){
+          [nodes[i],nodes[i+1]]=[nodes[i+1],nodes[i]];changed++;
+        }
+      }
+    };
+    const indent=nodes=>{
+      (nodes||[]).forEach(n=>indent(n.children||[]));
+      for(let i=1;i<nodes.length;){
+        if(!selected.has(nodes[i].id)){i++;continue}
+        const parent=nodes[i-1];
+        parent.children=parent.children||[];
+        parent.children.push(nodes.splice(i,1)[0]);changed++;
+      }
+    };
+    const outdent=nodes=>{
+      for(let i=0;i<nodes.length;i++){
+        const n=nodes[i],remain=[],lift=[];
+        for(const child of n.children||[])(selected.has(child.id)?lift:remain).push(child);
+        n.children=remain;
+        outdent(n.children);
+        if(lift.length){nodes.splice(i+1,0,...lift);changed+=lift.length;i+=lift.length}
+      }
+    };
+    commitTaskHistory();
+    if(action==="done"||action==="undone")visit(editorSubtasks);
+    else if(action==="indent")indent(editorSubtasks);
+    else if(action==="outdent")outdent(editorSubtasks);
+    else if(action==="up"||action==="down")move(editorSubtasks,action==="up"?-1:1);
+    if(!changed){showToast("No hay elementos que mover en esa dirección");return}
+    syncTaskTreeDone(editorSubtasks);
+    renderEditorSubtasks();commitTaskHistory();
+    closeEditorActionPanel($("taskSelectedPanel"));
+    showToast(changed+" elemento"+(changed===1?" actualizado":"s actualizados"));
   }
   function focusEditorSubtask(id){
     const input=[...$("subtasksEditor").querySelectorAll(".subtaskEditorInput")].find(el=>el.dataset.taskId===id);
@@ -7086,13 +7144,13 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     return wasOpen;
   }
   function closeOpenEditorPanel(){
-    for(const id of ["hierarchyPanel","taskListPanel","taskMorePanel","noteInsertPanel","noteMorePanel"]){
+    for(const id of ["hierarchyPanel","taskListPanel","taskSelectedPanel","taskMorePanel","noteInsertPanel","noteMorePanel"]){
       const panel=$(id);
       if(panel&&!panel.classList.contains("hidden")){closeEditorActionPanel(panel);return true}
     }
     return false;
   }
-  function hideTaskPanels(){closeEditorActionPanel($("taskListPanel"));closeEditorActionPanel($("taskMorePanel"))}
+  function hideTaskPanels(){closeEditorActionPanel($("taskListPanel"));closeEditorActionPanel($("taskSelectedPanel"));closeEditorActionPanel($("taskMorePanel"))}
   function showTaskPanel(){
     const active=document.activeElement;if(active&&active.blur)active.blur();closeEditorActionPanel($("taskListPanel"));
     const p=$("taskMorePanel");
@@ -8925,7 +8983,23 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
   $("taskSelectCopyBtn").addEventListener("click",()=>{closeEditorActionPanel($("taskListPanel"));taskCopyMode=true;taskCopySelection.clear();renderEditorSubtasks()});
   $("taskCopyAllBtn").addEventListener("click",()=>{taskCopySelection=new Set(allTaskItemIds(editorSubtasks,[]));renderEditorSubtasks()});
   $("taskCopyCancelBtn").addEventListener("click",()=>{taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks()});
-  $("taskCopyConfirmBtn").addEventListener("click",async()=>{if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}const text=selectedTaskItemsText(editorSubtasks,taskCopySelection);let ok=false;try{await navigator.clipboard.writeText(text);ok=true}catch(_){try{const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(__){}}if(ok){taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks();showToast("Lista copiada")}else showToast("No pude copiar")});
+  $("taskCopyConfirmBtn").addEventListener("click",()=>{
+    if(!taskCopySelection.size){showToast("Selecciona al menos un elemento");return}
+    const p=$("taskSelectedPanel");resetEditorActionPanel(p);
+    p.classList.remove("hidden");p.setAttribute("aria-hidden","false");syncEditorActionBackdrop();
+  });
+  $("taskSelectedCopyBtn").addEventListener("click",async()=>{
+    const selectedText=selectedTaskItemsText(editorSubtasks,taskCopySelection);
+    let ok=false;
+    try{await navigator.clipboard.writeText(selectedText);ok=true}catch(_){
+      try{const ta=document.createElement("textarea");ta.value=selectedText;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove()}catch(__){}
+    }
+    if(ok){closeEditorActionPanel($("taskSelectedPanel"));taskCopyMode=false;taskCopySelection.clear();renderEditorSubtasks();showToast("Lista copiada")}
+    else showToast("No pude copiar");
+  });
+  for(const [id,action] of [["taskSelectedIndentBtn","indent"],["taskSelectedOutdentBtn","outdent"],["taskSelectedUpBtn","up"],["taskSelectedDownBtn","down"],["taskSelectedDoneBtn","done"],["taskSelectedUndoneBtn","undone"]]){
+    $(id).addEventListener("click",()=>modifySelectedTaskItems(action));
+  }
   $("taskRemoveChecksBtn").addEventListener("click",()=>{if(!editorSubtasks.length)return;commitTaskHistory();const bullets=taskItemsToBulletBlocks(editorSubtasks),existing=cleanNoteBlocks(editorTaskBlocks);editorTaskBlocks=[...existing,...bullets];editorSubtasks=[];renderTaskBlocks();renderEditorSubtasks();commitTaskHistory();closeEditorActionPanel($("taskListPanel"));showToast("Casillas eliminadas")});
   $("taskDayDisclosure").addEventListener("click",()=>{
     editorDaysExpanded=!editorDaysExpanded;renderTaskDayTracker();
