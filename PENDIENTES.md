@@ -109,4 +109,9 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 
 ## Editor de listas — seguimiento 0.27.79
 - [ ] Probar en Android la precisión del umbral de swipe horizontal y su convivencia con la pulsación larga y el scroll.
-- [ ] Selección múltiple de subtareas para mover, sangrar o completar en bloque (no implementada aún).
+- [x] Selección múltiple de subtareas para mover, sangrar, completar, marcar pendientes y copiar en bloque (v0.27.80).
+
+## Seguimiento 0.27.80
+- [ ] Validar en Android swipe derecha/izquierda en el nuevo asa izquierda, reordenamiento por pulsación prolongada y desplazamiento de listas largas.
+- [ ] Comprobar la selección múltiple con elementos anidados, completados y desplazamientos entre niveles.
+- [ ] Revisar el menú contextual en pantallas estrechas y el foco al editar con teclado.
