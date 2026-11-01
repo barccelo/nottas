@@ -105,3 +105,8 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 ## Uso de esta lista
 
 Al implementar una mejora: actualizar su estado, registrar la versión y trasladar el resultado a `CHANGELOG.md` y `ESTADO.md`. No marcar elementos como terminados sin comprobación. Los pendientes históricos se revisarán progresivamente para distinguir lo ya implementado de lo que aún falte.
+
+
+## Editor de listas — seguimiento 0.27.79
+- [ ] Probar en Android la precisión del umbral de swipe horizontal y su convivencia con la pulsación larga y el scroll.
+- [ ] Selección múltiple de subtareas para mover, sangrar o completar en bloque (no implementada aún).
