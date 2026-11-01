@@ -174,3 +174,7 @@ La corrección:
 ## Regla de publicación
 
 Toda nueva versión deberá actualizar este archivo, `PENDIENTES.md` y `CHANGELOG.md` en el mismo conjunto de cambios del código. La APK solo se considera publicada tras verificar el resultado de GitHub Actions.
+
+
+## Actualización 0.27.79
+El controlador de jerarquía permite sangría horizontal por swipe (derecha para anidar, izquierda para subir de nivel). Mantiene pulsación larga para arrastrar y controles del menú; verificar en Android tras publicación en Obtainium.
