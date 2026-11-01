@@ -1801,6 +1801,15 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
   #editorOverlay.taskEditorMode .taskTitleRow .taskTitleInput{padding:6px 0 2px}
 }
 
+/* Checklist controller: small left grip, meaningful swipe, no redundant per-row add button. */
+.taskSubtasksBox .taskTreeRow{grid-template-columns:24px 28px minmax(0,1fr) 32px;align-items:start;gap:2px}
+.taskSubtasksBox .taskTreeGrip{display:grid;place-items:center;width:24px;height:40px;border:0;background:transparent;border-radius:8px;padding:0;color:#8e8e93;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.taskSubtasksBox .taskTreeGrip svg{width:19px;height:24px;fill:currentColor;opacity:.88}
+.taskSubtasksBox .taskTreeGrip:active{background:rgba(118,118,128,.10)}
+.taskSubtasksBox .taskTreeNode.gestureIndented > .taskTreeRow{transform:translateX(12px);transition:transform .1s ease;background:rgba(0,122,255,.06);border-radius:10px}
+.taskSubtasksBox .taskTreeNode.gestureOutdented > .taskTreeRow{transform:translateX(-12px);transition:transform .1s ease;background:rgba(0,122,255,.06);border-radius:10px}
+.taskSubtasksBox.copyMode .taskTreeGrip{display:none}
+html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
 </style>
 </head>
 <body>
@@ -6702,37 +6711,102 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     else target.arr.splice(target.index+(relation==="after"?1:0),0,dragged);
     renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();return true;
   }
+  function hierarchyCanSwipe(scope,id,direction){
+    const loc=hierarchyFindLocation(hierarchyRoot(scope),id);
+    return !!loc&&(direction>0?loc.index>0:!!loc.parent);
+  }
   function hierarchySwipeIndent(scope,id,direction){
     const root=hierarchyRoot(scope),loc=hierarchyFindLocation(root,id);
-    if(!root||!loc)return false;
-    if(direction>0&&loc.index<=0)return false;
-    if(direction<0&&!String((()=>{const row=document.querySelector('[data-hierarchy-scope="'+scope+'"][data-hierarchy-id="'+id+'"]');return scope==="task-items"?row?.dataset.taskPath:row?.dataset.notePath})()||"").includes("."))return false;
+    if(!loc||!hierarchyCanSwipe(scope,id,direction))return false;
+    const parentLoc=direction<0?hierarchyFindLocation(root,loc.parent.id):null;
     if(scope.startsWith("task-"))commitTaskHistory();
+    const node=loc.arr.splice(loc.index,1)[0];
     if(direction>0){
-      if(loc.index<=0)return false;
-      const parent=loc.arr[loc.index-1],node=loc.arr.splice(loc.index,1)[0];
-      parent.children=parent.children||[];parent.children.push(node);
-    }else{
-      function findParent(nodes,parentArr=null,parentIndex=-1){
-        for(let i=0;i<nodes.length;i++){
-          const node=nodes[i];
-          if((node.children||[]).some(child=>child.id===id))return {node,parentArr:nodes,parentIndex:i};
-          const nested=findParent(node.children||[]);
-          if(nested)return nested;
-        }
-        return null;
-      }
-      const parent=findParent(root);
-      if(!parent)return false;
-      const childIndex=parent.node.children.findIndex(child=>child.id===id);
-      if(childIndex<0)return false;
-      const node=parent.node.children.splice(childIndex,1)[0];
-      parent.parentArr.splice(parent.parentIndex+1,0,node);
-    }
+      const parent=loc.arr[loc.index-1];
+      parent.children=parent.children||[];
+      parent.children.push(node);
+    }else parentLoc.arr.splice(parentLoc.index+1,0,node);
     renderHierarchyScope(scope);
     if(scope.startsWith("task-"))commitTaskHistory();
     showToast(direction>0?"Elemento subordinado":"Elemento al nivel anterior");
     return true;
+  }
+  function installTaskGripGestures(handle,id){
+    if(!handle||handle.dataset.dragReady==="1")return;
+    handle.dataset.dragReady="1";
+    let pointerId=null,tracking=false,mode="",startX=0,startY=0,lastX=0,lastY=0,hold=null,row=null,ghost=null,targetId=null,relation=null,ready=0;
+    const cleanup=()=>{
+      clearTimeout(hold);hold=null;clearHierarchyDropClasses();
+      row?.classList.remove("hierarchyDragging","gestureIndented","gestureOutdented");
+      ghost?.remove();ghost=null;
+      try{if(pointerId!==null&&handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId)}catch(_){}
+      pointerId=null;tracking=false;mode="";ready=0;row=null;targetId=null;relation=null;
+      hierarchyDrag=null;
+    };
+    handle.addEventListener("pointerdown",e=>{
+      if(e.pointerType==="mouse"&&e.button!==0)return;
+      if(tracking)return;
+      e.stopPropagation();
+      tracking=true;pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;
+      mode="pending";row=handle.closest(".taskTreeNode");
+      try{handle.setPointerCapture(pointerId)}catch(_){}
+      hold=setTimeout(()=>{
+        if(!tracking||mode!=="pending"||!row)return;
+        mode="drag";hierarchyDrag={scope:"task-items",id};
+        row.classList.add("hierarchyDragging");
+        const node=hierarchyFindLocation(editorSubtasks,id)?.node;
+        ghost=makeDragGhost(hierarchyNodeLabel("task-items",node));
+        moveDragGhost(ghost,lastX,lastY);
+        try{handle.performHapticFeedback?.()}catch(_){}
+      },300);
+    });
+    handle.addEventListener("pointermove",e=>{
+      if(!tracking||e.pointerId!==pointerId)return;
+      e.stopPropagation();lastX=e.clientX;lastY=e.clientY;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      if(mode==="pending"){
+        if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.15){
+          clearTimeout(hold);hold=null;mode="swipe";
+        }else if(Math.abs(dy)>12){
+          clearTimeout(hold);hold=null;mode="scroll";
+        }
+      }
+      if(mode==="swipe"){
+        e.preventDefault();
+        const direction=dx>0?1:-1;
+        const available=hierarchyCanSwipe("task-items",id,direction),next=Math.abs(dx)>=38&&available?direction:0;
+        if(next!==ready&&next!==0){try{handle.performHapticFeedback?.()}catch(_){}}
+        ready=next;
+        row?.classList.toggle("gestureIndented",ready===1);
+        row?.classList.toggle("gestureOutdented",ready===-1);
+        return;
+      }
+      if(mode!=="drag")return;
+      e.preventDefault();moveDragGhost(ghost,e.clientX,e.clientY);
+      autoScrollDrag(handle.closest(".editorSheet"),e.clientY);clearHierarchyDropClasses();
+      const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-hierarchy-scope="task-items"][data-hierarchy-id]');
+      const node=hierarchyFindLocation(editorSubtasks,id)?.node;
+      if(!target||target.dataset.hierarchyId===id||!node||hierarchyContainsId(node,target.dataset.hierarchyId)){
+        targetId=null;relation=null;return;
+      }
+      const bounds=target.getBoundingClientRect();
+      targetId=target.dataset.hierarchyId;
+      relation=dx>46?"child":(e.clientY<bounds.top+bounds.height/2?"before":"after");
+      target.classList.add(relation==="child"?"hierarchyDropChild":relation==="before"?"hierarchyDropBefore":"hierarchyDropAfter");
+    },{passive:false});
+    handle.addEventListener("pointerup",e=>{
+      if(!tracking||e.pointerId!==pointerId)return;
+      e.stopPropagation();
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      const swipe=mode==="swipe"&&Math.abs(dx)>=38&&Math.abs(dx)>Math.abs(dy)*1.15&&hierarchyCanSwipe("task-items",id,dx>0?1:-1);
+      const drop=mode==="drag"&&targetId&&relation?{targetId,relation}:null;
+      if(mode!=="pending"){e.preventDefault();suppressClickUntil=Date.now()+480}
+      cleanup();
+      if(swipe)hierarchySwipeIndent("task-items",id,dx>0?1:-1);
+      else if(drop&&hierarchyDrop("task-items",id,drop.targetId,drop.relation))showToast("Elemento movido");
+    },{passive:false});
+    handle.addEventListener("pointercancel",cleanup);
+    handle.addEventListener("lostpointercapture",()=>{if(tracking)cleanup()});
   }
   function installHierarchyDrag(handle,scope,id){
     if(!handle||handle.dataset.dragReady==="1")return;handle.dataset.dragReady="1";
@@ -6778,7 +6852,7 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
   function taskNodesHtml(nodes,depth=0,prefix="",offset=0){
     return (nodes||[]).map((n,i)=>{
       const path=prefix?prefix+"."+i:String(i+offset),checked=taskNodeProgress(n)>=1;
-      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}" data-hierarchy-scope="task-items" data-hierarchy-id="${esc(n.id)}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="taskTreeChild" type="button" aria-label="Añadir elemento interno">+</button><button class="hierarchyMoreBtn" type="button" aria-label="Organizar elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
+      return `<div class="taskTreeNode ${checked?"completed":""}" style="--tree-depth:${depth}" data-task-path="${path}" data-hierarchy-scope="task-items" data-hierarchy-id="${esc(n.id)}"><div class="taskTreeRow"><input class="subtaskCopyCheck" type="checkbox" ${taskCopySelection.has(n.id)?"checked":""} aria-label="Seleccionar para copiar"><button class="taskTreeGrip" type="button" aria-label="Deslizar para sangría o mantener pulsado para ordenar" title="Desliza para cambiar la sangría, mantén pulsado para ordenar"><svg viewBox="0 0 20 24" aria-hidden="true"><circle cx="7" cy="6" r="1.5"/><circle cx="13" cy="6" r="1.5"/><circle cx="7" cy="12" r="1.5"/><circle cx="13" cy="12" r="1.5"/><circle cx="7" cy="18" r="1.5"/><circle cx="13" cy="18" r="1.5"/></svg></button><input class="subtaskEditorCheck" type="checkbox" ${checked?"checked":""} aria-label="Completar elemento"><div class="subtaskEditorInput richEditable" contenteditable="true" role="textbox" data-rich-kind="subtask" data-task-id="${esc(n.id)}" data-placeholder="${depth?"Elemento interno":"Nuevo elemento"}">${sanitizeInlineHtml(n.html||plainToInlineHtml(n.text||""))}</div><button class="hierarchyMoreBtn" type="button" aria-label="Opciones del elemento">⋯</button></div>${(n.children||[]).length?`<div class="taskTreeChildren">${taskNodesHtml(n.children,depth+1,path)}</div>`:""}</div>`;
     }).join("");
   }
   function syncTaskCopyUI(){
@@ -6800,15 +6874,16 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     }else box.innerHTML=taskNodesHtml(editorSubtasks);
     box.querySelectorAll("[data-task-path]").forEach(row=>{
       const path=row.dataset.taskPath,node=treeNodeAtPath(editorSubtasks,path);if(!node)return;
-      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),child=row.querySelector(":scope > .taskTreeRow .taskTreeChild"),more=row.querySelector(":scope > .taskTreeRow .hierarchyMoreBtn");
+      const copy=row.querySelector(":scope > .taskTreeRow .subtaskCopyCheck"),grip=row.querySelector(":scope > .taskTreeRow .taskTreeGrip"),check=row.querySelector(":scope > .taskTreeRow .subtaskEditorCheck"),input=row.querySelector(":scope > .taskTreeRow .subtaskEditorInput"),more=row.querySelector(":scope > .taskTreeRow .hierarchyMoreBtn");
       copy.addEventListener("change",()=>{if(copy.checked)taskCopySelection.add(node.id);else taskCopySelection.delete(node.id);syncTaskCopyUI()});
       check.addEventListener("change",()=>{commitTaskHistory();setTaskNodeDone(node,check.checked);syncTaskTreeDone(editorSubtasks);sortCompletedTaskItems(editorSubtasks);renderEditorSubtasks();commitTaskHistory()});
       input.contentEditable=taskCopyMode?"false":"true";
       input.addEventListener("focus",rememberRichSelection);input.addEventListener("keyup",rememberRichSelection);input.addEventListener("pointerup",rememberRichSelection);
       input.addEventListener("input",()=>{node.html=sanitizeInlineHtml(input.innerHTML);node.text=inlineHtmlToText(node.html).slice(0,500);rememberRichSelection();scheduleTaskHistory()});
       input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();commitTaskHistory();const loc=treeArrayForPath(editorSubtasks,path);if(!loc)return;loc.arr.splice(loc.index+1,0,{id:makeId("s"),text:"",html:"",done:false,children:[]});renderEditorSubtasks();commitTaskHistory();const target=$("subtasksEditor").querySelector('[data-task-path="'+(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1)+'"] .subtaskEditorInput');setTimeout(()=>target?.focus(),20)}});
-      child.addEventListener("click",()=>{commitTaskHistory();node.children=node.children||[];node.children.push({id:makeId("s"),text:"",html:"",done:false,children:[]});const childPath=path+"."+(node.children.length-1);renderEditorSubtasks();commitTaskHistory();setTimeout(()=>$("subtasksEditor").querySelector('[data-task-path="'+childPath+'"] .subtaskEditorInput')?.focus(),20)});
-      more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});installHierarchyDrag(more,"task-items",node.id);
+      grip.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});
+      installTaskGripGestures(grip,node.id);
+      more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel("task-items",path)});
     });
     syncTaskCopyUI();syncTaskEditorMeta();
   }
