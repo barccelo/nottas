@@ -6705,6 +6705,9 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
   function hierarchySwipeIndent(scope,id,direction){
     const root=hierarchyRoot(scope),loc=hierarchyFindLocation(root,id);
     if(!root||!loc)return false;
+    if(direction>0&&loc.index<=0)return false;
+    if(direction<0&&!String((()=>{const row=document.querySelector('[data-hierarchy-scope="'+scope+'"][data-hierarchy-id="'+id+'"]');return scope==="task-items"?row?.dataset.taskPath:row?.dataset.notePath})()||"").includes("."))return false;
+    if(scope.startsWith("task-"))commitTaskHistory();
     if(direction>0){
       if(loc.index<=0)return false;
       const parent=loc.arr[loc.index-1],node=loc.arr.splice(loc.index,1)[0];
@@ -6726,7 +6729,6 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
       const node=parent.node.children.splice(childIndex,1)[0];
       parent.parentArr.splice(parent.parentIndex+1,0,node);
     }
-    if(scope.startsWith("task-"))commitTaskHistory();
     renderHierarchyScope(scope);
     if(scope.startsWith("task-"))commitTaskHistory();
     showToast(direction>0?"Elemento subordinado":"Elemento al nivel anterior");
