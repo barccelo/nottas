@@ -6,6 +6,9 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 
 ## Prioridad inmediata
 
+- [ ] **Por verificar · Equipo de trabajo (1-11-2026):** comprobar en Android separaciones de tarjetas, adaptación a zoom/tamaño reducido y modo oscuro; abrir Calendarios desde Integraciones, cambiar calendarios y comprobar que persistan selección y sincronización.
+
+
 - [ ] **Por verificar · Orden de descripción v0.27.77:** con una tarea que contenga notas y subtareas, comprobar que la descripción aparece siempre antes de la lista de subtareas con herramientas compactas, expandidas y tras alternar entre ambas.
 - [ ] **Por verificar · Integridad:** editar descripción y subtareas, completar y descompletar, plegar la lista y reabrir la tarea sin pérdida de datos.
 - [ ] **Por verificar · Publicación:** confirmar compilación y APK firmada v0.27.77 en GitHub Releases y Obtainium.
