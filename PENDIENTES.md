@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 31 de octubre de 2026 · X9.
+Última revisión: 1 de noviembre de 2026 · X9.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Por verificar · Orden de descripción v0.27.77:** con una tarea que contenga notas y subtareas, comprobar que la descripción aparece siempre antes de la lista de subtareas con herramientas compactas, expandidas y tras alternar entre ambas.
+- [ ] **Por verificar · Integridad:** editar descripción y subtareas, completar y descompletar, plegar la lista y reabrir la tarea sin pérdida de datos.
+- [ ] **Por verificar · Publicación:** confirmar compilación y APK firmada v0.27.77 en GitHub Releases y Obtainium.
+
+
 
 - [ ] **Por verificar · Ícono v0.27.76:** comprobar en Android que el ícono de inicio usa la N azul con calendario, sin fondo blanco cuadrado; conservar el diseño monocromático de notificaciones.
 - [ ] **Por verificar · Obtainium:** confirmar compilación y publicación de APK firmada v0.27.76.

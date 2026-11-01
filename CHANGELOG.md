@@ -2,6 +2,12 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## 0.27.77 — 1 de noviembre de 2026
+
+- El editor de tareas ya no traslada el contenedor de subtareas al panel compacto: «Notas / descripción» se mantiene por encima de las subtareas en todos los modos de herramientas.
+- Se preserva la misma instancia del editor de subtareas (texto, casillas, jerarquía y foco) al cambiar de vista, evitando efectos secundarios sobre datos y estado.
+- Verificada sintaxis de JavaScript; pendientes comprobación visual en Android y publicación de APK firmada.
+
 ## 0.27.76 — 31 de octubre de 2026
 
 - Nuevo ícono principal de Nottas: se utiliza la ilustración suministrada de la N formada por cinta y lista de tareas, con calendario y check; fondo azul con diseño intacto.
