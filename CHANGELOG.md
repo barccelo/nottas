@@ -2,6 +2,12 @@
 
 Los cambios de código y la publicación de la APK deben verificarse por separado.
 
+## Ajuste de interfaz — 1 de noviembre de 2026 (sin cambio de versión)
+
+- Separación visual consistente entre tarjetas en «Equipo de trabajo» y ajuste de tamaños, espaciado y jerarquía de controles.
+- «Calendarios» se mueve desde los detalles de Oficina a un apartado visible de «Integraciones», conservando los controles y estados de Google Calendar y notificaciones.
+- Se mantiene la estética propia de Nottas: «Apple-like» se entiende como pulido y claridad, no como copiar iOS. Pendiente comprobar la pantalla en Android y el proceso de publicación.
+
 ## 0.27.77 — 1 de noviembre de 2026
 
 - El editor de tareas ya no traslada el contenedor de subtareas al panel compacto: «Notas / descripción» se mantiene por encima de las subtareas en todos los modos de herramientas.
