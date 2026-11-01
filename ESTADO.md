@@ -181,3 +181,9 @@ El controlador de jerarquía permite sangría horizontal por swipe (derecha para
 
 ## Actualización 0.27.80 — controlador de subtareas
 Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos a la derecha y no capturaba confiablemente el dedo. Ahora las subtareas tienen asa de seis puntos a la izquierda, swipe horizontal con vista previa y captura, pulsación prolongada vertical para ordenar; sin botón + por fila. Selección múltiple disponible desde «Opciones de subtareas > Seleccionar elementos > Acciones». Sintaxis JavaScript validada; pendiente prueba en Android y confirmar APK publicada en Releases para Obtainium.
+
+## Actualización 0.27.81 — simplificación de control de listas
+
+- Subtareas: únicamente asa izquierda + check + texto. Tap en asa abre las opciones de esa fila, swipe horizontal cambia sangría y movimiento vertical desde asa reubica la fila sin esperar pulsación prolongada. Pulsación prolongada sigue habilitada.
+- Los tres puntos ya no se repiten por fila. Menús generales de descripción y subtareas usan la misma iconografía, en los encabezados; descripción controla el bloque enfocado.
+- Se mantienen jerarquías, selección múltiple, menús contextual/general y deshacer. Pendiente prueba de interacción Android y confirmar publicación firmada en Releases para Obtainium.
