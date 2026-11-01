@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.80 — 1 de noviembre de 2026
+
+- Corrección de la interacción real de subtareas: controlador de seis puntos a la izquierda con captura de puntero desde el primer toque. Deslizar a la derecha anida bajo el elemento anterior; a la izquierda sube un nivel. Pulsación prolongada para reordenar.
+- El botón + redundante desaparece de cada fila. El botón «+ Añadir subtarea» y la acción de añadir elementos internos desde el menú permanecen.
+- Selección múltiple con menú «Acciones»: copiar, sangrar, quitar sangría, mover arriba/abajo y completar o devolver a pendientes, manteniendo historial para deshacer.
+- Tab y Mayús+Tab también cambian nivel al usar teclado físico. Se conserva la iconografía y apariencia de Nottas.
+- Validación de sintaxis JavaScript correcta; pendiente validación táctil y visual en Android.
+
+
+
 ## 0.27.79 — 1 de noviembre de 2026
 
 - Deslizar horizontalmente el controlador de un subelemento hacia la derecha lo subordina al elemento anterior; hacia la izquierda reduce su nivel.
