@@ -7172,11 +7172,11 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     overlay.classList.toggle("taskToolsExpanded",taskToolsExpanded);
     overlay.classList.toggle("taskToolsCompact",!taskToolsExpanded);
     overlay.classList.toggle("taskToolsHasSubtasks",!taskToolsExpanded&&taskActiveTool==="subtasks");
-    const box=$("taskSubtasksBox"),section=$("taskToolSection_subtasks"),content=document.querySelector("#taskForm .taskContentArea");
-    if(box&&section&&content){
-      if(!taskToolsExpanded&&box.parentElement!==section)section.appendChild(box);
-      else if(taskToolsExpanded&&box.previousElementSibling!==content)content.after(box);
-    }
+    // The description always precedes the subtask list. Never reparent the
+    // list into the active tool section: that puts notes below subtasks when
+    // the compact toolbar is used.
+    const box=$("taskSubtasksBox"),content=document.querySelector("#taskForm .taskContentArea");
+    if(box&&content&&box.previousElementSibling!==content)content.after(box);
     $("taskToolsHeading").textContent=state?.workspaces?.some(w=>w.id===(editorTaskWorkspaceId||currentWorkspaceId())&&w.kind==="assistant")?"Herramientas del evento":"Herramientas de la tarea";
     const indicators={
       place:!!$("taskLocation")?.value.trim(),

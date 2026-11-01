@@ -5,7 +5,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.76** (`versionCode 157`).
+- Versión del código Android: **0.27.77** (`versionCode 158`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
@@ -15,6 +15,13 @@
 - Fechas, recurrencia, recordatorios, calendario (día, semana, mes y agenda), eventos multidía y Google Calendar en modo consulta.
 - Captura rápida, gestos, presentación al encender/desbloquear, horarios de trabajo, temas claro/oscuro, importación y exportación JSON.
 - Espacio compartido de dirección y asistencia: propuestas y estados de reuniones, sincronización, mensajes y avisos a pantalla completa, llamadas y notificaciones.
+
+## Cambios v0.27.77 — orden estable entre notas y subtareas
+
+- Corregida la posición de «Notas / descripción» al activar la herramienta Subtareas desde los íconos compactos.
+- Tanto en la vista compacta como con «Mostrar todas las herramientas», la descripción permanece antes de la lista de subtareas.
+- Se conserva un único contenedor de subtareas: no se recrean nodos, se cambia contenido ni se altera el guardado o los checks.
+- Pendiente verificar la interfaz en Android, con subtareas colapsadas y expandidas, y comprobar la publicación de la APK.
 
 ## Cambios v0.27.76 — ícono principal de la aplicación
 
@@ -150,7 +157,7 @@ La corrección:
 
 ## Continuación inmediata
 
-1. Actualizar ambos teléfonos a v0.27.76 tras verificar la publicación de la APK firmada en Obtainium.
+1. Actualizar ambos teléfonos a v0.27.77 tras verificar la publicación de la APK firmada en Obtainium.
 2. Comprobar categorías en «Personal» y «Oficina», incluidos los ajustes y el selector de cada evento.
 3. Sincronizar desde ambos dispositivos; cerrar y reabrir la aplicación para comprobar persistencia.
 4. Verificar que las categorías existentes conservan nombres, colores, iconos y asociaciones de tareas/eventos.
