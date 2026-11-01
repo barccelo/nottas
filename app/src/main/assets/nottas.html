@@ -6702,6 +6702,36 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     else target.arr.splice(target.index+(relation==="after"?1:0),0,dragged);
     renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();return true;
   }
+  function hierarchySwipeIndent(scope,id,direction){
+    const root=hierarchyRoot(scope),loc=hierarchyFindLocation(root,id);
+    if(!root||!loc)return false;
+    if(direction>0){
+      if(loc.index<=0)return false;
+      const parent=loc.arr[loc.index-1],node=loc.arr.splice(loc.index,1)[0];
+      parent.children=parent.children||[];parent.children.push(node);
+    }else{
+      function findParent(nodes,parentArr=null,parentIndex=-1){
+        for(let i=0;i<nodes.length;i++){
+          const node=nodes[i];
+          if((node.children||[]).some(child=>child.id===id))return {node,parentArr:nodes,parentIndex:i};
+          const nested=findParent(node.children||[]);
+          if(nested)return nested;
+        }
+        return null;
+      }
+      const parent=findParent(root);
+      if(!parent)return false;
+      const childIndex=parent.node.children.findIndex(child=>child.id===id);
+      if(childIndex<0)return false;
+      const node=parent.node.children.splice(childIndex,1)[0];
+      parent.parentArr.splice(parent.parentIndex+1,0,node);
+    }
+    if(scope.startsWith("task-"))commitTaskHistory();
+    renderHierarchyScope(scope);
+    if(scope.startsWith("task-"))commitTaskHistory();
+    showToast(direction>0?"Elemento subordinado":"Elemento al nivel anterior");
+    return true;
+  }
   function installHierarchyDrag(handle,scope,id){
     if(!handle||handle.dataset.dragReady==="1")return;handle.dataset.dragReady="1";
     let timer=null,pointerId=null,startX=0,startY=0,active=false,row=null,ghost=null,targetId=null,relation=null;
@@ -6731,7 +6761,14 @@ html[data-theme="dark"] input[type="checkbox"]:not(.iosSwitch input):not(.miniSw
     },{passive:false});
     const finish=e=>{
       clearTimeout(timer);timer=null;
-      if(!active)return;
+      if(!active){
+        const dx=e.clientX-startX,dy=e.clientY-startY;
+        if(Math.abs(dx)>=48&&Math.abs(dx)>Math.abs(dy)*1.35){
+          e.preventDefault();suppressClickUntil=Date.now()+480;
+          hierarchySwipeIndent(scope,id,dx>0?1:-1);
+        }
+        return;
+      }
       e.preventDefault();suppressClickUntil=Date.now()+480;const did=targetId&&relation?hierarchyDrop(scope,id,targetId,relation):false;cleanup();if(did)showToast("Elemento movido");
     };
     handle.addEventListener("pointerup",finish,{passive:false});handle.addEventListener("pointercancel",()=>cleanup());
