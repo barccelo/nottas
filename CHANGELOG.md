@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.83 — 2 de noviembre de 2026
+
+- Invitaciones a equipos: acción explícita «Invitar a una persona» para el administrador en los detalles del espacio; al crear un equipo nuevo se despliega el código de invitación para copiarlo.
+- Integrantes sin permiso de administración reciben una explicación en vez de una sección de invitación ausente. Las claves de recuperación y acceso a cuenta siguen separadas.
+- Si el servidor no devuelve el código, la interfaz permite actualizarlo consultando la membresía autorizada. No se muestra el código a otras cuentas.
+- El formulario para crear equipos solo se cierra cuando el servidor confirma que creó el espacio; los errores no se ocultan.
+- Sin cambios en el esquema de datos ni en los permisos del Worker. Pendiente prueba en Android con dos cuentas y publicación de APK firmada para Obtainium.
+
 ## 0.27.82 — 1 de noviembre de 2026
 
 - Corregido el agrupador cronológico de tareas: el encabezado de día se muestra siempre que la agrupación por fecha y hora está habilitada, incluso con una única tarea o un solo día en el filtro «Pendientes».
