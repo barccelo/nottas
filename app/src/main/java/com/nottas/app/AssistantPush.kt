@@ -180,6 +180,39 @@ object AssistantPush {
         }
     }
 
+    // A token that FCM has rejected must be replaced, never re-registered
+    // from local SharedPreferences. Called only on explicit server 409.
+    @Volatile private var tokenResetInProgress = false
+    fun resetRejectedToken(context: Context): Boolean {
+        if (!initializeFirebase(context)) return false
+        synchronized(this) {
+            if (tokenResetInProgress) return true
+            tokenResetInProgress = true
+        }
+        return try {
+            val appContext = context.applicationContext
+            FirebaseMessaging.getInstance().deleteToken().addOnCompleteListener { result ->
+                if (result.isSuccessful) {
+                    appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                        .remove(KEY_FCM_TOKEN)
+                        .remove(KEY_REGISTERED_KEY)
+                        .remove(KEY_REGISTERED_AT)
+                        .apply()
+                    refreshToken(appContext)
+                } else {
+                    appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                        .putString(KEY_FCM_ERROR, result.exception?.message ?: "token_reset_failed")
+                        .apply()
+                }
+                synchronized(this) { tokenResetInProgress = false }
+            }
+            true
+        } catch (error: Throwable) {
+            synchronized(this) { tokenResetInProgress = false }
+            false
+        }
+    }
+
     fun status(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val configured =

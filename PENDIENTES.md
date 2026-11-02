@@ -1,10 +1,18 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Diagnóstico de push unilateral.
+Última revisión: 2 de noviembre de 2026 · Corrección de tokens FCM invalidados.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Validación prioritaria v0.27.94:** actualizar ambos teléfonos, abrir ambos una vez para validar token, probar creación de tarea Oficina asistente→director y mensaje asistente→director con recepción directa sin actualizar.
+- [ ] **Recuperación FCM:** simular 404/410 de token, comprobar respuesta 409, eliminación del token nativo, emisión de nuevo token y reenvío automático de sync/mensaje pendiente.
+- [ ] **Bidireccionalidad:** comprobar los dos sentidos con la misma rutina FCM y tiempos de recepción medibles.
+- [ ] **Cierre de calidad:** asegurar todas las pruebas GitHub Actions, despliegue Worker y APK firmada v0.27.94; no borrar datos.
+- [ ] **Restricción Android:** si FCM acepta push pero no se recibe en director, investigar servicio Firebase y permisos de notificación/pantalla completa; no seguir sustituyendo push por polling.
+
+
 
 - [ ] **Crítico · v0.27.93:** asegurar despliegue del Worker y APK de GitHub Actions. No declarar arreglo final sin comprobar ambos.
 - [ ] **Crítico · FCM director:** con Nottas abierta en ambos teléfonos y misma versión, crear tarea y enviar mensaje asistente→director; comprobar recepción sin tocar actualizar. Repetir con director en segundo plano.

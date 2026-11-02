@@ -469,8 +469,26 @@ async function registerPushToken(request, auth, env) {
   const fcmToken = textValue(body.fcmToken, 4096);
   const label = textValue(body.deviceLabel || "Android", 80);
   if (!fcmToken) return json({ error: "fcm_token_required" }, 400);
-  // After reinstallation the native device ID can change. A Firebase token may
-  // not belong to two user sessions simultaneously; transfer the token safely.
+  // Firebase can invalidate an app-instance token while Android still reports
+  // that value locally. Merely copying that same token to D1 on every resume
+  // leaves incoming notifications broken forever.
+  const previous = await env.DB.prepare(
+    "SELECT fcm_token,user_id FROM devices WHERE id=?"
+  ).bind(auth.deviceId).first();
+  try {
+    // Test acceptance *before* claiming that this device is registered. This
+    // uses the exact sender/project as every task, notice and call.
+    await sendFcm(fcmToken, { type: "push_registration_probe" }, env);
+  } catch(error) {
+    if (isInvalidFcmTokenError(error)) {
+      await env.DB.prepare("UPDATE devices SET fcm_token=NULL WHERE id=? AND fcm_token=?")
+        .bind(auth.deviceId, fcmToken).run();
+      return json({error:"firebase_token_expired",message:"El token de Firebase dejó de ser válido."},409);
+    }
+    // Credentials and temporary transport failures must never be reported as
+    // invalid tokens. Reattempt without destroying a valid local identity.
+    return json({error:"firebase_delivery_unavailable",message:"Firebase no confirmó la recepción."},503);
+  }
   await env.DB.prepare(
     "UPDATE devices SET fcm_token=NULL WHERE fcm_token=? AND id<>?"
   ).bind(fcmToken, auth.deviceId).run();
@@ -478,7 +496,36 @@ async function registerPushToken(request, auth, env) {
     "INSERT INTO devices(id,user_id,label,fcm_token,platform,updated_at) VALUES(?,?,?,?,?,?) " +
     "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,fcm_token=excluded.fcm_token,platform=excluded.platform,updated_at=excluded.updated_at"
   ).bind(auth.deviceId, auth.userId, label, fcmToken, "android", Date.now()).run();
-  return json({ ok: true, registered: true });
+
+  // If this token was replaced after being invalidated, immediately deliver
+  // a sync signal and recent unread message. This restores push without a
+  // user touching refresh or having to create a dummy task.
+  const tokenChanged=previous?.fcm_token!==fcmToken||previous?.user_id!==auth.userId;
+  if (tokenChanged) {
+    const memberships=await memberWorkspaceIds(auth.userId,env);
+    for (const workspaceId of memberships) {
+      try {
+        await sendFcm(fcmToken,{type:"sync",workspaceId,changedBy:"server_reconnected"},env);
+      } catch(error) { console.error("Push registration sync replay",String(error?.message||error).slice(0,100)); }
+    }
+    try {
+      await ensureAssistantMessagesTable(env);
+      const unread=await env.DB.prepare(
+        "SELECT m.id,m.workspace_id,m.body,m.created_at,u.display_name AS from_name,"+
+        "wm.status AS workspace_status FROM assistant_messages m "+
+        "JOIN users u ON u.id=m.from_user_id "+
+        "JOIN workspace_members wm ON wm.workspace_id=m.workspace_id AND wm.user_id=m.to_user_id "+
+        "WHERE m.to_user_id=? AND m.read_at IS NULL AND m.created_at>? "+
+        "ORDER BY m.created_at DESC LIMIT 1"
+      ).bind(auth.userId,Date.now()-10*60*1000).first();
+      if(unread?.workspace_status==="active"){
+        await sendFcm(fcmToken,{type:"assistant_notice",noticeId:unread.id,
+          workspaceId:unread.workspace_id,fromName:unread.from_name||"Asistente",
+          message:unread.body,fromRole:""},env);
+      }
+    }catch(error){console.error("Push registration notice replay",String(error?.message||error).slice(0,120))}
+  }
+  return json({ ok: true, registered: true, verified: true, recovered: tokenChanged });
 }
 
 // Authenticated, non-sensitive check that the current session has a delivery
@@ -1063,7 +1110,7 @@ async function sendAssistantCallPush(userId, payload, env) {
     } catch (error) {
       console.error("Assistant call FCM delivery failed", String(error?.message || error).slice(0,180));
       // Only definitive 404/410 token failures justify removing a stale token.
-      if (error?.fcmStatus === 404 || error?.fcmStatus === 410) {
+      if (isInvalidFcmTokenError(error)) {
         await env.DB.prepare("UPDATE devices SET fcm_token=NULL WHERE id=? AND fcm_token=?")
           .bind(device.id, device.fcm_token).run();
       }
@@ -1190,11 +1237,19 @@ async function sendFcm(token, data, env) {
     }
   );
   if (!response.ok) {
-    const error = new Error("FCM HTTP " + response.status);
+    const detail=await response.json().catch(()=>({}));
+    const code=(detail?.error?.details||[]).map(x=>x?.errorCode).find(Boolean)||"";
+    const error = new Error("FCM HTTP " + response.status + (code ? " " + code : ""));
     error.fcmStatus = response.status;
+    error.fcmErrorCode = code;
     throw error;
   }
   return true;
+}
+
+function isInvalidFcmTokenError(error) {
+  return error?.fcmStatus===404 || error?.fcmStatus===410 ||
+    ["UNREGISTERED","INVALID_ARGUMENT","SENDER_ID_MISMATCH"].includes(error?.fcmErrorCode);
 }
 
 async function googleAccessToken(serviceAccount) {

@@ -1,7 +1,18 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Reparación de push unilateral asistente→director.
+Última actualización: 2 de noviembre de 2026 · Validación FCM y recuperación de token caducado.
 
+
+## Cambios v0.27.94 — recuperación del token FCM rechazado
+
+- Localizada debilidad: el servidor aceptaba el registro de un token Firebase sin comprobar que FCM aún lo reconociera. Aunque Firebase lo rechazara, Android podía volver a registrar el mismo token local obsoleto indefinidamente.
+- Todo registro FCM realiza una comprobación real mediante la misma cuenta Firebase y envío que las llamadas, los mensajes y la sincronización. Si el token es definitivamente inválido (404/410 o UNREGISTERED), el servidor lo desactiva y responde con un código específico.
+- Android elimina el token rechazado, solicita uno nuevo y registra el nuevo token automáticamente. Se conserva la identidad del usuario, el espacio Oficina, los permisos y los datos.
+- Al reconocer un token nuevo, el Worker envía inmediatamente una señal sync a todos los espacios autorizados de la cuenta, además del mensaje reciente pendiente no leído, para recuperar cambios que quedaron sin aviso cuando el destinatario no tenía token.
+- La verificación se realiza en primer plano y no usa sondeo cada 15 segundos. Los tokens registrados y válidos no provocan reenvíos de mensajes antiguos.
+- Se retiró la pantalla pasiva «Respuesta guardada, aviso no confirmado» tras la confirmación de guardado; el receptor recibe el aviso recuperado cuando restablece su registro FCM.
+- Nuevas pruebas de registro de token válido, inválido, error de servidor y registro repetido sin duplicaciones.
+- Pendiente validación en ambos teléfonos de recepción instantánea; una aceptación de FCM no es una garantía física de entrega ni de apertura de pantalla completa bajo restricciones de Android.
 
 ## Cambios v0.27.93 — FCM simétrico y autorreparación del destinatario
 
@@ -55,7 +66,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.93** (`versionCode 174`).
+- Versión del código Android: **0.27.94** (`versionCode 175`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

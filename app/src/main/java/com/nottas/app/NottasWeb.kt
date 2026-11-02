@@ -519,6 +519,9 @@ object NottasWeb {
         fun refreshAssistantPushToken(): Boolean = AssistantPush.refreshToken(context)
 
         @JavascriptInterface
+        fun resetRejectedAssistantPushToken(): Boolean = AssistantPush.resetRejectedToken(context)
+
+        @JavascriptInterface
         fun setAssistantSession(serverUrl: String, sessionToken: String): Boolean =
             AssistantPush.setSession(context, serverUrl, sessionToken)
 

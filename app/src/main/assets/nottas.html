@@ -3655,7 +3655,12 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     }
     const response=await fetch(server+path,{method:options.method||"GET",headers,body:options.body===undefined?undefined:JSON.stringify(options.body)});
     let data={};try{data=await response.json()}catch(_){}
-    if(!response.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
+    if(!response.ok){
+      const error=new Error(data.message||data.error||("HTTP "+response.status));
+      error.code=String(data.error||"");
+      error.status=response.status;
+      throw error;
+    }
     return data;
   }
   function normalizeRemoteWorkspace(w){
@@ -3755,9 +3760,10 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload,forceConflict:true}));
         const deliveries=Array.isArray(pushed.pushDelivery)?pushed.pushDelivery:[];
         const undelivered=deliveries.some(d=>d.recipients>0&&d.accepted===0);
-        if(undelivered&&!assistantDeliveryWarningShown){
-          assistantDeliveryWarningShown=true;
-          showToast("Cambio guardado. No se confirmó el aviso inmediato al otro teléfono.");
+        if(undelivered){
+          // Actively repair the device registration; do not replace delivery
+          // with a passive status warning.
+          assistantEnsurePushRegistration(true).catch(()=>{});
         }else if(deliveries.some(d=>d.accepted>0))assistantDeliveryWarningShown=false;
       }
       const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!categorySnapshotChecked)?"&full=1":"");
@@ -3860,7 +3866,12 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     try{
       await assistantRequest("/v1/devices/push-token",{method:"POST",body:{fcmToken:status.fcmToken,deviceLabel:"Nottas Android"}});
       state.assistant.pushRegisteredAt=now();scheduleSave();return true;
-    }catch(_){return false}
+    }catch(error){
+      if(error?.code==="firebase_token_expired"){
+        try{NottasNative.resetRejectedAssistantPushToken?.()}catch(_){}
+      }
+      return false;
+    }
   }
 
   // Push registration must be verified on foreground resume; never trust an
@@ -4074,8 +4085,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     $("assistantNoticeStatus").textContent="Guardando y notificando…";
     try{
       const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages",{method:"POST",body:{message}});
-      $("assistantNoticeStatus").textContent=result.pushAccepted?
-        "Mensaje guardado y notificación enviada.":"Mensaje guardado. El destinatario lo verá al conectarse.";
+      $("assistantNoticeStatus").textContent=result.pushAccepted?"":"Reintentando entrega automática…";
       $("assistantNoticeText").value="";
       showToast("Mensaje guardado");
       await refreshAssistantMessageThread();

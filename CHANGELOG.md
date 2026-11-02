@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.94 — 2 de noviembre de 2026
+
+- El registro de Firebase se valida con envío real FCM; los tokens caducados ya no pueden registrarse como si fueran funcionales.
+- Si FCM devuelve UNREGISTERED/404/410, el cliente Android invalida su caché nativa de token, solicita uno nuevo y lo registra automáticamente.
+- Recuperación automática al reestablecerse el token: push inmediato de sincronización a los espacios autorizados y reenvío del mensaje reciente no leído, sin duplicar entradas persistentes.
+- El registro vigente no reenvía mensajes viejos en cada comprobación. La misma infraestructura Firebase se usa para director y asistente, sin rutas diferenciadas.
+- Retirada la confirmación pasiva de «respuesta guardada sin entrega» cuando el servidor confirmó la persistencia; el aviso queda pendiente de recuperación automática.
+- Añadidas cuatro pruebas para registros válidos, tokens rechazados, fallos de credenciales y supresión de reenvíos redundantes. Ningún dato local, membresía o cuenta se borra.
+
+
 ## 0.27.93 — 2 de noviembre de 2026
 
 - Unificada la entrega de avisos FCM de tareas/eventos, respuestas y mensajes con la misma rutina probada de llamadas. Antes la sincronización genérica silenciaba rechazos y mantenía tokens de dispositivos definitivamente inválidos.

@@ -274,13 +274,13 @@ class AssistantNoticeActivity : Activity() {
                 if(isFinishing || isDestroyed)return@runOnUiThread
                 sending=false
                 sendButton.isEnabled=true
-                if(success && pushAccepted) {
+                if(success) {
+                    // Persisted messages are replayed to the original recipient
+                    // after Firebase registration recovers. Do not strand the
+                    // sender on a passive "guardada, espere" screen.
                     finishNotice()
-                } else if(success) {
-                    sendButton.isEnabled=false
-                    statusText.text="Respuesta guardada. El aviso inmediato no se confirmó; el director podrá verla al sincronizar."
                 } else {
-                    statusText.text="Sin conexión o sesión no válida. Inténtalo de nuevo."
+                    statusText.text="No se pudo guardar la respuesta. Inténtalo de nuevo."
                 }
             }
         }
