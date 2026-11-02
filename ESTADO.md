@@ -1,7 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 31 de octubre de 2026 · Chat de continuidad X9.
+Última actualización: 2 de noviembre de 2026 · Actualización de ícono de notificaciones.
 
+
+## Cambios v0.27.88 — símbolo de notificaciones
+
+- Nuevo vector monocromático de las dos «t», trazado a partir del recurso aprobado y conservando los huecos del check y calendario.
+- Se mantiene `ic_nottas_status` para notificaciones Android/Firebase y acceso rápido, sin tocar el ícono principal.
+- Se ha solicitado publicación de APK 0.27.88 mediante GitHub Actions; comprobar su resultado y la actualización desde Obtainium.
 
 ## Ajuste de configuración del equipo — 1 de noviembre de 2026
 
@@ -13,7 +19,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.77** (`versionCode 158`).
+- Versión del código Android: **0.27.88** (`versionCode 169`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

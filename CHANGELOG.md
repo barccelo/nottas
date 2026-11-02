@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.88 — 2 de noviembre de 2026
+
+- Reemplazado el recurso vectorial `ic_nottas_status.xml` por la silueta monocromática de las dos «t» aprobadas (azul y naranja en el original), conservando como espacios transparentes el check, el calendario y sus seis casillas.
+- Todas las notificaciones, accesos rápidos y Firebase continúan referenciando el mismo recurso Android; el ícono principal de la aplicación no se modifica.
+- Actualizada la versión para generar la APK firmada mediante GitHub Actions y distribuirla desde GitHub Releases a Obtainium.
+- Pendiente verificación visual en Android a escala real de la barra de estado.
+
 ## 0.27.87 — 2 de noviembre de 2026
 
 - Vista de tareas agrupadas por fecha y hora: las tareas y eventos sin fecha se muestran en primer lugar bajo «Sin fecha», antes de los grupos fechados.
