@@ -193,3 +193,10 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Causa: condición `dayCounts.size>1` ocultaba todo encabezado de fecha si solo había un grupo.
 - Corregido para mostrar siempre el día en modo cronológico, incluidos «Hoy», «Sin fecha» y un único evento pendiente. No altera agrupaciones por hora ni la tarjeta de tarea.
 - Pendiente validar APK firmada y comportamiento en teléfono.
+
+## 0.27.83 — Acceso de nuevos integrantes (2-11-2026)
+- En «Equipo de trabajo» → equipo seleccionado, el administrador dispone de «Invitar a una persona», código y «Copiar código». Tras crear un equipo se expande esa sección automáticamente.
+- Integrantes sin rol de administrador ven una explicación de permisos, sin acceso al código reservado al creador/director.
+- Si falta un código en respuesta del servidor, se ofrece recuperar el dato mediante GET /v1/workspaces para la cuenta autenticada.
+- Se separa explícitamente invitación de recuperación de cuenta; formulario de creación no se cierra ante error de servidor.
+- Pendiente validar en dispositivos distintos y confirmar release firmada v0.27.83.
