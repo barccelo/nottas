@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## 0.27.82 — 1 de noviembre de 2026
+
+- Corregido el agrupador cronológico de tareas: el encabezado de día se muestra siempre que la agrupación por fecha y hora está habilitada, incluso con una única tarea o un solo día en el filtro «Pendientes».
+- La línea de hora, el contador de tareas y la opción «Sin fecha» se mantienen sin alterar el orden ni el filtrado.
+- Corrección motivada por el video `889466.mp4`; pendiente comprobación visual en Android y publicación de APK firmada para Obtainium.
+
 ## 0.27.81 — 1 de noviembre de 2026
 
 - Editor de tareas más compacto y coherente: sin botones «⋯» repetidos a la derecha de cada subtarea. El controlador izquierdo concentra tres acciones: tap para opciones, swipe horizontal para sangrar/desangrar y desplazamiento vertical sobre él para reordenar (también pulsación prolongada).
