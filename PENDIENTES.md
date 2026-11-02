@@ -127,3 +127,9 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Comprobar que «Todas» con varios días conserve cada encabezado y contador.
 - [ ] Comprobar agrupación de una única tarea sin fecha y sin hora («Sin fecha» / «Sin hora»).
 - [ ] Validar una tarea en filtro «Hoy» y los cambios entre filtros sin saltos en los encabezados.
+
+## 0.27.83 — Pruebas pendientes de invitación
+- [ ] Crear equipo desde teléfono nuevo y verificar aparición inmediata del código de invitación del administrador.
+- [ ] Copiar código y unirse desde otro teléfono con una cuenta diferente; confirmar integrantes y sincronización.
+- [ ] Comprobar que la cuenta integrante no puede copiar un código reservado al administrador, pero ve por qué.
+- [ ] Comprobar que recuperación de cuenta no se confunda con invitaciones y que un fallo al crear no cierre el formulario.
