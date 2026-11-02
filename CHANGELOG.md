@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.85 — 2 de noviembre de 2026
+
+- Nueva marca gráfica en el encabezado de la barra lateral: el texto «Nottas» se sustituye por un logotipo SVG sin fondo, conservando «Espacios y organización» debajo.
+- El logotipo reutiliza los contornos de las letras «No» y «as» de la imagen de referencia, con las dos T centrales sustituidas por el vector original ic_nottas_status.xml del icono de notificaciones; se mantiene la diferenciación azul/naranja en la marca.
+- «Acerca de Nottas»: se sustituye la N genérica por la imagen del icono actual de la aplicación en Android con filtro monocromático, con una N vectorial de respaldo si WebView no pudiera cargar el recurso.
+- El título «Nottas» de «Acerca de» adopta el mismo logotipo, con ajuste responsive y modo oscuro. No se modifica el icono principal ni el icono de notificaciones del sistema.
+- Pendiente validar que el icono Android se renderice correctamente en WebView y que el logotipo conserve legibilidad en teléfonos y modo oscuro.
+
 ## 0.27.84 — 2 de noviembre de 2026
 
 - Ajuste de «Equipo de trabajo» para evitar tarjetas pegadas: separación uniforme de 19 px entre las tarjetas principales, radios y márgenes consistentes.
