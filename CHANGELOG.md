@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.84 — 2 de noviembre de 2026
+
+- Ajuste de «Equipo de trabajo» para evitar tarjetas pegadas: separación uniforme de 19 px entre las tarjetas principales, radios y márgenes consistentes.
+- «Oficina»: se elimina la subtarjeta gris de invitación, pasando el código y «Copiar» a una fila integrada; miembros en filas compactas con divisores y alineación coherente.
+- «Soporte y diagnóstico» vuelve a ser accesible (una regla anterior lo mantenía oculto). Se reorganiza en sincronización, recuperación de espacios, administración avanzada y configuración técnica plegable.
+- Añadido «Comprobar conexión» mediante la sesión vigente y respuesta del servidor. Oculto el campo para reclamar propiedad cuando el usuario ya es dueño del espacio.
+- Mantiene las funciones previas de sincronización, recuperación administrativa, ocultar y eliminar espacios, llamadas, push, Google Calendar y compatibilidad de equipos sin cambiar roles ni datos.
+- Comprobaciones de estructura HTML y sintaxis JavaScript completas; pendiente inspección visual y prueba de flujo en Android.
+
 ## 0.27.83 — 2 de noviembre de 2026
 
 - Invitaciones a equipos: acción explícita «Invitar a una persona» para el administrador en los detalles del espacio; al crear un equipo nuevo se despliega el código de invitación para copiarlo.
