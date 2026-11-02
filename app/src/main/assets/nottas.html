@@ -1882,6 +1882,9 @@ html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="d
 #assistantOverlay .teamDiagnosticDisclosure .assistantInput{max-width:100%;box-sizing:border-box}
 #assistantOverlay .teamDiagnosticGroup .teamDiagnosticSubsection{border-top:1px solid #e9e9ed;padding-top:12px}
 html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color:#343439}
+#assistantOverlay #assistantAdvanced:not(.hidden){margin-top:16px!important}
+#assistantOverlay .teamDiagnosticGroup .assistantActions .btn{flex:1 1 140px}
+@media(max-width:380px){#assistantOverlay .teamMemberEntry{flex-wrap:wrap}#assistantOverlay .teamMemberEntry button{margin-left:auto}}
 </style>
 </head>
 <body>
@@ -2788,7 +2791,7 @@ html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color
       <div id="assistantRecoveryStatus" class="assistantSectionHint"></div>
       <div class="assistantGrid">
         <div class="field wide"><div class="label">ID del espacio seleccionado (solo lectura)</div><input id="assistantRecoveryWorkspaceId" class="assistantInput" type="text" readonly><button id="assistantCopyWorkspaceIdBtn" class="btn secondary" type="button" style="margin-top:6px">Copiar ID del espacio</button></div>
-        <div class="field wide"><div class="label">Código de recuperación de Cloudflare</div><input id="assistantRecoveryCode" class="assistantInput" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="48" placeholder="Código temporal de 48 caracteres"></div>
+        <div id="teamRecoveryCodeField" class="field wide"><div class="label">Código de recuperación de Cloudflare</div><input id="assistantRecoveryCode" class="assistantInput" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" maxlength="48" placeholder="Código temporal de 48 caracteres"></div>
       </div>
       <div class="assistantActions">
         <button id="assistantRecoverBtn" class="btn secondary" type="button">Restaurar propiedad</button>
@@ -4612,6 +4615,7 @@ html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color
     $("assistantRecoveryWorkspaceId").value=ws?.kind==="assistant"?ws.id:"";
     $("assistantRecoveryStatus").textContent=restoredShared?"Espacio restaurado, pero sin acceso confirmado en Cloudflare. El rol del JSON no concede permisos.":(ws?.kind==="assistant"?(ownerShared?"Propiedad verificada en Cloudflare.":"Miembro verificado sin permiso de jefe."):"");
     $("assistantRecoverBtn").classList.toggle("hidden",ownerShared);
+    $("teamRecoveryCodeField").classList.toggle("hidden",ownerShared);
     $("assistantHideWorkspaceBtn").classList.toggle("hidden",ws?.kind!=="assistant");
     $("assistantDeleteSection").classList.toggle("hidden",!ownerShared);
     if(!ownerShared||assistantDeletionPrepared?.id!==ws?.id){
