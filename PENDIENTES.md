@@ -133,3 +133,10 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Copiar código y unirse desde otro teléfono con una cuenta diferente; confirmar integrantes y sincronización.
 - [ ] Comprobar que la cuenta integrante no puede copiar un código reservado al administrador, pero ve por qué.
 - [ ] Comprobar que recuperación de cuenta no se confunda con invitaciones y que un fallo al crear no cierre el formulario.
+
+## Verificación posterior a v0.27.84
+- [ ] Validar en pantallas Android estrechas y con zoom alto que las tarjetas del equipo se separen, no se encimen y la invitación no tenga subtarjeta.
+- [ ] Comprobar acceso plegable a Soporte y diagnóstico, botón «Comprobar conexión», sincronización, copia de ID y ocultar espacio.
+- [ ] Comprobar que Recuperación de propiedad solo presente el código a miembros no propietarios, y que Administración avanzada mantenga confirmación al eliminar.
+- [ ] Comprobar que Calendarios sigue abriendo desde Integraciones y que actualizar push, actividad y funciones heredadas de compatibilidad operan en el panel plegable.
+- [ ] Confirmar consistencia de modo oscuro, visualización de miembros y permisos de director/asistente.
