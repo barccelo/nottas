@@ -1982,6 +1982,17 @@ html[data-theme="dark"] .directorInboxLater{background:#36363b}
 .directorInboxActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 4px}
 .directorInboxActions button{border:1px solid rgba(118,118,128,.2);border-radius:11px;min-height:37px;font-size:12px;font-weight:650;background:transparent;color:inherit}
 .directorInboxActions button:last-child{background:#2d71ee;color:white;border-color:transparent}
+/* Compact, aligned date tools and a clock-wheel trigger; no Android time input. */
+#quickTaskOptions.quickTools{display:flex;align-items:center;gap:5px}
+#quickTaskOptions .quickToolsTrailing{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto;flex:0 0 auto}
+#quickTaskOptions .quickIconBtn{width:39px;height:39px;min-width:39px;min-height:39px;border-radius:14px;margin:0;padding:0;display:inline-flex;align-items:center;justify-content:center;flex:0 0 39px;vertical-align:middle}
+#quickTaskOptions .quickIconBtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 19px}
+#quickTaskOptions #quickReminderBtn{gap:3px;position:relative}
+#quickTaskOptions #quickReminderCount{font-size:11px;line-height:1}
+#quickTimeOptions #quickCustomTime{display:inline-flex;align-items:center;justify-content:space-between;gap:6px;width:auto;min-width:83px;min-height:32px;padding:0 9px;border-radius:10px;cursor:pointer}
+#quickTimeOptions #quickCustomTime span{font-size:17px;line-height:1;color:#8e8e93}
+#quickTimeOptions #quickCustomTime.selected{color:#1677ff;background:#eaf3ff;border-color:#a9ceff}
+html[data-theme="dark"] #quickTimeOptions #quickCustomTime.selected{background:#18344e;color:#9ccaff;border-color:#355f87}
 /* Keyboard-friendly quick category rail: compact icons immediately after the title. */
 #quickCategory.quickCategory{display:none!important}
 .quickCategoryRail{display:flex;gap:7px;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:5px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;touch-action:pan-x}
@@ -2328,10 +2339,15 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         <button class="quickChip active" type="button" data-quick-date="">Sin fecha</button>
         <button class="quickChip" type="button" data-quick-date="today">Hoy</button>
         <button class="quickChip" type="button" data-quick-date="tomorrow">Mañana</button>
-        <button id="quickReminderBtn" class="quickChip quickReminderBtn" type="button" aria-label="Recordatorios rápidos" aria-expanded="false" aria-controls="quickReminderPanel">
+        <div class="quickToolsTrailing">
+          <button id="quickCalendarBtn" class="quickChip quickIconBtn" type="button" aria-label="Consultar calendario" title="Ver eventos y agenda">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7.5 3v4M16.5 3v4M3 10h18"/></svg>
+          </button>
+          <button id="quickReminderBtn" class="quickChip quickReminderBtn quickIconBtn" type="button" aria-label="Recordatorios rápidos" aria-expanded="false" aria-controls="quickReminderPanel">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
           <span id="quickReminderCount">2</span>
-        </button>
+          </button>
+        </div>
       </div>
       <div id="quickReminderPanel" class="quickReminderPanel hidden">
         <span class="quickReminderHint">Recordar</span>
@@ -2346,7 +2362,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         <button class="quickTimeChip" type="button" data-quick-time="09:00">09:00</button>
         <button class="quickTimeChip" type="button" data-quick-time="12:00">12:00</button>
         <button class="quickTimeChip" type="button" data-quick-time="18:00">18:00</button>
-        <input id="quickCustomTime" class="quickCustomTime" type="time" step="300" aria-label="Elegir otra hora">
+        <button id="quickCustomTime" class="quickCustomTime" type="button" aria-label="Elegir hora con rueda" aria-haspopup="dialog">Elegir <span aria-hidden="true">⌄</span></button>
       </div>
       <div id="quickCategory" class="categoryPicker quickCategory" data-category-picker>
         <div class="categoryPickerBar">
@@ -2725,6 +2741,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         <select id="taskReminder" class="select">
           <option value="at">A la hora</option>
           <option value="5m">5 min antes</option>
+          <option value="10m">10 min antes</option>
           <option value="15m">15 min antes</option>
           <option value="30m">30 min antes</option>
           <option value="1h">1 hora antes</option>
@@ -5166,10 +5183,25 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       button.addEventListener("pointerdown",e=>{
         if(document.activeElement===$("quickTaskText")||document.activeElement===$("quickNoteText"))e.preventDefault();
       });
-      button.addEventListener("click",()=>setCategoryPicker("quickCategory",c.id));
+      button.addEventListener("click",()=>{quickExplicitCategory=true;setCategoryPicker("quickCategory",c.id)});
       rail.appendChild(button);
     }
     rail.scrollLeft=left;
+  }
+  let quickExplicitCategory=false;
+  function quickNormalizedCategoryText(text){
+    return String(text||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .toLocaleLowerCase("es").replace(/[^a-z0-9:]+/g," ").replace(/\s+/g," ").trim();
+  }
+  function quickRecognizeCategory(){
+    if(quickExplicitCategory||quickMode!=="tasks")return;
+    const title=" "+quickNormalizedCategoryText(quickPlainText())+" ";
+    const matches=activeCategories().filter(c=>c.id!=="inbox"&&
+      (currentWorkspace()?.kind==="assistant"||categoryScope(c)!=="event")&&
+      title.includes(" "+quickNormalizedCategoryText(c.name)+" "));
+    matches.sort((a,b)=>quickNormalizedCategoryText(b.name).length-quickNormalizedCategoryText(a.name).length);
+    const next=matches[0]?.id||"inbox";
+    if($("quickCategory")?.dataset.value!==next)setCategoryPicker("quickCategory",next);
   }
   function getCategoryPickerValue(id){
     const picker=categoryPickerEl(id);if(!picker)return "inbox";
@@ -7184,13 +7216,16 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     setTimePartEditing(part,false);
     positionTimeWheels(true);
   }
-  function openTimePicker(){
+  let timePickerContext="task";
+  function openTimePicker(context="task"){
+    timePickerContext=context==="quick"?"quick":"task";
     buildTimeWheels();
-    const current=parseStoredTime($("taskTime").value),nowDate=new Date();
+    const current=parseStoredTime(timePickerContext==="quick"?quickDueTime:$("taskTime").value),nowDate=new Date();
     timeDraftHour=current?current.h:nowDate.getHours();
     timeDraftMinute=current?current.m:nowDate.getMinutes();
-    timeDraftReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"none";
-    $("timeReminderToggle").checked=editorTaskReminders.length>0;
+    const reminders=timePickerContext==="quick"?quickReminderOffsets:editorTaskReminders;
+    timeDraftReminder=reminders.length?reminderMinutesToLegacy(reminders[0]):"none";
+    $("timeReminderToggle").checked=reminders.length>0;
     $("taskReminder").value=timeDraftReminder!=="none"&&[...$("taskReminder").options].some(o=>o.value===timeDraftReminder)?timeDraftReminder:"at";
     syncTimeReminderUI();
     setTimePartEditing("hour",false);setTimePartEditing("minute",false);
@@ -7200,6 +7235,18 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function applyTimePickerDraft(persist=true){
     if(!$("hourDirectInput").classList.contains("hidden"))commitTimePartEdit("hour");
     if(!$("minuteDirectInput").classList.contains("hidden"))commitTimePartEdit("minute");
+    if(timePickerContext==="quick"){
+      const on=$("timeReminderToggle").checked;
+      const selected=legacyReminderToMinutes($("taskReminder").value||"at")??0;
+      const wasEnabled=quickReminderOffsets.length>0;
+      if(on){
+        const others=wasEnabled?quickReminderOffsets.slice(1):[];
+        quickReminderOffsets=normalizeReminderMinutes([selected,...others]);
+      }else quickReminderOffsets=[];
+      setQuickTime(formatTimeParts(timeDraftHour,timeDraftMinute));
+      if(quickDueDate&&on)requestReminderPermission();
+      return;
+    }
     const oldStart=timeToMinutes($("taskTime").value),oldEnd=timeToMinutes($("taskEndTime").value),oldDuration=oldStart!==null&&oldEnd!==null&&oldEnd>oldStart?oldEnd-oldStart:null;
     $("taskTime").value=formatTimeParts(timeDraftHour,timeDraftMinute);
     if(oldDuration!==null){const nextStart=timeToMinutes($("taskTime").value);$("taskEndTime").value=minutesToTime(Math.min(1439,nextStart+oldDuration))}
@@ -7216,12 +7263,19 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     $("hourDirectInput").blur();$("minuteDirectInput").blur();
     setTimePartEditing("hour",false);setTimePartEditing("minute",false);
     closeOverlay("timeOverlay");
+    timePickerContext="task";
   }
   function commitTimePicker(){
     applyTimePickerDraft(true);
     closeTimePicker(false);
   }
   function clearTaskTime(){
+    if(timePickerContext==="quick"){
+      quickReminderOffsets=[];
+      setQuickTime("");
+      closeTimePicker(false);
+      return;
+    }
     $("taskTime").value="";
     $("taskEndTime").value="";
     $("taskReminder").value="at";
@@ -8715,7 +8769,13 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     });
     document.querySelectorAll("[data-quick-time]").forEach(b=>b.classList.toggle("active",b.dataset.quickTime===quickDueTime));
     const custom=$("quickCustomTime");
-    if(custom&&custom.value!==quickDueTime)custom.value=quickDueTime;
+    if(custom){
+      const preset=["","09:00","12:00","18:00"].includes(quickDueTime);
+      const customSelected=!!quickDueTime&&!preset;
+      custom.classList.toggle("selected",customSelected);
+      custom.innerHTML=(customSelected?quickDueTime:"Elegir")+' <span aria-hidden="true">⌄</span>';
+      custom.setAttribute("aria-label",quickDueTime?"Editar hora "+quickDueTime+" con rueda":"Elegir hora con rueda");
+    }
     quickReminderOffsets=normalizeReminderMinutes(quickReminderOffsets);
     const reminderButton=$("quickReminderBtn"),count=$("quickReminderCount");
     count.textContent=quickReminderOffsets.length?String(quickReminderOffsets.length):"—";
@@ -8756,6 +8816,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     syncQuickExtractedState();
     if(!quickExplicitTime)quickDueTime=quickDetected.time;
     if(!quickExplicitDate)quickDueDate=quickDetected.date||(quickDueTime?localDateISO():"");
+    quickRecognizeCategory();
     syncQuickControls();
   }
   function setQuickDate(value,manual=true){
@@ -8809,12 +8870,28 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     return true;
   };
 
+  let quickCalendarReturn=false;
+  function openQuickCalendar(){
+    if(!$("quickOverlay").classList.contains("show"))return;
+    quickCalendarReturn=true;
+    $("quickTaskText").blur();$("quickNoteText").blur();
+    $("quickOverlay").classList.remove("show");
+    $("quickOverlay").setAttribute("aria-hidden","true");
+    openCalendar();
+  }
+  function restoreQuickFromCalendar(){
+    if(!quickCalendarReturn)return;
+    quickCalendarReturn=false;
+    openOverlay("quickOverlay");
+    // Keep the captured title, category, time and reminders unchanged.
+    syncQuickControls();
+  }
   function openQuickCapture(requestedMode=null){
     if(requestedMode==="notes"){openNote(null);return}
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
-    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();quickComposing=false;
+    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();quickComposing=false;quickExplicitCategory=false;
     $("quickTaskText").replaceChildren();quickRefreshPlaceholder();
     $("quickNoteText").value="";
     setCategoryPicker("quickCategory",activeCategory!=="all"?activeCategory:"inbox");
@@ -8823,6 +8900,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     openOverlay("quickOverlay");
   }
   function closeQuickCapture(){
+    quickCalendarReturn=false;
     quickReminderPanelOpen=false;
     closeOverlay("quickOverlay");
     $("quickTaskText").blur();$("quickNoteText").blur();
@@ -9360,8 +9438,11 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     $("calendarWeekOptionsPopover").classList.add("hidden");
     $("calendarWeekOptionsBtn").setAttribute("aria-expanded","false");
     closeOverlay("calendarOverlay");
+    restoreQuickFromCalendar();
   });
-  $("calendarOverlay").addEventListener("click",e=>{if(e.target===$("calendarOverlay"))closeOverlay("calendarOverlay")});
+  $("calendarOverlay").addEventListener("click",e=>{
+    if(e.target===$("calendarOverlay")){closeOverlay("calendarOverlay");restoreQuickFromCalendar()}
+  });
   $("calendarPrev").addEventListener("click",()=>shiftCalendar(-1));
   $("calendarNext").addEventListener("click",()=>shiftCalendar(1));
   $("calendarToday").addEventListener("click",()=>{calendarDate=localDateISO();renderCalendar()});
@@ -9544,12 +9625,13 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     });
   });
   document.querySelectorAll("[data-quick-date]").forEach(b=>b.addEventListener("click",()=>setQuickDate(b.dataset.quickDate||"")));
+  $("quickCalendarBtn").addEventListener("click",openQuickCalendar);
   $("quickReminderBtn").addEventListener("click",()=>{
     quickReminderPanelOpen=!quickReminderPanelOpen;syncQuickControls();
   });
   document.querySelectorAll("[data-quick-reminder]").forEach(button=>button.addEventListener("click",()=>setQuickReminder(button.dataset.quickReminder)));
   document.querySelectorAll("[data-quick-time]").forEach(b=>b.addEventListener("click",()=>setQuickTime(b.dataset.quickTime||"")));
-  $("quickCustomTime").addEventListener("change",e=>setQuickTime(e.target.value));
+  $("quickCustomTime").addEventListener("click",()=>openTimePicker("quick"));
   $("quickTaskText").addEventListener("input",syncQuickFromText);
   $("quickTaskText").addEventListener("compositionstart",()=>{quickComposing=true});
   $("quickTaskText").addEventListener("compositionend",()=>{
@@ -9884,8 +9966,8 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   $("timeOverlay").addEventListener("click",e=>{if(e.target===$("timeOverlay"))closeTimePicker()});
   $("timeDone").addEventListener("click",commitTimePicker);
   $("timeClear").addEventListener("click",clearTaskTime);
-  $("timeReminderToggle").addEventListener("change",()=>{syncTimeReminderUI();const on=$("timeReminderToggle").checked;if(on&&!editorTaskReminders.length)editorTaskReminders=[legacyReminderToMinutes($("taskReminder").value||"at")??0];if(!on)editorTaskReminders=[];$("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";syncTaskTimeButton();syncTaskInlineForm();if(on)requestReminderPermission()});
-  $("taskReminder").addEventListener("change",()=>{timeDraftReminder=$("taskReminder").value||"at";if($("timeReminderToggle").checked){const m=legacyReminderToMinutes(timeDraftReminder)??0;editorTaskReminders=normalizeReminderMinutes(editorTaskReminders.length?[m,...editorTaskReminders.slice(1)]:[m]);syncTaskInlineForm();requestReminderPermission()}});
+  $("timeReminderToggle").addEventListener("change",()=>{syncTimeReminderUI();if(timePickerContext==="quick")return;const on=$("timeReminderToggle").checked;if(on&&!editorTaskReminders.length)editorTaskReminders=[legacyReminderToMinutes($("taskReminder").value||"at")??0];if(!on)editorTaskReminders=[];$("taskTimeButton").dataset.reminderActive=editorTaskReminders.length?"1":"0";syncTaskTimeButton();syncTaskInlineForm();if(on)requestReminderPermission()});
+  $("taskReminder").addEventListener("change",()=>{timeDraftReminder=$("taskReminder").value||"at";if(timePickerContext==="quick")return;if($("timeReminderToggle").checked){const m=legacyReminderToMinutes(timeDraftReminder)??0;editorTaskReminders=normalizeReminderMinutes(editorTaskReminders.length?[m,...editorTaskReminders.slice(1)]:[m]);syncTaskInlineForm();requestReminderPermission()}});
   $("hourEditButton").addEventListener("click",()=>beginTimePartEdit("hour"));
   $("minuteEditButton").addEventListener("click",()=>beginTimePartEdit("minute"));
   ["hour","minute"].forEach(part=>{
@@ -10108,6 +10190,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     if(calendarRescheduleEditor){cancelCalendarReschedule();return true}
     if(calendarMoveTaskId){cancelCalendarMove();return true}
     closeOverlay("calendarOverlay");
+    restoreQuickFromCalendar();
     return true;
   }
 

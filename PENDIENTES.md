@@ -1,10 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · v0.27.101 pendiente de prueba en dispositivos.
+Última revisión: 2 de noviembre de 2026 · v0.27.102 pendiente de pruebas en Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.102 · Recordatorios:** verificar alineación exacta del icono campana con el calendario y las fechas en pantallas pequeñas, teclado abierto y tema oscuro.
+- [ ] **v0.27.102 · Categorías automáticas:** «Consejo Directivo» selecciona su categoría sin borrar título; prueba frases con categoría, borrado de coincidencia, tildes y selección manual persistente.
+- [ ] **v0.27.102 · Calendario en captura rápida:** abrir las vistas Día, Semana, Mes y Agenda con eventos; cerrar y volver al borrador, también tras entrar y salir del editor de un evento y usar Back.
+- [ ] **v0.27.102 · Rueda de hora:** comprobar scroll horizontal/vertical, elección de minutos, ajuste de recordatorios y ausencia del selector nativo Android; verificar que no interfiera con la edición de tareas existente.
+- [ ] **v0.27.102 · Obtainium:** verificar nueva APK con firma permanente y conservación de los datos.
+
 
 - [ ] **v0.27.101 · Categorías:** comprobar carrusel visible con teclado, deslizamiento horizontal, categoría marcada y guardado correcto en tarea y nota.
 - [ ] **v0.27.101 · Horas compactas:** probar 2p, 2a, 430p, 430a, 02p, 02a, 0430p y 0430a; también 12a, 12p y horas inválidas. Verificar marcador dentro del título.

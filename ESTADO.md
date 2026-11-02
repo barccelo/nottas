@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Fila de categorías, horarios abreviados y Acto presencial.
+Última actualización: 2 de noviembre de 2026 · Captura rápida: calendario, hora de rueda y categorías inteligentes.
 
+
+## Cambios v0.27.102 — captura rápida: iconos, calendario, rueda y categorías inteligentes
+
+- Alineados el icono de recordatorios y el botón nuevo de calendario en la misma fila y con el mismo tamaño.
+- Nuevo acceso a la agenda/calendario existente desde captura rápida, con vistas y eventos intactos. Al cerrar el calendario se recupera el borrador de captura sin cambiar el título, recordatorios, fecha, hora o categoría; al abrir un evento se mantiene el retorno al calendario.
+- Captura rápida reconoce automáticamente nombres de categorías disponibles en el texto, como «Consejo Directivo»; selecciona la categoría sin extraer ni modificar esas palabras. Prioriza coincidencias completas y nombres más largos, y no anula una selección manual. Al quitar la coincidencia vuelve a «Ninguna» si no hubo selección manual.
+- Sustituido el control nativo Android de hora por un botón que abre la rueda existente de Nottas (horas y minutos con desplazamiento). La rueda conserva sus ajustes de recordatorio sin modificar el editor de tareas.
+- Pendiente comprobación Android: teclado, alineación, categorías, rueda y retorno tras abrir/cerrar calendario. Sin cambios de esquema ni Cloudflare.
 
 ## Cambios v0.27.101 — categorías visibles y horarios abreviados
 
@@ -124,7 +132,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.101** (`versionCode 182`).
+- Versión del código Android: **0.27.102** (`versionCode 183`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

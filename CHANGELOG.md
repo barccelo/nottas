@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.102 — 2 de noviembre de 2026
+
+- Alineados los botones de recordatorio y nuevo calendario en la captura rápida.
+- El botón Calendario abre las vistas y eventos existentes sin perder el borrador al regresar.
+- Detección automática de nombres de categorías escritos en el título, sin retirar las palabras y respetando selección manual.
+- El selector de hora nativo de Android se sustituye por la rueda de horas/minutos de Nottas, reutilizando sus controles.
+- Versión Android incrementada para generar y publicar la APK firmada en GitHub Releases mediante Obtainium.
+
+
 ## 0.27.101 — 2 de noviembre de 2026
 
 - Sustitución del selector de categorías de captura rápida por carrusel horizontal de iconos siempre accesible debajo del título.
