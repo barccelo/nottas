@@ -1,10 +1,18 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Corrección de tokens FCM invalidados.
+Última revisión: 2 de noviembre de 2026 · Bootstrap Firebase director sin configurar.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Bloqueante · Firebase del director:** revisar el aviso «Push no configurado» y el informe GitHub Actions del endpoint /v1/client-config; si faltan los cuatro valores públicos en el Worker, configurarlos una sola vez en Cloudflare (sin exponer la clave privada FCM). No crear una cuenta nueva ni desinstalar.
+- [ ] **Validar v0.27.95:** tras completar configuración pública, abrir Nottas en el director y comprobar que los cuatro campos se autocompletan, Firebase inicializa, obtiene token y el servidor lo reconoce.
+- [ ] **Validar entrega inmediata:** tarea y mensaje asistente→director, director→asistente, con Nottas abierta y con app en segundo plano. No considerar que actualización manual equivale a push.
+- [ ] **Regresión:** asegurar que autoconfiguración se reintenta al fallar la red en el primer inicio y se detiene al obtener Firebase (sin sondeo cada 15 s).
+- [ ] **Obtainium:** validar compilación, firma y publicación 0.27.95.
+
+
 
 - [ ] **Validación prioritaria v0.27.94:** actualizar ambos teléfonos, abrir ambos una vez para validar token, probar creación de tarea Oficina asistente→director y mensaje asistente→director con recepción directa sin actualizar.
 - [ ] **Recuperación FCM:** simular 404/410 de token, comprobar respuesta 409, eliminación del token nativo, emisión de nuevo token y reenvío automático de sync/mensaje pendiente.

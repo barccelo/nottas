@@ -1,7 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Validación FCM y recuperación de token caducado.
+Última actualización: 2 de noviembre de 2026 · Diagnóstico: Firebase no configurado en el director.
 
+
+## Cambios v0.27.95 — configuración automática de Firebase
+
+- Detectado en captura del director: «Push no configurado» con formulario vacío, por lo que la sincronización Cloudflare funciona pero ese teléfono carece de recepción FCM.
+- Identificado fallo local: autoconfiguración intentada solo una vez y silenciosamente abandonada cuando el Worker no suministraba los cuatro valores públicos.
+- El cliente ahora inicia configuración desde el arranque normal, vuelve a revisar el estado nativo tras configurarse y reintenta cada 15 segundos únicamente mientras carezca de Firebase y la app esté visible; no hace polling de tareas.
+- La interfaz distingue falta de configuración pública del Worker de la espera normal del token; no solicita crear una identidad nueva.
+- El despliegue GitHub Actions ahora verifica el endpoint público Firebase sin publicar ninguno de los valores y advierte si faltan. Si el Worker no los tiene, el servidor debe configurarse una sola vez; el cliente por sí solo no puede inventarlos.
+- Pendiente: verificar valores públicos de Worker y recepción automática en el director en dispositivo real.
 
 ## Cambios v0.27.94 — recuperación del token FCM rechazado
 
@@ -66,7 +75,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.94** (`versionCode 175`).
+- Versión del código Android: **0.27.95** (`versionCode 176`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

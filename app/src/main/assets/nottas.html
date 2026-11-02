@@ -3882,8 +3882,12 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     if(!force&&Date.now()-assistantPushVerifiedAt<120000)return true;
     assistantPushVerificationBusy=true;
     try{
-      const status=assistantNativePushStatus();
-      if(!status.configured){await assistantAutoConfigurePush();return false}
+      let status=assistantNativePushStatus();
+      if(!status.configured){
+        const ready=await assistantAutoConfigurePush();
+        if(!ready)return false;
+        status=assistantNativePushStatus();
+      }
       if(!status.fcmToken){
         try{NottasNative.refreshAssistantPushToken?.()}catch(_){}
         return false;
@@ -4523,26 +4527,44 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   }
 
   const TEAM_DEFAULT_SERVER="https://nottas-assistant-api.losrobles.workers.dev";
-  let teamPushAutoAttempted=false;
+  let teamPushConfigPromise=null,teamPushConfigAttemptAt=0,teamPushConfigError="";
   async function assistantAutoConfigurePush(){
-    if(!assistantConfigured()||teamPushAutoAttempted)return;
+    if(!assistantConfigured())return false;
     const status=assistantNativePushStatus();
-    if(status.configured){
-      if(status.fcmToken)await assistantRegisterPushToken();
-      return;
-    }
-    teamPushAutoAttempted=true;
-    try{
-      const result=await assistantRequest("/v1/client-config",{auth:false});
-      const config=result.firebase||{};
-      if(["projectId","senderId","appId","apiKey"].some(k=>!String(config[k]||"").trim()))return;
-      if(!window.NottasNative?.configureAssistantPush)return;
-      state.assistant.firebase=config;scheduleSave();
-      NottasNative.configureAssistantPush(JSON.stringify(config));
-      setTimeout(()=>{assistantRegisterPushToken();renderAssistantSettings()},1500);
-    }catch(_){
-      // Account and workspace access remain usable without push.
-    }
+    if(status.configured)return true;
+    if(teamPushConfigPromise)return teamPushConfigPromise;
+    if(Date.now()-teamPushConfigAttemptAt<12000)return false;
+    teamPushConfigAttemptAt=Date.now();
+    teamPushConfigPromise=(async()=>{
+      try{
+        const result=await assistantRequest("/v1/client-config",{auth:false});
+        const config=result.firebase||{};
+        if(["projectId","senderId","appId","apiKey"].some(k=>!String(config[k]||"").trim())){
+          teamPushConfigError="firebase_config_missing_on_worker";
+          return false;
+        }
+        if(!window.NottasNative?.configureAssistantPush){
+          teamPushConfigError="firebase_native_bridge_unavailable";
+          return false;
+        }
+        const configured=JSON.parse(NottasNative.configureAssistantPush(JSON.stringify(config))||"{}");
+        if(!configured.configured){
+          teamPushConfigError=String(configured.error||"firebase_init_pending");
+          return false;
+        }
+        teamPushConfigError="";
+        state.assistant.firebase=config;
+        scheduleSave();
+        renderAssistantSettings();
+        return true;
+      }catch(error){
+        teamPushConfigError=String(error?.message||error||"firebase_config_unavailable");
+        return false;
+      }finally{
+        teamPushConfigPromise=null;
+      }
+    })();
+    return teamPushConfigPromise;
   }
   let teamMemberCache=[],teamAssignConfirm=null,teamInviteExpandedFor="";
   function teamEnsureServer(){
@@ -4821,7 +4843,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     $("assistantGoogleDiscoverBtn").classList.add("hidden");$("assistantCallBtn").classList.toggle("hidden",!ownerShared||!connected);
     $("assistantNoticeSection").classList.toggle("hidden",!(connected&&ws?.kind==="assistant"&&assistantWorkspaceAuthorized(ws)));
     $("assistantInviteRow").classList.toggle("hidden",!ownerShared||!ws?.inviteCode);$("assistantInviteCode").textContent=ownerShared?(ws.inviteCode||""):"";
-    $("assistantPushDesc").textContent=push.fcmToken?("Token Firebase disponible · "+String(push.fcmToken).slice(0,12)+"… · comprueba el registro en Equipo y actividad"):(push.error?("Push: "+push.error):(push.configured?"Solicitando token…":"Push no configurado."));
+    $("assistantPushDesc").textContent=push.fcmToken?("Firebase activo · registro automático del dispositivo"):(push.error?("Firebase: "+push.error):(push.configured?"Solicitando token Firebase…":teamPushConfigError==="firebase_config_missing_on_worker"?"El servidor no tiene los cuatro datos públicos de Firebase configurados.":"Configurando notificaciones automáticamente…"));
     renderAssistantSummary();renderTeamHome();
   }
   function assistantGoogleCalendarSelector(calendars,canEdit){
@@ -9647,6 +9669,15 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   // FCM remains the fast path. A foreground reconciliation is the safety net
   // for a missed/invalid FCM token and for transient connection failures.
   // No 15-second polling, no background periodic network requests.
+  // Retry only the missing public Firebase bootstrap while the app is
+  // visible. Once configured, this timer makes no network requests.
+  setInterval(()=>{
+    if(!document.hidden&&assistantConfigured()&&!assistantNativePushStatus().configured){
+      assistantAutoConfigurePush().then(ready=>{
+        if(ready)assistantEnsurePushRegistration(true);
+      });
+    }
+  },15000);
   const ASSISTANT_FOREGROUND_RECONCILE_MS=75000;
   // Refresh only the device registration at most once every two minutes in
   // foreground. Event delivery remains FCM-based, never a 15s content poll.

@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.95 — 2 de noviembre de 2026
+
+- Corregida la autoconfiguración Firebase del teléfono receptor: antes una respuesta incompleta del Worker desactivaba permanentemente nuevos intentos de instalación en la sesión.
+- Ahora se verifica Firebase nativo al entrar, reintenta la configuración pública durante la visualización cuando falta y pasa a registrar el token sin necesitar entrar a la pantalla Asistente.
+- Las comprobaciones de configuración se detienen automáticamente al inicializar Firebase. No se modifican tareas, sincronización, cuentas, permisos ni calendarios.
+- La pantalla Asistente explica si el Worker carece de los cuatro valores públicos para que no se confunda el problema con una falla de sincronización.
+- GitHub Actions comprueba la disponibilidad de esos valores sin revelar contenido. El servidor sigue necesitando que estén configurados; no se generan datos falsos de Firebase.
+
+
 ## 0.27.94 — 2 de noviembre de 2026
 
 - El registro de Firebase se valida con envío real FCM; los tokens caducados ya no pueden registrarse como si fueran funcionales.

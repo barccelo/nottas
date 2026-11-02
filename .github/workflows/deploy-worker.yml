@@ -72,3 +72,15 @@ jobs:
           done
           echo "::error::Deployment validation failed: expected health 200 and OAuth callback 400 for missing parameters."
           exit 1
+
+      - name: Verify Android Firebase public auto-configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          config_url="https://nottas-assistant-api.losrobles.workers.dev/v1/client-config"
+          # Do not expose identifiers or keys in the build log.
+          if curl --fail --silent --show-error --max-time 20 "$config_url" | jq -e             '.firebase | (.projectId | type == "string" and length > 0) and (.senderId | type == "string" and length > 0) and (.appId | type == "string" and length > 0) and (.apiKey | type == "string" and length > 0)' >/dev/null; then
+            echo "Android Firebase public configuration is available for automatic setup."
+          else
+            echo "::warning::Android Firebase public configuration is incomplete in the Worker. Phones without previous Firebase setup cannot receive push. Set FIREBASE_PROJECT_ID, FIREBASE_SENDER_ID, FIREBASE_APP_ID and FIREBASE_API_KEY as Worker variables."
+          fi
