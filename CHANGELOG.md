@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## 0.27.90 — 2 de noviembre de 2026
+
+- «Acerca de Nottas»: reducido el margen inferior del ícono azul de 12 px a 4 px para compactar la composición y acercar el nombre monocromático.
+- Se mantienen los tamaños, el centrado, los colores y el espacio del subtítulo; sin cambios en el ícono de inicio, la barra lateral ni el recurso de notificaciones.
+- Actualización exclusiva de presentación, sin cambios en datos, sincronización o permisos. Pendiente validación visual en Android.
+
 ## 0.27.89 — 2 de noviembre de 2026
 
 - Logotipo de la barra lateral ajustado a la nueva referencia: las dos «t» azul y naranja utilizan el vector monocromático actualizado, reproducido en sus colores propios y alineado a la altura de la N (sin sobresalir). Las letras N, o, a y s permanecen oscuras, con fondo transparente.

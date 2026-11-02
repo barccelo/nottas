@@ -1,10 +1,14 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Identidad visual de Nottas.
+Última revisión: 2 de noviembre de 2026 · Espaciado en Acerca de Nottas.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Por verificar · Acerca de v0.27.90:** comprobar menor separación ícono azul–logotipo Nottas y buen equilibrio con el subtítulo en modo claro y oscuro.
+- [ ] **Por verificar · Publicación v0.27.90:** comprobar APK firmada en GitHub Releases y actualización detectada desde Obtainium.
+
 
 - [ ] **Por verificar · Identidad v0.27.89:** comprobar que el ícono azul en «Acerca de» ya no muestra bordes negros en claro y oscuro; el logotipo inferior debe ser pequeño y monocromático.
 - [ ] **Por verificar · Barra lateral v0.27.89:** logo con «No», las dos «t» azul/naranja con check y calendario, «as» y sin fondo blanco; las «t» no deben sobresalir por arriba de la N.

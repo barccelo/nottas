@@ -1,7 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Ajustes de identidad visual.
+Última actualización: 2 de noviembre de 2026 · Espaciado de logotipo en Acerca de Nottas.
 
+
+## Cambios v0.27.90 — espaciado del logotipo en Acerca de
+
+- Reducido de 12 a 4 px el margen inferior del ícono azul para acercar el logotipo monocromático «Nottas» sin cambiar sus dimensiones ni el subtítulo.
+- La corrección se limita a «Acerca de»; íconos, marca lateral, notificaciones, datos y funciones sin modificaciones.
+- APK firmada mediante GitHub Actions para distribución desde Releases por Obtainium; revisión visual en Android pendiente.
 
 ## Cambios v0.27.89 — marca de la barra lateral y Acerca de
 
@@ -25,7 +31,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.89** (`versionCode 170`).
+- Versión del código Android: **0.27.90** (`versionCode 171`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
