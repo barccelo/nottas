@@ -121,3 +121,9 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Verificar que el gesto horizontal no compite con el arrastre vertical; deshacer reordenamiento y sangrías.
 - [ ] Verificar que el menú «Notas / descripción» actúa sobre el bloque actualmente enfocado y los menús generales siguen accesibles.
 - [ ] Validar el diseño compacto en móviles con zoom alto y listas anidadas.
+
+## 0.27.82 — Verificación de agrupación temporal
+- [ ] En vista cronológica, comprobar que «Pendientes 1» muestre el encabezado de su fecha y la hora.
+- [ ] Comprobar que «Todas» con varios días conserve cada encabezado y contador.
+- [ ] Comprobar agrupación de una única tarea sin fecha y sin hora («Sin fecha» / «Sin hora»).
+- [ ] Validar una tarea en filtro «Hoy» y los cambios entre filtros sin saltos en los encabezados.
