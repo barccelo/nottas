@@ -212,3 +212,8 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Barra lateral: logo gráfico en vez de título de texto, subtítulo «Espacios y organización» sin cambio.
 - Acerca de Nottas: icono del launcher ic_nottas_launcher.webp cargado del recurso Android y mostrado en escala de grises; fallback vectorial local. El nombre se muestra como el wordmark.
 - No se tocaron los recursos de icono de launcher/notificación. Pendiente confirmar WebView en Android, diseño vertical y modo oscuro. Obtener APK firmada en Releases.
+
+## 0.27.86 — Corrección de marca en Acerca de Nottas
+- Icono cuadrado: el mismo launcher de la aplicación, a todo color, sin filtro grayscale.
+- Logo de texto inferior: monocromático (negro en claro, blanco en oscuro), con dos T del icono de notificaciones. El wordmark de la barra lateral conserva sus colores.
+- Sin cambio de recursos Android de iconos, de usuarios o de datos. Validación visual pendiente en Android y publicación vía Obtainium.
