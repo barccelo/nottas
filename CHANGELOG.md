@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.87 — 2 de noviembre de 2026
+
+- Vista de tareas agrupadas por fecha y hora: las tareas y eventos sin fecha se muestran en primer lugar bajo «Sin fecha», antes de los grupos fechados.
+- Se mantiene el orden ascendente o descendente elegido entre los grupos con fecha y se conserva la agrupación interna por horas.
+- Reducción de márgenes acumulados entre los encabezados de fecha y hora: separación vertical del listado cronológico reducida a 5 px; fecha y hora quedan más próximos a sus tarjetas.
+- El ajuste de espaciado se aplica únicamente a la vista cronológica; al cambiar a notas vuelve el espaciado normal.
+- Sin alteraciones del contenido, permisos, calendario ni almacenamiento. Pendiente validación visual en Android.
+
 ## 0.27.86 — 2 de noviembre de 2026
 
 - Ajustada la sección «Acerca de Nottas» según el diseño aprobado: el icono cuadrado reproduce el icono principal de la aplicación con todos sus colores originales, sin tratamiento monocromático.
