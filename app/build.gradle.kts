@@ -10,8 +10,8 @@ android {
         applicationId = "com.nottas.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 187
-        versionName = "0.27.106"
+        versionCode = 188
+        versionName = "0.27.107"
     }
 
     buildTypes {

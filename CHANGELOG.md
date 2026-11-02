@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.107 — 2 de noviembre de 2026
+
+- Reemplazado el encabezado de texto de los recordatorios por el wordmark vectorial de la barra lateral, con las T originales y sus tonos.
+- Flecha de regreso sustituida por chevrón vectorial uniforme y correctamente alineado.
+- Encabezado compartido entre recordatorio individual y pantalla de recordatorios múltiples, sin modificar acciones ni comportamiento.
+- Versión incrementada y distribución mediante GitHub Actions para Obtainium.
+
+
 ## 0.27.106 — 2 de noviembre de 2026
 
 - Nueva superficie translúcida con desenfoque progresivo detrás de la barra de búsqueda y el dock inferior.

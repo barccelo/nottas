@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Desenfoque degradado bajo búsqueda y dock inferior.
+Última actualización: 2 de noviembre de 2026 · Wordmark y flecha unificados en recordatorios nativos.
 
+
+## Cambios v0.27.107 — identidad visual en el encabezado de recordatorios
+
+- Las pantallas nativas de recordatorio individual y recordatorios apilados sustituyen el texto «Nottas» por el mismo wordmark vectorial de la barra lateral (`nottas_wordmark.svg`), conservando su diseño, las dos T estilizadas y sus colores. Se entrega como recurso Android VectorDrawable, sin WebView adicional.
+- La flecha tipográfica anterior se sustituye por un chevrón vectorial uniforme, alineado verticalmente con el wordmark, con área táctil de 44 dp.
+- Se centraliza el encabezado en una función nativa compartida por las dos modalidades, manteniendo la acción de volver sin completar ni posponer recordatorios.
+- La marca se presenta discretamente con un tamaño equivalente al encabezado anterior; no se modifican las acciones de recordatorio.
+- Pendiente comprobar la representación y proporciones del vector y el retorno en Android con la APK instalada.
 
 ## Cambios v0.27.106 — degradado translúcido bajo la búsqueda y el dock
 
@@ -166,7 +174,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.106** (`versionCode 187`).
+- Versión del código Android: **0.27.107** (`versionCode 188`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

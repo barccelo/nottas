@@ -104,6 +104,41 @@ class ReminderActivity : Activity() {
         }
     }
 
+    // Same visual wordmark as the sidebar, rendered as an Android vector so
+    // reminder screens open instantly without creating a WebView.
+    private fun buildReminderHeader(heightPx: Int): LinearLayout {
+        val density = resources.displayMetrics.density
+        fun dp(value: Int): Int = (value * density).roundToInt()
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+
+            val back = ImageView(this@ReminderActivity).apply {
+                setImageResource(R.drawable.ic_reminder_back)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setPadding(dp(10), dp(10), dp(10), dp(10))
+                contentDescription = "Volver sin realizar ninguna acción"
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { finishQuietly() }
+            }
+            addView(back, LinearLayout.LayoutParams(dp(44), heightPx))
+
+            val brand = ImageView(this@ReminderActivity).apply {
+                setImageResource(R.drawable.nottas_wordmark)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                contentDescription = "Nottas"
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+            addView(
+                brand,
+                LinearLayout.LayoutParams(dp(84), dp(28)).apply {
+                    marginStart = dp(5)
+                }
+            )
+        }
+    }
+
     private fun buildGroupedContent(reminders: List<ReminderItem>): View {
         val density = resources.displayMetrics.density
         fun dp(value: Int): Int = (value * density).roundToInt()
@@ -124,29 +159,7 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val header = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        val back = TextView(this).apply {
-            text = "‹"
-            textSize = 42f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(29, 29, 31))
-            contentDescription = "Volver sin realizar ninguna acción"
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { finishQuietly() }
-        }
-        header.addView(back, LinearLayout.LayoutParams(dp(44), dp(46)))
-        val brand = TextView(this).apply {
-            text = "Nottas"
-            textSize = 17f
-            setTextColor(Color.rgb(99, 99, 102))
-            typeface = Typeface.create("sans", Typeface.BOLD)
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-        }
-        header.addView(brand, LinearLayout.LayoutParams(0, dp(46), 1f))
+        val header = buildReminderHeader(dp(46))
         content.addView(
             header,
             LinearLayout.LayoutParams(
@@ -581,29 +594,7 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val header = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-        val back = TextView(this).apply {
-            text = "‹"
-            textSize = 42f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(29, 29, 31))
-            contentDescription = "Volver sin realizar ninguna acción"
-            isClickable = true
-            isFocusable = true
-            setOnClickListener { finishQuietly() }
-        }
-        header.addView(back, LinearLayout.LayoutParams(dp(44), dp(54)))
-        val brand = TextView(this).apply {
-            text = "Nottas"
-            textSize = 17f
-            setTextColor(Color.rgb(99, 99, 102))
-            gravity = Gravity.START or Gravity.CENTER_VERTICAL
-            typeface = Typeface.create("sans", Typeface.BOLD)
-        }
-        header.addView(brand, LinearLayout.LayoutParams(0, dp(54), 1f))
+        val header = buildReminderHeader(dp(54))
         content.addView(
             header,
             LinearLayout.LayoutParams(
