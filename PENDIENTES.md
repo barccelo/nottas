@@ -1,10 +1,20 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Verificar inicialización y recepción Firebase.
+Última revisión: 2 de noviembre de 2026 · Integración v0.27.97 pendiente de prueba en dispositivos.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Probar v0.27.97:** subtareas de una y varias líneas alineadas verticalmente; revisar tanto tema claro como oscuro.
+- [ ] **Probar captura rápida:** «hoy» y «mañana» como palabras normales al quitar su píldora por X o Backspace, sin perder el texto ni reaplicar la fecha; verificar fecha/hora guardada cuando se mantiene marcador.
+- [ ] **Probar bandeja director:** tocar X y deslizar: menú Solo notificación / Rechazar evento. Verificar que ocultar aviso no cambia el evento compartido y que rechazar sí lo retira de pendientes, Inicio, Calendario y Agenda de ambos dispositivos.
+- [ ] **Probar propuesta múltiple:** al abrir Nottas el director debe ver lista completa con Confirmar, Rechazar y cierre para Revisar después; no duplicar al abrir varias veces la app.
+- [ ] **Probar Android:** notificación persistente mientras haya propuestas visibles; tocarla abre bandeja directamente y no Inicio; cuando se resuelven todos, desaparece. Respetar restricciones Android.
+- [ ] **Regresión de sincronización:** crear/rechazar/aprobar desde ambos teléfonos, sin refrescar manualmente, usando el mismo Firebase centralizado.
+- [ ] **Distribución:** comprobar compilación y APK firmada v0.27.97 en GitHub Releases y actualización desde Obtainium.
+
+
 
 - [ ] **Verificación urgente · v0.27.96:** confirmar deploy Worker y validación del endpoint GET /v1/client-config (sin registrar valores concretos).
 - [ ] **Verificación urgente · director:** actualizar el teléfono a 0.27.96, abrir Nottas con Internet, comprobar que Proyecto/Sender/App/API se autocompletan y pasa de «Push no configurado» a token disponible.

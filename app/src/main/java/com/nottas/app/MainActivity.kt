@@ -22,6 +22,7 @@ import android.window.OnBackInvokedDispatcher
 class MainActivity : Activity() {
     companion object {
         const val EXTRA_OPEN_IMPORT = "open_import"
+        const val EXTRA_OPEN_DIRECTOR_INBOX = "open_director_inbox"
         private const val REQ_OVERLAY = 4101
         private const val REQ_FILE = 4102
     }
@@ -33,6 +34,7 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        rememberDirectorInboxIntent(intent)
 
         configureSystemBars()
 
@@ -73,8 +75,25 @@ class MainActivity : Activity() {
 
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        rememberDirectorInboxIntent(intent)
+        if (::webView.isInitialized) {
+            webView.evaluateJavascript("window.NottasAssistantResume && window.NottasAssistantResume()", null)
+        }
+    }
+
+    private fun rememberDirectorInboxIntent(opening: Intent?) {
+        if (opening?.getBooleanExtra(EXTRA_OPEN_DIRECTOR_INBOX, false) != true) return
+        getSharedPreferences("nottas_assistant", MODE_PRIVATE).edit()
+            .putBoolean("open_director_inbox", true).apply()
+        opening.removeExtra(EXTRA_OPEN_DIRECTOR_INBOX)
+    }
+
     override fun onResume() {
         super.onResume()
+        rememberDirectorInboxIntent(intent)
         AssistantForegroundBridge.attach(this)
         if (::webView.isInitialized) {
             webView.evaluateJavascript(

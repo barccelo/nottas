@@ -324,6 +324,14 @@ object NottasWeb {
         }
 
         @JavascriptInterface
+        fun consumeDirectorInboxRequest(): Boolean {
+            val prefs = context.getSharedPreferences("nottas_assistant", Context.MODE_PRIVATE)
+            if (!prefs.getBoolean("open_director_inbox", false)) return false
+            prefs.edit().remove("open_director_inbox").apply()
+            return true
+        }
+
+        @JavascriptInterface
         fun closeOverlay() {
             mainHandler.post { onCloseOverlay?.invoke() }
         }

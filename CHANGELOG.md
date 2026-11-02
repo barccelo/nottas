@@ -1,5 +1,16 @@
 # Historial de cambios de Nottas
 
+## 0.27.97 — 2 de noviembre de 2026
+
+- Corregida la alineación vertical de subtareas y sus círculos de selección en el editor.
+- Reconocimiento de fecha y hora en captura rápida mediante píldoras removibles; X o Backspace desactivan el reconocimiento sin borrar el texto literal durante la sesión de captura.
+- Bandeja del director con X y swipe para decidir entre ocultar solo un aviso local o rechazar el evento compartido.
+- Confirmar y Rechazar directamente en cada propuesta; salida inmediata de pendientes y las vistas activas en caso de rechazo/cancelación, sin borrar el historial de la tarea.
+- Pantalla de revisión de pendientes al abrir Nottas, con propuestas múltiples y opción de cerrar para revisar después; campanita y aviso persistente se mantienen.
+- La notificación persistente existente en Android incorpora apertura profunda hacia la bandeja (y conserva el contador sin generar avisos duplicados).
+- Se respeta la infraestructura de sincronización FCM y Cloudflare vigente. Requiere validación visual y entre los dos teléfonos.
+
+
 ## 0.27.96 — 2 de noviembre de 2026
 
 - Solucionado el bloqueo de configuración del receptor: el Worker ahora publica los cuatro parámetros públicos originales del proyecto Firebase Android Nottas desde su configuración de despliegue. Se utiliza el mismo proyecto y emisores en ambos roles.

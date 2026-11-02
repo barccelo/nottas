@@ -1,7 +1,17 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Firebase Android centralizado en Worker.
+Última actualización: 2 de noviembre de 2026 · Subtareas, captura rápida y propuestas persistentes.
 
+
+## Cambios v0.27.97 — subtareas, captura rápida y decisiones del director
+
+- Editor: los círculos de subtareas se centran verticalmente respecto del texto, incluso si ocupa varias líneas.
+- Captura rápida: los indicadores detectados de fecha/hora aparecen como píldoras removibles. La primera pulsación de Backspace sobre el texto al final desactiva el reconocimiento y conserva las palabras. El descarte de interpretación se recuerda durante esa captura.
+- Dirección: X y swipe en tarjetas de propuestas abren un menú que separa ocultar solo el aviso en ese dispositivo de rechazar el evento compartido.
+- Dirección: propuestas en bandeja cuentan con botones Confirmar/Rechazar. El estado compartido sale inmediatamente de pendientes al resolverse.
+- Rechazados/cancelados no aparecen en listas activas, Calendario ni Agenda; permanecen en los registros sincronizados para historial.
+- Notificación persistente Android: conserva el contador ya existente y ahora abre directamente la bandeja mediante intent seguro consumido una sola vez. Al abrir Nottas, el director revisa pendientes en un panel que también admite varias propuestas y «revisar después».
+- Sin nuevas credenciales ni modificaciones del sistema de push bidireccional ya reparado; validación de experiencia en teléfono pendiente.
 
 ## Cambios v0.27.96 — datos públicos Firebase centralizados
 
@@ -83,7 +93,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.96** (`versionCode 177`).
+- Versión del código Android: **0.27.97** (`versionCode 178`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
