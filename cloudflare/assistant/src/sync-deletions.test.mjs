@@ -12,7 +12,7 @@ function fixture() {
   const current={id:"stale-task",workspaceId:"office",text:"Versión antigua",rev:12,updatedAt:now-10000};
   const db={
     prepare(sql){
-      return {bind(...args){
+      return {async first(){if(sql.includes("MAX(seq)"))return {seq:8};return null},bind(...args){
         return {
           async first(){
             if(sql.includes("FROM sessions s JOIN users"))return {user_id:"director",device_id:"phone",display_name:"Director"};
