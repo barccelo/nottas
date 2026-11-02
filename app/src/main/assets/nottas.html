@@ -1976,6 +1976,8 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   align-self:center;margin-top:0;
 }
 #directorDiscardOverlay{z-index:85}
+.directorInboxLater{min-height:43px;border:0;background:rgba(118,118,128,.12);border-radius:12px;color:inherit;font-weight:640;margin-top:7px}
+html[data-theme="dark"] .directorInboxLater{background:#36363b}
 .directorInboxProposal{display:flex;flex-direction:column;gap:7px;margin-bottom:10px}
 .directorInboxActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 4px}
 .directorInboxActions button{border:1px solid rgba(118,118,128,.2);border-radius:11px;min-height:37px;font-size:12px;font-weight:650;background:transparent;color:inherit}
@@ -3075,6 +3077,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     </div>
     <div id="directorInboxItems" class="directorInboxItems" aria-live="polite"></div>
     <div id="directorInboxFooter" class="directorInboxFooter"></div>
+    <button id="directorInboxLater" class="directorInboxLater" type="button">Revisar después</button>
   </div>
 </div>
 <div id="cardMetaOverlay" class="overlay" aria-hidden="true">
@@ -4406,7 +4409,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       }
       if(item.message||item.locationText){const note=document.createElement("em");note.textContent=item.message||item.locationText;main.appendChild(note)}
       btn.append(dot,main);
-      btn.addEventListener("click",()=>openDirectorProposal(item));
+      btn.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;openDirectorProposal(item)});
       const wrapper=document.createElement("div");wrapper.className="directorInboxItemWrap";wrapper.appendChild(btn);
       if(directorInboxTab==="proposals"){
         const dismiss=document.createElement("button");dismiss.type="button";
@@ -4431,9 +4434,10 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
           if(!start)return;
           const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
           if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){
+            e.preventDefault();
             suppressClickUntil=Date.now()+500;showDirectorDiscard(item);
           }
-        },{passive:true});
+        },{passive:false});
       }else host.appendChild(wrapper);
     }
     footer.textContent=directorInboxTab==="proposals"?
@@ -9382,6 +9386,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   });
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("directorDiscardClose").addEventListener("click",closeDirectorDiscard);
+  $("directorInboxLater").addEventListener("click",()=>closeOverlay("directorInboxOverlay"));
   $("directorDismissNotice").addEventListener("click",()=>{
     const item=directorDiscardTarget;if(!item)return;
     directorMuteNotice(item);closeDirectorDiscard();renderDirectorBell();renderDirectorInbox();

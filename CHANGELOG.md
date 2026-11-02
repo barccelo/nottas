@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.98 — 2 de noviembre de 2026
+
+- Pulido final de la bandeja de propuestas: botón visible «Revisar después» y protección contra el clic accidental del evento tras deslizar su tarjeta.
+- Mantiene los siete cambios de v0.27.97 y no altera los servicios de Firebase/Cloudflare.
+- Pendiente prueba manual en ambos teléfonos.
+
+
 ## 0.27.97 — 2 de noviembre de 2026
 
 - Corregida la alineación vertical de subtareas y sus círculos de selección en el editor.

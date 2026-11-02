@@ -1,7 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Subtareas, captura rápida y propuestas persistentes.
+Última actualización: 2 de noviembre de 2026 · Pulido de la bandeja del director.
 
+
+## Cambios v0.27.98 — cierre de interacción de la bandeja
+
+- Añadido «Revisar después» explícito al pie de la bandeja. Cierra sin confirmar, rechazar ni eliminar pendientes, conservando el aviso persistente.
+- Corregido el evento táctil de descarte: un swipe horizontal abre únicamente el menú de opciones y suprime el clic sintético que podía abrir el evento por error.
+- No se modifica Firebase, Cloudflare ni el esquema de persistencia.
 
 ## Cambios v0.27.97 — subtareas, captura rápida y decisiones del director
 
@@ -93,7 +99,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.97** (`versionCode 178`).
+- Versión del código Android: **0.27.98** (`versionCode 179`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
