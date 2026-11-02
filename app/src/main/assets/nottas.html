@@ -1875,6 +1875,13 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
 #assistantOverlay .teamDiagnosticSubsection{margin-top:16px}
 html[data-theme="dark"] #assistantOverlay .teamDetailSection,html[data-theme="dark"] #assistantOverlay .teamAccountAccessPanel .teamOptionRow + .teamOptionRow{border-color:#343439}
 html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="dark"] #assistantOverlay .teamDiagnosticGroup{background:#1c1c1e;color:#f5f5f7}
+
+#assistantOverlay #teamSyncLabel{display:none}
+#assistantOverlay #teamAdvancedToggle:focus-visible,#assistantOverlay .teamDiagnosticDisclosure>summary:focus-visible{outline:2px solid #1677ff;outline-offset:3px}
+#assistantOverlay .teamDiagnosticDisclosure .assistantGrid .field{min-width:0}
+#assistantOverlay .teamDiagnosticDisclosure .assistantInput{max-width:100%;box-sizing:border-box}
+#assistantOverlay .teamDiagnosticGroup .teamDiagnosticSubsection{border-top:1px solid #e9e9ed;padding-top:12px}
+html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color:#343439}
 </style>
 </head>
 <body>
@@ -2815,7 +2822,8 @@ html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="d
     
         <div class="teamDiagnosticSubsection"><div class="sectionTitle" >Actividad del equipo <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
     <div id="assistantMembers" class="assistantMembers"></div>
-    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div></div>
+    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div>
+      </div>
       </details>
       <details class="teamDiagnosticGroup teamDiagnosticDisclosure" id="teamTechnicalDiagnostics">
         <summary>Configuración técnica</summary>
@@ -4505,7 +4513,7 @@ html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="d
   function toggleTeamAdvanced(expand){
     $("assistantAdvanced").classList.toggle("hidden",!expand);
     $("teamAdvancedToggle").setAttribute("aria-expanded",expand?"true":"false");
-    $("teamAdvancedToggle").innerHTML=expand?'Ocultar diagnóstico <span aria-hidden="true">⌄</span>':'Soporte y diagnóstico <span aria-hidden="true">›</span>';
+    $("teamAdvancedToggle").querySelector("strong").textContent=expand?"Ocultar soporte y diagnóstico":"Soporte y diagnóstico";
   }
   function initializeTeamControls(){
     $("teamCreateAccount").addEventListener("click",teamCreateAccount);
@@ -4562,6 +4570,16 @@ html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="d
     $("teamIssueLink").addEventListener("click",()=>teamIssueKey("link"));
     $("teamCopyKey").addEventListener("click",()=>teamCopyText($("teamKeyValue").textContent));
     $("teamAdvancedToggle").addEventListener("click",()=>toggleTeamAdvanced($("assistantAdvanced").classList.contains("hidden")));
+    $("teamCheckConnectionBtn").addEventListener("click",async()=>{
+      const btn=$("teamCheckConnectionBtn"),result=$("teamConnectionResult");
+      if(!assistantConfigured()){result.textContent="No hay una cuenta conectada. Revisa el acceso a tu cuenta.";return}
+      btn.disabled=true;result.textContent="Comprobando conexión…";
+      try{
+        const data=await assistantRequest("/v1/me");
+        result.textContent="Conexión verificada · "+(data.user?.displayName||"Cuenta")+". Espacios autorizados: "+(data.workspaces||[]).length+".";
+      }catch(error){result.textContent="No se pudo verificar la conexión: "+String(error?.message||error)}
+      finally{btn.disabled=false}
+    });
     $("teamManageCalendar").addEventListener("click",()=>{
       const section=$("assistantGoogleSection");
       if(section.classList.contains("hidden")){showToast("Selecciona un equipo para gestionar calendarios");return}
