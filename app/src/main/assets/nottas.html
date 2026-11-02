@@ -3624,7 +3624,8 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
     try{
       const data=await assistantRequest("/v1/workspaces",{method:"POST",body:{name}});
       mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;teamInviteExpandedFor=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Equipo creado · comparte la invitación");
-    }catch(error){showToast("Crear espacio: "+String(error?.message||error))}
+      return true;
+    }catch(error){showToast("Crear espacio: "+String(error?.message||error));return false}
   }
   async function assistantJoinWorkspace(){
     const inviteCode=$("assistantInviteInput").value.trim().toUpperCase();
@@ -4438,8 +4439,13 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
       if(!name){showToast("Escribe el nombre del equipo");return}
       $("assistantWorkspaceName").value=name;
       const btn=$("teamCreateWorkspace");btn.disabled=true;
-      try{await assistantCreateWorkspace();$("teamCreateForm").classList.add("hidden");await assistantSync(false,true);renderAssistantSettings();await assistantLoadActivity(true)}
-      finally{btn.disabled=false}
+      try{
+        const created=await assistantCreateWorkspace();
+        if(!created)return;
+        $("teamCreateForm").classList.add("hidden");
+        await assistantSync(false,true);
+        renderAssistantSettings();await assistantLoadActivity(true);
+      }finally{btn.disabled=false}
     });
     $("teamJoinWorkspace").addEventListener("click",async()=>{
       if(!assistantConfigured())return;
