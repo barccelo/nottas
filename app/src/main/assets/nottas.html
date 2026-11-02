@@ -1993,6 +1993,39 @@ html[data-theme="dark"] .directorInboxLater{background:#36363b}
 #quickTimeOptions #quickCustomTime span{font-size:17px;line-height:1;color:#8e8e93}
 #quickTimeOptions #quickCustomTime.selected{color:#1677ff;background:#eaf3ff;border-color:#a9ceff}
 html[data-theme="dark"] #quickTimeOptions #quickCustomTime.selected{background:#18344e;color:#9ccaff;border-color:#355f87}
+/* 0.27.103: genuine centered wheels and symmetric quick date tools.
+   A real item owns the selected label. No overlapping button over the wheel. */
+.timePickerSheet{max-width:520px;padding-top:11px;padding-bottom:calc(15px + env(safe-area-inset-bottom));}
+.timePickerSheet .sheetHandle{width:56px;height:23px;margin:0 auto 4px;touch-action:none;}
+.timePickerSheet .sheetHandle::after{left:9px;right:9px;top:7px;height:5px;border-radius:99px;}
+.timePickerSheet .sheetHeader{margin-bottom:5px;align-items:center;}
+.timePickerSheet .timeWheelWrap{height:208px;margin:7px auto 5px;max-width:330px;grid-template-columns:1fr 28px 1fr;}
+.timePickerSheet .timeWheelColumn{height:208px;min-height:208px;isolation:isolate;}
+.timePickerSheet .timeWheelColumn::before{content:"";position:absolute;top:80px;left:8px;right:8px;height:48px;border-radius:13px;background:#e8eaf0;z-index:0;pointer-events:none;}
+.timePickerSheet .timeWheel{position:relative;z-index:1;box-sizing:border-box;width:100%;height:208px;margin:0;padding:80px 0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;scroll-snap-type:y mandatory;scroll-padding:80px 0;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;mask-image:linear-gradient(to bottom,transparent 0%,#000 22%,#000 78%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 22%,#000 78%,transparent 100%);}
+.timePickerSheet .timeWheelItem{box-sizing:border-box;height:48px;min-height:48px;padding:0;line-height:48px;scroll-snap-align:center;scroll-snap-stop:normal;font-size:20px;font-weight:470;color:#a1a1a6;transition:color .12s ease,font-size .12s ease;touch-action:pan-y;}
+.timePickerSheet .timeWheelItem.selected{color:#1d1d1f;font-size:27px;font-weight:730;}
+.timePickerSheet .timeWheelColon{align-self:center;color:#1d1d1f;font-size:28px;font-weight:730;}
+.timePickerSheet .timePartButton{display:none!important;pointer-events:none!important;}
+.timePickerSheet .timePartInput{box-sizing:border-box;left:8px;right:8px;width:calc(100% - 16px);top:80px;height:48px;line-height:46px;z-index:6;border-radius:12px;font-size:25px;}
+.timePickerSheet .timePartHint{margin:7px 0 0;line-height:1.3;}
+.timePickerSheet .timeReminderBox{margin-top:14px;}
+.timePickerSheet .timePickerActions{margin-top:13px;}
+#quickTaskOptions .quickToolsTrailing{gap:7px;align-items:center;}
+#quickTaskOptions .quickIconBtn,
+#quickTaskOptions #quickCalendarBtn,
+#quickTaskOptions #quickReminderBtn{box-sizing:border-box;display:grid;place-items:center;position:relative;width:40px;height:40px;min-width:40px;min-height:40px;max-width:40px;max-height:40px;flex:0 0 40px;margin:0;padding:0;border:1px solid #bbd7fa;border-radius:13px;background:#eaf3ff;color:#1677ff;vertical-align:middle;}
+#quickTaskOptions .quickIconBtn svg{width:19px;height:19px;margin:0;stroke-width:1.85;}
+#quickTaskOptions #quickReminderBtn{display:grid;place-items:center;gap:0;}
+#quickTaskOptions #quickReminderCount{position:absolute;top:-6px;right:-6px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 3px;box-sizing:border-box;border:2px solid #f2f2f7;border-radius:999px;background:#1677ff;color:white;font-size:9px;font-weight:720;line-height:1;}
+#quickTimeOptions #quickCustomTime{display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1;height:33px;min-height:33px;padding:0 10px;}
+#quickTimeOptions #quickCustomTime svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+html[data-theme="dark"] .timePickerSheet .timeWheelColumn::before{background:#303035;}
+html[data-theme="dark"] .timePickerSheet .timeWheelItem.selected,
+html[data-theme="dark"] .timePickerSheet .timeWheelColon{color:#f5f5f7;}
+html[data-theme="dark"] #quickTaskOptions .quickIconBtn{background:#18344e;border-color:#355f87;color:#9ccaff;}
+html[data-theme="dark"] #quickTaskOptions #quickReminderCount{border-color:#000;background:#3d8ef5;color:#fff;}
+@media(prefers-reduced-motion:reduce){.timePickerSheet .timeWheelItem{transition:none;}}
 /* Keyboard-friendly quick category rail: compact icons immediately after the title. */
 #quickCategory.quickCategory{display:none!important}
 .quickCategoryRail{display:flex;gap:7px;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:5px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-snap-type:x proximity;touch-action:pan-x}
@@ -2362,7 +2395,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         <button class="quickTimeChip" type="button" data-quick-time="09:00">09:00</button>
         <button class="quickTimeChip" type="button" data-quick-time="12:00">12:00</button>
         <button class="quickTimeChip" type="button" data-quick-time="18:00">18:00</button>
-        <button id="quickCustomTime" class="quickCustomTime" type="button" aria-label="Elegir hora con rueda" aria-haspopup="dialog">Elegir <span aria-hidden="true">⌄</span></button>
+        <button id="quickCustomTime" class="quickCustomTime" type="button" aria-label="Elegir hora con rueda" aria-haspopup="dialog">Elegir <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
       </div>
       <div id="quickCategory" class="categoryPicker quickCategory" data-category-picker>
         <div class="categoryPickerBar">
@@ -7038,36 +7071,84 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     $("hourEditButton").textContent=String(timeDraftHour).padStart(2,"0");
     $("minuteEditButton").textContent=String(timeDraftMinute).padStart(2,"0");
   }
+  function syncTimeWheelSelection(wheel,index,doHaptic=false){
+    const max=index===0?23:59;
+    const value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/TIME_ROW)));
+    const old=index===0?timeDraftHour:timeDraftMinute;
+    if(index===0)timeDraftHour=value;else timeDraftMinute=value;
+    for(const node of wheel.children)node.classList.toggle("selected",Number(node.dataset.timeValue)===value);
+    if(value!==old){
+      syncTimePartButtons();
+      if(doHaptic&&!timeWheelMute&&Date.now()-timeWheelLastHaptic>75){
+        timeWheelLastHaptic=Date.now();hapticTick();
+      }
+    }
+    return value;
+  }
+  let timeWheelLastHaptic=0;
+  function syncTimeWheelDraftFromScroll(){
+    syncTimeWheelSelection($("hourWheel"),0,false);
+    syncTimeWheelSelection($("minuteWheel"),1,false);
+  }
   function buildTimeWheels(){
     const hw=$("hourWheel"),mw=$("minuteWheel");
     if(!hw.children.length)hw.innerHTML=Array.from({length:24},(_,i)=>`<div class="timeWheelItem" data-time-value="${i}">${String(i).padStart(2,"0")}</div>`).join("");
     if(!mw.children.length)mw.innerHTML=Array.from({length:60},(_,i)=>`<div class="timeWheelItem" data-time-value="${i}">${String(i).padStart(2,"0")}</div>`).join("");
-    [hw,mw].forEach((wheel,idx)=>{
+    [hw,mw].forEach((wheel,index)=>{
       if(wheel.dataset.ready==="1")return;
       wheel.dataset.ready="1";
-      let timer=null,last=-1;
+      let frame=0,settleTimer=0,suppressClickUntil=0,pointerX=null,pointerY=null,dragging=false;
+      const update=()=>{frame=0;if(!timeWheelMute)syncTimeWheelSelection(wheel,index,true)};
+      const settle=()=>{
+        if(dragging)return;
+        // The centered visible row is the exact value that will be stored.
+        const chosen=Math.max(0,Math.min(index===0?23:59,Math.round(wheel.scrollTop/TIME_ROW)));
+        const target=chosen*TIME_ROW;
+        if(Math.abs(wheel.scrollTop-target)>.5)wheel.scrollTo({top:target,behavior:"auto"});
+        if(!timeWheelMute)syncTimeWheelSelection(wheel,index,false);
+      };
       wheel.addEventListener("scroll",()=>{
-        clearTimeout(timer);
-        timer=setTimeout(()=>{
-          const max=idx===0?23:59;
-          const value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/TIME_ROW)));
-          if(idx===0)timeDraftHour=value;else timeDraftMinute=value;
-          syncTimePartButtons();
-          if(!timeWheelMute&&value!==last){last=value;hapticTick()}
-        },34);
+        if(timeWheelMute)return;
+        if(!frame)frame=requestAnimationFrame(update);
+        clearTimeout(settleTimer);settleTimer=setTimeout(settle,190);
       },{passive:true});
+      wheel.addEventListener("scrollend",settle,{passive:true});
+      wheel.addEventListener("pointerdown",e=>{pointerX=e.clientX;pointerY=e.clientY;dragging=true},{passive:true});
+      wheel.addEventListener("pointermove",e=>{
+        if(pointerX!==null&&(Math.abs(e.clientY-pointerY)>8||Math.abs(e.clientX-pointerX)>8)){
+          suppressClickUntil=Date.now()+400;
+        }
+      },{passive:true});
+      wheel.addEventListener("pointerup",()=>{
+        dragging=false;pointerX=null;pointerY=null;
+        clearTimeout(settleTimer);settleTimer=setTimeout(settle,230);
+      },{passive:true});
+      wheel.addEventListener("pointercancel",()=>{dragging=false;pointerX=null;pointerY=null},{passive:true});
       wheel.addEventListener("click",e=>{
-        const item=e.target.closest("[data-time-value]");if(!item)return;
-        wheel.scrollTo({top:Number(item.dataset.timeValue)*TIME_ROW,behavior:"smooth"});
+        const item=e.target.closest("[data-time-value]");if(!item||Date.now()<suppressClickUntil)return;
+        const clicked=Number(item.dataset.timeValue);
+        const current=Math.round(wheel.scrollTop/TIME_ROW);
+        if(clicked===current){
+          beginTimePartEdit(index===0?"hour":"minute");
+        }else wheel.scrollTo({top:clicked*TIME_ROW,behavior:"smooth"});
       });
     });
   }
+  let timeWheelMuteTimer=null;
   function positionTimeWheels(smooth=false){
     timeWheelMute=true;
+    clearTimeout(timeWheelMuteTimer);
     $("hourWheel").scrollTo({top:timeDraftHour*TIME_ROW,behavior:smooth?"smooth":"auto"});
     $("minuteWheel").scrollTo({top:timeDraftMinute*TIME_ROW,behavior:smooth?"smooth":"auto"});
+    for(const [index,wheel] of [$("hourWheel"),$("minuteWheel")].entries()){
+      const chosen=index===0?timeDraftHour:timeDraftMinute;
+      for(const node of wheel.children)node.classList.toggle("selected",Number(node.dataset.timeValue)===chosen);
+    }
     syncTimePartButtons();
-    setTimeout(()=>{timeWheelMute=false},smooth?260:80);
+    timeWheelMuteTimer=setTimeout(()=>{
+      timeWheelMute=false;
+      syncTimeWheelDraftFromScroll();
+    },smooth?400:70);
   }
   function syncTaskTimeButton(){
     const value=$("taskTime").value||"",end=$("taskEndTime").value||"";
@@ -7235,6 +7316,8 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function applyTimePickerDraft(persist=true){
     if(!$("hourDirectInput").classList.contains("hidden"))commitTimePartEdit("hour");
     if(!$("minuteDirectInput").classList.contains("hidden"))commitTimePartEdit("minute");
+    if(!$("hourDirectInput").classList.contains("hidden")||!$("minuteDirectInput").classList.contains("hidden"))return;
+    if(!timeWheelMute)syncTimeWheelDraftFromScroll();
     if(timePickerContext==="quick"){
       const on=$("timeReminderToggle").checked;
       const selected=legacyReminderToMinutes($("taskReminder").value||"at")??0;
@@ -8773,7 +8856,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       const preset=["","09:00","12:00","18:00"].includes(quickDueTime);
       const customSelected=!!quickDueTime&&!preset;
       custom.classList.toggle("selected",customSelected);
-      custom.innerHTML=(customSelected?quickDueTime:"Elegir")+' <span aria-hidden="true">⌄</span>';
+      custom.innerHTML=(customSelected?quickDueTime:"Elegir")+' <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
       custom.setAttribute("aria-label",quickDueTime?"Editar hora "+quickDueTime+" con rueda":"Elegir hora con rueda");
     }
     quickReminderOffsets=normalizeReminderMinutes(quickReminderOffsets);

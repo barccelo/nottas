@@ -1,10 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · v0.27.102 pendiente de pruebas en Android.
+Última revisión: 2 de noviembre de 2026 · Integración v0.27.103 pendiente de pruebas Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.103 · Ruedas:** verificar que hora y minuto se centran exactamente, sin número duplicado, durante scroll lento, rápido, inercia, taps y cambios de valor.
+- [ ] **v0.27.103 · Interacción:** tocar el número central abre edición directa; deslizar desde el centro hace scroll sin bloquear el gesto; comprobar compatibilidad con teclado y guardado al pulsar «Listo».
+- [ ] **v0.27.103 · Interfaz:** evaluar handle, alturas, secciones de recordatorio y contraste de fila seleccionada en claro y oscuro.
+- [ ] **v0.27.103 · Captura rápida:** contrastar simetría de iconos calendario/campana y colocación de badge; revisar el chevrón SVG del botón «Elegir».
+- [ ] **v0.27.103 · Obtainium:** verificar la APK firmada y la actualización sin pérdida de datos.
+
 
 - [ ] **v0.27.102 · Recordatorios:** verificar alineación exacta del icono campana con el calendario y las fechas en pantallas pequeñas, teclado abierto y tema oscuro.
 - [ ] **v0.27.102 · Categorías automáticas:** «Consejo Directivo» selecciona su categoría sin borrar título; prueba frases con categoría, borrado de coincidencia, tildes y selección manual persistente.

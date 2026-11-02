@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.103 — 2 de noviembre de 2026
+
+- Corrección del selector de horas/minutos: tamaño real de ventana y centrado, eliminación de superposición de números, selección fluida con seguimiento y ajuste final al detener el desplazamiento.
+- El toque en el número seleccionado abre la edición directa y el deslizamiento sigue siendo accesible desde toda la rueda.
+- Pulido del handle, espaciado, fila seleccionada y tema oscuro.
+- Sustitución del glifo de flecha de la hora por chevrón vectorial.
+- Calendario y campana unificados en dimensiones, fondo, borde y centrado, con contador flotante.
+- APK de Android actualizada para publicación firmada mediante GitHub Actions y Obtainium.
+
+
 ## 0.27.102 — 2 de noviembre de 2026
 
 - Alineados los botones de recordatorio y nuevo calendario en la captura rápida.

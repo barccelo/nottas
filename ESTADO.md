@@ -1,7 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Captura rápida: calendario, hora de rueda y categorías inteligentes.
+Última actualización: 2 de noviembre de 2026 · Selector de hora y alineación de controles de captura rápida.
 
+
+## Cambios v0.27.103 — reconstrucción del selector de rueda y controles simétricos
+
+- Corrección estructural de las ruedas: alturas, rellenos y ventana visible coherentes con el centrado de filas de 48 px. El valor central deja de duplicarse porque se elimina el botón superpuesto que interceptaba los gestos.
+- El elemento de la rueda seleccionado se resalta en su propia posición; leer el desplazamiento en cada fotograma y ajustar a la fila más cercana al terminar evita saltos, selecciones tardías y desajustes con la hora guardada. Un toque en el valor central permite escribir directamente la hora o los minutos.
+- Estilo general del selector: handle más pequeño y consistente, espaciado del encabezado, selector y sección de recordatorios, realce suave de la fila seleccionada y compatibilidad con modo oscuro.
+- El botón «Elegir hora» usa un chevrón SVG del sistema en vez del carácter tipográfico desalineado.
+- Calendario y recordatorio de captura rápida comparten caja cuadrada, color, borde, radio y tamaño de icono; el número de recordatorios pasa a una insignia superpuesta que no desplaza la campana.
+- Pendiente comprobar en Android los gestos rápidos, la inercia, la edición numérica y el guardado de la hora. El cambio reutiliza el componente existente y no altera los servicios compartidos.
 
 ## Cambios v0.27.102 — captura rápida: iconos, calendario, rueda y categorías inteligentes
 
@@ -132,7 +141,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.102** (`versionCode 183`).
+- Versión del código Android: **0.27.103** (`versionCode 184`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
