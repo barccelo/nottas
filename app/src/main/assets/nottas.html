@@ -1904,6 +1904,14 @@ html[data-theme="dark"] #settingsOverlay .settingsAboutLogo{background:#202025}
 #settingsOverlay .settingsAboutWordmark{filter:grayscale(1) brightness(0)}
 html[data-theme="dark"] #settingsOverlay .settingsAboutWordmark{filter:grayscale(1) brightness(0) invert(1)}
 html[data-theme="dark"] .sidebarWordmark{filter:none}
+
+/* Compact chronological grouping: adjacent day/hour/card instead of stacked margins. */
+#list.taskChronologicalList{gap:5px}
+#list.taskChronologicalList > .taskGroupDayHeader{margin:9px 1px 0;padding:9px 12px}
+#list.taskChronologicalList > .taskGroupDayHeader:first-child{margin-top:0}
+#list.taskChronologicalList > .taskGroupHourHeader{margin:0 4px;min-height:26px}
+#list.taskChronologicalList > .taskGroupHourHeader.isUntimed{min-height:23px}
+#list.taskChronologicalList > .taskGroupHourHeader + .swipeRow{margin-top:0}
 </style>
 </head>
 <body>
@@ -6027,7 +6035,8 @@ html[data-theme="dark"] .sidebarWordmark{filter:none}
   function sortTasksByDateTime(a,b){
     const recent=taskSortMode==="recent";
     const ad=taskGroupDate(a),bd=taskGroupDate(b);
-    if(!!ad!==!!bd)return ad?-1:1;
+    // Undated items always head the chronological view; dated items retain the chosen direction.
+    if(!!ad!==!!bd)return ad?1:-1;
     if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
     const at=taskGroupHour(a),bt=taskGroupHour(b);
     if(!!at!==!!bt)return at?-1:1;
@@ -6282,6 +6291,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none}
   function renderTasks(){
     const searching=!!query&&!trash,groupEnabled=taskGroupedByTime&&!trash&&!searching&&["recent","soon"].includes(taskSortMode);
     const list=$("list"),sorter=groupEnabled?sortTasksByDateTime:sortTasks;
+    list.classList.toggle("taskChronologicalList",groupEnabled);
     const primary=state.tasks.filter(visibleTask).slice().sort(sorter);
     const secondary=searching?state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&!visibleTask(t)&&taskSearchMatches(t)).sort(sorter):[];
     const rows=primary.concat(secondary);
