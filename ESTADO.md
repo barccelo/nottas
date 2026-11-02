@@ -1,7 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Bajas sincronizadas y avisos de respuesta.
+Última actualización: 2 de noviembre de 2026 · Reparación de push unilateral asistente→director.
 
+
+## Cambios v0.27.93 — FCM simétrico y autorreparación del destinatario
+
+- Confirmada discrepancia de código: las llamadas limpian tokens FCM inválidos; los avisos generales de sincronización los ignoraban y descartaban sus errores.
+- El Worker usa la misma ruta para llamadas, avisos, mensajes y cambios. Informa intentos y aceptaciones FCM (no confirma que el sistema haya mostrado una pantalla).
+- Se verifica y renueva la asociación token-dispositivo-cuenta al volver a primer plano; se revisa periódicamente (solo en primer plano, mínimo 2 minutos) sin polling de contenido de 15 s.
+- Mensajes de estado diferencian correctamente guardado en la nube y aceptación del aviso por Firebase.
+- Pruebas automatizadas de envío asistente→director añadidas. Sigue pendiente prueba real en director con permisos Android, FCM y conectividad.
+- No se borra el espacio Oficina, no se cambian identidades ni se limpian datos.
 
 ## Cambios v0.27.92 — sincronización de eliminaciones y respuestas
 
@@ -46,7 +55,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.92** (`versionCode 173`).
+- Versión del código Android: **0.27.93** (`versionCode 174`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

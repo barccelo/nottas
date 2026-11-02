@@ -1,10 +1,19 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Eliminaciones y mensajería crítica.
+Última revisión: 2 de noviembre de 2026 · Diagnóstico de push unilateral.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Crítico · v0.27.93:** asegurar despliegue del Worker y APK de GitHub Actions. No declarar arreglo final sin comprobar ambos.
+- [ ] **Crítico · FCM director:** con Nottas abierta en ambos teléfonos y misma versión, crear tarea y enviar mensaje asistente→director; comprobar recepción sin tocar actualizar. Repetir con director en segundo plano.
+- [ ] **Crítico · direcciones simétricas:** comprobar director→asistente y asistente→director para tareas, notas, avisos y respuestas a llamadas.
+- [ ] **Crítico · tokens obsoletos:** comprobar que los tokens rechazados 404/410 se depuren, que cada teléfono vuelva a registrar su token al reabrir y que no haya notificaciones duplicadas por dispositivos antiguos.
+- [ ] **Crítico · Diagnóstico:** si el servidor informa 0 avisos FCM aceptados, investigar registro Firebase, sesión y permisos de notificaciones del director. Si informa aceptados pero no llega, investigar recepción del servicio Android y políticas del sistema.
+- [ ] **Validación · batería:** las notificaciones son impulsadas por FCM; no introducir sondeo del contenido cada 15 s.
+
+
 
 - [ ] **Crítico · v0.27.92:** comprobar en GitHub Actions que el Worker se desplegó; la APK sola no corrige el fallo de las lápidas.
 - [ ] **Crítico · bajas bidireccionales:** crear y eliminar tarea y nota de Oficina en ambos sentidos, con uno de los teléfonos desconectado y posterior reconexión. Verificar ausencia de reapariciones y duplicados.

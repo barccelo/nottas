@@ -19,6 +19,7 @@ function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "bos
   const db = {
     prepare(sql) {
       return {
+        async run() { statements.push({sql,params:[]});return {meta:{changes:1}}; },
         bind(...params) {
           return {
             async first() {
@@ -29,6 +30,10 @@ function fixture({ candidates = [], devices = {}, fcmStatuses = {}, actor = "bos
                 return null;
               }
               if (sql.includes("SELECT name FROM workspaces")) return { name: "Oficina" };
+              if (sql.includes("FROM assistant_calls WHERE id=?")) return {id:"call-1",workspace_id:"ws",from_user_id:"boss",to_user_id:"assistant-new",status:"sent"};
+              if (sql.includes("SELECT kind,owner_user_id FROM workspaces WHERE id=?")) return {kind:"assistant",owner_user_id:"boss"};
+              if (sql.includes("FROM assistant_messages WHERE id=?")) return {from_user_id:"boss",to_user_id:"assistant-new"};
+              if (sql.includes("SELECT updated_at FROM devices WHERE id=?")) return (devices[actor]||[]).length ? {updated_at:700} : null;
               if (sql.includes("SELECT kind FROM workspaces WHERE id=? AND owner_user_id=?")) return { kind: "assistant" };
               if (sql.includes("SELECT w.owner_user_id AS user_id")) return { user_id: "boss" };
               return null;
@@ -214,5 +219,55 @@ test("assistant cannot read director's approval inbox", async () => {
       headers:{Authorization:"Bearer test-session"}
     }),f.env);
     assert.equal(response.status,403);
+  }finally{f.restore()}
+});
+
+test("assistant to director call reply uses the same invalid-token cleanup as director to assistant calls", async()=>{
+  const f=fixture({
+    actor:"assistant-new",
+    devices:{boss:[
+      {id:"boss-old",fcm_token:"stale-boss"},
+      {id:"boss-current",fcm_token:"valid-boss"}
+    ]},
+    fcmStatuses:{"stale-boss":404}
+  });
+  try{
+    const response=await worker.fetch(call({response:"coming"},"/v1/calls/call-1/respond"),f.env);
+    assert.equal(response.status,200);
+    const body=await response.json();
+    assert.equal(body.pushAccepted,true);
+    assert.equal(body.acceptedDevices,1);
+    const deliveries=f.requests.filter(x=>x.url.includes("fcm.googleapis.com"))
+      .map(x=>JSON.parse(x.body).message);
+    assert.deepEqual(new Set(deliveries.map(x=>x.token)),new Set(["stale-boss","valid-boss"]));
+    assert.ok(f.statements.some(x=>x.sql.includes("UPDATE devices SET fcm_token=NULL")&&x.params[0]==="boss-old"));
+  }finally{f.restore()}
+});
+
+test("assistant reply message is persisted and targeted to the director registered phone",async()=>{
+  const f=fixture({actor:"assistant-new",devices:{boss:[{id:"boss-current",fcm_token:"boss-token"}]}});
+  try{
+    const response=await worker.fetch(call({message:"He recibido la llamada",replyToId:"prior-notice"},
+      "/v1/workspaces/ws/messages"),f.env);
+    assert.equal(response.status,201);
+    const body=await response.json();
+    assert.equal(body.recipientUserId,"boss");
+    assert.equal(body.pushAccepted,true);
+    assert.equal(body.acceptedDevices,1);
+    assert.ok(f.requests.some(x=>x.url.includes("fcm.googleapis.com")&&
+      JSON.parse(x.body).message.token==="boss-token"));
+  }finally{f.restore()}
+});
+
+test("self push-status reports current registered session without exposing Firebase token",async()=>{
+  const f=fixture({actor:"boss",devices:{boss:[{id:"boss-current",fcm_token:"private-token"}]}});
+  try{
+    const response=await worker.fetch(new Request("https://example.invalid/v1/devices/push-status",
+      {headers:{Authorization:"Bearer test-session"}}),f.env);
+    assert.equal(response.status,200);
+    const info=await response.json();
+    assert.equal(info.registered,true);
+    assert.equal(info.updatedAt,700);
+    assert.equal(JSON.stringify(info).includes("private-token"),false);
   }finally{f.restore()}
 });

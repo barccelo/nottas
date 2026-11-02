@@ -1,5 +1,16 @@
 # Historial de cambios de Nottas
 
+## 0.27.93 — 2 de noviembre de 2026
+
+- Unificada la entrega de avisos FCM de tareas/eventos, respuestas y mensajes con la misma rutina probada de llamadas. Antes la sincronización genérica silenciaba rechazos y mantenía tokens de dispositivos definitivamente inválidos.
+- El Worker deshabilita tokens FCM rechazados de forma definitiva (404/410), conserva otros dispositivos del usuario y devuelve conteos de intentos y aceptaciones por espacio sin exponer tokens.
+- Nueva comprobación autenticada GET /v1/devices/push-status, limitada al propio dispositivo y sin datos confidenciales.
+- Android/WebView vuelve a registrar y verificar el token actual al entrar a primer plano; si la aplicación sigue visible repite la verificación como máximo cada 2 minutos, sin sondeos de tareas cada 15 segundos ni tareas de fondo.
+- Al sincronizar cambios compartidos, el cliente informa una sola vez cuando no se confirmó ningún aviso FCM para un destinatario activo, evitando confundir «guardado» con «aviso aceptado».
+- Pruebas de regresión: respuesta de llamada asistente→director con token obsoleto, respuesta a mensajes dirigida al director y consulta de estado de registro sin revelar el token.
+- La aceptación de FCM no garantiza por sí misma visualización inmediata en Android; pendiente verificación real en ambos teléfonos y comprobación de notificaciones del sistema.
+
+
 ## 0.27.92 — 2 de noviembre de 2026
 
 - Cloudflare Worker: la sincronización completa incluye las tareas y notas eliminadas (lápidas) en cada espacio autorizado. El límite se aplica por espacio y no se acepta un snapshot incompleto.

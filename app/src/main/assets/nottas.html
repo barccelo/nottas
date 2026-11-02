@@ -3134,7 +3134,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
-  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false;
+  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false,assistantDeliveryWarningShown=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
   let directorProposalsSeq=0,directorProposalsFetching=false,directorProposalsError="",directorNativeLastCount=-1,directorInboxTab="proposals";
@@ -3753,6 +3753,12 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
         const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
         assistantMarkAccepted(pushed.accepted);
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload,forceConflict:true}));
+        const deliveries=Array.isArray(pushed.pushDelivery)?pushed.pushDelivery:[];
+        const undelivered=deliveries.some(d=>d.recipients>0&&d.accepted===0);
+        if(undelivered&&!assistantDeliveryWarningShown){
+          assistantDeliveryWarningShown=true;
+          showToast("Cambio guardado. No se confirmó el aviso inmediato al otro teléfono.");
+        }else if(deliveries.some(d=>d.accepted>0))assistantDeliveryWarningShown=false;
       }
       const suffix="?since="+encodeURIComponent(String(state.assistant.cursor||0))+((full||!categorySnapshotChecked)?"&full=1":"");
       const pulled=await assistantRequest("/v1/sync"+suffix);
@@ -3855,6 +3861,35 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
       await assistantRequest("/v1/devices/push-token",{method:"POST",body:{fcmToken:status.fcmToken,deviceLabel:"Nottas Android"}});
       state.assistant.pushRegisteredAt=now();scheduleSave();return true;
     }catch(_){return false}
+  }
+
+  // Push registration must be verified on foreground resume; never trust an
+  // old locally cached token or a registration timestamp from a previous day.
+  let assistantPushVerificationBusy=false,assistantPushVerifiedAt=0,assistantPushWarningShown=false;
+  async function assistantEnsurePushRegistration(force=false){
+    if(!assistantConfigured()||assistantPushVerificationBusy||document.hidden)return false;
+    if(!force&&Date.now()-assistantPushVerifiedAt<120000)return true;
+    assistantPushVerificationBusy=true;
+    try{
+      const status=assistantNativePushStatus();
+      if(!status.configured){await assistantAutoConfigurePush();return false}
+      if(!status.fcmToken){
+        try{NottasNative.refreshAssistantPushToken?.()}catch(_){}
+        return false;
+      }
+      const ok=await assistantRegisterPushToken();
+      if(!ok)throw new Error("No se pudo registrar Firebase");
+      const remote=await assistantRequest("/v1/devices/push-status");
+      if(!remote.registered)throw new Error("Firebase no está registrado en el servidor");
+      assistantPushVerifiedAt=Date.now();assistantPushWarningShown=false;
+      return true;
+    }catch(_){
+      if(!assistantPushWarningShown){
+        assistantPushWarningShown=true;
+        showToast("Avisos inmediatos sin registrar. Revisa Push en Ajustes > Asistente.");
+      }
+      return false;
+    }finally{assistantPushVerificationBusy=false}
   }
 
   const assistantBossPresets=["Ven, por favor","Haz pasar a mi siguiente cita","Trae cafés y refrigerio","¿Puedes venir un momento?","Reprograma mi siguiente reunión","Gracias"];
@@ -4865,7 +4900,11 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     if(assistantConfigured()&&!assistantMembershipChecked)assistantSync(false,true).then(()=>{renderAssistantSettings();assistantGoogleRefresh()});
   }
   window.NottasAssistantPushArrived=function(){consumeAssistantNativeEvents();return true}
-  window.NottasAssistantResume=function(){consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200);return true}
+  window.NottasAssistantResume=function(){
+    consumeAssistantNativeEvents();
+    if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}
+    return true;
+  }
 
   function activeCategories(){return state.categories.filter(c=>!c.deletedAt&&categoryScope(c)!=="system"&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))}
   function cat(id){return state.categories.find(c=>c.id===id&&!c.deletedAt&&(c.id==="inbox"||String(c.workspaceId||personalWorkspaceId())===currentWorkspaceId()))||state.categories.find(c=>c.id==="inbox")}
@@ -9599,6 +9638,9 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   // for a missed/invalid FCM token and for transient connection failures.
   // No 15-second polling, no background periodic network requests.
   const ASSISTANT_FOREGROUND_RECONCILE_MS=75000;
+  // Refresh only the device registration at most once every two minutes in
+  // foreground. Event delivery remains FCM-based, never a 15s content poll.
+  setInterval(()=>{if(!document.hidden&&assistantConfigured())assistantEnsurePushRegistration()},120000);
   setInterval(()=>{
     if(!document.hidden&&assistantConfigured()&&!assistantSyncing&&!assistantSyncTimer){
       scheduleAssistantSync(100);
@@ -9606,8 +9648,8 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   },ASSISTANT_FOREGROUND_RECONCILE_MS);
   // Inbox content is refreshed separately, less frequently.
   setInterval(()=>{if(!document.hidden&&assistantConfigured()&&directorOwnedSpaces().length)refreshDirectorProposals(true)},120000);
-  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)}});
+  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration();scheduleAssistantSync(200)}});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}}});
 
   // Close the uppermost calendar layer before leaving its date and view.
   // This is also used by Android's native Back dispatcher.
@@ -9806,7 +9848,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
   initializeTeamControls();
   load();
   initTaskTools();
-  setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantRegisterPushToken();scheduleAssistantSync(200)}},350);
+  setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}},350);
 })();
 </script>
 </body>

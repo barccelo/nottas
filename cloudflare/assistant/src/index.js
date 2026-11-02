@@ -60,6 +60,7 @@ async function route(request, env) {
   if (path === "/v1/workspaces" && request.method === "POST") return createWorkspace(request, auth, env);
   if (path === "/v1/workspaces/join" && request.method === "POST") return joinWorkspace(request, auth, env);
   if (path === "/v1/devices/push-token" && request.method === "POST") return registerPushToken(request, auth, env);
+  if (path === "/v1/devices/push-status" && request.method === "GET") return devicePushStatus(auth, env);
   if (path === "/v1/sync" && request.method === "GET") return pullSync(url, auth, env);
   if (path === "/v1/sync" && request.method === "POST") return pushSync(request, auth, env);
   if (path === "/v1/calls/pending" && request.method === "GET") return pendingCalls(auth, env);
@@ -477,7 +478,16 @@ async function registerPushToken(request, auth, env) {
     "INSERT INTO devices(id,user_id,label,fcm_token,platform,updated_at) VALUES(?,?,?,?,?,?) " +
     "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,fcm_token=excluded.fcm_token,platform=excluded.platform,updated_at=excluded.updated_at"
   ).bind(auth.deviceId, auth.userId, label, fcmToken, "android", Date.now()).run();
-  return json({ ok: true });
+  return json({ ok: true, registered: true });
+}
+
+// Authenticated, non-sensitive check that the current session has a delivery
+// token registered. No Firebase token or other member's device ID is exposed.
+async function devicePushStatus(auth, env) {
+  const device = await env.DB.prepare(
+    "SELECT updated_at FROM devices WHERE id=? AND user_id=? AND fcm_token IS NOT NULL AND fcm_token<>''"
+  ).bind(auth.deviceId, auth.userId).first();
+  return json({ registered: !!device, updatedAt: Number(device?.updated_at || 0) });
 }
 
 async function pullSync(url, auth, env) {
@@ -550,6 +560,7 @@ async function pushSync(request, auth, env) {
   const conflicts = [];
   const touchedWorkspaces = new Set();
   const proposalSignals = new Map();
+  const pushDelivery = [];
 
   for (const change of changes) {
     const workspaceId = textValue(change.workspaceId, 100);
@@ -682,7 +693,8 @@ async function pushSync(request, auth, env) {
       await pushAvailabilityChanged(auth.userId, env);
     } else {
       const proposal=proposalSignals.get(workspaceId);
-      await pushWorkspaceSync(workspaceId, auth.userId, env);
+      const delivery = await pushWorkspaceSync(workspaceId, auth.userId, env);
+      pushDelivery.push({workspaceId, ...delivery});
       if(proposal&&workspace.kind==="assistant"&&workspace.owner_user_id!==auth.userId) {
         await sendPushToUser(workspace.owner_user_id,{
           type:"director_proposal",workspaceId,proposalId:proposal.id,title:proposal.title
@@ -692,7 +704,7 @@ async function pushSync(request, auth, env) {
   }
 
   const latest = await env.DB.prepare("SELECT COALESCE(MAX(seq),0) AS seq FROM changes").first();
-  return json({ ok: true, accepted, conflicts, cursor: Number(latest?.seq || 0) });
+  return json({ ok: true, accepted, conflicts, cursor: Number(latest?.seq || 0), pushDelivery });
 }
 
 async function workspaceAvailability(url, workspaceId, auth, env) {
@@ -1057,7 +1069,7 @@ async function sendAssistantCallPush(userId, payload, env) {
       }
     }
   }));
-  return { accepted };
+  return { accepted, attempted: (rows.results || []).length };
 }
 
 async function respondAssistantCall(request, callId, auth, env) {
@@ -1076,7 +1088,7 @@ async function respondAssistantCall(request, callId, auth, env) {
     "UPDATE assistant_calls SET status='responded',response=?,responded_at=? WHERE id=?"
   ).bind(response, now, callId).run();
 
-  await sendPushToUser(call.from_user_id, {
+  const delivery = await sendPushToUser(call.from_user_id, {
     type: "assistant_call_response",
     callId,
     workspaceId: call.workspace_id,
@@ -1084,7 +1096,8 @@ async function respondAssistantCall(request, callId, auth, env) {
     fromName: auth.displayName
   }, env);
 
-  return json({ ok: true, callId, response, respondedAt: now });
+  return json({ ok: true, callId, response, respondedAt: now,
+    pushAccepted: delivery.accepted > 0, acceptedDevices: delivery.accepted });
 }
 
 async function pendingCalls(auth, env) {
@@ -1134,20 +1147,21 @@ async function pushWorkspaceSync(workspaceId, actorUserId, env) {
   const result = await env.DB.prepare(
     "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
   ).bind(workspaceId, actorUserId).all();
-  await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
+  const deliveries = await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
     type: "sync",
     workspaceId,
     changedBy: actorUserId
   }, env)));
+  return { recipients: (result.results || []).length,
+    attempted: deliveries.reduce((sum, x) => sum + x.attempted, 0),
+    accepted: deliveries.reduce((sum, x) => sum + x.accepted, 0) };
 }
 
+// Calls, replies, tasks and calendar events use the SAME FCM delivery routine.
+// Unlike the old general route, it removes definitively invalid tokens and
+// returns accurate acceptance counts instead of hiding delivery failures.
 async function sendPushToUser(userId, data, env) {
-  const devices = await env.DB.prepare(
-    "SELECT fcm_token FROM devices WHERE user_id=? AND fcm_token IS NOT NULL AND fcm_token<>''"
-  ).bind(userId).all();
-  const tokens = (devices.results || []).map(r => r.fcm_token).filter(Boolean);
-  if (!tokens.length) return;
-  await Promise.all(tokens.map(token => sendFcm(token, data, env).catch(error => console.error("FCM", error))));
+  return sendAssistantCallPush(userId, data, env);
 }
 
 async function sendFcm(token, data, env) {
