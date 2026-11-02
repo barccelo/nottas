@@ -1143,6 +1143,42 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode.taskToolsCompact.taskTools
 #mainHeader{gap:1px}
 body.headerBottom .app{padding-bottom:190px}
 body.headerBottom #mainHeader{position:fixed;z-index:29;left:50%;transform:translateX(-50%);bottom:max(7px,env(safe-area-inset-bottom));width:min(736px,calc(100% - 24px));box-sizing:border-box;min-height:58px;margin:0;padding:7px 9px;border-radius:19px;background:rgba(245,245,247,.97);box-shadow:0 3px 16px rgba(0,0,0,.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+/* Bottom floating controls — graduated frosted backdrop.
+   The list remains visible as a softened silhouette between search and dock. */
+.bottomFrost{
+  position:fixed;
+  left:50%;bottom:0;
+  width:min(760px,100%);
+  height:calc(178px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:27;
+  border:0;
+  pointer-events:none;
+  user-select:none;
+  background:linear-gradient(to bottom,
+    rgba(245,245,247,0) 0%,
+    rgba(245,245,247,.10) 28%,
+    rgba(245,245,247,.28) 57%,
+    rgba(245,245,247,.55) 100%);
+  -webkit-backdrop-filter:blur(15px) saturate(1.12);
+  backdrop-filter:blur(15px) saturate(1.12);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 18%,rgba(0,0,0,.82) 55%,#000 88%);
+  mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.18) 18%,rgba(0,0,0,.82) 55%,#000 88%);
+}
+body.headerBottom .bottomFrost{height:calc(266px + env(safe-area-inset-bottom))}
+html[data-theme="dark"] .bottomFrost{
+  background:linear-gradient(to bottom,
+    rgba(16,16,18,0) 0%,
+    rgba(16,16,18,.13) 28%,
+    rgba(16,16,18,.31) 57%,
+    rgba(16,16,18,.61) 100%);
+}
+body.trashMode .bottomFrost,body.imeVisible .bottomFrost,body.searchKeyboard .bottomFrost{display:none!important}
+/* Graceful fallback in WebViews that lack background blur. */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .bottomFrost{background:linear-gradient(to bottom,rgba(245,245,247,0),rgba(245,245,247,.82))}
+  html[data-theme="dark"] .bottomFrost{background:linear-gradient(to bottom,rgba(16,16,18,0),rgba(16,16,18,.86))}
+}
 body.headerBottom .bottomDock{bottom:calc(80px + env(safe-area-inset-bottom))}
 body.headerBottom.imeVisible #mainHeader,body.headerBottom.searchKeyboard #mainHeader{display:none!important}
 body.headerBottom.searchKeyboard .bottomDock{bottom:max(18px,env(safe-area-inset-bottom))}
@@ -2172,6 +2208,9 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
 </div>
 
 
+<!-- Translucent scrim behind search, action buttons and bottom navigation.
+     Decorative only: never receives input or blurs the controls themselves. -->
+<div id="bottomFrost" class="bottomFrost" aria-hidden="true"></div>
 <div class="bottomDock" id="bottomDock">
   <div class="searchWrap">
     <svg class="searchIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>

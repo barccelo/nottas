@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Protección frente a recordatorios de eventos rechazados/cancelados.
+Última actualización: 2 de noviembre de 2026 · Desenfoque degradado bajo búsqueda y dock inferior.
 
+
+## Cambios v0.27.106 — degradado translúcido bajo la búsqueda y el dock
+
+- Se añade una capa decorativa de desenfoque de fondo detrás de la búsqueda, los botones flotantes y la barra inferior: el contenido de la lista continúa siendo perceptible, pero suavizado.
+- El efecto utiliza `backdrop-filter` con degradado de transparencia desde la parte superior y tintes diferentes para los temas claro y oscuro; no desenfoca la búsqueda ni los iconos.
+- La capa no captura pulsaciones ni gestos (`pointer-events:none`) y queda debajo de los controles interactivos; se adapta al espacio mayor del dock inferior.
+- Se desactiva en la papelera y cuando se usa el teclado para evitar tapar resultados durante la edición. Hay un degradado alternativo para Android WebView sin compatibilidad con blur.
+- Pendiente inspección visual en Android: buscar, desplazarse bajo el dock, abrir el calendario, tema oscuro, modo teclado y papelera.
 
 ## Cambios v0.27.105 — protección contra recordatorios fantasma
 
@@ -158,7 +166,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.105** (`versionCode 186`).
+- Versión del código Android: **0.27.106** (`versionCode 187`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

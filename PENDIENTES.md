@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Corrección v0.27.105, pendiente de prueba en Android.
+Última revisión: 2 de noviembre de 2026 · v0.27.106 pendiente de validación visual Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.106 · Fondo inferior:** verificar desenfoque progresivo detrás de búsqueda, espacio intermedio y dock; la lista debe permanecer insinuada, sin banda sólida ni separación abrupta.
+- [ ] **v0.27.106 · Interacción:** búsqueda, botón +, calendario y menú inferior siguen respondiendo, sin capa que intercepte toques; comprobar scroll de tareas tras la barra.
+- [ ] **v0.27.106 · Temas y estados:** comprobar claro/oscuro, apertura de teclado, búsqueda activa y papelera; no aplicar el blur a texto o controles del frente.
+- [ ] **v0.27.106 · Obtainium:** comprobar publicación de APK firmada y actualización conservando los datos.
+
 
 - [ ] **v0.27.105 · Caso Test:** abrir Oficina en ambos móviles tras actualizar, sincronizar; verificar que el evento rechazado del 02/11 17:00 no vuelva a activar ni mostrar recordatorios.
 - [ ] **v0.27.105 · Estados:** probar rechazo/cancelación, petición de cambios, diferimiento, realización y eliminación, tanto local como desde el otro rol; confirmar cancelación de alarmas programadas y notificaciones visibles.

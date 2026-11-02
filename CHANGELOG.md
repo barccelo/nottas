@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.106 — 2 de noviembre de 2026
+
+- Nueva superficie translúcida con desenfoque progresivo detrás de la barra de búsqueda y el dock inferior.
+- Se preserva la visibilidad parcial de las tarjetas al fondo sin perder contraste ni interactividad de los botones.
+- Ajustes para temas claro y oscuro; la capa se desactiva en modo teclado y papelera, con alternativa en WebView sin soporte de blur.
+- Actualización de versión Android y distribución de APK firmada para Obtainium.
+
+
 ## 0.27.105 — 2 de noviembre de 2026
 
 - Solucionado el origen de los recordatorios fantasma: eventos ocultos por rechazo, cancelación o estado final dejan de programar avisos en Android.
