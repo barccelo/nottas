@@ -1829,6 +1829,52 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
 .teamInviteCode strong{overflow-wrap:anywhere;word-break:break-word}
 #teamInviteRestricted{padding:8px 0}
 html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
+
+/* Team settings: clear separation between peer cards, no nested cards for invitations. */
+#assistantOverlay #teamConnectedPanel{display:flex;flex-direction:column;gap:19px;padding:0 0 12px}
+#assistantOverlay #teamConnectedPanel > .teamPanel,#assistantOverlay #teamConnectedPanel > .teamAccountCard{flex:0 0 auto;margin:0;min-width:0;box-sizing:border-box;border-radius:18px;overflow:hidden}
+#assistantOverlay .teamWorkspaceDetailPanel{gap:0;padding:17px 16px 8px}
+#assistantOverlay .teamWorkspaceDetailPanel > .teamPanelTitle{font-size:16px;line-height:1.35}
+#assistantOverlay .teamWorkspaceDetailPanel > .teamStatusLine{margin:8px 0 3px;flex-wrap:wrap;line-height:1.4}
+#assistantOverlay .teamDetailSection{border-top:1px solid #e9e9ed;padding:15px 0 10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+#assistantOverlay .teamDetailSection .teamPanelCaption{margin:0 0 2px}
+#assistantOverlay .teamInviteAction{border:0;min-height:49px;margin:0;padding:7px 0}
+#assistantOverlay .teamInviteArea{background:transparent;border:0;border-radius:0;padding:8px 0 10px;margin:0;gap:8px}
+#assistantOverlay .teamInviteCode{min-width:0;gap:12px}
+#assistantOverlay .teamInviteCode strong{font-family:ui-monospace,SFMono-Regular,monospace;font-size:16px;letter-spacing:.10em;overflow-wrap:anywhere}
+#assistantOverlay .teamInviteCode button{border-radius:10px;min-height:35px;padding:0 12px;white-space:nowrap}
+#assistantOverlay .teamMemberList{gap:0}
+#assistantOverlay .teamMemberEntry{min-height:49px;box-sizing:border-box;gap:9px;padding:11px 0;margin:0}
+#assistantOverlay .teamMemberEntry:last-child{border-bottom:0}
+#assistantOverlay .teamMemberEntry button{min-height:35px;padding:7px 10px}
+#assistantOverlay .teamAccountAccessPanel > .teamHint{margin:0}
+#assistantOverlay .teamAccountAccessPanel .teamOptionRow{padding:13px 0}
+#assistantOverlay .teamAccountAccessPanel .teamOptionRow + .teamOptionRow{border-top:1px solid #ececf0}
+#assistantOverlay #teamAdvancedToggle{display:flex!important;align-items:center;justify-content:space-between;text-align:left;align-self:stretch;gap:10px;width:100%;box-sizing:border-box;min-height:66px;padding:14px 17px;border:0;border-radius:18px;background:#fff;color:#1d1d1f}
+#assistantOverlay #teamAdvancedToggle > span{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+#assistantOverlay #teamAdvancedToggle strong{font-size:14px;font-weight:670;letter-spacing:-.01em}
+#assistantOverlay #teamAdvancedToggle small{font-size:11px;line-height:1.38;color:#8e8e93}
+#assistantOverlay #teamAdvancedToggle .nsIcon{width:17px;height:17px;color:#8e8e93;transition:transform .18s ease}
+#assistantOverlay #teamAdvancedToggle[aria-expanded="true"] .nsIcon{transform:rotate(90deg)}
+#assistantOverlay #assistantAdvanced{margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:17px}
+#assistantOverlay #assistantAdvanced.hidden{display:none!important}
+#assistantOverlay .teamDiagnosticGroup{border-radius:18px;background:#fff;color:#1d1d1f;padding:16px;min-width:0;box-sizing:border-box}
+#assistantOverlay .teamDiagnosticGroup h3{font-size:15px;line-height:1.3;margin:0 0 12px;font-weight:680}
+#assistantOverlay .teamDiagnosticGroup .assistantStatusCard{border:0;box-shadow:none;padding:0;margin:0 0 12px;background:transparent}
+#assistantOverlay .teamDiagnosticGroup .assistantActions{display:flex;gap:8px;flex-wrap:wrap}
+#assistantOverlay .teamDiagnosticGroup .assistantActions .btn{min-width:0;white-space:normal}
+#assistantOverlay .teamDiagnosticGroup .assistantSectionHint{margin:5px 0 13px}
+#assistantOverlay .teamDiagnosticGroup .assistantGrid{min-width:0}
+#assistantOverlay .teamDiagnosticGroup .sectionTitle{font-size:12px;font-weight:680;margin:14px 0 10px}
+#assistantOverlay .teamDiagnosticGroup .sectionTitle:first-child{margin-top:0}
+#assistantOverlay .teamDiagnosticDisclosure > summary{cursor:pointer;list-style:none;font-size:14px;font-weight:670;position:relative;padding-right:24px}
+#assistantOverlay .teamDiagnosticDisclosure > summary::-webkit-details-marker{display:none}
+#assistantOverlay .teamDiagnosticDisclosure > summary:after{content:"›";position:absolute;right:2px;top:-3px;color:#8e8e93;font-size:21px;font-weight:400;transition:transform .18s ease}
+#assistantOverlay .teamDiagnosticDisclosure[open] > summary:after{transform:rotate(90deg)}
+#assistantOverlay .teamDiagnosticDisclosure[open] > summary{margin-bottom:14px}
+#assistantOverlay .teamDiagnosticSubsection{margin-top:16px}
+html[data-theme="dark"] #assistantOverlay .teamDetailSection,html[data-theme="dark"] #assistantOverlay .teamAccountAccessPanel .teamOptionRow + .teamOptionRow{border-color:#343439}
+html[data-theme="dark"] #assistantOverlay #teamAdvancedToggle,html[data-theme="dark"] #assistantOverlay .teamDiagnosticGroup{background:#1c1c1e;color:#f5f5f7}
 </style>
 </head>
 <body>
@@ -2679,27 +2725,30 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
           <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button><p class="teamHint">Podrás invitar al director y asignarle su rol.</p></div>
           <div id="teamJoinForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceCode">Código de invitación</label><input id="teamWorkspaceCode" class="teamInput" autocapitalize="characters" maxlength="16" placeholder="Código"><button id="teamJoinWorkspace" class="btn primary full" type="button">Unirme al equipo</button></div>
         </div>
-        <div id="teamWorkspaceDetail" class="teamPanel hidden">
+        <div id="teamWorkspaceDetail" class="teamPanel teamWorkspaceDetailPanel hidden">
           <div class="teamPanelTitle" id="teamCurrentName">Oficina</div>
           <div class="teamStatusLine"><span id="teamCurrentRole"></span><span id="teamSyncLabel">Sincronización automática</span></div>
-          <div class="teamPanelCaption">Acceso al equipo</div>
-          <button id="teamShowInvite" type="button" class="teamOptionRow teamInviteAction hidden" aria-expanded="false"><span class="teamInviteActionCopy"><strong>Invitar a una persona</strong><small>Comparte el código para unirse al equipo</small></span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
-          <p id="teamInviteRestricted" class="teamHint hidden">Solo el administrador puede enviar invitaciones. Pídele el código para incorporar a otra persona.</p>
-          <div id="teamInviteArea" class="teamInviteArea hidden">
-            <div class="teamPanelCaption">Código de invitación</div>
-            <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar código de invitación">Copiar código</button></div>
-            <small>Comparte este código únicamente con la persona que deseas incorporar. La otra persona debe elegir «Unirme a un equipo» desde su propia cuenta.</small>
-            <button id="teamRefreshInvite" class="teamInlineLink hidden" type="button">Actualizar desde el servidor</button>
+          <div class="teamDetailSection">
+            <div class="teamPanelCaption">Acceso al equipo</div>
+            <button id="teamShowInvite" type="button" class="teamOptionRow teamInviteAction hidden" aria-expanded="false"><span class="teamInviteActionCopy"><strong>Invitar a una persona</strong><small>Comparte el código para incorporar a otro integrante</small></span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
+            <p id="teamInviteRestricted" class="teamHint hidden">Solo el director puede generar invitaciones para este equipo.</p>
+            <div id="teamInviteArea" class="teamInviteArea hidden">
+              <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar código de invitación">Copiar</button></div>
+              <small>Comparte este código con la persona que se unirá al equipo.</small>
+              <button id="teamRefreshInvite" class="teamInlineLink hidden" type="button">Consultar código en el servidor</button>
+            </div>
           </div>
-          <div class="teamPanelCaption">Integrantes</div>
-          <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
+          <div class="teamDetailSection">
+            <div class="teamPanelCaption">Integrantes</div>
+            <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
+          </div>
         </div>
-        <div id="teamIntegrationsPanel" class="teamPanel hidden">
+        <div id="teamIntegrationsPanel" class="teamPanel teamIntegrationsPanel hidden">
           <div class="teamPanelTitle">Integraciones</div>
           <button id="teamManageCalendar" class="teamOptionRow teamIntegrationAction" type="button" aria-expanded="false"><span class="teamIntegrationCopy"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-calendar"></use></svg><span><strong>Calendarios</strong><small>Google Calendar y calendarios visibles</small></span></span><span class="teamIntegrationTail"><small id="teamGoogleLabel">Sin conectar</small><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
           <div class="teamIntegrationStatus"><span>Notificaciones del equipo</span><span id="teamNotificationsLabel">Comprobando</span></div>
         </div>
-        <div class="teamPanel">
+        <div class="teamPanel teamAccountAccessPanel">
           <div class="teamPanelTitle">Acceso a mi cuenta</div>
           <p class="teamHint">Recupera tu cuenta en otro dispositivo sin crear un equipo nuevo.</p>
           <button id="teamIssueRecovery" class="teamOptionRow" type="button"><span>Clave de recuperación</span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
@@ -2707,53 +2756,27 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
           <div id="teamKeyResult" class="teamKeyResult hidden"><p id="teamKeyDescription" class="teamHint"></p><div class="teamKeyValue"><code id="teamKeyValue"></code></div><button id="teamCopyKey" class="btn secondary" type="button">Copiar clave</button></div>
         </div>
       </div>
-      <button id="teamAdvancedToggle" class="teamAdvancedToggle" type="button" aria-expanded="false">Soporte y diagnóstico <span aria-hidden="true">›</span></button>
+      <button id="teamAdvancedToggle" class="teamAdvancedToggle" type="button" aria-expanded="false" aria-controls="assistantAdvanced"><span><strong>Soporte y diagnóstico</strong><small>Sincronización, recuperación y herramientas avanzadas</small></span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
     </div>
-    <div id="assistantAdvanced" class="hidden">
-    <div class="assistantStatusCard">
+    <div id="assistantAdvanced" class="hidden teamDiagnostics">
+      <div class="teamDiagnosticGroup">
+        <h3>Conexión y sincronización</h3>
+        <div class="assistantStatusCard">
       <div class="assistantStatusLine"><div id="assistantStatusTitle" class="assistantStatusTitle">Sin configurar</div><span id="assistantConnectionBadge" class="assistantBadge">Local</span></div>
       <div id="assistantStatusDesc" class="assistantStatusDesc">Configura el Worker para compartir espacios entre dispositivos.</div>
     </div>
 
-    <div class="sectionTitle">Cuenta de prueba</div>
-    <div class="assistantSectionHint">El registro actual es por dispositivo para probar la colaboración. Después puede sustituirse por passkeys sin cambiar los espacios compartidos.</div>
-    <div class="assistantGrid">
-      <div class="field wide"><div class="label">URL del Worker</div><input id="assistantServerUrl" class="assistantInput" type="url" placeholder="https://nottas-assistant-api....workers.dev"></div>
-      <div class="field wide"><div class="label">Tu nombre</div><input id="assistantDisplayName" class="assistantInput" type="text" maxlength="80" placeholder="Nombre"></div>
-    </div>
-    <div class="assistantActions">
-      <button id="assistantRegisterBtn" class="btn primary" type="button">Registrar dispositivo</button>
-      <button id="assistantSyncBtn" class="btn secondary" type="button">Sincronizar ahora</button>
-    </div>
-
-    <div class="sectionTitle">Espacio compartido</div>
-    <div class="assistantGrid">
-      <div class="field wide"><div class="label">Crear como jefe</div><input id="assistantWorkspaceName" class="assistantInput" type="text" maxlength="100" placeholder="Asistente · Oficina"></div>
-      <div class="field wide"><button id="assistantCreateWorkspaceBtn" class="btn secondary full" type="button">Crear espacio Asistente</button></div>
-      <div class="field"><div class="label">Código de invitación</div><input id="assistantInviteInput" class="assistantInput" type="text" maxlength="16" placeholder="ABC12345"></div>
-      <div class="field"><div class="label">&nbsp;</div><button id="assistantJoinWorkspaceBtn" class="btn secondary full" type="button">Unirme</button></div>
-    </div>
-    <div id="assistantInviteRow" class="settingsGroup hidden">
-      <div class="settingsRow"><div class="left"><div class="title">Código para el asistente</div><div class="desc">Comparte este código una sola vez para unir el otro dispositivo.</div></div><span id="assistantInviteCode" class="assistantInviteCode"></span></div>
-    </div>
-
-    <div class="sectionTitle">Notificaciones push</div>
-    <div class="assistantSectionHint">Estos cuatro valores son públicos y pertenecen al proyecto Firebase Android. La clave privada de servicio permanece únicamente como secreto del Worker.</div>
-    <div class="assistantGrid">
-      <div class="field wide"><div class="label">Firebase Project ID</div><input id="assistantFirebaseProject" class="assistantInput" type="text" autocomplete="off"></div>
-      <div class="field"><div class="label">Sender ID</div><input id="assistantFirebaseSender" class="assistantInput" type="text" autocomplete="off"></div>
-      <div class="field"><div class="label">App ID</div><input id="assistantFirebaseAppId" class="assistantInput" type="text" autocomplete="off"></div>
-      <div class="field wide"><div class="label">API key</div><input id="assistantFirebaseApiKey" class="assistantInput" type="text" autocomplete="off"></div>
-    </div>
-    <div class="assistantActions">
-      <button id="assistantConfigurePushBtn" class="btn secondary" type="button">Configurar push</button>
-      <button id="assistantRetryPushBtn" class="btn secondary" type="button">Actualizar registro push</button>
-      <button id="assistantPreviewCallBtn" class="btn secondary" type="button">Probar llamada en este teléfono</button>
-    </div>
-    <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
-
-    <div class="sectionTitle">Espacios de trabajo</div>
-    <div class="assistantSectionHint">Los espacios restaurados del JSON conservan sus datos, pero su acceso se verifica en Cloudflare. Ocultar un espacio en este dispositivo no borra tareas ni datos del servidor.</div>
+    
+        <div class="assistantActions">
+          <button id="assistantSyncBtn" class="btn secondary" type="button">Sincronizar ahora</button>
+          <button id="teamCheckConnectionBtn" class="btn secondary" type="button">Comprobar conexión</button>
+        </div>
+        <p id="teamConnectionResult" class="teamHint" aria-live="polite"></p>
+      </div>
+      <div class="teamDiagnosticGroup">
+        <h3>Recuperación de espacios</h3>
+        
+    <div class="assistantSectionHint">Las herramientas de recuperación conservan los datos compartidos; ocultar un espacio solo afecta a este teléfono.</div>
     <div id="assistantRecoverySection" class="hidden">
       <div id="assistantRecoveryStatus" class="assistantSectionHint"></div>
       <div class="assistantGrid">
@@ -2765,7 +2788,15 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
         <button id="assistantHideWorkspaceBtn" class="btn secondary" type="button">Ocultar en este teléfono</button>
       </div>
     </div>
-    <div id="assistantDeleteSection" class="hidden" style="margin-top:12px">
+    
+        <div id="assistantHiddenWorkspaces" class="assistantSectionHint"></div>
+
+    
+      </div>
+      <details class="teamDiagnosticGroup teamDiagnosticDisclosure" id="teamAdminMaintenance">
+        <summary>Administración avanzada de espacios</summary>
+        <p class="teamHint">Opciones excepcionales de gestión. Antes de eliminar, comprueba el espacio seleccionado y conserva una copia de seguridad.</p>
+        <div id="assistantDeleteSection" class="hidden" style="margin-top:12px">
       <div class="sectionTitle">Eliminar espacio de Cloudflare</div>
       <div class="assistantSectionHint">Solo el propietario puede eliminar un espacio compartido del servidor. Esta operación es definitiva y borra sus tareas compartidas, notas, historial de llamadas y, si lo tiene, la conexión Google Calendar. No afecta a otros espacios.</div>
       <button id="assistantDeletePreviewBtn" class="btn secondary" type="button">Revisar eliminación de este espacio</button>
@@ -2781,9 +2812,67 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
         <button id="assistantDeleteExecuteBtn" class="btn danger" type="button">Eliminar definitivamente de Cloudflare</button>
       </div>
     </div>
-    <div id="assistantHiddenWorkspaces" class="assistantSectionHint"></div>
+    
+        <div class="teamDiagnosticSubsection"><div class="sectionTitle" >Actividad del equipo <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
+    <div id="assistantMembers" class="assistantMembers"></div>
+    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div></div>
+      </details>
+      <details class="teamDiagnosticGroup teamDiagnosticDisclosure" id="teamTechnicalDiagnostics">
+        <summary>Configuración técnica</summary>
+        <p class="teamHint">Ajustes de compatibilidad y pruebas. Las funciones habituales de cuenta, equipo y calendarios están en las secciones principales.</p>
+        <div class="sectionTitle">Conexión al servidor</div>
+    <div class="assistantSectionHint">Opciones de soporte para la sesión y el servidor. No vuelvas a registrar una cuenta existente sin respaldo de su clave.</div>
+    <div class="assistantGrid">
+      <div class="field wide"><div class="label">URL del Worker</div><input id="assistantServerUrl" class="assistantInput" type="url" placeholder="https://nottas-assistant-api....workers.dev"></div>
+      <div class="field wide"><div class="label">Tu nombre</div><input id="assistantDisplayName" class="assistantInput" type="text" maxlength="80" placeholder="Nombre"></div>
+    </div>
+    <div class="assistantActions">
+      <button id="assistantRegisterBtn" class="btn primary" type="button">Registrar dispositivo</button>
 
-    <div id="assistantGoogleSection" class="hidden">
+    </div>
+
+    
+        <div class="sectionTitle">Compatibilidad de equipos</div>
+    <div class="assistantGrid">
+      <div class="field wide"><div class="label">Crear como jefe</div><input id="assistantWorkspaceName" class="assistantInput" type="text" maxlength="100" placeholder="Asistente · Oficina"></div>
+      <div class="field wide"><button id="assistantCreateWorkspaceBtn" class="btn secondary full" type="button">Crear espacio Asistente</button></div>
+      <div class="field"><div class="label">Código de invitación</div><input id="assistantInviteInput" class="assistantInput" type="text" maxlength="16" placeholder="ABC12345"></div>
+      <div class="field"><div class="label">&nbsp;</div><button id="assistantJoinWorkspaceBtn" class="btn secondary full" type="button">Unirme</button></div>
+    </div>
+    <div id="assistantInviteRow" class="settingsGroup hidden">
+      <div class="settingsRow"><div class="left"><div class="title">Código para el asistente</div><div class="desc">Comparte este código una sola vez para unir el otro dispositivo.</div></div><span id="assistantInviteCode" class="assistantInviteCode"></span></div>
+    </div>
+
+    
+        <div class="sectionTitle">Notificaciones push</div>
+    <div class="assistantSectionHint">Estos cuatro valores son públicos y pertenecen al proyecto Firebase Android. La clave privada de servicio permanece únicamente como secreto del Worker.</div>
+    <div class="assistantGrid">
+      <div class="field wide"><div class="label">Firebase Project ID</div><input id="assistantFirebaseProject" class="assistantInput" type="text" autocomplete="off"></div>
+      <div class="field"><div class="label">Sender ID</div><input id="assistantFirebaseSender" class="assistantInput" type="text" autocomplete="off"></div>
+      <div class="field"><div class="label">App ID</div><input id="assistantFirebaseAppId" class="assistantInput" type="text" autocomplete="off"></div>
+      <div class="field wide"><div class="label">API key</div><input id="assistantFirebaseApiKey" class="assistantInput" type="text" autocomplete="off"></div>
+    </div>
+    <div class="assistantActions">
+      <button id="assistantConfigurePushBtn" class="btn secondary" type="button">Configurar push</button>
+      <button id="assistantRetryPushBtn" class="btn secondary" type="button">Actualizar registro push</button>
+      <button id="assistantPreviewCallBtn" class="btn secondary" type="button">Probar llamada en este teléfono</button>
+    </div>
+    <div id="assistantPushDesc" class="assistantSectionHint">Push no configurado.</div>
+
+    
+        <div class="sectionTitle">Llamar</div>
+    <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
+    <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
+    <div id="assistantLastCallStatus" class="assistantSectionHint" aria-live="polite"></div>
+
+    
+        <div id="assistantNoticeSection" class="hidden">
+      <div class="sectionTitle">Mensajes</div>
+      <div class="assistantSectionHint">Avisos a pantalla completa para el jefe y el asistente. Puedes responder o simplemente cerrar.</div>
+      <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Abrir mensajes</button>
+    </div>
+    
+        <div id="assistantGoogleSection" class="hidden">
       <div class="sectionTitle">Google Calendar</div>
       <div class="assistantSectionHint">Conexión de solo lectura con calendario@losroblesenlinea.com.ve. Por ahora permite autorizar la cuenta y descubrir sus calendarios.</div>
       <div id="assistantGoogleStatus" class="assistantSectionHint">Comprueba la conexión.</div>
@@ -2795,19 +2884,9 @@ html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
       <div id="assistantGoogleCalendars" class="assistantGoogleCalendars" aria-live="polite"></div>
     </div>
 
-    <div class="sectionTitle">Llamar</div>
-    <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
-    <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
-    <div id="assistantLastCallStatus" class="assistantSectionHint" aria-live="polite"></div>
-
-    <div id="assistantNoticeSection" class="hidden">
-      <div class="sectionTitle">Mensajes</div>
-      <div class="assistantSectionHint">Avisos a pantalla completa para el jefe y el asistente. Puedes responder o simplemente cerrar.</div>
-      <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Abrir mensajes</button>
+    
+      </details>
     </div>
-    <div class="sectionTitle" style="margin-top:16px">Actividad del equipo <button id="assistantActivityRefresh" class="assistantRefreshBtn" type="button">Actualizar</button></div>
-    <div id="assistantMembers" class="assistantMembers"></div>
-    <div id="assistantActivity" class="assistantActivity"><div class="assistantActivityEmpty">Abre un espacio compartido para ver su actividad.</div></div>    </div>
   </div>
 </div>
 
