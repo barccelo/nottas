@@ -1,7 +1,17 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Simetría en captura rápida, handle de recordatorios e interruptores azules.
+Última actualización: 2 de noviembre de 2026 · Protección frente a recordatorios de eventos rechazados/cancelados.
 
+
+## Cambios v0.27.105 — protección contra recordatorios fantasma
+
+- Corregido el caso real «Test» en Oficina (evento rechazado con recordatorios aún activos): los eventos rechazados, cancelados, pendientes de aprobación, diferidos, realizados, no realizados, eliminados o completados no programan alarmas.
+- La WebView entrega a Android el conjunto de tareas elegibles y las alarmas con identificador de tarea, espacio de trabajo y ocurrencia. El planificador nativo verifica esas condiciones de nuevo, incluso si recibe datos antiguos.
+- Cada actualización local o sincronización remota reprograma las alarmas, cancela las obsoletas y retira notificaciones ya visibles correspondientes a eventos invalidados. Los snoozes solo sobreviven si su evento y su fecha siguen activos.
+- El receptor de Android comprueba la vigencia del evento tanto al reclamar una alarma como justo antes de mostrar una notificación; la actividad a pantalla completa también valida sus acciones.
+- La búsqueda de tareas incluye coincidencias rechazadas/canceladas en «Otras coincidencias» sin mostrarlas en los filtros normales. Se conserva el historial remoto y la evidencia en Cloudflare.
+- Se añaden metadatos de espacio y estado a los registros nativos y una lista local limitada de notificaciones emitidas para su invalidación.
+- Pendiente prueba en ambos teléfonos y sincronización al iniciar tras la actualización; un teléfono desconectado no puede conocer cambios remotos hasta sincronizar.
 
 ## Cambios v0.27.104 — simetría de controles, gesto de recordatorios e interruptores azules
 
@@ -148,7 +158,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.104** (`versionCode 185`).
+- Versión del código Android: **0.27.105** (`versionCode 186`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

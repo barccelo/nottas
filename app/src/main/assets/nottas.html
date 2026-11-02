@@ -5358,7 +5358,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       actions.forEach(a=>{
         if(a?.type!=="complete")return;
         const t=state.tasks.find(x=>x.id===a.taskId&&!x.deletedAt);
-        if(!t)return;
+        if(!taskEligibleForReminder(t))return;
         const date=typeof a.date==="string"?a.date:localDateISO(),wasDone=!!t.done;
         if(taskMultiDay(t)){if(!setTaskDayCompletion(t,date,true))return}
         else{if(t.done)return;t.done=true}
@@ -5436,8 +5436,16 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     return m+" min antes";
   }
   function reminderLabel(r){const m=legacyReminderToMinutes(r);return m===null?"":reminderMinutesLabel(m)}
+  // Shared events may be rejected without being deleted. They must not
+  // schedule native alarms, nor accept stale native "complete" actions.
+  function taskEligibleForReminder(t){
+    if(!t||t.deletedAt||t.done)return false;
+    if(["rejected","cancelled","proposed","changes_requested"].includes(t.approvalStatus||"confirmed"))return false;
+    if(["deferred","realized","not_realized","cancelled"].includes(t.meetingStatus||"scheduled"))return false;
+    return true;
+  }
   function taskReminderTimes(t){
-    if(meetingIsTracked(t)&&["deferred","realized","not_realized","cancelled"].includes(t.meetingStatus))return [];
+    if(!taskEligibleForReminder(t))return [];
     if(!t?.dueDate)return [];
     const offsets=taskReminderOffsets(t);if(!offsets.length)return [];
     // All-day events notify at 09:00; timed events retain their start time.
@@ -5455,11 +5463,21 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function syncNativeReminders(){
     try{
       if(!window.NottasNative||!NottasNative.syncReminders||!state)return;
-      const rows=[];
-      state.tasks.filter(t=>!t.deletedAt&&!t.done).forEach(t=>{
-        taskReminderTimes(t).forEach(r=>rows.push({id:t.id,alarmId:t.id+"::"+r.date+"::r"+r.minutes,text:t.text,date:r.date,at:r.at,offsetMinutes:r.minutes}));
+      const rows=[],activeTasks=[];
+      state.tasks.filter(taskEligibleForReminder).forEach(t=>{
+        const workspaceId=String(t.workspaceId||personalWorkspaceId());
+        const approvalStatus=String(t.approvalStatus||"confirmed");
+        const meetingStatus=String(t.meetingStatus||"scheduled");
+        activeTasks.push({id:t.id,workspaceId,approvalStatus,meetingStatus,deleted:false,done:false});
+        taskReminderTimes(t).forEach(r=>rows.push({
+          id:t.id,alarmId:t.id+"::"+r.date+"::r"+r.minutes,text:t.text,
+          workspaceId,approvalStatus,meetingStatus,date:r.date,at:r.at,offsetMinutes:r.minutes
+        }));
       });
-      NottasNative.syncReminders(JSON.stringify(rows));
+      // The native scheduler validates its own active snapshot before showing
+      // an alarm. Supplying active tasks independently of future alarms lets
+      // Android retract an already displayed alert after a rejected update.
+      NottasNative.syncReminders(JSON.stringify({policyVersion:2,activeTasks,reminders:rows}));
     }catch(_){}
   }
   function requestReminderPermission(){
@@ -6788,7 +6806,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     const list=$("list"),sorter=groupEnabled?sortTasksByDateTime:sortTasks;
     list.classList.toggle("taskChronologicalList",groupEnabled);
     const primary=state.tasks.filter(visibleTask).slice().sort(sorter);
-    const secondary=searching?state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&!proposalInactive(t)&&!visibleTask(t)&&taskSearchMatches(t)).sort(sorter):[];
+    const secondary=searching?state.tasks.filter(t=>itemInActiveWorkspace(t)&&!t.deletedAt&&!visibleTask(t)&&taskSearchMatches(t)).sort(sorter):[];
     const rows=primary.concat(secondary);
     const dayCounts=new Map(),hourCounts=new Map();
     if(groupEnabled)rows.forEach(t=>{

@@ -16,22 +16,73 @@ import kotlin.math.abs
 object ReminderScheduler {
     private const val PREFS = "nottas_reminders"
     private const val KEY_ITEMS = "items"
+    private const val KEY_ACTIVE = "active_tasks"
+    private const val KEY_NOTIFIED = "notified_task_ids"
     private const val CHANNEL_ID = "nottas_reminders"
     const val ACTION_REMINDER = "com.nottas.app.ACTION_TASK_REMINDER"
 
+    // Reject outdated alarms at the same policy boundary as the WebView.
+    // The native snapshot must be refreshed by the WebView after every local
+    // edit and after every remote merge. SharedPreferences is device-local.
+    private fun eligible(task: JSONObject): Boolean {
+        if (task.optBoolean("deleted", false) || task.optBoolean("done", false)) return false
+        if (task.optString("approvalStatus", "confirmed") in
+            setOf("rejected", "cancelled", "proposed", "changes_requested")) return false
+        if (task.optString("meetingStatus", "scheduled") in
+            setOf("deferred", "realized", "not_realized", "cancelled")) return false
+        return true
+    }
+
+    private fun readActive(context: Context): JSONObject {
+        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_ACTIVE, "{}") ?: "{}"
+        return try { JSONObject(raw) } catch (_: Throwable) { JSONObject() }
+    }
+
+    @Synchronized
+    fun isTaskActive(context: Context, taskId: String, workspaceId: String = ""): Boolean {
+        val task = readActive(context).optJSONObject(taskId) ?: return false
+        val recordedWorkspace = task.optString("workspaceId").trim()
+        return eligible(task) && (workspaceId.isBlank() || workspaceId == recordedWorkspace)
+    }
+
+    @Synchronized
     fun sync(context: Context, json: String): Boolean {
         return try {
+            val packet = if (json.trimStart().startsWith("{")) JSONObject(json) else null
+            val input = packet?.optJSONArray("reminders") ?: JSONArray(json)
+            val declared = packet?.optJSONArray("activeTasks")
+            // Once upgraded, do not trust alarms without an active-task snapshot.
+            val active = JSONObject()
+            if (declared != null) {
+                for (i in 0 until declared.length()) {
+                    val task = declared.optJSONObject(i) ?: continue
+                    val taskId = task.optString("id").trim()
+                    if (taskId.isNotEmpty() && eligible(task)) {
+                        active.put(taskId, JSONObject(task.toString()))
+                    }
+                }
+            } else {
+                // Compatibility only for old clients sending an array.
+                for (i in 0 until input.length()) {
+                    val task = input.optJSONObject(i) ?: continue
+                    val taskId = task.optString("id").trim()
+                    if (taskId.isNotEmpty() && eligible(task)) active.put(taskId, JSONObject(task.toString()))
+                }
+            }
+
             val previous = readItems(context)
-            val input = JSONArray(json)
             val activeTaskIds = mutableSetOf<String>()
             val activeOccurrenceIds = mutableSetOf<String>()
+            active.keys().forEach { activeTaskIds.add(it) }
 
             for (i in 0 until input.length()) {
                 val item = input.optJSONObject(i) ?: continue
                 val taskId = item.optString("id").trim()
-                if (taskId.isNotEmpty()) activeTaskIds.add(taskId)
+                val task = active.optJSONObject(taskId) ?: continue
+                if (item.optString("workspaceId").trim() != task.optString("workspaceId").trim()) continue
                 val day = item.optString("date").trim()
-                if (taskId.isNotEmpty() && day.matches(Regex("\\d{4}-\\d{2}-\\d{2}")))
+                if (day.matches(Regex("\\d{4}-\\d{2}-\\d{2}")))
                     activeOccurrenceIds.add("$taskId::$day")
             }
 
@@ -41,48 +92,69 @@ object ReminderScheduler {
 
             val stored = JSONObject()
             val now = System.currentTimeMillis()
-
             for (i in 0 until input.length()) {
                 val item = input.optJSONObject(i) ?: continue
                 val taskId = item.optString("id").trim()
+                val task = active.optJSONObject(taskId) ?: continue
+                val workspaceId = item.optString("workspaceId").trim()
+                if (workspaceId != task.optString("workspaceId").trim()) continue
                 val alarmId = item.optString("alarmId").trim().ifEmpty { taskId }
                 val text = item.optString("text").trim()
                 val at = item.optLong("at", 0L)
                 if (taskId.isEmpty() || alarmId.isEmpty() || text.isEmpty() || at <= now) continue
-
                 stored.put(
                     alarmId,
                     JSONObject()
                         .put("taskId", taskId)
+                        .put("workspaceId", workspaceId)
                         .put("text", text)
                         .put("at", at)
                         .put("date", item.optString("date").trim())
+                        .put("approvalStatus", task.optString("approvalStatus", "confirmed"))
+                        .put("meetingStatus", task.optString("meetingStatus", "scheduled"))
                         .put("snoozed", false)
                 )
                 scheduleAlarm(context, alarmId, taskId, text, at)
             }
 
-            // A snoozed reminder is independent from the event's other future alerts.
+            // A snooze may survive only if the event and its exact occurrence
+            // remain approved, active, and present in the current schedule.
             previousKeys.forEach { alarmId ->
                 val old = previous.optJSONObject(alarmId) ?: return@forEach
                 if (!old.optBoolean("snoozed", false)) return@forEach
                 val taskId = old.optString("taskId", alarmId.substringBefore("::")).trim()
+                val task = active.optJSONObject(taskId) ?: return@forEach
+                val workspaceId = task.optString("workspaceId").trim()
+                val oldWorkspace = old.optString("workspaceId").trim()
+                if (oldWorkspace.isNotEmpty() && oldWorkspace != workspaceId) return@forEach
                 val text = old.optString("text").trim()
                 val at = old.optLong("at", 0L)
                 val day = old.optString("date").trim()
-                if (taskId.isEmpty() || text.isEmpty() || at <= now || !activeTaskIds.contains(taskId)) return@forEach
+                if (taskId.isEmpty() || text.isEmpty() || at <= now) return@forEach
                 if (day.isNotEmpty() && !activeOccurrenceIds.contains("$taskId::$day")) return@forEach
+                old.put("workspaceId", workspaceId)
                 stored.put(alarmId, old)
                 scheduleAlarm(context, alarmId, taskId, text, at)
             }
 
+            // Store the policy snapshot even if there are zero future alarms.
+            // This prevents late pending intents from displaying deleted events.
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                .putString(KEY_ACTIVE, active.toString())
+                .putString(KEY_ITEMS, stored.toString())
+                .apply()
+
+            val obsolete = mutableSetOf<String>()
             previousKeys.forEach { alarmId ->
                 val old = previous.optJSONObject(alarmId)
                 val taskId = old?.optString("taskId", alarmId.substringBefore("::"))?.trim().orEmpty()
-                if (taskId.isNotEmpty() && !activeTaskIds.contains(taskId)) cancelNotification(context, taskId)
+                if (taskId.isNotEmpty() && !activeTaskIds.contains(taskId)) obsolete.add(taskId)
             }
-
-            saveItems(context, stored)
+            val notified = readNotified(context)
+            notified.keys().forEach { taskId ->
+                if (!activeTaskIds.contains(taskId)) obsolete.add(taskId)
+            }
+            obsolete.forEach { cancelNotification(context, it) }
             true
         } catch (_: Throwable) {
             false
@@ -102,7 +174,9 @@ object ReminderScheduler {
                 val taskId = item.optString("taskId", alarmId.substringBefore("::")).trim()
                 val text = item.optString("text").trim()
                 val at = item.optLong("at", 0L)
-                if (taskId.isNotEmpty() && text.isNotEmpty() && at > now) {
+                val workspaceId = item.optString("workspaceId").trim()
+                if (taskId.isNotEmpty() && text.isNotEmpty() && at > now &&
+                    isTaskActive(context, taskId, workspaceId)) {
                     cleaned.put(alarmId, item)
                     scheduleAlarm(context, alarmId, taskId, text, at)
                 }
@@ -118,6 +192,13 @@ object ReminderScheduler {
         val trigger = items.optJSONObject(triggerAlarmId) ?: return JSONArray()
         val triggerAt = trigger.optLong("at", 0L)
         if (triggerAt <= 0L) return JSONArray()
+        val triggerTaskId = trigger.optString("taskId", triggerAlarmId.substringBefore("::")).trim()
+        if (!isTaskActive(context, triggerTaskId, trigger.optString("workspaceId"))) {
+            cancelAlarm(context, triggerAlarmId)
+            items.remove(triggerAlarmId)
+            saveItems(context, items)
+            return JSONArray()
+        }
 
         val group = JSONArray()
         val claimedAlarmIds = mutableListOf<String>()
@@ -131,10 +212,17 @@ object ReminderScheduler {
             val taskId = item.optString("taskId", alarmId.substringBefore("::")).trim()
             val text = item.optString("text").trim()
             if (taskId.isEmpty() || text.isEmpty()) return@forEach
+            if (!isTaskActive(context, taskId, item.optString("workspaceId"))) {
+                claimedAlarmIds.add(alarmId)
+                return@forEach
+            }
             group.put(
                 JSONObject()
                     .put("id", taskId)
                     .put("alarmId", alarmId)
+                    .put("workspaceId", item.optString("workspaceId").trim())
+                    .put("approvalStatus", item.optString("approvalStatus"))
+                    .put("meetingStatus", item.optString("meetingStatus"))
                     .put("text", text)
                     .put("at", at)
                     .put("date", item.optString("date").trim().ifEmpty { alarmId.substringAfter("::", "").substringBefore("::") })
@@ -154,6 +242,8 @@ object ReminderScheduler {
 
     fun snooze(context: Context, taskId: String, text: String, minutes: Int, day: String = "") {
         try {
+            if (!isTaskActive(context, taskId)) return
+            val workspaceId = readActive(context).optJSONObject(taskId)?.optString("workspaceId").orEmpty()
             val safeMinutes = minutes.coerceIn(1, 120)
             val at = System.currentTimeMillis() + safeMinutes * 60_000L
             val alarmId = if (day.isNotEmpty()) "$taskId::$day::snooze" else taskId + "::snooze"
@@ -165,6 +255,7 @@ object ReminderScheduler {
                 alarmId,
                 JSONObject()
                     .put("taskId", taskId)
+                    .put("workspaceId", workspaceId)
                     .put("text", text)
                     .put("at", at)
                     .put("date", day)
@@ -198,9 +289,47 @@ object ReminderScheduler {
         }
     }
 
+    private fun readNotified(context: Context): JSONObject {
+        val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_NOTIFIED, "{}") ?: "{}"
+        return try { JSONObject(raw) } catch (_: Throwable) { JSONObject() }
+    }
+
+    // Called through the same lock as sync(). An outdated event can never
+    // race an application-state refresh into a new notification.
+    @Synchronized
+    fun showNotificationIfActive(context: Context, item: JSONObject, notification: Notification): Boolean {
+        val taskId = item.optString("id").trim()
+        val workspaceId = item.optString("workspaceId").trim()
+        if (taskId.isEmpty() || !isTaskActive(context, taskId, workspaceId)) return false
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.notify(taskId.hashCode(), notification)
+        val notified = readNotified(context)
+        notified.put(taskId, JSONObject()
+            .put("workspaceId", workspaceId)
+            .put("at", System.currentTimeMillis()))
+        // Bound this local diagnostic ledger; newer records are most useful.
+        if (notified.length() > 160) {
+            val ids = mutableListOf<String>()
+            notified.keys().forEach { ids.add(it) }
+            ids.sortedBy { notified.optJSONObject(it)?.optLong("at", 0L) ?: 0L }
+                .take(notified.length() - 160).forEach { notified.remove(it) }
+        }
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString(KEY_NOTIFIED, notified.toString()).apply()
+        return true
+    }
+
+    @Synchronized
     fun cancelNotification(context: Context, taskId: String) {
         try {
             context.getSystemService(NotificationManager::class.java).cancel(taskId.hashCode())
+            val notified = readNotified(context)
+            if (notified.has(taskId)) {
+                notified.remove(taskId)
+                context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                    .putString(KEY_NOTIFIED, notified.toString()).apply()
+            }
         } catch (_: Throwable) {
         }
     }
@@ -344,6 +473,7 @@ class ReminderReceiver : BroadcastReceiver() {
             ReminderScheduler.ensureChannel(context)
             val manager = context.getSystemService(NotificationManager::class.java)
 
+            val deliverable = JSONArray()
             for (i in 0 until group.length()) {
                 val item = group.optJSONObject(i) ?: continue
                 val id = item.optString("id").trim()
@@ -376,17 +506,15 @@ class ReminderReceiver : BroadcastReceiver() {
                     .setCategory(Notification.CATEGORY_REMINDER)
                     .build()
 
-                manager.notify(id.hashCode(), notification)
+                if (ReminderScheduler.showNotificationIfActive(context, item, notification))
+                    deliverable.put(item)
             }
-        } catch (_: Throwable) {
-        }
-
-        try {
-            val first = group.optJSONObject(0) ?: return
+            if (deliverable.length() == 0) return
+            val first = deliverable.optJSONObject(0) ?: return
             val reminderIntent = Intent(context, ReminderActivity::class.java).apply {
                 putExtra(ReminderActivity.EXTRA_TASK_ID, first.optString("id"))
                 putExtra(ReminderActivity.EXTRA_TASK_TEXT, first.optString("text"))
-                putExtra(ReminderActivity.EXTRA_REMINDERS_JSON, group.toString())
+                putExtra(ReminderActivity.EXTRA_REMINDERS_JSON, deliverable.toString())
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -396,7 +524,7 @@ class ReminderReceiver : BroadcastReceiver() {
             }
             context.startActivity(reminderIntent)
         } catch (_: Throwable) {
-            // The notifications remain available if Android blocks the full-screen activity.
+            // Notifications remain available if Android blocks the full-screen activity.
         }
     }
 }

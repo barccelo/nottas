@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.105 — 2 de noviembre de 2026
+
+- Solucionado el origen de los recordatorios fantasma: eventos ocultos por rechazo, cancelación o estado final dejan de programar avisos en Android.
+- Verificación de elegibilidad duplicada en la interfaz y en el servicio nativo, con identificadores de evento/espacio/ocurrencia.
+- Al sincronizar se eliminan alarmas y notificaciones obsoletas; posposiciones solo válidas si el evento sigue activo.
+- Protección contra alarmas desactualizadas justo antes de mostrar la notificación y al actuar desde la pantalla completa.
+- Búsqueda extendida a registros rechazados/cancelados, únicamente bajo otras coincidencias; no se borran ni alteran datos de Cloudflare.
+- Publicación de APK mediante GitHub Actions para Obtainium.
+
+
 ## 0.27.104 — 2 de noviembre de 2026
 
 - Botón «Elegir» extendido hasta el borde derecho de la fila de hora, alineándolo visualmente con la fila de fecha y recordatorios.

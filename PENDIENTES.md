@@ -1,10 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Cambios v0.27.104 pendientes de comprobación Android.
+Última revisión: 2 de noviembre de 2026 · Corrección v0.27.105, pendiente de prueba en Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.105 · Caso Test:** abrir Oficina en ambos móviles tras actualizar, sincronizar; verificar que el evento rechazado del 02/11 17:00 no vuelva a activar ni mostrar recordatorios.
+- [ ] **v0.27.105 · Estados:** probar rechazo/cancelación, petición de cambios, diferimiento, realización y eliminación, tanto local como desde el otro rol; confirmar cancelación de alarmas programadas y notificaciones visibles.
+- [ ] **v0.27.105 · Búsqueda:** «Test» debe localizar registros de Oficina rechazados en otras coincidencias, sin aparecer en Pendientes/Todas/Hoy.
+- [ ] **v0.27.105 · Recordatorios válidos:** confirmar que tareas confirmadas propias/compartidas y múltiples recordatorios/snoozes siguen funcionando; probar reinicio del teléfono y cortes de conectividad.
+- [ ] **v0.27.105 · Obtainium:** validar APK firmada, actualización conservando datos y sincronización inicial.
+
 
 - [ ] **v0.27.104 · Simetría:** comprobar que «Elegir» se extiende hasta el margen derecho igual que calendario/recordatorio en pantallas pequeñas, modo claro/oscuro y con teclado abierto.
 - [ ] **v0.27.104 · Handle del selector de recordatorios:** deslizar hacia abajo sobre el handle y encabezado debe desplazar y cerrar la hoja, sin cambiar el recordatorio; gesto insuficiente debe volver a su posición, deslizamiento hacia arriba no debe expandir.

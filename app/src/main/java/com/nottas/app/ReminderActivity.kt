@@ -86,6 +86,7 @@ class ReminderActivity : Activity() {
                         item.optString("alarmId").substringAfter("::", "").substringBefore("::")
                     }
                     if (id.isEmpty() || text.isEmpty() || !seen.add("$id::$date")) continue
+                    if (!ReminderScheduler.isTaskActive(this, id, item.optString("workspaceId"))) continue
                     out.add(ReminderItem(id, text, date))
                 }
                 if (out.isNotEmpty()) return out
@@ -95,7 +96,8 @@ class ReminderActivity : Activity() {
 
         val id = intent.getStringExtra(EXTRA_TASK_ID).orEmpty().trim()
         val text = intent.getStringExtra(EXTRA_TASK_TEXT).orEmpty().trim()
-        return if (id.isNotEmpty() && text.isNotEmpty()) {
+        return if (id.isNotEmpty() && text.isNotEmpty() &&
+            ReminderScheduler.isTaskActive(this, id)) {
             listOf(ReminderItem(id, text))
         } else {
             emptyList()
@@ -357,6 +359,7 @@ class ReminderActivity : Activity() {
             refreshSnooze()
 
             fun resolveComplete() {
+                if (!ReminderScheduler.isTaskActive(this, reminder.id)) return
                 ReminderActionStore.enqueueComplete(this, reminder.id, reminder.date)
                 ReminderScheduler.remove(this, reminder.id, reminder.date)
                 ReminderScheduler.cancelNotification(this, reminder.id)
@@ -1015,6 +1018,10 @@ class ReminderActivity : Activity() {
         if (snoozeMinutes == 1) "Posponer 1 min" else "Posponer $snoozeMinutes min"
 
     private fun completeReminder() {
+        if (!ReminderScheduler.isTaskActive(this, taskId)) {
+            finishQuietly()
+            return
+        }
         ReminderActionStore.enqueueComplete(this, taskId, taskDate)
         ReminderScheduler.remove(this, taskId, taskDate)
         ReminderScheduler.cancelNotification(this, taskId)
@@ -1024,6 +1031,12 @@ class ReminderActivity : Activity() {
     private fun snoozeReminder() {
         ReminderScheduler.snooze(this, taskId, taskText, snoozeMinutes, taskDate)
         finishQuietly()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (taskId.isNotBlank() && !ReminderScheduler.isTaskActive(this, taskId))
+            finishQuietly()
     }
 
     private fun roundedBackground(color: Int, radius: Int): GradientDrawable =
