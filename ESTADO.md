@@ -200,3 +200,9 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Si falta un código en respuesta del servidor, se ofrece recuperar el dato mediante GET /v1/workspaces para la cuenta autenticada.
 - Se separa explícitamente invitación de recuperación de cuenta; formulario de creación no se cierra ante error de servidor.
 - Pendiente validar en dispositivos distintos y confirmar release firmada v0.27.83.
+
+## 0.27.84 — Equipo de trabajo y diagnóstico
+- UI: tarjetas principales más separadas; la invitación de «Oficina» ya no es una subtarjeta gris, sus filas comparten el diseño y las divisiones de Nottas.
+- Acceso a Soporte/diagnóstico corregido: antes estaba oculto por CSS. Panel reordenado en sincronización, recuperación, gestión avanzada y opciones técnicas plegadas. El botón de comprobación llama a /v1/me con la sesión existente.
+- Campo de código de recuperación de dueño se oculta si la cuenta ya es dueña; recuperación, ocultar espacio, eliminación definitiva con confirmaciones, notificaciones y compatibilidad permanecen funcionalmente disponibles.
+- Pendiente comprobar diseño, desplazamiento y funciones en teléfono Android. No se cambian datos ni esquemas del Worker.
