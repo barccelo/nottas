@@ -1982,8 +1982,8 @@ html[data-theme="dark"] .directorInboxLater{background:#36363b}
 .directorInboxActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 4px}
 .directorInboxActions button{border:1px solid rgba(118,118,128,.2);border-radius:11px;min-height:37px;font-size:12px;font-weight:650;background:transparent;color:inherit}
 .directorInboxActions button:last-child{background:#2d71ee;color:white;border-color:transparent}
-/* Recognition markers are removable without deleting the typed words. */
-.quickDetectedHint{gap:6px}
+/* Recognized time markers live immediately after the editable title; their words are extracted from the title. */
+.quickDetectedHint{gap:6px;margin:5px 2px 9px;min-height:30px}
 .quickDetectedPill{
   display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:4px 9px;
   background:rgba(0,122,255,.10);border:1px solid rgba(0,122,255,.19);
@@ -1992,7 +1992,12 @@ html[data-theme="dark"] .directorInboxLater{background:#36363b}
 }
 .quickDetectedPill span{font-size:15px;font-weight:400;line-height:1}
 html[data-theme="dark"] .quickDetectedPill{color:#a4ccff;background:#15334d;border-color:#285078}
-.directorInboxItemWrap{position:relative;display:flex;align-items:stretch;gap:5px;min-width:0}
+.directorInboxItemWrap{position:relative;display:flex;align-items:stretch;gap:5px;min-width:0;overflow:hidden;border-radius:13px;background:rgba(255,59,48,.08);touch-action:pan-y}
+.directorInboxItemWrap::before{content:"Descartar";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:650;color:#cc3e34;opacity:0;pointer-events:none}
+.directorInboxItemWrap.swiping::before{opacity:1}
+.directorInboxItemWrap .directorInboxItem,.directorInboxItemWrap .directorInboxDismiss{transform:translateX(var(--director-swipe-x,0px));transition:transform .16s ease}
+.directorInboxItemWrap.swiping .directorInboxItem,.directorInboxItemWrap.swiping .directorInboxDismiss{transition:none}
+.directorSwipeHint{font-size:10px;color:#8e8e93;line-height:1.3;margin-top:3px}
 .directorInboxItemWrap .directorInboxItem{flex:1;min-width:0}
 .directorInboxDismiss{flex:0 0 38px;align-self:stretch;border:0;border-radius:13px;background:rgba(118,118,128,.1);color:#6b6b70;font-size:22px}
 html[data-theme="dark"] .directorInboxDismiss{background:#303034;color:#e5e5ea}
@@ -2302,6 +2307,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     </div>
     <form id="quickForm">
       <input id="quickTaskText" class="quickInput" type="text" maxlength="180" placeholder="¿Qué tienes pendiente?" autocomplete="off">
+      <div id="quickDetectedHint" class="quickDetectedHint hidden" aria-live="polite"></div>
       <textarea id="quickNoteText" class="quickTextarea hidden" maxlength="12000" placeholder="Escribe una nota…"></textarea>
       <div id="quickTaskOptions" class="quickTools">
         <button class="quickChip active" type="button" data-quick-date="">Sin fecha</button>
@@ -2327,7 +2333,6 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         <button class="quickTimeChip" type="button" data-quick-time="18:00">18:00</button>
         <input id="quickCustomTime" class="quickCustomTime" type="time" step="300" aria-label="Elegir otra hora">
       </div>
-      <div id="quickDetectedHint" class="quickDetectedHint hidden" aria-live="polite"></div>
       <div id="quickCategory" class="categoryPicker quickCategory" data-category-picker>
         <div class="categoryPickerBar">
           <button class="categoryDrop" type="button" aria-label="Mostrar categorías"><svg viewBox="0 0 14 8" aria-hidden="true"><path d="m1 1 6 6 6-6"></path></svg></button>
@@ -4403,6 +4408,12 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       }
       detail.textContent=dateText+" · "+item.workspaceName;
       main.append(title,detail);
+      if(directorInboxTab==="proposals"){
+        const swipeHint=document.createElement("span");
+        swipeHint.className="directorSwipeHint";
+        swipeHint.textContent="← Desliza para ver opciones de descarte";
+        main.appendChild(swipeHint);
+      }
       if(directorInboxTab!=="proposals"){
         const tag=document.createElement("span");tag.className="directorInboxItemStatus";tag.textContent=meetingStatusLabel(item.meetingStatus);
         main.appendChild(tag);
@@ -4426,18 +4437,36 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         const container=document.createElement("div");container.className="directorInboxProposal";
         container.append(wrapper,actions);host.appendChild(container);
         let start=null;
+        const resetSwipe=()=>{
+          start=null;
+          wrapper.classList.remove("swiping");
+          wrapper.style.removeProperty("--director-swipe-x");
+        };
         wrapper.addEventListener("touchstart",e=>{
-          if(e.touches.length!==1||e.target.closest("button.directorInboxDismiss"))return;
-          start={x:e.touches[0].clientX,y:e.touches[0].clientY};
+          if(e.touches.length!==1||e.target.closest("button.directorInboxDismiss,.directorInboxActions"))return;
+          start={x:e.touches[0].clientX,y:e.touches[0].clientY,swiping:false};
         },{passive:true});
+        wrapper.addEventListener("touchmove",e=>{
+          if(!start||e.touches.length!==1)return;
+          const dx=e.touches[0].clientX-start.x,dy=e.touches[0].clientY-start.y;
+          if(!start.swiping&&Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.3)start.swiping=true;
+          if(!start.swiping)return;
+          e.preventDefault();
+          wrapper.classList.add("swiping");
+          wrapper.style.setProperty("--director-swipe-x",Math.max(-65,Math.min(65,dx))+"px");
+        },{passive:false});
         wrapper.addEventListener("touchend",e=>{
           if(!start)return;
-          const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
-          if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){
+          const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;
+          const wasSwiping=start.swiping;
+          resetSwipe();
+          if(wasSwiping){
+            suppressClickUntil=Date.now()+550;
             e.preventDefault();
-            suppressClickUntil=Date.now()+500;showDirectorDiscard(item);
+            if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.3)showDirectorDiscard(item);
           }
         },{passive:false});
+        wrapper.addEventListener("touchcancel",resetSwipe);
       }else host.appendChild(wrapper);
     }
     footer.textContent=directorInboxTab==="proposals"?
@@ -8442,13 +8471,43 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     setTimeout(()=>{(isTask?$("quickTaskText"):$("quickNoteText")).focus()},40);
   }
   const quickIgnoredTokens=new Set();
+  let quickExtractedMarkers=[];
   function quickTokenKey(token){return String(token||"").trim().toLocaleLowerCase("es").replace(/\s+/g," ")}
   function quickTokenIgnored(token){return quickIgnoredTokens.has(quickTokenKey(token))}
-  function ignoreQuickToken(token){
-    if(!token)return;
-    quickIgnoredTokens.add(quickTokenKey(token));
+  // A rejected word is ignored only while the same literal survives in the input.
+  // Editing or erasing it clears the rejection so retyping suggests it again.
+  function pruneQuickIgnoredTokens(){
+    const visible=quickTokenKey($("quickTaskText").value);
+    for(const token of quickIgnoredTokens)if(!visible.includes(token))quickIgnoredTokens.delete(token);
+  }
+  function syncQuickExtractedState(){
+    const date=quickExtractedMarkers.find(m=>m.kind==="date");
+    const time=quickExtractedMarkers.find(m=>m.kind==="time");
+    quickDetected={
+      found:!!(date||time),date:date?.value|| (time?localDateISO():""),
+      time:time?.value||"",clean:$("quickTaskText").value.trim(),
+      hasDate:!!date,hasTime:!!time,
+      dateToken:date?.token||"",timeToken:time?.token||""
+    };
+  }
+  function restoreQuickMarker(kind){
+    const index=quickExtractedMarkers.findIndex(m=>m.kind===kind);
+    if(index<0)return;
+    const marker=quickExtractedMarkers.splice(index,1)[0],input=$("quickTaskText");
+    const offset=Math.min(marker.at,input.value.length);
+    const before=input.value.slice(0,offset),after=input.value.slice(offset);
+    const leading=before&&!/\s$/.test(before)?" ":"";
+    const trailing=after&&!/^\s/.test(after)?" ":"";
+    const position=before.length+leading.length+marker.token.length;
+    quickIgnoredTokens.add(quickTokenKey(marker.token));
+    input.value=before+leading+marker.token+trailing+after;
     syncQuickFromText();
-    $("quickTaskText").focus({preventScroll:true});
+    input.focus({preventScroll:true});
+    input.setSelectionRange(position,position);
+  }
+  function ignoreQuickToken(token){
+    const marker=quickExtractedMarkers.find(m=>quickTokenKey(m.token)===quickTokenKey(token));
+    if(marker)restoreQuickMarker(marker.kind);
   }
   function parseQuickSchedule(raw){
     let remaining=String(raw||"").trim(),date="",time="",foundDate=false,foundTime=false,dateToken="",timeToken="";
@@ -8561,7 +8620,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         !quickReminderOffsets.length:quickReminderOffsets.includes(Number(button.dataset.quickReminder)));
     });
     const hint=$("quickDetectedHint");
-    const relevant=quickMode==="tasks"&&!!quickDetected.found;
+    const relevant=quickMode==="tasks"&&quickExtractedMarkers.length>0;
     hint.classList.toggle("hidden",!relevant);
     if(relevant){
       hint.replaceChildren();
@@ -8573,7 +8632,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
         const chip=document.createElement("button");
         chip.type="button";chip.className="quickDetectedPill";
         chip.setAttribute("aria-label","No interpretar "+token+" como fecha u hora");
-        chip.title="Toca para conservar «"+token+"» como texto (o pulsa borrar)";
+        chip.title="Quitar marcador y volver a editar «"+token+"» como texto";
         chip.append(document.createTextNode(description||token));
         const cross=document.createElement("span");cross.textContent="×";cross.setAttribute("aria-hidden","true");
         chip.appendChild(cross);chip.addEventListener("click",()=>ignoreQuickToken(token));
@@ -8581,14 +8640,48 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       }
     }
   }
-  function syncQuickFromText(){
-    quickDetected=parseQuickSchedule($("quickTaskText").value);
+  function syncQuickFromText(event){
+    if(event?.isComposing)return;
+    const input=$("quickTaskText");
+    pruneQuickIgnoredTokens();
+    const parsed=parseQuickSchedule(input.value);
+    const collected=[];
+    for(const [kind,token,value] of [
+      ["date",parsed.hasDate?parsed.dateToken:"",parsed.date],
+      ["time",parsed.hasTime?parsed.timeToken:"",parsed.time]
+    ]){
+      if(!token||quickExtractedMarkers.some(m=>m.kind===kind))continue;
+      const offset=input.value.toLocaleLowerCase("es").indexOf(token.toLocaleLowerCase("es"));
+      if(offset<0)continue;
+      collected.push({kind,token:token.trim(),value,at:offset});
+    }
+    if(collected.length){
+      let title=input.value;
+      const originalCaret=input.selectionStart??title.length;
+      let caret=originalCaret;
+      for(const marker of collected.slice().sort((a,b)=>b.at-a.at)){
+        const len=marker.token.length;
+        title=title.slice(0,marker.at)+title.slice(marker.at+len);
+        if(marker.at<caret)caret-=Math.min(len,caret-marker.at);
+      }
+      // Remove excess spaces caused by extraction, without duplicating
+      // the semantic phrase in the visible title and the pill.
+      title=title.replace(/\s{2,}/g," ").replace(/\s+([,.;!?])/g,"$1").trim();
+      input.value=title;
+      input.setSelectionRange(Math.max(0,Math.min(caret,title.length)),Math.max(0,Math.min(caret,title.length)));
+      quickExtractedMarkers.push(...collected);
+    }
+    syncQuickExtractedState();
     if(!quickExplicitTime)quickDueTime=quickDetected.time;
     if(!quickExplicitDate)quickDueDate=quickDetected.date||(quickDueTime?localDateISO():"");
     syncQuickControls();
   }
   function setQuickDate(value,manual=true){
-    if(manual)quickExplicitDate=true;
+    if(manual){
+      quickExplicitDate=true;
+      quickExtractedMarkers=quickExtractedMarkers.filter(m=>m.kind!=="date"&&(value!==""||m.kind!=="time"));
+      syncQuickExtractedState();
+    }
     quickDueDate=value==="today"?localDateISO():value==="tomorrow"?addCalendarDays(localDateISO(),1):"";
     if(manual&&!quickDueDate){
       quickDueTime="";quickExplicitTime=true;
@@ -8608,7 +8701,11 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     if(quickDueDate&&quickReminderOffsets.length)requestReminderPermission();
   }
   function setQuickTime(value,manual=true){
-    if(manual)quickExplicitTime=true;
+    if(manual){
+      quickExplicitTime=true;
+      quickExtractedMarkers=quickExtractedMarkers.filter(m=>m.kind!=="time");
+      syncQuickExtractedState();
+    }
     quickDueTime=/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(String(value||""))?value:"";
     if(quickDueTime&&!quickDueDate){
       quickDueDate=localDateISO();quickExplicitDate=false;
@@ -8636,7 +8733,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
-    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();
+    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();quickExtractedMarkers=[];
     $("quickTaskText").value="";
     $("quickNoteText").value="";
     setCategoryPicker("quickCategory",activeCategory!=="all"?activeCategory:"inbox");
@@ -9378,11 +9475,11 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     if(event.key!=="Backspace"||event.isComposing||event.ctrlKey||event.altKey)return;
     const input=event.currentTarget,caret=input.selectionStart;
     if(caret!==input.selectionEnd||caret!==input.value.length)return;
-    const token=quickDetected.timeToken||quickDetected.dateToken;
-    if(!token)return;
-    // First Backspace clears semantic recognition; the literal word stays in
-    // the title. Subsequent presses edit the text normally.
-    event.preventDefault();ignoreQuickToken(token);
+    const marker=quickExtractedMarkers.slice().reverse().find(m=>m.at>=caret-1);
+    if(!marker)return;
+    // First Backspace restores the word at the caret; further Backspaces
+    // edit it normally. Rewriting it triggers recognition anew.
+    event.preventDefault();restoreQuickMarker(marker.kind);
   });
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("directorDiscardClose").addEventListener("click",closeDirectorDiscard);

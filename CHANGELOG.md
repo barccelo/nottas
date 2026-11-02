@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.99 — 2 de noviembre de 2026
+
+- Los marcadores de fecha y hora de captura rápida se extraen del texto y se representan como píldoras junto al campo de título. Quitar un marcador restaura sus palabras y reescribirlas vuelve a activar el reconocimiento.
+- Las propuestas muestran pista de deslizamiento y responden visualmente al gesto antes de abrir las opciones de descarte, sin disparar la apertura del evento.
+- Nueva versión de Android para publicación automática de APK firmada y actualización vía Obtainium.
+
+
 ## 0.27.98 — 2 de noviembre de 2026
 
 - Pulido final de la bandeja de propuestas: botón visible «Revisar después» y protección contra el clic accidental del evento tras deslizar su tarjeta.

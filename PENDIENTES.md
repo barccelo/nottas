@@ -1,10 +1,14 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Integración v0.27.98 pendiente de prueba en dispositivos.
+Última revisión: 2 de noviembre de 2026 · Integración v0.27.99 pendiente de prueba en dispositivos.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.99 · Captura rápida:** confirmar extracción de hoy, mañana, fechas y horas del título, render de píldoras junto al campo, recuperación de palabras con X/Backspace y nueva detección al borrar parcialmente o reescribir el texto.
+- [ ] **v0.27.99 · Descarte visual:** comprobar indicación y desplazamiento de las tarjetas, apertura exclusiva del menú al soltar el dedo y scroll vertical normal.
+- [ ] **v0.27.99 · Obtainium:** comprobar publicación de APK firmada y actualización conservando datos.
 
 - [ ] **v0.27.98 · Regresión swipe:** comprobar que un gesto horizontal abre únicamente «¿Qué deseas descartar?» y no abre el editor del evento.
 - [ ] **v0.27.98 · Revisar después:** comprobar que el botón cierra la revisión sin cambiar estados y que los avisos siguen pendientes en la campanita y Android.

@@ -1,7 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Pulido de la bandeja del director.
+Última actualización: 2 de noviembre de 2026 · Correcciones de captura rápida y gestos visibles.
 
+
+## Cambios v0.27.99 — marcadores rápidos y gesto visible de descarte
+
+- Captura rápida: el título muestra únicamente el texto de la tarea; las expresiones interpretadas como fecha u hora se extraen y aparecen como píldoras inmediatamente debajo del campo, sin duplicarse.
+- Quitar una píldora recupera las palabras en el título. La supresión deja de ser permanente: al editar o borrar la palabra y volver a escribirla, el marcador se ofrece de nuevo.
+- Backspace sobre una píldora situada al final recupera la expresión para editarla con el teclado.
+- Bandeja de propuestas: cada aviso señala visualmente el deslizamiento; el desplazamiento horizontal mueve la tarjeta en tiempo real y conduce al diálogo de opciones de descarte, sin abrir accidentalmente el evento.
+- La acción de descarte mantiene la distinción entre ocultar el aviso local y rechazar la propuesta compartida. Sin cambios en Cloudflare ni Firebase.
+- APK firmada vía GitHub Actions para actualización mediante Obtainium. Requiere verificación manual en Android.
 
 ## Cambios v0.27.98 — cierre de interacción de la bandeja
 
@@ -99,7 +108,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.98** (`versionCode 179`).
+- Versión del código Android: **0.27.99** (`versionCode 180`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
