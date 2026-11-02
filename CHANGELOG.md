@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.101 — 2 de noviembre de 2026
+
+- Sustitución del selector de categorías de captura rápida por carrusel horizontal de iconos siempre accesible debajo del título.
+- Detección de horas abreviadas con a/p y ceros iniciales, incluidas 2p/2a, 430p/430a, 02p/02a y 0430p/0430a.
+- Nueva categoría «Acto presencial», con icono lineal de persona frente a atril y migración para espacios compartidos existentes.
+- Incremento de versión Android y publicación automatizada de APK firmada para Obtainium.
+
+
 ## 0.27.100 — 2 de noviembre de 2026
 
 - El editor de captura rápida representa marcadores de fecha y hora como píldoras intercaladas dentro del campo de texto.

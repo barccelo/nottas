@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · v0.27.100 pendiente de comprobación táctil.
+Última revisión: 2 de noviembre de 2026 · v0.27.101 pendiente de prueba en dispositivos.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.101 · Categorías:** comprobar carrusel visible con teclado, deslizamiento horizontal, categoría marcada y guardado correcto en tarea y nota.
+- [ ] **v0.27.101 · Horas compactas:** probar 2p, 2a, 430p, 430a, 02p, 02a, 0430p y 0430a; también 12a, 12p y horas inválidas. Verificar marcador dentro del título.
+- [ ] **v0.27.101 · Acto presencial:** confirmar nuevo símbolo de atril, categoría distinta de Actividad, migración única y sincronización en ambos dispositivos.
+- [ ] **v0.27.101 · Obtainium:** verificar publicación firmada y actualización conservando datos.
+
 
 - [ ] **v0.27.100 · Marcadores dentro del título:** comprobar «Test mañana» → «Test [mañana]» dentro del mismo campo, con espacio conservado en la edición; al guardar se almacena «Test» sin espacio final. Probar horas, fechas, varias palabras y tema oscuro.
 - [ ] **v0.27.100 · Recuperación:** al pulsar X o retroceso junto a la píldora debe volver «mañana» como palabra editable; borrar una parte o toda la palabra y reescribirla debe volver a sugerirla.

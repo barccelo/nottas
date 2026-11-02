@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Marcadores de tiempo en línea dentro de captura rápida.
+Última actualización: 2 de noviembre de 2026 · Fila de categorías, horarios abreviados y Acto presencial.
 
+
+## Cambios v0.27.101 — categorías visibles y horarios abreviados
+
+- Captura rápida: el selector de categorías se muestra como carrusel horizontal de iconos con sus nombres, inmediatamente bajo el título. El desplegable antiguo no ocupa espacio mientras el teclado está abierto. La categoría seleccionada queda resaltada; el carrusel puede desplazarse lateralmente.
+- Reconocimiento de hora: se aceptan 2p, 2a, 430p, 430a, 02p, 02a, 0430p, 0430a y otras variantes equivalentes con AM/PM implícito. Las horas se validan y convierten a formato 24 horas, respetando los marcadores en línea.
+- Categoría «Acto presencial» con icono lineal de presentador y atril, diferenciada de «Actividad». Se añade a los espacios compartidos existentes con una migración independiente, sin repetir las categorías previas.
+- Pendiente validación visual con teclado físico/táctil Android; no hay cambios en servicios Cloudflare.
+- APK de Android firmada y distribuida mediante el flujo habitual de GitHub Actions para Obtainium.
 
 ## Cambios v0.27.100 — marcadores temporales integrados en el título
 
@@ -116,7 +124,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.100** (`versionCode 181`).
+- Versión del código Android: **0.27.101** (`versionCode 182`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
