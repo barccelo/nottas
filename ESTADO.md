@@ -206,3 +206,9 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Acceso a Soporte/diagnóstico corregido: antes estaba oculto por CSS. Panel reordenado en sincronización, recuperación, gestión avanzada y opciones técnicas plegadas. El botón de comprobación llama a /v1/me con la sesión existente.
 - Campo de código de recuperación de dueño se oculta si la cuenta ya es dueña; recuperación, ocultar espacio, eliminación definitiva con confirmaciones, notificaciones y compatibilidad permanecen funcionalmente disponibles.
 - Pendiente comprobar diseño, desplazamiento y funciones en teléfono Android. No se cambian datos ni esquemas del Worker.
+
+## v0.27.85 — Identidad visual en barra lateral y Acerca de Nottas
+- Se añadió el asset SVG nottas_wordmark.svg, usando las letras de la imagen aportada y el icono exacto de dos Ts de ic_nottas_status.xml en lugar de las Ts originales.
+- Barra lateral: logo gráfico en vez de título de texto, subtítulo «Espacios y organización» sin cambio.
+- Acerca de Nottas: icono del launcher ic_nottas_launcher.webp cargado del recurso Android y mostrado en escala de grises; fallback vectorial local. El nombre se muestra como el wordmark.
+- No se tocaron los recursos de icono de launcher/notificación. Pendiente confirmar WebView en Android, diseño vertical y modo oscuro. Obtener APK firmada en Releases.
