@@ -217,3 +217,8 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Icono cuadrado: el mismo launcher de la aplicación, a todo color, sin filtro grayscale.
 - Logo de texto inferior: monocromático (negro en claro, blanco en oscuro), con dos T del icono de notificaciones. El wordmark de la barra lateral conserva sus colores.
 - Sin cambio de recursos Android de iconos, de usuarios o de datos. Validación visual pendiente en Android y publicación vía Obtainium.
+
+## 0.27.87 — Vista cronológica de tareas
+- En agrupación por fecha/hora: «Sin fecha» aparece al principio, luego siguen los días en el orden cronológico seleccionado. El cambio es del comparador usado por la vista agrupada, no del orden general.
+- Espacios compactados con clase específica `taskChronologicalList` (gap 5 px, margen superior del grupo día 9 px, del grupo hora 0). La clase se elimina al ver notas para evitar estilos residuales.
+- Pendiente prueba en Android, incluido modo oscuro, fechas múltiples, grupos con y sin hora.
