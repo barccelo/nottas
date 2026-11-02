@@ -6361,6 +6361,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none}
 
   function renderNotes(){
     const list=$("list"),searching=!!query&&!trash;
+    list.classList.remove("taskChronologicalList");
     const sorter=(a,b)=>Number(b.pinned)-Number(a.pinned)||String(b.updatedAt).localeCompare(String(a.updatedAt));
     const primary=state.notes.filter(visibleNote).slice().sort(sorter);
     const secondary=searching?state.notes.filter(n=>itemInActiveWorkspace(n)&&!n.deletedAt&&!visibleNote(n)&&noteSearchMatches(n)).sort(sorter):[];
