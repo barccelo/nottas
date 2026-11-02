@@ -1,10 +1,15 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Integración v0.27.99 pendiente de prueba en dispositivos.
+Última revisión: 2 de noviembre de 2026 · v0.27.100 pendiente de comprobación táctil.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.100 · Marcadores dentro del título:** comprobar «Test mañana» → «Test [mañana]» dentro del mismo campo, con espacio conservado en la edición; al guardar se almacena «Test» sin espacio final. Probar horas, fechas, varias palabras y tema oscuro.
+- [ ] **v0.27.100 · Recuperación:** al pulsar X o retroceso junto a la píldora debe volver «mañana» como palabra editable; borrar una parte o toda la palabra y reescribirla debe volver a sugerirla.
+- [ ] **v0.27.100 · Obtainium:** comprobar publicación firmada y actualización sobre v0.27.99 sin pérdida de datos.
+
 
 - [ ] **v0.27.99 · Captura rápida:** confirmar extracción de hoy, mañana, fechas y horas del título, render de píldoras junto al campo, recuperación de palabras con X/Backspace y nueva detección al borrar parcialmente o reescribir el texto.
 - [ ] **v0.27.99 · Descarte visual:** comprobar indicación y desplazamiento de las tarjetas, apertura exclusiva del menú al soltar el dedo y scroll vertical normal.

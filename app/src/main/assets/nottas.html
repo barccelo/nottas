@@ -1982,16 +1982,19 @@ html[data-theme="dark"] .directorInboxLater{background:#36363b}
 .directorInboxActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 4px}
 .directorInboxActions button{border:1px solid rgba(118,118,128,.2);border-radius:11px;min-height:37px;font-size:12px;font-weight:650;background:transparent;color:inherit}
 .directorInboxActions button:last-child{background:#2d71ee;color:white;border-color:transparent}
-/* Recognized time markers live immediately after the editable title; their words are extracted from the title. */
-.quickDetectedHint{gap:6px;margin:5px 2px 9px;min-height:30px}
-.quickDetectedPill{
-  display:inline-flex;align-items:center;gap:7px;min-height:30px;padding:4px 9px;
-  background:rgba(0,122,255,.10);border:1px solid rgba(0,122,255,.19);
-  border-radius:999px;color:#1264c4;font-size:12px;font-weight:640;
-  cursor:pointer;touch-action:manipulation;
+/* Inline semantic tokens occupy the same editable title line. */
+#quickTaskText.quickInput{display:block;min-height:52px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;overflow-y:auto;max-height:132px;box-sizing:border-box;-webkit-user-select:text;user-select:text}
+#quickTaskText.quickEmpty::before{content:attr(data-placeholder);color:#9999a0;pointer-events:none}
+.quickInlinePill{
+  display:inline-flex;vertical-align:baseline;align-items:center;gap:6px;
+  max-width:100%;min-height:25px;padding:2px 8px;margin:0 1px;
+  border-radius:999px;background:rgba(0,122,255,.1);
+  border:1px solid rgba(0,122,255,.22);color:#1264c4;
+  font-size:13px;font-weight:620;line-height:1.25;white-space:nowrap;
+  touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none
 }
-.quickDetectedPill span{font-size:15px;font-weight:400;line-height:1}
-html[data-theme="dark"] .quickDetectedPill{color:#a4ccff;background:#15334d;border-color:#285078}
+.quickInlinePill .quickInlineRemove{font-size:16px;font-weight:400;line-height:1;opacity:.8}
+html[data-theme="dark"] .quickInlinePill{color:#a4ccff;background:#15334d;border-color:#285078}
 .directorInboxItemWrap{position:relative;display:flex;align-items:stretch;gap:5px;min-width:0;overflow:hidden;border-radius:13px;background:rgba(255,59,48,.08);touch-action:pan-y}
 .directorInboxItemWrap::before{content:"Descartar";position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:650;color:#cc3e34;opacity:0;pointer-events:none}
 .directorInboxItemWrap.swiping::before{opacity:1}
@@ -2306,8 +2309,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       <button id="quickNoteMode" type="button">Nota</button>
     </div>
     <form id="quickForm">
-      <input id="quickTaskText" class="quickInput" type="text" maxlength="180" placeholder="¿Qué tienes pendiente?" autocomplete="off">
-      <div id="quickDetectedHint" class="quickDetectedHint hidden" aria-live="polite"></div>
+      <div id="quickTaskText" class="quickInput quickEmpty" contenteditable="true" role="textbox" aria-label="Título de la tarea" aria-multiline="false" data-placeholder="¿Qué tienes pendiente?" inputmode="text" spellcheck="true"></div>
       <textarea id="quickNoteText" class="quickTextarea hidden" maxlength="12000" placeholder="Escribe una nota…"></textarea>
       <div id="quickTaskOptions" class="quickTools">
         <button class="quickChip active" type="button" data-quick-date="">Sin fecha</button>
@@ -8467,47 +8469,104 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     $("quickTaskOptions").classList.toggle("hidden",!isTask);
     $("quickTimeOptions").classList.toggle("hidden",!isTask);
     $("quickReminderPanel").classList.toggle("hidden",!isTask||!quickReminderPanelOpen);
-    $("quickDetectedHint").classList.toggle("hidden",!isTask||!quickDetected?.found);
     setTimeout(()=>{(isTask?$("quickTaskText"):$("quickNoteText")).focus()},40);
   }
   const quickIgnoredTokens=new Set();
-  let quickExtractedMarkers=[];
+  let quickComposing=false;
   function quickTokenKey(token){return String(token||"").trim().toLocaleLowerCase("es").replace(/\s+/g," ")}
   function quickTokenIgnored(token){return quickIgnoredTokens.has(quickTokenKey(token))}
-  // A rejected word is ignored only while the same literal survives in the input.
-  // Editing or erasing it clears the rejection so retyping suggests it again.
+  function quickInlineMarkers(){return [...$("quickTaskText").querySelectorAll(".quickInlinePill")]}
+  function quickMarkerOf(kind){return quickInlineMarkers().find(m=>m.dataset.kind===kind)}
+  function quickTextNodes(){
+    const walker=document.createTreeWalker($("quickTaskText"),NodeFilter.SHOW_TEXT);
+    const result=[];let node;
+    while((node=walker.nextNode())){
+      if(!node.parentElement?.closest(".quickInlinePill"))result.push(node);
+    }
+    return result;
+  }
+  function quickPlainText(){return quickTextNodes().map(n=>n.data).join("")}
+  function quickSavedTitle(){return quickPlainText().replace(/\s+/g," ").trim()}
+  function quickRefreshPlaceholder(){
+    $("quickTaskText").classList.toggle("quickEmpty",!quickPlainText()&&!quickInlineMarkers().length);
+  }
+  // A refused token stays plain until the user edits or deletes it.
   function pruneQuickIgnoredTokens(){
-    const visible=quickTokenKey($("quickTaskText").value);
+    const visible=quickTokenKey(quickPlainText());
     for(const token of quickIgnoredTokens)if(!visible.includes(token))quickIgnoredTokens.delete(token);
   }
   function syncQuickExtractedState(){
-    const date=quickExtractedMarkers.find(m=>m.kind==="date");
-    const time=quickExtractedMarkers.find(m=>m.kind==="time");
+    const date=quickMarkerOf("date"),time=quickMarkerOf("time");
     quickDetected={
-      found:!!(date||time),date:date?.value|| (time?localDateISO():""),
-      time:time?.value||"",clean:$("quickTaskText").value.trim(),
+      found:!!(date||time),date:date?.dataset.value||(time?localDateISO():""),
+      time:time?.dataset.value||"",clean:quickPlainText(),
       hasDate:!!date,hasTime:!!time,
-      dateToken:date?.token||"",timeToken:time?.token||""
+      dateToken:date?.dataset.token||"",timeToken:time?.dataset.token||""
     };
+    quickRefreshPlaceholder();
   }
-  function restoreQuickMarker(kind){
-    const index=quickExtractedMarkers.findIndex(m=>m.kind===kind);
-    if(index<0)return;
-    const marker=quickExtractedMarkers.splice(index,1)[0],input=$("quickTaskText");
-    const offset=Math.min(marker.at,input.value.length);
-    const before=input.value.slice(0,offset),after=input.value.slice(offset);
-    const leading=before&&!/\s$/.test(before)?" ":"";
-    const trailing=after&&!/^\s/.test(after)?" ":"";
-    const position=before.length+leading.length+marker.token.length;
-    quickIgnoredTokens.add(quickTokenKey(marker.token));
-    input.value=before+leading+marker.token+trailing+after;
-    syncQuickFromText();
-    input.focus({preventScroll:true});
-    input.setSelectionRange(position,position);
+  function quickSetCaretAfter(node){
+    const selection=window.getSelection();if(!selection)return;
+    const range=document.createRange();range.setStartAfter(node);range.collapse(true);
+    selection.removeAllRanges();selection.addRange(range);
   }
-  function ignoreQuickToken(token){
-    const marker=quickExtractedMarkers.find(m=>quickTokenKey(m.token)===quickTokenKey(token));
-    if(marker)restoreQuickMarker(marker.kind);
+  function quickRestoreMarker(kind,focus=true){
+    const chip=quickMarkerOf(kind);if(!chip)return false;
+    const token=chip.dataset.token||"";
+    quickIgnoredTokens.add(quickTokenKey(token));
+    const replacement=document.createTextNode(token);
+    chip.replaceWith(replacement);
+    syncQuickExtractedState();
+    if(!quickExplicitDate)quickDueDate=quickDetected.date||(quickDetected.time?localDateISO():"");
+    if(!quickExplicitTime)quickDueTime=quickDetected.time;
+    syncQuickControls();
+    if(focus){
+      $("quickTaskText").focus({preventScroll:true});
+      quickSetCaretAfter(replacement);
+    }
+    return true;
+  }
+  function quickTextRange(start,length){
+    const nodes=quickTextNodes();let offset=0,first=null,last=null;
+    for(const node of nodes){
+      const next=offset+node.data.length;
+      if(!first&&start>=offset&&start<next)first={node,offset:start-offset};
+      if(first&&start+length<=next){last={node,offset:start+length-offset};break}
+      offset=next;
+    }
+    if(!first||!last)return null;
+    const range=document.createRange();
+    range.setStart(first.node,first.offset);range.setEnd(last.node,last.offset);
+    if(range.cloneContents().querySelector?.(".quickInlinePill"))return null;
+    return range;
+  }
+  function quickMakeInlinePill(marker){
+    const chip=document.createElement("span");
+    chip.className="quickInlinePill";chip.contentEditable="false";
+    chip.dataset.kind=marker.kind;chip.dataset.token=marker.token;
+    chip.dataset.value=marker.value;chip.setAttribute("role","button");
+    chip.setAttribute("tabindex","-1");
+    chip.setAttribute("aria-label","Editar "+marker.token+" como texto");
+    chip.title="Toca para recuperar «"+marker.token+"» como texto";
+    const word=document.createElement("span");word.textContent=marker.token;
+    const cross=document.createElement("span");
+    cross.className="quickInlineRemove";cross.textContent="×";cross.setAttribute("aria-hidden","true");
+    chip.append(word,cross);
+    return chip;
+  }
+  function quickAdjacentMarker(direction){
+    const selection=window.getSelection();
+    if(!selection||!selection.rangeCount||!selection.isCollapsed)return null;
+    const editor=$("quickTaskText"),node=selection.anchorNode,offset=selection.anchorOffset;
+    if(!node||!editor.contains(node))return null;
+    let candidate=null;
+    if(node.nodeType===Node.TEXT_NODE){
+      if(direction==="backward"&&offset===0)candidate=node.previousSibling;
+      if(direction==="forward"&&offset===node.data.length)candidate=node.nextSibling;
+    }else if(node.nodeType===Node.ELEMENT_NODE){
+      candidate=direction==="backward"?node.childNodes[offset-1]:node.childNodes[offset];
+    }
+    return candidate?.classList?.contains("quickInlinePill")?candidate:null;
   }
   function parseQuickSchedule(raw){
     let remaining=String(raw||"").trim(),date="",time="",foundDate=false,foundTime=false,dateToken="",timeToken="";
@@ -8619,57 +8678,31 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       button.classList.toggle("active",button.dataset.quickReminder==="off"?
         !quickReminderOffsets.length:quickReminderOffsets.includes(Number(button.dataset.quickReminder)));
     });
-    const hint=$("quickDetectedHint");
-    const relevant=quickMode==="tasks"&&quickExtractedMarkers.length>0;
-    hint.classList.toggle("hidden",!relevant);
-    if(relevant){
-      hint.replaceChildren();
-      for(const [token,kind,description] of [
-        [quickDetected.dateToken,"date",quickDateDisplay(quickDueDate)],
-        [quickDetected.timeToken,"time",quickDueTime]
-      ]){
-        if(!token)continue;
-        const chip=document.createElement("button");
-        chip.type="button";chip.className="quickDetectedPill";
-        chip.setAttribute("aria-label","No interpretar "+token+" como fecha u hora");
-        chip.title="Quitar marcador y volver a editar «"+token+"» como texto";
-        chip.append(document.createTextNode(description||token));
-        const cross=document.createElement("span");cross.textContent="×";cross.setAttribute("aria-hidden","true");
-        chip.appendChild(cross);chip.addEventListener("click",()=>ignoreQuickToken(token));
-        hint.appendChild(chip);
-      }
-    }
   }
   function syncQuickFromText(event){
-    if(event?.isComposing)return;
-    const input=$("quickTaskText");
+    if(quickComposing||event?.isComposing)return;
     pruneQuickIgnoredTokens();
-    const parsed=parseQuickSchedule(input.value);
-    const collected=[];
+    const raw=quickPlainText(),parsed=parseQuickSchedule(raw);
+    const candidates=[];
     for(const [kind,token,value] of [
       ["date",parsed.hasDate?parsed.dateToken:"",parsed.date],
       ["time",parsed.hasTime?parsed.timeToken:"",parsed.time]
     ]){
-      if(!token||quickExtractedMarkers.some(m=>m.kind===kind))continue;
-      const offset=input.value.toLocaleLowerCase("es").indexOf(token.toLocaleLowerCase("es"));
-      if(offset<0)continue;
-      collected.push({kind,token:token.trim(),value,at:offset});
+      if(!token||quickMarkerOf(kind))continue;
+      const offset=raw.toLocaleLowerCase("es").indexOf(token.toLocaleLowerCase("es"));
+      if(offset>=0)candidates.push({kind,token:token.trim(),value,at:offset});
     }
-    if(collected.length){
-      let title=input.value;
-      const originalCaret=input.selectionStart??title.length;
-      let caret=originalCaret;
-      for(const marker of collected.slice().sort((a,b)=>b.at-a.at)){
-        const len=marker.token.length;
-        title=title.slice(0,marker.at)+title.slice(marker.at+len);
-        if(marker.at<caret)caret-=Math.min(len,caret-marker.at);
-      }
-      // Remove excess spaces caused by extraction, without duplicating
-      // the semantic phrase in the visible title and the pill.
-      title=title.replace(/\s{2,}/g," ").replace(/\s+([,.;!?])/g,"$1").trim();
-      input.value=title;
-      input.setSelectionRange(Math.max(0,Math.min(caret,title.length)),Math.max(0,Math.min(caret,title.length)));
-      quickExtractedMarkers.push(...collected);
+    // Work right-to-left so removal does not shift earlier match offsets.
+    for(const marker of candidates.sort((a,b)=>b.at-a.at)){
+      const range=quickTextRange(marker.at,marker.token.length);
+      if(!range)continue;
+      const selection=window.getSelection();
+      const caretInside=!!(selection?.rangeCount&&selection.isCollapsed&&
+        range.isPointInRange(selection.anchorNode,selection.anchorOffset));
+      const chip=quickMakeInlinePill(marker);
+      range.deleteContents();
+      range.insertNode(chip);
+      if(caretInside)quickSetCaretAfter(chip);
     }
     syncQuickExtractedState();
     if(!quickExplicitTime)quickDueTime=quickDetected.time;
@@ -8679,8 +8712,8 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function setQuickDate(value,manual=true){
     if(manual){
       quickExplicitDate=true;
-      quickExtractedMarkers=quickExtractedMarkers.filter(m=>m.kind!=="date"&&(value!==""||m.kind!=="time"));
-      syncQuickExtractedState();
+      // Do not leave a contradictory date pill after choosing a manual date.
+      quickRestoreMarker("date",false);
     }
     quickDueDate=value==="today"?localDateISO():value==="tomorrow"?addCalendarDays(localDateISO(),1):"";
     if(manual&&!quickDueDate){
@@ -8703,8 +8736,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function setQuickTime(value,manual=true){
     if(manual){
       quickExplicitTime=true;
-      quickExtractedMarkers=quickExtractedMarkers.filter(m=>m.kind!=="time");
-      syncQuickExtractedState();
+      quickRestoreMarker("time",false);
     }
     quickDueTime=/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(String(value||""))?value:"";
     if(quickDueTime&&!quickDueDate){
@@ -8733,8 +8765,8 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     leaveSearchKeyboardMode();
     setNativeSearchKeyboardMode(false);
     quickMode=(requestedMode==="tasks"||requestedMode==="notes")?requestedMode:(mode==="notes"?"notes":"tasks");
-    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();quickExtractedMarkers=[];
-    $("quickTaskText").value="";
+    quickDueDate="";quickDueTime="";quickReminderOffsets=defaultTaskReminderOffsets();quickReminderPanelOpen=false;quickExplicitDate=false;quickExplicitTime=false;quickDetected={found:false,date:"",time:"",clean:""};quickIgnoredTokens.clear();quickComposing=false;
+    $("quickTaskText").replaceChildren();quickRefreshPlaceholder();
     $("quickNoteText").value="";
     setCategoryPicker("quickCategory",activeCategory!=="all"?activeCategory:"inbox");
     syncQuickControls();
@@ -8757,8 +8789,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function saveQuickCapture(){
     const category=getCategoryPickerValue("quickCategory"),stamp=now();
     if(quickMode==="tasks"){
-      const raw=$("quickTaskText").value.trim();if(!raw)return false;
-      const text=quickDetected.found?quickDetected.clean||raw:raw;
+      const text=quickSavedTitle();if(!text)return false;
       state.tasks.push({id:makeId("t"),text,textHtml:plainToInlineHtml(text),body:"",blocks:[],...newItemWorkspaceFields("task"),category,tags:activeTag?[activeTag]:[],done:false,pinned:false,dueDate:quickDueDate,dueTime:quickDueDate?quickDueTime:"",endTime:"",priority:"normal",recurrence:"none",reminder:quickDueDate&&quickReminderOffsets.length?reminderMinutesToLegacy(quickReminderOffsets[0]):"none",reminders:quickDueDate?quickReminderOffsets.slice():[],recurrenceFrom:"",items:[],subtasks:[],createdAt:stamp,updatedAt:stamp,deletedAt:null,rev:1,syncState:"pending"});
       const shouldRequestPermission=!!quickDueDate&&quickReminderOffsets.length>0;
       closeQuickCapture();scheduleSave();render();
@@ -8772,7 +8803,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   function expandQuickCapture(){
     const category=getCategoryPickerValue("quickCategory");
     if(quickMode==="tasks"){
-      const text=quickDetected.found?quickDetected.clean||$("quickTaskText").value:$("quickTaskText").value;
+      const text=quickSavedTitle();
       const due=quickDueDate,dueTime=quickDueTime,reminders=quickReminderOffsets.slice();
       closeQuickCapture();
       openTask(null);
@@ -9471,15 +9502,44 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   document.querySelectorAll("[data-quick-time]").forEach(b=>b.addEventListener("click",()=>setQuickTime(b.dataset.quickTime||"")));
   $("quickCustomTime").addEventListener("change",e=>setQuickTime(e.target.value));
   $("quickTaskText").addEventListener("input",syncQuickFromText);
-  $("quickTaskText").addEventListener("keydown",event=>{
-    if(event.key!=="Backspace"||event.isComposing||event.ctrlKey||event.altKey)return;
-    const input=event.currentTarget,caret=input.selectionStart;
-    if(caret!==input.selectionEnd||caret!==input.value.length)return;
-    const marker=quickExtractedMarkers.slice().reverse().find(m=>m.at>=caret-1);
-    if(!marker)return;
-    // First Backspace restores the word at the caret; further Backspaces
-    // edit it normally. Rewriting it triggers recognition anew.
-    event.preventDefault();restoreQuickMarker(marker.kind);
+  $("quickTaskText").addEventListener("compositionstart",()=>{quickComposing=true});
+  $("quickTaskText").addEventListener("compositionend",()=>{
+    quickComposing=false;setTimeout(()=>syncQuickFromText(),0);
+  });
+  $("quickTaskText").addEventListener("pointerdown",e=>{
+    if(e.target.closest(".quickInlinePill"))e.preventDefault();
+  });
+  $("quickTaskText").addEventListener("click",e=>{
+    const chip=e.target.closest(".quickInlinePill");
+    if(chip)quickRestoreMarker(chip.dataset.kind);
+  });
+  $("quickTaskText").addEventListener("beforeinput",e=>{
+    if(e.inputType==="insertParagraph"||e.inputType==="insertLineBreak"){
+      e.preventDefault();saveQuickCapture();return;
+    }
+    if(e.inputType==="deleteContentBackward"||e.inputType==="deleteContentForward"){
+      const chip=quickAdjacentMarker(e.inputType==="deleteContentBackward"?"backward":"forward");
+      if(chip&&e.cancelable){e.preventDefault();quickRestoreMarker(chip.dataset.kind)}
+    }
+    if(e.inputType?.startsWith("insert")&&e.data&&
+       quickPlainText().length+e.data.length>180&&e.cancelable)e.preventDefault();
+  });
+  $("quickTaskText").addEventListener("paste",e=>{
+    e.preventDefault();
+    const pasted=String(e.clipboardData?.getData("text/plain")||"").replace(/[\r\n]+/g," ");
+    const allowed=pasted.slice(0,Math.max(0,180-quickPlainText().length));
+    if(!allowed)return;
+    const selection=window.getSelection();if(!selection?.rangeCount)return;
+    const range=selection.getRangeAt(0);range.deleteContents();
+    const node=document.createTextNode(allowed);range.insertNode(node);
+    quickSetCaretAfter(node);syncQuickFromText();
+  });
+  $("quickTaskText").addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();saveQuickCapture();return}
+    if((e.key==="Backspace"||e.key==="Delete")&&!e.isComposing&&!e.ctrlKey&&!e.altKey){
+      const chip=quickAdjacentMarker(e.key==="Backspace"?"backward":"forward");
+      if(chip){e.preventDefault();quickRestoreMarker(chip.dataset.kind)}
+    }
   });
   $("quickForm").addEventListener("submit",e=>{e.preventDefault();saveQuickCapture()});
   $("directorDiscardClose").addEventListener("click",closeDirectorDiscard);

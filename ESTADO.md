@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Correcciones de captura rápida y gestos visibles.
+Última actualización: 2 de noviembre de 2026 · Marcadores de tiempo en línea dentro de captura rápida.
 
+
+## Cambios v0.27.100 — marcadores temporales integrados en el título
+
+- Captura rápida: el campo de texto admite píldoras de fecha y hora en línea. «Test mañana» se representa como «Test [mañana]» dentro del propio campo, no en una segunda fila.
+- Reconocer un marcador conserva los espacios circundantes durante la edición; al guardar o ampliar la captura se normalizan y recortan, de modo que el título queda en «Test».
+- Pulsar la X o Backspace/Eliminar junto a una píldora restaura en su posición la palabra editable. Si el texto rechazado se borra o modifica, al reescribirlo se vuelve a sugerir.
+- El nuevo campo respeta composición IME, inserción de texto plano y foco de teclado de Android WebView; queda pendiente comprobarlo en dispositivos reales.
+- Nueva versión distribuible mediante APK firmada por GitHub Actions y Obtainium.
 
 ## Cambios v0.27.99 — marcadores rápidos y gesto visible de descarte
 
@@ -108,7 +116,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.99** (`versionCode 180`).
+- Versión del código Android: **0.27.100** (`versionCode 181`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

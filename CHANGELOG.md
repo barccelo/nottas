@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.100 — 2 de noviembre de 2026
+
+- El editor de captura rápida representa marcadores de fecha y hora como píldoras intercaladas dentro del campo de texto.
+- Los espacios se conservan durante la edición y se eliminan al guardar o ampliar el título.
+- Tocar la X o usar retroceso junto al marcador lo transforma en la palabra original y permite reactivar el reconocimiento tras editar o reescribir.
+- Soporte de composición de teclado Android, pegado de texto plano y publicación automática de APK firmada mediante Obtainium.
+
+
 ## 0.27.99 — 2 de noviembre de 2026
 
 - Los marcadores de fecha y hora de captura rápida se extraen del texto y se representan como píldoras junto al campo de título. Quitar un marcador restaura sus palabras y reescribirlas vuelve a activar el reconocimiento.
