@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Integración v0.27.103 pendiente de pruebas Android.
+Última revisión: 2 de noviembre de 2026 · Cambios v0.27.104 pendientes de comprobación Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.104 · Simetría:** comprobar que «Elegir» se extiende hasta el margen derecho igual que calendario/recordatorio en pantallas pequeñas, modo claro/oscuro y con teclado abierto.
+- [ ] **v0.27.104 · Handle del selector de recordatorios:** deslizar hacia abajo sobre el handle y encabezado debe desplazar y cerrar la hoja, sin cambiar el recordatorio; gesto insuficiente debe volver a su posición, deslizamiento hacia arriba no debe expandir.
+- [ ] **v0.27.104 · Switches:** verificar que interruptores grandes y compactos usan solo azul de Nottas en Ajustes, rueda de hora, agenda y otras vistas, incluso con modo oscuro.
+- [ ] **v0.27.104 · Obtainium:** verificar firma, publicación APK y actualización sin pérdida de datos.
+
 
 - [ ] **v0.27.103 · Ruedas:** verificar que hora y minuto se centran exactamente, sin número duplicado, durante scroll lento, rápido, inercia, taps y cambios de valor.
 - [ ] **v0.27.103 · Interacción:** tocar el número central abre edición directa; deslizar desde el centro hace scroll sin bloquear el gesto; comprobar compatibilidad con teclado y guardado al pulsar «Listo».

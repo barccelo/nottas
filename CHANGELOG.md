@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.104 — 2 de noviembre de 2026
+
+- Botón «Elegir» extendido hasta el borde derecho de la fila de hora, alineándolo visualmente con la fila de fecha y recordatorios.
+- Handle funcional en selectores de opciones dinámicos, incluida la hoja «Recordatorio»: arrastrar hacia abajo para cerrar, con desplazamiento visible y retorno cuando no se completa el gesto.
+- Interruptores grandes y pequeños unificados en azul, también para tema oscuro; eliminado el verde heredado en controles de hora.
+- Incremento de versión y publicación automática de APK firmada para Obtainium.
+
+
 ## 0.27.103 — 2 de noviembre de 2026
 
 - Corrección del selector de horas/minutos: tamaño real de ventana y centrado, eliminación de superposición de números, selección fluida con seguimiento y ajuste final al detener el desplazamiento.

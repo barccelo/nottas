@@ -1,7 +1,14 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Selector de hora y alineación de controles de captura rápida.
+Última actualización: 2 de noviembre de 2026 · Simetría en captura rápida, handle de recordatorios e interruptores azules.
 
+
+## Cambios v0.27.104 — simetría de controles, gesto de recordatorios e interruptores azules
+
+- Captura rápida: el botón «Elegir» ocupa el ancho flexible disponible hasta el borde derecho, alineado con calendario y recordatorio de la fila superior. Ajustes de separación y tamaño para pantallas estrechas.
+- Hoja «Recordatorio» y otros selectores de opciones: el handle ahora dispone de área táctil ampliada y admite deslizamiento hacia abajo para cerrar. La hoja sigue al dedo durante el gesto; al soltar completa el cierre o vuelve a su posición si no alcanza el umbral. El gesto hacia arriba no realiza ninguna acción. El selector es dinámico y no estaba incluido en el controlador de las hojas normales.
+- Diseño consistente: se sustituyó el verde de los interruptores grandes y pequeños por azul de Nottas (con adaptación al tema oscuro) en toda la aplicación, incluido el selector de hora.
+- Sin cambios de sincronización, modelo de datos ni servicios externos. Pendiente prueba en Android antes de considerar cerradas las incidencias.
 
 ## Cambios v0.27.103 — reconstrucción del selector de rueda y controles simétricos
 
@@ -141,7 +148,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.103** (`versionCode 184`).
+- Versión del código Android: **0.27.104** (`versionCode 185`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
