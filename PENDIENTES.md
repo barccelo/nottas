@@ -140,3 +140,10 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Comprobar que Recuperación de propiedad solo presente el código a miembros no propietarios, y que Administración avanzada mantenga confirmación al eliminar.
 - [ ] Comprobar que Calendarios sigue abriendo desde Integraciones y que actualizar push, actividad y funciones heredadas de compatibilidad operan en el panel plegable.
 - [ ] Confirmar consistencia de modo oscuro, visualización de miembros y permisos de director/asistente.
+
+## Verificación posterior a v0.27.85
+- [ ] Comprobar en Android que la cabecera lateral muestra el logotipo «No» + dos T de notificaciones + «as», sin fondo blanco, y conserva el subtítulo.
+- [ ] Verificar que «Acerca de Nottas» muestra el icono actual del launcher en blanco y negro, no la antigua N tipográfica, y el nuevo logotipo completo.
+- [ ] Comprobar que los recursos locales de WebView cargan sin internet, especialmente file:///android_res/drawable/ic_nottas_launcher.webp.
+- [ ] Revisar escala en pantallas estrechas, modo oscuro y accesibilidad/lectura de la marca.
+- [ ] Verificar que no cambiaron el launcher ni el icono de notificaciones del sistema y que Obtainium publica la APK firmada.
