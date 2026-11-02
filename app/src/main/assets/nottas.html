@@ -3703,7 +3703,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     if(existing){
       // Never resurrect a locally deleted category from a stale full snapshot.
       // On a genuine push conflict, retry the explicit deletion with a newer rev.
-      if(type==="category"&&existing.deletedAt&&existing.syncState==="pending"&&!payload.deletedAt){
+      if(existing.deletedAt&&existing.syncState==="pending"&&!payload.deletedAt){
         if(change.forceConflict){
           existing.rev=Math.max(Number(existing.rev)||1,Number(payload.rev)||1)+1;
           existing.updatedAt=now();scheduleSave();scheduleAssistantSync(300);
@@ -3712,7 +3712,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
       }
       // Cloud tombstones win over a stale local copy even if that copy was
       // edited on an older phone after it missed the deletion.
-      if(!(type==="category"&&payload.deletedAt)&&existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
+      if(!payload.deletedAt&&existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
       const purgedAt=existing.deletedAt&&existing.purgedAt?existing.purgedAt:null;
       Object.assign(existing,payload,{syncState:"synced"});
@@ -3772,6 +3772,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
       render();
       refreshDirectorProposals(true);
       renderAssistantSummary();
+      assistantRecoverMissedNotices().catch(()=>{});
       if($("assistantOverlay")?.classList.contains("show")){renderAssistantSettings();assistantLoadActivity(true)}
       if(!silent)showToast("Asistente sincronizado");
       setStatus("Nube","ok");
@@ -4082,6 +4083,7 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
       if(event.type==="push_token")assistantRegisterPushToken();
       else if(event.type==="sync"||event.type==="director_proposal")needsSync=true;
       else if(event.type==="assistant_notice"){
+        assistantRememberNotice(event.noticeId);
         assistantMessageUnread++;renderAssistantMessageBadge();
         if($("assistantNoticeOverlay").classList.contains("show"))refreshAssistantMessageThread();
       }
@@ -4096,6 +4098,44 @@ html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;bord
     }
     if(needsSync)scheduleAssistantSync(250);
   }
+
+  const ASSISTANT_NOTICE_SEEN_KEY="nottas_notice_seen_v1";
+  function assistantNoticeSeen(id){
+    try{return (JSON.parse(localStorage.getItem(ASSISTANT_NOTICE_SEEN_KEY)||"[]")||[]).some(x=>x?.id===id)}
+    catch(_){return false}
+  }
+  function assistantRememberNotice(id){
+    if(!id)return;
+    try{
+      const previous=JSON.parse(localStorage.getItem(ASSISTANT_NOTICE_SEEN_KEY)||"[]")||[];
+      const recent=previous.filter(x=>x&&x.id!==id&&Date.now()-Number(x.at||0)<86400000).slice(-59);
+      recent.push({id,at:Date.now()});
+      localStorage.setItem(ASSISTANT_NOTICE_SEEN_KEY,JSON.stringify(recent));
+    }catch(_){}
+  }
+  let assistantNoticeRecoveryBusy=false;
+  async function assistantRecoverMissedNotices(){
+    if(assistantNoticeRecoveryBusy||document.hidden||!assistantConfigured()||
+       !window.NottasNative||typeof NottasNative.showMissedAssistantNotice!=="function")return;
+    assistantNoticeRecoveryBusy=true;
+    try{
+      const workspaces=(state.workspaces||[]).filter(w=>w.kind==="assistant"&&w.status!=="inactive"&&assistantAuthorizedIds.has(w.id));
+      for(const ws of workspaces){
+        if(document.hidden)break;
+        const result=await assistantRequest("/v1/workspaces/"+encodeURIComponent(ws.id)+"/messages");
+        const unread=(Array.isArray(result.messages)?result.messages:[])
+          .filter(m=>!m.mine&&!m.readAt&&m.id&&m.body&&
+            Date.now()-Number(m.createdAt||0)<10*60*1000&&!assistantNoticeSeen(m.id));
+        if(!unread.length)continue;
+        const message=unread[unread.length-1];
+        const ok=NottasNative.showMissedAssistantNotice(message.id,message.fromName||"Asistente",
+          message.body,ws.id,ws.role==="owner"?"assistant":"owner");
+        if(ok)assistantRememberNotice(message.id);
+        break;
+      }
+    }finally{assistantNoticeRecoveryBusy=false}
+  }
+
   function directorOwnedSpaces(){
     return !assistantConfigured()||!assistantMembershipChecked?[]:(state?.workspaces||[]).filter(w=>assistantWorkspaceIsOwner(w)&&w.status!=="inactive");
   }

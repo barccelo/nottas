@@ -490,22 +490,30 @@ async function pullSync(url, auth, env) {
   const latestCursor = Number(latest?.seq || 0);
 
   if (full) {
-    const items = await env.DB.prepare(
-      "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by FROM items WHERE deleted_at IS NULL OR entity_type='category' ORDER BY updated_at ASC LIMIT 5000"
-    ).all();
     const snapshot = [];
-    for (const row of (items.results || [])) {
-      if (!memberships.has(row.workspace_id)) continue;
-      snapshot.push({
-        seq: 0,
-        workspaceId: row.workspace_id,
-        entityType: row.entity_type,
-        entityId: row.id,
-        op: "snapshot",
-        payload: safeJson(row.payload_json, {}),
-        createdAt: row.updated_at,
-        actorUserId: row.updated_by
-      });
+    // Include deleted items: omitting tombstones leaves stale data visible remotely.
+    // Query per authorized workspace to avoid cross-tenant global LIMIT starvation.
+    for (const workspaceId of memberships) {
+      const items = await env.DB.prepare(
+        "SELECT id,workspace_id,entity_type,payload_json,updated_at,updated_by,deleted_at " +
+        "FROM items WHERE workspace_id=? ORDER BY updated_at DESC LIMIT 5001"
+      ).bind(workspaceId).all();
+      const rows = items.results || [];
+      if (rows.length > 5000) return json({ error: "workspace_snapshot_limit" }, 409);
+      for (const row of rows) {
+        const payload = safeJson(row.payload_json, {});
+        if (row.deleted_at && !payload.deletedAt) payload.deletedAt = row.deleted_at;
+        snapshot.push({
+          seq: 0,
+          workspaceId: row.workspace_id,
+          entityType: row.entity_type,
+          entityId: row.id,
+          op: row.deleted_at ? "delete" : "snapshot",
+          payload,
+          createdAt: row.updated_at,
+          actorUserId: row.updated_by
+        });
+      }
     }
     return json({ cursor: latestCursor, changes: snapshot, workspaces: await workspaceRows(auth.userId, env), full: true });
   }
@@ -631,7 +639,7 @@ async function pushSync(request, auth, env) {
     }
     // An explicit category deletion must win even if another device last
     // updated the category later or has a higher revision.
-    if (current && !(entityType==="category"&&deletedAt) && Number(current.updated_at) > incomingUpdatedAt && Number(current.rev) >= incomingRev) {
+    if (current && !deletedAt && Number(current.updated_at) > incomingUpdatedAt && Number(current.rev) >= incomingRev) {
       conflicts.push({
         workspaceId, entityType, entityId,
         payload: safeJson(current.payload_json, {}),

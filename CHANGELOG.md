@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.92 — 2 de noviembre de 2026
+
+- Cloudflare Worker: la sincronización completa incluye las tareas y notas eliminadas (lápidas) en cada espacio autorizado. El límite se aplica por espacio y no se acepta un snapshot incompleto.
+- Cliente: las eliminaciones pendientes de tareas, notas y categorías ya no son reemplazadas por copias antiguas; una baja explícita puede resolver conflictos de revisiones.
+- Mensajes: las respuestas desde la pantalla completa distinguen entre guardado confirmado y notificación push aceptada. Si el push no fue aceptado, se informa sin afirmar una entrega inexistente.
+- Recuperación de avisos: si Nottas está visible, revisa mensajes recientes no leídos tras sincronizar y puede mostrar los avisos perdidos por Firebase. Sin consultas adicionales en segundo plano; Android puede restringir pantalla completa fuera de la aplicación.
+- Sin borrado de datos, sin cambio de cuentas ni restablecimiento de espacio. Pendiente validación de los dos sentidos en dispositivos reales y despliegue efectivo del Worker y APK.
+
+
 ## 0.27.91 — 2 de noviembre de 2026
 
 - Ordenar tareas distingue fecha programada próxima/lejana, creación reciente y última modificación. Nuevas configuraciones usan «Fecha programada: próximas primero»; se respeta el orden ya guardado de los usuarios existentes.

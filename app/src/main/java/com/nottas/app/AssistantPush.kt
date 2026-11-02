@@ -263,27 +263,46 @@ object AssistantPush {
         workspaceId: String,
         noticeId: String,
         text: String,
-        callback: (Boolean) -> Unit
+        callback: (Boolean, Boolean) -> Unit
     ) {
         val message = text.trim().take(280)
         if (message.isBlank() || !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(workspaceId) ||
             !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(noticeId)
         ) {
-            callback(false)
+            callback(false, false)
             return
         }
         Thread {
             val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             val server = prefs.getString(KEY_SERVER_URL, "").orEmpty().trimEnd('/')
             val token = prefs.getString(KEY_SESSION_TOKEN, "").orEmpty()
-            val success = if (server.startsWith("https://") && token.isNotBlank()) {
-                postJson(
-                    server + "/v1/workspaces/" + workspaceId + "/messages",
-                    token,
-                    JSONObject().put("message", message).put("replyToId", noticeId)
-                )
-            } else false
-            callback(success)
+            var saved = false
+            var pushAccepted = false
+            var connection: HttpURLConnection? = null
+            try {
+                if (server.startsWith("https://") && token.isNotBlank()) {
+                    connection = URL(server + "/v1/workspaces/" + workspaceId + "/messages")
+                        .openConnection() as HttpURLConnection
+                    connection.requestMethod = "POST"
+                    connection.connectTimeout = 8000
+                    connection.readTimeout = 8000
+                    connection.doOutput = true
+                    connection.setRequestProperty("Authorization", "Bearer " + token)
+                    connection.setRequestProperty("Content-Type", "application/json")
+                    val payload = JSONObject().put("message", message).put("replyToId", noticeId)
+                    connection.outputStream.use { it.write(payload.toString().toByteArray(Charsets.UTF_8)) }
+                    saved = connection.responseCode in 200..299
+                    if (saved) {
+                        val response = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                        pushAccepted = response.optBoolean("pushAccepted", false)
+                    }
+                }
+            } catch (_: Throwable) {
+                // A request can persist server-side before a network response is lost.
+            } finally {
+                connection?.disconnect()
+            }
+            callback(saved, pushAccepted)
         }.start()
     }
 

@@ -269,13 +269,16 @@ class AssistantNoticeActivity : Activity() {
         sending=true
         sendButton.isEnabled=false
         statusText.text="Enviando respuesta…"
-        AssistantPush.replyToNotice(applicationContext,workspaceId,noticeId,text) { success ->
+        AssistantPush.replyToNotice(applicationContext,workspaceId,noticeId,text) { success, pushAccepted ->
             runOnUiThread {
                 if(isFinishing || isDestroyed)return@runOnUiThread
                 sending=false
                 sendButton.isEnabled=true
-                if(success) {
+                if(success && pushAccepted) {
                     finishNotice()
+                } else if(success) {
+                    sendButton.isEnabled=false
+                    statusText.text="Respuesta guardada. El aviso inmediato no se confirmó; el director podrá verla al sincronizar."
                 } else {
                     statusText.text="Sin conexión o sesión no válida. Inténtalo de nuevo."
                 }

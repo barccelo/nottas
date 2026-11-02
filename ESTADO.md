@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Ordenación, sincronía bidireccional y gesto de recarga.
+Última actualización: 2 de noviembre de 2026 · Bajas sincronizadas y avisos de respuesta.
 
+
+## Cambios v0.27.92 — sincronización de eliminaciones y respuestas
+
+- La sincronización completa en Cloudflare ahora incluye bajas de tareas/notas, filtrando por espacio y comprobando que el snapshot esté completo.
+- El cliente protege eliminaciones locales pendientes contra copias remotas antiguas; no se borran datos ni cuentas durante la migración.
+- Las respuestas Android distinguen «guardada» de «push aceptado». Se agrega recuperación de notificaciones recientes no leídas mientras la aplicación está visible.
+- Dependencia: confirmar despliegue del Worker en GitHub Actions; la cuenta Cloudflare conectada a esta conversación no expone la D1 de Nottas.
+- Pendientes pruebas reales en ambos teléfonos, especialmente recepción de avisos con la aplicación en segundo plano.
 
 ## Cambios v0.27.91 — recuperación de sincronía y lista
 
@@ -38,7 +46,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.91** (`versionCode 172`).
+- Versión del código Android: **0.27.92** (`versionCode 173`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

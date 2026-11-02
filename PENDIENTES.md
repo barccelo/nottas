@@ -1,10 +1,18 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Robustez de sincronización.
+Última revisión: 2 de noviembre de 2026 · Eliminaciones y mensajería crítica.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Crítico · v0.27.92:** comprobar en GitHub Actions que el Worker se desplegó; la APK sola no corrige el fallo de las lápidas.
+- [ ] **Crítico · bajas bidireccionales:** crear y eliminar tarea y nota de Oficina en ambos sentidos, con uno de los teléfonos desconectado y posterior reconexión. Verificar ausencia de reapariciones y duplicados.
+- [ ] **Crítico · respuestas a avisos:** responder al mensaje director→asistente y comprobar notificación en director, historial persistente y tratamiento explícito si Firebase no acepta el push.
+- [ ] **Crítico · Android:** comprobar notificaciones y permisos de pantalla completa en teléfono director. Firebase puede aceptar un mensaje sin que Android permita abrir automáticamente una actividad en segundo plano.
+- [ ] **Crítico · v0.27.92:** validar firma, APK en Releases y detección desde Obtainium.
+
+
 
 - [ ] **Validar · Sync v0.27.91:** crear y editar tareas director→asistente y asistente→director con ambos teléfonos abiertos; verificar cambio inmediato por push y recuperación por conciliación (≤75 s aproximadamente) si FCM no llega.
 - [ ] **Validar · Fallos transitorios:** desactivar y restablecer internet en un teléfono; comprobar que cambios pendientes se reenvían sin requerir crear una tarea en el otro dispositivo; verificar que no aparecen duplicados ni se pierden modificaciones.

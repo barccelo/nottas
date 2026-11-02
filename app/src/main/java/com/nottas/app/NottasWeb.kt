@@ -531,6 +531,25 @@ object NottasWeb {
         fun consumeAssistantEvents(): String = AssistantEventStore.consume(context)
 
         @JavascriptInterface
+        fun showMissedAssistantNotice(
+            noticeId: String, fromName: String, message: String, workspaceId: String, fromRole: String
+        ): Boolean {
+            if (!Regex("^[a-zA-Z0-9_-]{1,100}$").matches(noticeId) ||
+                !Regex("^[a-zA-Z0-9_-]{1,100}$").matches(workspaceId) ||
+                message.isBlank()) return false
+            val activity = context as? Activity ?: return false
+            mainHandler.post {
+                if (!activity.isFinishing && !activity.isDestroyed && activity.hasWindowFocus()) {
+                    AssistantNoticeNotifier.show(
+                        activity, noticeId, fromName.take(80), message.take(280),
+                        workspaceId, fromRole
+                    )
+                }
+            }
+            return true
+        }
+
+        @JavascriptInterface
         fun previewAssistantCall(callerName: String, workspaceName: String): Boolean {
             return try {
                 val id = "preview_" + System.currentTimeMillis()
