@@ -1905,6 +1905,44 @@ html[data-theme="dark"] #settingsOverlay .settingsAboutLogo{background:#202025}
 html[data-theme="dark"] #settingsOverlay .settingsAboutWordmark{filter:grayscale(1) brightness(0) invert(1)}
 html[data-theme="dark"] .sidebarWordmark{filter:none}
 
+/* Identity refinements (0.27.89): retain the existing full-colour launcher artwork
+   without a dark fallback showing through its transparent rounded corners. */
+#settingsOverlay .settingsAboutLogo{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  border-radius:21px!important;
+  overflow:hidden;
+  isolation:isolate;
+}
+html[data-theme="dark"] #settingsOverlay .settingsAboutLogo{background:transparent!important}
+#settingsOverlay .settingsAboutLogo>img{
+  top:-3px!important;
+  left:-3px!important;
+  right:auto!important;
+  bottom:auto!important;
+  width:calc(100% + 6px)!important;
+  height:calc(100% + 6px)!important;
+  object-fit:cover;
+  border-radius:23px!important;
+  filter:none!important;
+}
+#settingsOverlay .settingsAboutLogoFallback{position:absolute;inset:0}
+#settingsOverlay .settingsAboutWordmark{
+  width:132px!important;
+  max-width:74%!important;
+  height:auto;
+  margin:0 auto 8px!important;
+  opacity:.78;
+  filter:grayscale(1) brightness(0)!important;
+}
+html[data-theme="dark"] #settingsOverlay .settingsAboutWordmark{
+  filter:grayscale(1) brightness(0) invert(1)!important;
+  opacity:.86;
+}
+.sidebarWordmark{width:174px;max-width:100%;height:auto;object-fit:contain}
+html[data-theme="dark"] .sidebarWordmark{filter:none!important}
+
 /* Compact chronological grouping: adjacent day/hour/card instead of stacked margins. */
 #list.taskChronologicalList{gap:5px}
 #list.taskChronologicalList > .taskGroupDayHeader{margin:9px 1px 0;padding:9px 12px}
@@ -2720,7 +2758,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none}
       <div class="settingsAboutHero">
         <div class="settingsAboutLogo" role="img" aria-label="Icono original de Nottas a color">
           <svg class="settingsAboutLogoFallback" viewBox="0 0 108 108" aria-hidden="true"><rect width="108" height="108" rx="26" fill="#202025"/><path d="M18 20h18l37 56V20h17v68H73L35 32v56H18Z" fill="#fff"/></svg>
-          <img src="file:///android_res/drawable/ic_nottas_launcher.webp" alt="" decoding="async" onerror="this.style.display='none'">
+          <img src="file:///android_res/drawable/ic_nottas_launcher.webp" alt="" decoding="async" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
         </div>
         <img class="settingsAboutWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async">
         <p>Notas, tareas y trabajo compartido.</p>

@@ -1,10 +1,15 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Actualización de ícono de notificaciones.
+Última revisión: 2 de noviembre de 2026 · Identidad visual de Nottas.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Por verificar · Identidad v0.27.89:** comprobar que el ícono azul en «Acerca de» ya no muestra bordes negros en claro y oscuro; el logotipo inferior debe ser pequeño y monocromático.
+- [ ] **Por verificar · Barra lateral v0.27.89:** logo con «No», las dos «t» azul/naranja con check y calendario, «as» y sin fondo blanco; las «t» no deben sobresalir por arriba de la N.
+- [ ] **Por verificar · Publicación:** comprobar GitHub Actions, APK firmada y aparición de v0.27.89 en Obtainium.
+
 
 - [ ] **Por verificar · Ícono de notificaciones v0.27.88:** comprobar las dos «t», el check y las seis casillas del calendario en la barra de estado, las notificaciones desplegadas y el acceso rápido, en modo claro y oscuro.
 - [ ] **Por verificar · Obtener APK v0.27.88:** confirmar compilación y publicación firmada en GitHub Releases y actualización desde Obtainium; no alterar el ícono principal.

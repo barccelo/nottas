@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.89 — 2 de noviembre de 2026
+
+- Logotipo de la barra lateral ajustado a la nueva referencia: las dos «t» azul y naranja utilizan el vector monocromático actualizado, reproducido en sus colores propios y alineado a la altura de la N (sin sobresalir). Las letras N, o, a y s permanecen oscuras, con fondo transparente.
+- En «Acerca de Nottas», el texto del logotipo se reduce a 132 px, monocromático y de presencia más discreta, conservando los detalles del check y del calendario.
+- Corregido el borde oscuro alrededor de la imagen azul en «Acerca de Nottas»: el fondo oscuro de la capa inferior deja de transparentarse; se oculta el recurso alternativo al cargar el original y se recortan los píxeles exteriores del recurso al mostrarlo.
+- Sin cambios en el ícono del lanzador ni en el ícono del sistema de notificaciones; no se modifican datos ni permisos.
+- Nueva versión para publicación firmada por GitHub Actions y actualización desde Obtainium. Pendiente comprobación visual en teléfonos y ambos temas.
+
 ## 0.27.88 — 2 de noviembre de 2026
 
 - Reemplazado el recurso vectorial `ic_nottas_status.xml` por la silueta monocromática de las dos «t» aprobadas (azul y naranja en el original), conservando como espacios transparentes el check, el calendario y sus seis casillas.

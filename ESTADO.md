@@ -1,7 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Actualización de ícono de notificaciones.
+Última actualización: 2 de noviembre de 2026 · Ajustes de identidad visual.
 
+
+## Cambios v0.27.89 — marca de la barra lateral y Acerca de
+
+- La marca lateral usa el vector de las dos «t» actualizado en azul y naranja, alineadas con la N sin sobresalir, manteniendo letras oscuras.
+- Acerca de Nottas: logotipo secundario monocromático reducido; se eliminan fondos negros bajo el ícono azul y se recorta el borde exterior al presentarlo.
+- Ícono principal Android y recurso de notificaciones preservados; APK se publica mediante GitHub Actions, pendiente revisión visual en dispositivo.
 
 ## Cambios v0.27.88 — símbolo de notificaciones
 
@@ -19,7 +25,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.88** (`versionCode 169`).
+- Versión del código Android: **0.27.89** (`versionCode 170`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
