@@ -152,3 +152,10 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] En «Acerca de Nottas», verificar icono cuadrado a color, idéntico al launcher, sin filtro gris.
 - [ ] Verificar logotipo inferior monocromático, dos T originales de notificaciones, negro en tema claro y blanco en oscuro.
 - [ ] Comprobar que el logo de la barra lateral conserva sus colores y que la APK v0.27.86 se detecta por Obtainium.
+
+## Verificación v0.27.87
+- [ ] Vista cronológica «Pendientes»: verificar que tareas/eventos «Sin fecha» aparezcan arriba con cualquier otra fecha.
+- [ ] Comprobar que los días fechados respetan orden ascendente/descendente seleccionado.
+- [ ] Comprobar separación compacta entre encabezados de fecha, horas y tarjetas, sin espacios excesivos.
+- [ ] Verificar «Todas», «Pendientes», tareas con y sin hora, modo oscuro y cambio de Notas a Tareas.
+- [ ] Confirmar que APK firmada está publicada y disponible en Obtainium.
