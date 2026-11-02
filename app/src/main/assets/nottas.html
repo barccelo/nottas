@@ -1819,6 +1819,16 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
 #editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeGrip:active{cursor:grabbing}
 #editorOverlay.taskEditorMode .taskSubtasksBox .taskTreeChildren{margin-left:23px}
 #editorOverlay.taskEditorMode .taskSubtasksBox.copyMode .taskTreeRow{grid-template-columns:28px minmax(0,1fr)}
+
+/* Team invitations are a workspace permission, not account recovery. */
+.teamInviteAction{margin-top:4px;min-height:52px;gap:12px}
+.teamInviteActionCopy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.teamInviteActionCopy strong{font-size:14px;font-weight:650;color:inherit}
+.teamInviteActionCopy small{font-size:12px;line-height:1.35;color:#8e8e93}
+.teamInviteArea{margin-top:5px}
+.teamInviteCode strong{overflow-wrap:anywhere;word-break:break-word}
+#teamInviteRestricted{padding:8px 0}
+html[data-theme="dark"] .teamInviteActionCopy small{color:#a1a1a6}
 </style>
 </head>
 <body>
@@ -2672,10 +2682,14 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
         <div id="teamWorkspaceDetail" class="teamPanel hidden">
           <div class="teamPanelTitle" id="teamCurrentName">Oficina</div>
           <div class="teamStatusLine"><span id="teamCurrentRole"></span><span id="teamSyncLabel">Sincronización automática</span></div>
+          <div class="teamPanelCaption">Acceso al equipo</div>
+          <button id="teamShowInvite" type="button" class="teamOptionRow teamInviteAction hidden" aria-expanded="false"><span class="teamInviteActionCopy"><strong>Invitar a una persona</strong><small>Comparte el código para unirse al equipo</small></span><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-chevron"></use></svg></button>
+          <p id="teamInviteRestricted" class="teamHint hidden">Solo el administrador puede enviar invitaciones. Pídele el código para incorporar a otra persona.</p>
           <div id="teamInviteArea" class="teamInviteArea hidden">
-            <div class="teamPanelCaption">Invitar a otra persona</div>
-            <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar invitación">Copiar</button></div>
-            <small>El código permite unirse como integrante. El director se asigna desde Integrantes.</small>
+            <div class="teamPanelCaption">Código de invitación</div>
+            <div class="teamInviteCode"><strong id="teamInviteCode"></strong><button id="teamCopyInvite" type="button" aria-label="Copiar código de invitación">Copiar código</button></div>
+            <small>Comparte este código únicamente con la persona que deseas incorporar. La otra persona debe elegir «Unirme a un equipo» desde su propia cuenta.</small>
+            <button id="teamRefreshInvite" class="teamInlineLink hidden" type="button">Actualizar desde el servidor</button>
           </div>
           <div class="teamPanelCaption">Integrantes</div>
           <div id="teamMemberList" class="teamMemberList">Cargando integrantes…</div>
@@ -3609,7 +3623,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     const name=$("assistantWorkspaceName").value.trim()||"Asistente";
     try{
       const data=await assistantRequest("/v1/workspaces",{method:"POST",body:{name}});
-      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Espacio creado");
+      mergeAssistantWorkspaces([data.workspace]);assistantAuthorizedIds.add(data.workspace.id);activeWorkspaceId=data.workspace.id;teamInviteExpandedFor=data.workspace.id;activeCategory="all";activeTag="";saveUI();scheduleSave();render();renderAssistantSettings();showToast("Equipo creado · comparte la invitación");
     }catch(error){showToast("Crear espacio: "+String(error?.message||error))}
   }
   async function assistantJoinWorkspace(){
@@ -4247,7 +4261,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       // Account and workspace access remain usable without push.
     }
   }
-  let teamMemberCache=[],teamAssignConfirm=null;
+  let teamMemberCache=[],teamAssignConfirm=null,teamInviteExpandedFor="";
   function teamEnsureServer(){
     // Existing device configuration always wins. Only new installs get the public default.
     if(!$("assistantServerUrl").value.trim()&&!state.assistant.serverUrl){
@@ -4288,7 +4302,7 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     ).join(""):'<p class="teamHint">Todavía no perteneces a ningún equipo. Puedes crear uno o unirte con una invitación.</p>';
     list.querySelectorAll("[data-team-select]").forEach(button=>button.addEventListener("click",()=>{
       activeWorkspaceId=button.dataset.teamSelect;activeCategory="all";activeTag="";
-      teamMemberCache=[];$("teamCalendarTools").classList.add("hidden");
+      teamInviteExpandedFor="";teamMemberCache=[];$("teamCalendarTools").classList.add("hidden");
       saveUI();render();renderAssistantSettings();assistantLoadActivity(true);assistantGoogleRefresh();
     }));
     const ws=selectedSharedTeam();
@@ -4298,9 +4312,14 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
     $("teamCurrentName").textContent=ws.name;
     $("teamCurrentRole").textContent=ws.role==="owner"?"Director · administrador":"Asistente";
     $("teamSyncLabel").textContent=state.assistant.lastSyncAt?"Actualizado":"Sincronización automática";
-    const owner=assistantWorkspaceIsOwner(ws);
-    $("teamInviteArea").classList.toggle("hidden",!owner||!ws.inviteCode);
-    $("teamInviteCode").textContent=owner?ws.inviteCode||"":"";
+    const owner=assistantWorkspaceIsOwner(ws),expanded=owner&&(teamInviteExpandedFor===ws.id||!ws.inviteCode);
+    $("teamShowInvite").classList.toggle("hidden",!owner);
+    $("teamShowInvite").setAttribute("aria-expanded",expanded?"true":"false");
+    $("teamInviteRestricted").classList.toggle("hidden",owner);
+    $("teamInviteArea").classList.toggle("hidden",!expanded);
+    $("teamInviteCode").textContent=owner?(ws.inviteCode||"Código no disponible"):"";
+    $("teamCopyInvite").classList.toggle("hidden",!owner||!ws.inviteCode);
+    $("teamRefreshInvite").classList.toggle("hidden",!owner||!!ws.inviteCode);
     const push=assistantNativePushStatus();
     $("teamNotificationsLabel").textContent=push.fcmToken?"Activadas":push.configured?"Conectando…":"Requieren configuración";
     const google=$("assistantGoogleStatus").textContent.toLowerCase();
@@ -4431,7 +4450,29 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       try{await assistantJoinWorkspace();if(assistantAuthorizedIds.has(currentWorkspaceId())){$("teamJoinForm").classList.add("hidden");$("teamWorkspaceCode").value=""}renderAssistantSettings()}
       finally{btn.disabled=false}
     });
-    $("teamCopyInvite").addEventListener("click",()=>teamCopyText($("teamInviteCode").textContent));
+    $("teamShowInvite").addEventListener("click",()=>{
+      const ws=selectedSharedTeam();
+      if(!assistantWorkspaceIsOwner(ws))return;
+      teamInviteExpandedFor=teamInviteExpandedFor===ws.id?"":ws.id;
+      renderTeamHome();
+    });
+    $("teamRefreshInvite").addEventListener("click",async()=>{
+      const ws=selectedSharedTeam();if(!assistantWorkspaceIsOwner(ws))return;
+      const button=$("teamRefreshInvite");button.disabled=true;
+      try{
+        const result=await assistantRequest("/v1/workspaces");
+        const remote=(result.workspaces||[]).find(w=>w.id===ws.id);
+        if(!remote||remote.role!=="owner")throw new Error("No se confirmó el acceso administrador");
+        mergeAssistantWorkspaces([remote]);scheduleSave();teamInviteExpandedFor=ws.id;renderTeamHome();
+        if(!remote.inviteCode)showToast("El servidor no devolvió el código. Revisa el acceso al equipo.");
+      }catch(error){showToast("Invitación: "+String(error?.message||error))}
+      finally{button.disabled=false}
+    });
+    $("teamCopyInvite").addEventListener("click",()=>{
+      const ws=selectedSharedTeam();
+      if(!assistantWorkspaceIsOwner(ws)||!ws.inviteCode){showToast("No hay un código disponible para copiar");return}
+      teamCopyText(ws.inviteCode);
+    });
     $("teamIssueRecovery").addEventListener("click",()=>teamIssueKey("recovery"));
     $("teamIssueLink").addEventListener("click",()=>teamIssueKey("link"));
     $("teamCopyKey").addEventListener("click",()=>teamCopyText($("teamKeyValue").textContent));
