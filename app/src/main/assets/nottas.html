@@ -1885,6 +1885,20 @@ html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color
 #assistantOverlay #assistantAdvanced:not(.hidden){margin-top:16px!important}
 #assistantOverlay .teamDiagnosticGroup .assistantActions .btn{flex:1 1 140px}
 @media(max-width:380px){#assistantOverlay .teamMemberEntry{flex-wrap:wrap}#assistantOverlay .teamMemberEntry button{margin-left:auto}}
+
+/* Nottas branding: original wordmark + actual notification icon in place of the two Ts. */
+.sidebarHeaderText{min-width:0;align-items:flex-start;max-width:calc(100% - 48px)}
+.sidebarWordmark{display:block;width:174px;max-width:100%;height:auto;aspect-ratio:1458/482;object-fit:contain;object-position:left center}
+.sidebarHeaderSub{margin-top:1px}
+#settingsOverlay .settingsAboutHero{display:flex;flex-direction:column;align-items:center;gap:0}
+#settingsOverlay .settingsAboutLogo{width:82px;height:82px;margin:0 0 12px;padding:0;overflow:hidden;position:relative;border-radius:21px;background:#202025;display:block}
+#settingsOverlay .settingsAboutLogoFallback{width:100%;height:100%;display:block}
+#settingsOverlay .settingsAboutLogo>img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.12);border-radius:inherit}
+#settingsOverlay .settingsAboutWordmark{display:block;width:184px;max-width:85%;height:auto;aspect-ratio:1458/482;object-fit:contain;margin:0 auto 4px}
+#settingsOverlay .settingsAboutHero p{margin:0;max-width:280px}
+html[data-theme="dark"] .sidebarWordmark,html[data-theme="dark"] #settingsOverlay .settingsAboutWordmark{filter:grayscale(1) brightness(0) invert(1)}
+html[data-theme="dark"] #settingsOverlay .settingsAboutLogo{background:#202025}
+@media(max-width:370px){.sidebarWordmark{width:155px}#settingsOverlay .settingsAboutWordmark{width:170px}}
 </style>
 </head>
 <body>
@@ -1978,7 +1992,7 @@ html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color
 <div id="sidebarBackdrop" class="sidebarBackdrop" aria-hidden="true">
   <aside id="sidebarPanel" class="sidebarPanel" role="navigation" aria-label="Navegación">
     <div class="sidebarHeader">
-      <div class="sidebarHeaderText"><strong>Nottas</strong><span class="sidebarHeaderSub">Espacios y organización</span></div>
+      <div class="sidebarHeaderText"><img class="sidebarWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async"><span class="sidebarHeaderSub">Espacios y organización</span></div>
       <button id="sidebarClose" class="closeBtn" type="button" aria-label="Cerrar menú"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
     <div id="sidebarScroll" class="sidebarScroll">
@@ -2690,7 +2704,14 @@ html[data-theme="dark"] #assistantOverlay .teamDiagnosticSubsection{border-color
     </div>
     </section>
     <section class="settingsScreen hidden" data-settings-page="about" aria-label="Acerca de Nottas">
-      <div class="settingsAboutHero"><div class="settingsAboutLogo">N</div><h3>Nottas</h3><p>Notas, tareas y trabajo compartido.</p></div>
+      <div class="settingsAboutHero">
+        <div class="settingsAboutLogo" role="img" aria-label="Icono de Nottas en blanco y negro">
+          <svg class="settingsAboutLogoFallback" viewBox="0 0 108 108" aria-hidden="true"><rect width="108" height="108" rx="26" fill="#202025"/><path d="M18 20h18l37 56V20h17v68H73L35 32v56H18Z" fill="#fff"/></svg>
+          <img src="file:///android_res/drawable/ic_nottas_launcher.webp" alt="" decoding="async" onerror="this.style.display='none'">
+        </div>
+        <img class="settingsAboutWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async">
+        <p>Notas, tareas y trabajo compartido.</p>
+      </div>
       <div class="sectionTitle">Aplicación</div>
       <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">Versión</div><div class="desc">Versión instalada.</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
