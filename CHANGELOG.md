@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.86 — 2 de noviembre de 2026
+
+- Ajustada la sección «Acerca de Nottas» según el diseño aprobado: el icono cuadrado reproduce el icono principal de la aplicación con todos sus colores originales, sin tratamiento monocromático.
+- Únicamente el logotipo «Nottas» que aparece debajo es monocromático, usando las dos T del vector del icono de notificaciones ya incorporadas en el wordmark.
+- Texto negro en tema claro y blanco en tema oscuro. El logotipo a color de la barra lateral permanece intacto, también en modo oscuro.
+- Pendiente comprobación visual del recurso Android en el dispositivo después de actualizar desde Obtainium.
+
 ## 0.27.85 — 2 de noviembre de 2026
 
 - Nueva marca gráfica en el encabezado de la barra lateral: el texto «Nottas» se sustituye por un logotipo SVG sin fondo, conservando «Espacios y organización» debajo.
