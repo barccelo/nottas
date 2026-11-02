@@ -1,10 +1,18 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Bootstrap Firebase director sin configurar.
+Última revisión: 2 de noviembre de 2026 · Verificar inicialización y recepción Firebase.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Verificación urgente · v0.27.96:** confirmar deploy Worker y validación del endpoint GET /v1/client-config (sin registrar valores concretos).
+- [ ] **Verificación urgente · director:** actualizar el teléfono a 0.27.96, abrir Nottas con Internet, comprobar que Proyecto/Sender/App/API se autocompletan y pasa de «Push no configurado» a token disponible.
+- [ ] **Verificación urgente · mensajes y tareas:** probar creación de tarea y mensaje desde Asistente hacia Director sin refrescar manualmente; repetir sentido inverso.
+- [ ] **Regresión · reintentos:** desconectar al primer inicio, restablecer red y comprobar que auto-config vuelve a intentar sin recrear identidad.
+- [ ] **Seguridad:** conservar FCM_SERVICE_ACCOUNT_JSON únicamente como secreto del Worker; revisar restricciones de la clave pública Firebase Android si procede.
+
+
 
 - [ ] **Bloqueante · Firebase del director:** revisar el aviso «Push no configurado» y el informe GitHub Actions del endpoint /v1/client-config; si faltan los cuatro valores públicos en el Worker, configurarlos una sola vez en Cloudflare (sin exponer la clave privada FCM). No crear una cuenta nueva ni desinstalar.
 - [ ] **Validar v0.27.95:** tras completar configuración pública, abrir Nottas en el director y comprobar que los cuatro campos se autocompletan, Firebase inicializa, obtiene token y el servidor lo reconoce.

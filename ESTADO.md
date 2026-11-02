@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Diagnóstico: Firebase no configurado en el director.
+Última actualización: 2 de noviembre de 2026 · Firebase Android centralizado en Worker.
 
+
+## Cambios v0.27.96 — datos públicos Firebase centralizados
+
+- Recuperados los cuatro valores públicos del proyecto Firebase Android original de Nottas (Project ID, Sender ID, App ID y clave de cliente) de la configuración existente, sin regenerar proyecto ni alterar identidades.
+- Configurados en Cloudflare Worker mediante las variables públicas FIREBASE_* del archivo wrangler.toml; no se incluye la clave privada del servicio FCM.
+- /v1/client-config entrega la configuración común a ambos teléfonos. v0.27.95 incorporó reintentos automáticos al abrir Nottas, que esta versión conserva.
+- El flujo de despliegue verifica que los valores públicos estén completos; pendiente prueba real de llegada de eventos y mensajes en el director.
+- No se toca la sesión, Workspace Oficina, tareas ni ajustes de cuenta existentes.
 
 ## Cambios v0.27.95 — configuración automática de Firebase
 
@@ -75,7 +83,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.95** (`versionCode 176`).
+- Versión del código Android: **0.27.96** (`versionCode 177`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

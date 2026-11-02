@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.96 — 2 de noviembre de 2026
+
+- Solucionado el bloqueo de configuración del receptor: el Worker ahora publica los cuatro parámetros públicos originales del proyecto Firebase Android Nottas desde su configuración de despliegue. Se utiliza el mismo proyecto y emisores en ambos roles.
+- Conservado el mecanismo de arranque y reintento introducido en 0.27.95; Nottas configura Firebase por sí sola al recibir los datos públicos del servidor, sin registrar una cuenta nueva.
+- Los secretos de servicio Firebase no se copian al repositorio ni al cliente; las credenciales privadas permanecen en Cloudflare.
+- La publicación verifica que /v1/client-config devuelve una configuración Android completa. Pendiente comprobación física de la recepción inmediata en ambos dispositivos.
+
+
 ## 0.27.95 — 2 de noviembre de 2026
 
 - Corregida la autoconfiguración Firebase del teléfono receptor: antes una respuesta incompleta del Worker desactivaba permanentemente nuevos intentos de instalación en la sesión.
