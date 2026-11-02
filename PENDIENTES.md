@@ -147,3 +147,8 @@ Al implementar una mejora: actualizar su estado, registrar la versión y traslad
 - [ ] Comprobar que los recursos locales de WebView cargan sin internet, especialmente file:///android_res/drawable/ic_nottas_launcher.webp.
 - [ ] Revisar escala en pantallas estrechas, modo oscuro y accesibilidad/lectura de la marca.
 - [ ] Verificar que no cambiaron el launcher ni el icono de notificaciones del sistema y que Obtainium publica la APK firmada.
+
+## Comprobación de identidad visual v0.27.86
+- [ ] En «Acerca de Nottas», verificar icono cuadrado a color, idéntico al launcher, sin filtro gris.
+- [ ] Verificar logotipo inferior monocromático, dos T originales de notificaciones, negro en tema claro y blanco en oscuro.
+- [ ] Comprobar que el logo de la barra lateral conserva sus colores y que la APK v0.27.86 se detecta por Obtainium.
