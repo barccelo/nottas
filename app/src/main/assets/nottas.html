@@ -6117,7 +6117,8 @@ html[data-theme="dark"] .taskSubtasksBox .taskTreeGrip{color:#a1a1a6}
       dayCounts.set(day,(dayCounts.get(day)||0)+1);
       const key=day+"|"+hour;hourCounts.set(key,(hourCounts.get(key)||0)+1);
     });
-    const showDateHeaders=groupEnabled&&(dayCounts.size>1||dayCounts.has(""));
+    // A date header belongs to every chronological group, even a single matching task.
+    const showDateHeaders=groupEnabled;
     let lastDay=null,lastHour=null;
     if(!rows.length){list.innerHTML=`<div class="empty"><div class="emptyTitle">${query?"Sin coincidencias":trash?"Papelera vacía":"Nada por aquí"}</div><div class="emptyText">${query?"Prueba con otro término.":trash?"No hay tareas eliminadas.":taskTodayOnly?"No tienes tareas para hoy.":"Crea una tarea con el botón +."}</div></div>`;return}
     list.innerHTML=(searching&&!primary.length?'<div class="searchGroupEmpty">Sin coincidencias en el filtro actual</div>':"")+rows.map((t,index)=>{
