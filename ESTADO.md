@@ -1,7 +1,14 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Espaciado de logotipo en Acerca de Nottas.
+Última actualización: 2 de noviembre de 2026 · Ordenación, sincronía bidireccional y gesto de recarga.
 
+
+## Cambios v0.27.91 — recuperación de sincronía y lista
+
+- La ordenación distingue fecha programada, creación y modificación; se preservan las preferencias existentes y se adopta «próximas primero» para nuevas configuraciones.
+- Se añadió reintento de fallos con backoff, conciliación en primer plano cada 75 s como respaldo de FCM y actualización al deslizar hacia abajo.
+- Los cambios locales pendientes se conservan hasta confirmación remota. No se reintroduce polling cada 15 s ni consultas en segundo plano.
+- Requiere prueba en ambos teléfonos, con Firebase disponible/ausente, red intermitente y cambios simultáneos.
 
 ## Cambios v0.27.90 — espaciado del logotipo en Acerca de
 
@@ -31,7 +38,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.90** (`versionCode 171`).
+- Versión del código Android: **0.27.91** (`versionCode 172`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

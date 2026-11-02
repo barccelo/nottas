@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.91 — 2 de noviembre de 2026
+
+- Ordenar tareas distingue fecha programada próxima/lejana, creación reciente y última modificación. Nuevas configuraciones usan «Fecha programada: próximas primero»; se respeta el orden ya guardado de los usuarios existentes.
+- Añadido criterio «Creadas recientemente» independiente de «Modificadas recientemente». La agrupación cronológica conserva exclusivamente los criterios de fecha programada.
+- Sincronización de Oficina robustecida: los fallos transitorios se reintentan automáticamente con esperas progresivas de 4 a 60 segundos y cambios pendientes conservados.
+- Introducida conciliación de respaldo mientras la app está visible, cada 75 segundos, cuando no hay una sincronización en curso, para recuperar eventos perdidos por notificaciones FCM; push sigue siendo el mecanismo inmediato y no hay polling en segundo plano.
+- Deslizar hacia abajo desde el inicio de la lista de tareas o notas fuerza una sincronización completa (primero sube los pendientes). Muestra progreso y resultado sin interceptar swipes horizontales ni pulsaciones de controles.
+- Sin cambios de Cloudflare Worker, Firebase, iconografía ni estructura persistida. Pendiente probar los dos sentidos de sincronización en Android.
+
+
 ## 0.27.90 — 2 de noviembre de 2026
 
 - «Acerca de Nottas»: reducido el margen inferior del ícono azul de 12 px a 4 px para compactar la composición y acercar el nombre monocromático.

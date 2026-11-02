@@ -1944,6 +1944,23 @@ html[data-theme="dark"] #settingsOverlay .settingsAboutWordmark{
 .sidebarWordmark{width:174px;max-width:100%;height:auto;object-fit:contain}
 html[data-theme="dark"] .sidebarWordmark{filter:none!important}
 
+/* Pull-down refresh is only enabled at the top of the main task/note list. */
+.pullSyncIndicator{
+  position:fixed;top:max(48px,env(safe-area-inset-top));left:50%;z-index:35;
+  display:flex;align-items:center;gap:9px;padding:9px 14px;
+  border:1px solid rgba(118,118,128,.17);border-radius:24px;
+  background:rgba(255,255,255,.97);color:#3b3b42;
+  box-shadow:0 5px 20px rgba(0,0,0,.11);font-size:12px;font-weight:640;
+  pointer-events:none;opacity:0;visibility:hidden;
+  transform:translate(-50%,-24px);transition:opacity .12s,transform .12s,visibility .12s;
+}
+.pullSyncIndicator.active{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.pullSyncIndicator svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pullSyncIndicator.loading svg{animation:nottasPullSyncSpin .9s linear infinite}
+@keyframes nottasPullSyncSpin{to{transform:rotate(360deg)}}
+html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;border-color:#45454b}
+@media(prefers-reduced-motion:reduce){.pullSyncIndicator,.pullSyncIndicator svg{transition:none;animation:none!important}}
+
 /* Compact chronological grouping: adjacent day/hour/card instead of stacked margins. */
 #list.taskChronologicalList{gap:5px}
 #list.taskChronologicalList > .taskGroupDayHeader{margin:9px 1px 0;padding:9px 12px}
@@ -2020,6 +2037,10 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
 
   <div id="categories" class="scroller"></div>
   <div id="list" class="list"></div>
+  <div id="pullSyncIndicator" class="pullSyncIndicator" role="status" aria-live="polite" aria-hidden="true">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 11a7 7 0 1 1-2-5M19 4v6h-6"/></svg>
+    <span id="pullSyncText">Desliza para actualizar</span>
+  </div>
 </div>
 
 
@@ -2102,9 +2123,10 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
       </div>
       <div class="taskSortSectionTitle">Ordenar por</div>
       <div class="taskSortOrderList" role="group" aria-label="Ordenación de tareas">
-        <button type="button" data-task-sort="recent"><span>Fecha: más recientes primero</span><small>De la fecha más nueva a la más antigua</small></button>
-        <button type="button" data-task-sort="soon"><span>Fecha: más antiguas primero</span><small>Orden cronológico ascendente</small></button>
-        <button type="button" data-task-sort="updated"><span>Modificadas recientemente</span><small>Últimos cambios arriba</small></button>
+        <button type="button" data-task-sort="soon"><span>Fecha programada: próximas primero</span><small>De la fecha más cercana a la más lejana</small></button>
+        <button type="button" data-task-sort="recent"><span>Fecha programada: lejanas primero</span><small>De la fecha más lejana a la más cercana</small></button>
+        <button type="button" data-task-sort="created"><span>Creadas recientemente</span><small>Según cuándo se registró la tarea, no cuándo ocurre</small></button>
+        <button type="button" data-task-sort="updated"><span>Modificadas recientemente</span><small>Según la última edición, no la fecha programada</small></button>
         <button type="button" data-task-sort="priority"><span>Prioridad</span><small>Alta, normal y baja</small></button>
         <button type="button" data-task-sort="title"><span>Título: A–Z</span><small>Orden alfabético</small></button>
       </div>
@@ -3108,11 +3130,11 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
   const iconPin='<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pinFill" d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path><path d="m12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z"></path></svg>';
 
   let state=null;
-  let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="recent",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
+  let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="soon",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
   let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
-  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false;
+  let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
   let directorProposalsSeq=0,directorProposalsFetching=false,directorProposalsError="",directorNativeLastCount=-1,directorInboxTab="proposals";
@@ -3500,7 +3522,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
     applyTaskFilterChoice(taskSelectedFilter);saveUI();render();
     showToast(taskPinnedFilters.has(choice)?"Filtro fijado":"Filtro desfijado");
   }
-  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskSortMode=["recent","soon","updated","priority","title"].includes(u.taskSortMode)?u.taskSortMode:"recent";taskToolsExpanded=u.taskToolsExpanded===true;
+  function loadUI(){try{const u=JSON.parse(localStorage.getItem(UI_KEY)||"{}");if(u.mode==="notes")mode="notes";if(["pending","pinned","all","done"].includes(u.taskFilter))taskFilter=u.taskFilter;if(u.taskFilter==="today"){taskFilter="pending";taskTodayOnly=true}else taskTodayOnly=u.taskTodayOnly===true;taskGroupedByTime=u.taskGroupedByTime===true;taskSortMode=["recent","soon","created","updated","priority","title"].includes(u.taskSortMode)?u.taskSortMode:"soon";taskToolsExpanded=u.taskToolsExpanded===true;
     taskPinnedFilters=new Set((Array.isArray(u.taskPinnedFilters)?u.taskPinnedFilters:[]).filter(x=>["today","pending","all"].includes(x)));
     applyTaskFilterChoice(["today","pending","all","pinned","done"].includes(u.taskSelectedFilter)?u.taskSelectedFilter:(taskTodayOnly?"today":taskFilter));
     if(["all","pinned"].includes(u.noteFilter))noteFilter=u.noteFilter;if(typeof u.activeCategory==="string")activeCategory=u.activeCategory;if(typeof u.activeTag==="string")activeTag=u.activeTag;if(typeof u.activeWorkspaceId==="string")activeWorkspaceId=u.activeWorkspaceId;if(["light","dark"].includes(u.theme))uiTheme=u.theme;if(typeof u.calendarOnlyEvents==="boolean")calendarOnlyEvents=u.calendarOnlyEvents;
@@ -3743,6 +3765,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
       state.preferences.categoryWorkspaceRepair20261030=true;
       state.assistant.cursor=Number(pulled.cursor)||state.assistant.cursor||0;
       state.assistant.lastSyncAt=now();
+      assistantSyncRetryAttempt=0;assistantSyncFailed=false;
       assistantApplyingRemote=true;
       scheduleSave();
       setTimeout(()=>{assistantApplyingRemote=false},500);
@@ -3754,12 +3777,23 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
       setStatus("Nube","ok");
       return true;
     }catch(error){
+      assistantSyncFailed=true;
+      assistantSyncRetryAttempt=Math.min(assistantSyncRetryAttempt+1,5);
       setStatus("Sin conexión","warn");
       if(!silent)showToast("Sync: "+String(error?.message||error));
       return false;
     }finally{
       assistantSyncing=false;
-      if(assistantSyncQueued){assistantSyncQueued=false;scheduleAssistantSync(200)}
+      const queued=assistantSyncQueued;assistantSyncQueued=false;
+      if(assistantConfigured()&&!document.hidden){
+        if(assistantSyncFailed){
+          // No retry storm on failed requests. New edits remain pending for delivery.
+          const backoff=Math.min(60000,4000*Math.pow(2,assistantSyncRetryAttempt-1));
+          scheduleAssistantSync(backoff);
+        }else if(queued){
+          scheduleAssistantSync(200);
+        }
+      }
     }
   }
   async function assistantRegisterDevice(){
@@ -5084,6 +5118,9 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
       if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
       const at=a.dueTime||"",bt=b.dueTime||"";
       if(at!==bt)return recent?bt.localeCompare(at):at.localeCompare(bt);
+    }else if(taskSortMode==="created"){
+      const created=taskSortTime(b.createdAt)-taskSortTime(a.createdAt);
+      if(created)return created;
     }else if(taskSortMode==="updated"){
       const changed=taskSortTime(b.updatedAt)-taskSortTime(a.updatedAt);
       if(changed)return changed;
@@ -8731,6 +8768,68 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
     },{passive:true});
   }
 
+  // Pull to refresh: do not compete with card edit/delete or the horizontal mode swipe.
+  // The gesture starts only when the document is scrolled fully to the top.
+  const pullIndicator=$("pullSyncIndicator"),pullText=$("pullSyncText");
+  let pullGesture=null,pullSyncBusy=false,pullIndicatorTimer=null;
+  function pullIndicatorShow(label,loading=false){
+    clearTimeout(pullIndicatorTimer);
+    pullText.textContent=label;
+    pullIndicator.classList.add("active");
+    pullIndicator.classList.toggle("loading",loading);
+    pullIndicator.setAttribute("aria-hidden","false");
+  }
+  function pullIndicatorHide(delay=0){
+    clearTimeout(pullIndicatorTimer);
+    pullIndicatorTimer=setTimeout(()=>{
+      pullIndicator.classList.remove("active","loading");
+      pullIndicator.setAttribute("aria-hidden","true");
+    },delay);
+  }
+  async function refreshMainList(){
+    if(pullSyncBusy)return;
+    pullSyncBusy=true;pullIndicatorShow("Actualizando…",true);
+    try{
+      if(saveTimer){clearTimeout(saveTimer);saveTimer=null;await saveNow()}
+      // Full snapshot repairs even a missed incremental cursor; local pending edits
+      // are still pushed first by assistantSync and are never cleared on failure.
+      const ok=assistantConfigured()?await assistantSync(true,true):true;
+      if(!assistantConfigured())render();
+      pullIndicatorShow(ok?"Actualizado":"No se pudo sincronizar");
+      if(!ok)showToast("Sincronización pendiente · se reintentará automáticamente");
+      pullIndicatorHide(ok?850:1800);
+    }catch(_){
+      pullIndicatorShow("No se pudo actualizar");pullIndicatorHide(1800);
+    }finally{pullSyncBusy=false}
+  }
+  appRoot.addEventListener("touchstart",e=>{
+    if(pullSyncBusy||trash||document.querySelector(".overlay.show")||
+       e.touches.length!==1||(window.scrollY||document.documentElement.scrollTop)>2)return;
+    if(!e.target.closest("#list")&&e.target!==appRoot)return;
+    if(e.target.closest("button,input,textarea,select,[contenteditable],.swipeAction"))return;
+    const t=e.touches[0];
+    pullGesture={x:t.clientX,y:t.clientY,dy:0,active:false,blocked:false};
+  },{passive:true});
+  appRoot.addEventListener("touchmove",e=>{
+    if(!pullGesture||e.touches.length!==1)return;
+    const t=e.touches[0],dx=t.clientX-pullGesture.x,dy=t.clientY-pullGesture.y;
+    if(pullGesture.blocked)return;
+    if(dy< -10||Math.abs(dx)>Math.max(16,dy*.85)){pullGesture.blocked=true;return}
+    if(dy>16&&dy>Math.abs(dx)*1.3)pullGesture.active=true;
+    if(pullGesture.active){
+      e.preventDefault();
+      pullGesture.dy=dy;
+      pullIndicatorShow(dy>=76?"Suelta para actualizar":"Desliza para actualizar");
+    }
+  },{passive:false});
+  appRoot.addEventListener("touchend",()=>{
+    const wasReady=pullGesture?.active&&pullGesture.dy>=76;
+    pullGesture=null;
+    if(wasReady){suppressClickUntil=Date.now()+350;refreshMainList()}
+    else if(!pullSyncBusy)pullIndicatorHide();
+  },{passive:true});
+  appRoot.addEventListener("touchcancel",()=>{pullGesture=null;if(!pullSyncBusy)pullIndicatorHide()},{passive:true});
+
   let modeSwipe=null;
   appRoot.addEventListener("touchstart",e=>{
     if(trash||document.querySelector(".overlay.show")||e.touches.length!==1)return;
@@ -8900,6 +8999,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
       done:'<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
       recent:'<path d="M4 7h16M7 12h10M10 17h4"/><path d="m18 17 3 3m0 0v-6m0 6h-6"/>',
       soon:'<path d="M4 7h16M7 12h10M10 17h4"/><path d="m18 16 3-3m0 0v6m0-6h-6"/>',
+      created:'<path d="M6 3h9l4 4v14H6zM15 3v5h4M9 14h7M12.5 10v8"/>',
       updated:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2M4 4 2 7"/>',
       priority:'<path d="M6 20V4M6 5h12l-3 5 3 5H6"/>',
       title:'<path d="M3 19h10M3 5h10M3 12h10M17 5v14m-3-3 3 3 3-3"/>',
@@ -8941,7 +9041,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
     closeOverlay("taskSortOverlay");$("taskFilterSortBtn").setAttribute("aria-expanded","false");
   }
   $("taskGroupToggle").addEventListener("click",()=>{
-    if(!["recent","soon"].includes(taskSortMode))taskSortMode="recent";
+    if(!["recent","soon"].includes(taskSortMode))taskSortMode="soon";
     taskGroupedByTime=!taskGroupedByTime;
     saveUI();render();
     if($("taskSortOverlay").classList.contains("show"))renderTaskSortPanel();
@@ -9455,7 +9555,16 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
-  // Foreground reconciliation only: not a scheduled task or calendar reminder.
+  // FCM remains the fast path. A foreground reconciliation is the safety net
+  // for a missed/invalid FCM token and for transient connection failures.
+  // No 15-second polling, no background periodic network requests.
+  const ASSISTANT_FOREGROUND_RECONCILE_MS=75000;
+  setInterval(()=>{
+    if(!document.hidden&&assistantConfigured()&&!assistantSyncing&&!assistantSyncTimer){
+      scheduleAssistantSync(100);
+    }
+  },ASSISTANT_FOREGROUND_RECONCILE_MS);
+  // Inbox content is refreshed separately, less frequently.
   setInterval(()=>{if(!document.hidden&&assistantConfigured()&&directorOwnedSpaces().length)refreshDirectorProposals(true)},120000);
   window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured())scheduleAssistantSync(200)}});

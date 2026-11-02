@@ -1,10 +1,19 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · Espaciado en Acerca de Nottas.
+Última revisión: 2 de noviembre de 2026 · Robustez de sincronización.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **Validar · Sync v0.27.91:** crear y editar tareas director→asistente y asistente→director con ambos teléfonos abiertos; verificar cambio inmediato por push y recuperación por conciliación (≤75 s aproximadamente) si FCM no llega.
+- [ ] **Validar · Fallos transitorios:** desactivar y restablecer internet en un teléfono; comprobar que cambios pendientes se reenvían sin requerir crear una tarea en el otro dispositivo; verificar que no aparecen duplicados ni se pierden modificaciones.
+- [ ] **Validar · Pull to refresh:** desde el inicio de Tareas y Notas, deslizar verticalmente hacia abajo; comprobar indicador, sincronización y ausencia de colisión con swipe lateral o con editores.
+- [ ] **Validar · Ordenación:** alternar entre próximas/lejanos, creadas y modificadas; con agrupación, comprobar fechas ascendentes, descendentes y sin fecha primero.
+- [ ] **Validar · Batería:** push inmediato; respaldo solo mientras la WebView está visible; sin reintroducir consultas cada 15 s.
+- [ ] **Validar · Publicación:** firma de APK v0.27.91 y detección desde Obtainium.
+
+
 
 - [ ] **Por verificar · Acerca de v0.27.90:** comprobar menor separación ícono azul–logotipo Nottas y buen equilibrio con el subtítulo en modo claro y oscuro.
 - [ ] **Por verificar · Publicación v0.27.90:** comprobar APK firmada en GitHub Releases y actualización detectada desde Obtainium.
