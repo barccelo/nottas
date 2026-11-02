@@ -187,3 +187,9 @@ Corregido el fallo de 0.27.79: el gesto estaba asociado al menú de tres puntos 
 - Subtareas: únicamente asa izquierda + check + texto. Tap en asa abre las opciones de esa fila, swipe horizontal cambia sangría y movimiento vertical desde asa reubica la fila sin esperar pulsación prolongada. Pulsación prolongada sigue habilitada.
 - Los tres puntos ya no se repiten por fila. Menús generales de descripción y subtareas usan la misma iconografía, en los encabezados; descripción controla el bloque enfocado.
 - Se mantienen jerarquías, selección múltiple, menús contextual/general y deshacer. Pendiente prueba de interacción Android y confirmar publicación firmada en Releases para Obtainium.
+
+## 0.27.82 — Encabezados de fechas en vista cronológica
+- El filtro «Pendientes» con una única tarea mostraba la hora pero no el día; en «Todas» con varios días sí aparecía.
+- Causa: condición `dayCounts.size>1` ocultaba todo encabezado de fecha si solo había un grupo.
+- Corregido para mostrar siempre el día en modo cronológico, incluidos «Hoy», «Sin fecha» y un único evento pendiente. No altera agrupaciones por hora ni la tarjeta de tarea.
+- Pendiente validar APK firmada y comportamiento en teléfono.
