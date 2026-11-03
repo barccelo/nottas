@@ -1,6 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 3 de noviembre de 2026 · Laboratorio visual ampliado v0.27.111 pendiente de validación.
+Última revisión: 3 de noviembre de 2026 · Design System v0.27.112, pruebas Android pendientes.
+
+## Prioridad inmediata — v0.27.112
+
+- [ ] **Galería de hora:** comprobar rueda 24 h/60 min, edición directa sin borde azul, scroll suave y no afectar ajustes reales.
+- [ ] **Galería de fecha:** título «Noviembre 2026» sin «de», tocar título abre ruedas de mes/día/año; mover por scroll y toque, pulsar «Listo», navegar meses, «Hoy» y cerrar/abrir.
+- [ ] **Editor real:** selector fecha detallado desde el encabezado, aplicar fecha de inicio/fin, comprobar validación de fin anterior a inicio, duración máxima, cambio de meses de 28/29/30/31 días y 29 de febrero.
+- [ ] **Navegación:** Android Back primero cierra el selector detallado, después el panel de fecha, sin descartar edición; entrada numérica de hora y teclado sin bordes azules.
+- [ ] **Calendario:** comprobar encabezados Mes y Agenda con formato «Noviembre 2026».
+- [ ] **Recordatorios:** verificar flecha y wordmark centrados ópticamente tanto en pantalla simple como en apilados, sin interferir con barra de estado o controles.
+- [ ] **Publicación:** comprobar GitHub Actions, firma, Release v0.27.112, actualización vía Obtainium y persistencia de datos.
 
 ## Prioridad inmediata — selectores del laboratorio v0.27.111
 
