@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.110 — 3 de noviembre de 2026
+
+- Añadido laboratorio de componentes en Ajustes → Acerca de Nottas, con seis familias de referencia: tipografía, iconos, botones, selección, tarjetas y colores.
+- Vista previa de modo claro y oscuro, con demostraciones interactivas aisladas del estado de la aplicación. No modifica datos ni introduce dependencias de red.
+- Enlace de navegación con retorno a «Acerca de Nottas», incluido Back Android.
+- Nuevo documento `DESIGN_SYSTEM.md`: catálogo de componentes, reglas propuestas, bibliotecas candidatas y plan de implementación gradual.
+- Los componentes de producción permanecen intactos. Pendiente validación en dispositivos y publicación firmada por GitHub Actions para Obtainium.
+
 ## 0.27.109 — 2 de noviembre de 2026
 
 - Un toque en Propuesta cambia inmediatamente a Agendada; desde Agendada aparece la lista habitual de estados. Disponible en tarjeta y editor.
