@@ -5,6 +5,7 @@ Aplicación Android local-first de notas y tareas con interfaz inspirada en la M
 ## Continuidad técnica entre versiones y chats
 
 - [ESTADO.md](ESTADO.md): versión vigente del código, funciones, diagnóstico y punto de continuación.
+- [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md): sistema visual en evaluación, inventario de componentes y etapas de adopción.
 - [PENDIENTES.md](PENDIENTES.md): mejoras, errores y verificaciones pendientes.
 - [CHANGELOG.md](CHANGELOG.md): historial de los cambios incluidos en cada versión.
 
