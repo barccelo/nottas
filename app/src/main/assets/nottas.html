@@ -2168,6 +2168,7 @@ html[data-theme="dark"] .taskInlineDetailDone button{background:#303035;color:#f
 #settingsOverlay .dsCatalogScreen iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:#f5f5f7;border-radius:13px}
 html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101012}
 </style>
+<link rel="stylesheet" href="design-system.css">
 </head>
 <body>
 <div class="app">
@@ -2267,7 +2268,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
 <div id="sidebarBackdrop" class="sidebarBackdrop" aria-hidden="true">
   <aside id="sidebarPanel" class="sidebarPanel" role="navigation" aria-label="Navegación">
     <div class="sidebarHeader">
-      <div class="sidebarHeaderText"><img class="sidebarWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async"><span class="sidebarHeaderSub">Espacios y organización</span></div>
+      <div class="sidebarHeaderText"><img class="sidebarWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async"></div>
       <button id="sidebarClose" class="closeBtn" type="button" aria-label="Cerrar menú"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
     <div id="sidebarScroll" class="sidebarScroll">
@@ -2298,8 +2299,8 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     </div>
     </div>
     <div class="sidebarFooter" aria-label="Accesos rápidos">
-      <button id="sidebarTrash" class="sideItem" type="button"><span class="sideItemCopy"><strong>Papelera</strong><small>Elementos eliminados</small></span><span id="sideTrashCount" class="sideCount"></span></button>
-      <button id="sidebarSettings" class="sideItem" type="button"><span class="sideItemCopy"><strong>Ajustes</strong><small>Preferencias y configuración</small></span></button>
+      <button id="sidebarTrash" class="sideItem" type="button"><span class="sideItemCopy"><strong>Papelera</strong></span><span id="sideTrashCount" class="sideCount"></span></button>
+      <button id="sidebarSettings" class="sideItem" type="button"><span class="sideItemCopy"><strong>Ajustes</strong></span></button>
     </div>
   </aside>
 </div>
@@ -2311,10 +2312,6 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       <button id="taskSortClose" class="closeBtn" type="button" aria-label="Cerrar filtros"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button>
     </div>
     <div class="taskSortBody">
-      <div class="taskSortIntro">
-        <span class="taskSortIntroIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="7" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/></svg></span>
-        <span><strong>Tu lista, a tu manera</strong><small>Personaliza qué aparece y en qué orden.</small></span>
-      </div>
       <div class="taskSortSectionTitle">Mostrar</div>
       <div class="taskSortChoiceGrid" role="group" aria-label="Filtrar tareas">
         <button type="button" class="taskSortFilter" data-sort-filter="pending">Pendientes</button>
@@ -2325,12 +2322,12 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       </div>
       <div class="taskSortSectionTitle">Ordenar por</div>
       <div class="taskSortOrderList" role="group" aria-label="Ordenación de tareas">
-        <button type="button" data-task-sort="soon"><span>Fecha programada: próximas primero</span><small>De la fecha más cercana a la más lejana</small></button>
-        <button type="button" data-task-sort="recent"><span>Fecha programada: lejanas primero</span><small>De la fecha más lejana a la más cercana</small></button>
-        <button type="button" data-task-sort="created"><span>Creadas recientemente</span><small>Según cuándo se registró la tarea, no cuándo ocurre</small></button>
-        <button type="button" data-task-sort="updated"><span>Modificadas recientemente</span><small>Según la última edición, no la fecha programada</small></button>
-        <button type="button" data-task-sort="priority"><span>Prioridad</span><small>Alta, normal y baja</small></button>
-        <button type="button" data-task-sort="title"><span>Título: A–Z</span><small>Orden alfabético</small></button>
+        <button type="button" data-task-sort="soon"><span>Fecha programada: próximas primero</span></button>
+        <button type="button" data-task-sort="recent"><span>Fecha programada: lejanas primero</span></button>
+        <button type="button" data-task-sort="created"><span>Creadas recientemente</span></button>
+        <button type="button" data-task-sort="updated"><span>Modificadas recientemente</span></button>
+        <button type="button" data-task-sort="priority"><span>Prioridad</span></button>
+        <button type="button" data-task-sort="title"><span>Título: A–Z</span></button>
       </div>
       <label class="taskSortGroup" for="taskSortGroupCheck">
         <span><strong>Agrupar por fecha y hora</strong><small>Disponible con orden cronológico</small></span>
@@ -2669,7 +2666,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       <div id="taskListPanel" class="noteActionPanel hidden" aria-hidden="true">
         <div class="noteActionPanelHandle"></div>
         <div class="taskListToggleRow">
-          <div class="taskListToggleText"><div class="taskListToggleTitle">Completadas al final</div><div class="taskListToggleDesc">Si está activo, las subtareas marcadas bajan al final.</div></div>
+          <div class="taskListToggleText"><div class="taskListToggleTitle">Completadas al final</div></div>
           <label class="iosSwitch"><input id="taskCompletedAtEndToggle" type="checkbox"><span aria-hidden="true"></span></label>
         </div>
         <button id="taskMarkAllBtn" class="noteActionRow" type="button">
@@ -2871,7 +2868,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
         <input id="minuteDirectInput" class="timePartInput hidden" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-label="Minutos">
       </div>
     </div>
-    <div class="timePartHint">Desliza o escribe una hora, por ejemplo 14:35</div>
+
     <div class="timeReminderBox">
       <div class="timeReminderRow">
         <div><div style="font-size:15px">Recordarme</div><div style="font-size:12px;color:#8e8e93;margin-top:2px">Aviso asociado a esta hora.</div></div>
@@ -2906,22 +2903,22 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       <button id="settingsClose" class="closeBtn" type="button" aria-label="Cerrar"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-close"></use></svg></button>
     </div>
     <div id="settingsMain" class="settingsScreen">
-      <p class="settingsIntro">Organiza Nottas a tu manera.</p>
+
       <div class="settingsNavGroup">
-        <button data-settings-open="appearance" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Apariencia</span><span class="settingsNavDesc">Tema, barra y categorías</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
-        <button data-settings-open="alerts" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-bell"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Notificaciones y recordatorios</span><span class="settingsNavDesc">Avisos, horarios y desbloqueo</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="appearance" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Apariencia</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="alerts" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-bell"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Notificaciones y recordatorios</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
         <button id="assistantSettingsBtn" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-users"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Equipo de trabajo</span><span class="settingsNavDesc" id="assistantSummaryDesc">Cuenta y espacios compartidos</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
-        <button data-settings-open="messages" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chat"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Mensajes rápidos</span><span class="settingsNavDesc">Respuestas predeterminadas</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
-        <button data-settings-open="backup" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-database"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Datos y respaldo</span><span class="settingsNavDesc">Copias de seguridad y papelera</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
-        <button data-settings-open="about" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-info"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Acerca de Nottas</span><span class="settingsNavDesc">Versión e información de la aplicación</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="messages" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chat"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Mensajes rápidos</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="backup" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-database"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Datos y respaldo</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
+        <button data-settings-open="about" class="settingsNavItem" type="button"><span class="settingsNavIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-info"></use></svg></span><span class="settingsNavCopy"><span class="settingsNavTitle">Acerca de Nottas</span></span><span class="settingsNavChevron"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></span></button>
       </div>
     </div>
     <section class="settingsScreen hidden" data-settings-page="appearance" aria-label="Apariencia">
-      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg></span><p>Configura cómo se ve y se organiza Nottas.</p></div>
+
       <div class="sectionTitle">Visualización</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Tema oscuro</div><div class="desc">Usa una apariencia de tonos oscuros.</div></div><label class="iosSwitch"><input id="themeDarkToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
-      <div class="settingsRow"><div class="left"><div class="title">Posición de la barra principal</div><div class="desc">Elige dónde mostrar los controles principales.</div></div><select id="headerPlacementSelect" class="select" style="width:120px;max-width:40%" aria-label="Posición de la barra principal"><option value="top">Arriba</option><option value="bottom">Abajo</option></select></div>
+      <div class="settingsRow"><div class="left"><div class="title">Tema oscuro</div></div><label class="iosSwitch"><input id="themeDarkToggle" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Posición de la barra principal</div></div><select id="headerPlacementSelect" class="select" style="width:120px;max-width:40%" aria-label="Posición de la barra principal"><option value="top">Arriba</option><option value="bottom">Abajo</option></select></div>
     </div>
 
     
@@ -2930,7 +2927,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     <button id="addCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría</button>
     <div id="eventCategorySection" class="hidden">
       <div class="sectionTitle">Categorías de eventos · Oficina</div>
-      <p class="eventCategoryHelp">Se comparten con el equipo y aparecen en su agenda. Puedes cambiar el ícono por un emoji.</p>
+
       <div id="eventCategoryManage" class="settingsGroup"></div>
       <button id="addEventCategoryBtn" class="btn secondary full" type="button">+ Nueva categoría de evento</button>
     </div>
@@ -2938,23 +2935,23 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     
     </section>
     <section class="settingsScreen hidden" data-settings-page="alerts" aria-label="Notificaciones y recordatorios">
-      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-bell"></use></svg></span><p>Elige cuándo y cómo recibir tus avisos.</p></div>
+
       <div class="sectionTitle">Recordatorios predeterminados</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">A la hora del evento</div><div class="desc">Para nuevas tareas y eventos con hora.</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="0"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">A la hora del evento</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="0"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">5 min antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="5"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">10 min antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="10"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">1 hora antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="60"><span aria-hidden="true"></span></label></div>
       <div class="settingsRow"><div class="left"><div class="title">1 día antes</div></div><label class="iosSwitch"><input type="checkbox" data-default-reminder="1440"><span aria-hidden="true"></span></label></div>
-      <div class="settingsRow"><div class="left"><div class="title">Resumen</div><div id="defaultRemindersDesc" class="desc">Sin recordatorios predeterminados.</div></div></div>
+      <span id="defaultRemindersDesc" class="hidden" aria-live="polite"></span>
     </div>
 
     
       <div class="sectionTitle">Horario de trabajo</div>
     <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Establece cuándo Nottas puede aparecer al desbloquear.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
-      <div class="settingsRow"><div class="left"><div class="title">Inicio</div><div class="desc">Hora habitual de comienzo.</div></div><input id="workHoursStart" class="settingsTimeInput" type="time" value="08:00"></div>
-      <div class="settingsRow"><div class="left"><div class="title">Fin</div><div class="desc">Hora habitual de cierre.</div></div><input id="workHoursEnd" class="settingsTimeInput" type="time" value="17:00"></div>
+      <div class="settingsRow"><div class="left"><div class="title">Usar horario de trabajo</div><div class="desc">Suspende su aparición al desbloquear durante estas horas.</div></div><label class="iosSwitch"><input id="workHoursEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+      <div class="settingsRow"><div class="left"><div class="title">Inicio</div></div><input id="workHoursStart" class="settingsTimeInput" type="time" value="08:00"></div>
+      <div class="settingsRow"><div class="left"><div class="title">Fin</div></div><input id="workHoursEnd" class="settingsTimeInput" type="time" value="17:00"></div>
       <div class="settingsRow"><div class="left"><div class="title">Estado actual</div><div id="workHoursNativeStatus" class="desc">Comprobando…</div></div></div>
     </div>
 
@@ -2962,7 +2959,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       <div id="androidSettings" class="hidden">
       <div class="sectionTitle">Android</div>
       <div class="settingsGroup">
-        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div><div class="desc">Abre Nottas según tu horario y tus pausas.</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
+        <div class="settingsRow"><div class="left"><div class="title">Mostrar al encender/desbloquear</div></div><label class="iosSwitch"><input id="wakeEnabled" type="checkbox"><span aria-hidden="true"></span></label></div>
         <div class="settingsRow"><div class="left"><div class="title">Aviso del servicio</div><div id="unlockNotificationDesc" class="desc">Controla el aviso del servicio en Android.</div></div><button id="unlockNotificationBtn" type="button">Configurar</button></div>
       </div>
     </div>
@@ -2970,20 +2967,18 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     
     </section>
     <section class="settingsScreen hidden" data-settings-page="messages" aria-label="Mensajes rápidos">
-      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chat"></use></svg></span><p>Personaliza las respuestas de tu rol en el equipo.</p></div>
-      <div class="sectionTitle">Mensajes rápidos</div>
+
     <div id="assistantQuickPresetsHelp" class="assistantSectionHint">Edita las respuestas que envías desde este equipo.</div>
     <div id="assistantQuickPresetsSettings" class="assistantPresetSettings"></div>
     
     </section>
     <section class="settingsScreen hidden" data-settings-page="backup" aria-label="Datos y respaldo">
-      <div class="settingsPageIntro"><span class="settingsPageIcon"><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-database"></use></svg></span><p>Gestiona tus datos y conserva una copia segura.</p></div>
-      <div class="sectionTitle">Datos</div>
+
     <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">Papelera</div><div id="trashCountDesc" class="desc"></div></div><button id="openTrashBtn" type="button" aria-label="Abrir Papelera"><svg class="settingsChevron" viewBox="0 0 9 15" aria-hidden="true"><path d="m2 1.5 5.5 6L2 13.5"></path></svg></button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Exportar copia</div><div class="desc">Descarga tus datos en un archivo de respaldo.</div></div><button id="exportBtn" type="button">Exportar</button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Importar copia</div><div class="desc">Recupera los datos desde un archivo de respaldo.</div></div><button id="importBtn" type="button">Importar</button></div>
-      <div class="settingsRow"><div class="left"><div class="title">Plantilla de importación</div><div class="desc">Genera un archivo para importar desde otras apps.</div></div><button id="importTemplateBtn" type="button">Crear</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Exportar copia</div></div><button id="exportBtn" type="button">Exportar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Importar copia</div></div><button id="importBtn" type="button">Importar</button></div>
+      <div class="settingsRow"><div class="left"><div class="title">Plantilla de importación</div></div><button id="importTemplateBtn" type="button">Crear</button></div>
     </div>
 
     
@@ -3002,16 +2997,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
           <img src="file:///android_res/drawable/ic_nottas_launcher.webp" alt="" decoding="async" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
         </div>
         <img class="settingsAboutWordmark" src="nottas_wordmark.svg" alt="Nottas" decoding="async">
-        <p>Notas, tareas y trabajo compartido.</p>
+
       </div>
       <div class="sectionTitle">Aplicación</div>
       <div class="settingsGroup">
-      <div class="settingsRow"><div class="left"><div class="title">Versión</div><div class="desc">Versión instalada.</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
+      <div class="settingsRow"><div class="left"><div class="title">Versión</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
     </div>
       <div class="sectionTitle">Identidad visual</div>
-      <div class="settingsGroup"><button data-settings-open="components" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg> <span>Componentes de Nottas<small>Catálogo de tipografía, iconos, botones y tarjetas</small></span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
+      <div class="settingsGroup"><button data-settings-open="components" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg> <span>Componentes de Nottas</span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
       <div class="sectionTitle">Asistencia</div>
-      <div class="settingsGroup"><button id="settingsAdvancedBtn" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-folder"></use></svg> <span>Soporte y diagnóstico<small>Herramientas técnicas para resolver incidencias</small></span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
+      <div class="settingsGroup"><button id="settingsAdvancedBtn" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-folder"></use></svg> <span>Soporte y diagnóstico</span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
     </section>
     <section class="settingsScreen dsCatalogScreen hidden" data-settings-page="components" aria-label="Componentes de Nottas">
       <iframe id="nottasComponentsFrame" src="componentes.html" title="Catálogo de componentes Nottas" loading="lazy"></iframe>
@@ -3269,7 +3264,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       <button id="cardMetaClose" type="button" class="cardMetaClose" aria-label="Cerrar">×</button>
     </div>
     <div id="cardMetaCategory" class="cardMetaPanel hidden">
-      <div class="cardMetaHint">Selecciona una categoría. Puedes desplazarte verticalmente.</div>
+      
       <div id="cardMetaCategoryGrid" class="cardMetaCategoryGrid"></div>
       <button id="cardMetaNewCategory" class="cardMetaSecondary" type="button">+ Nueva categoría</button>
     </div>
