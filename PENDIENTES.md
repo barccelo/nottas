@@ -14,8 +14,6 @@
 - [ ] **Fase siguiente:** confirmar Inter/Lucide, incorporar activos locales y licencias, extraer tokens reutilizables; después extender el catálogo con selectores, navegación, ventanas y calendario.
 - [ ] **Migración:** sustituir controles de producción progresivamente, sin rediseños generales ni regresiones de navegación, recordatorios o sincronización. Ver `DESIGN_SYSTEM.md`.
 
-Última revisión: 2 de noviembre de 2026 · Cambios v0.27.109 pendientes de validación.
-
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
