@@ -1,10 +1,10 @@
-# Nottas Design System — 1.2 (catálogo + adopción puntual)
+# Nottas Design System — 1.3 (integración transversal)
 
-**Estado:** normas visuales en adopción progresiva. Rueda de hora, calendario del editor y encabezado de recordatorios tienen ajustes puntuales aplicados; el resto sigue pendiente.  
+**Estado:** integración transversal de superficies, tipografía, selección y alineación en las pantallas reales, con excepciones funcionales documentadas. La revisión visual en dispositivos reales sigue pendiente.  
 **Inicio:** 3 de noviembre de 2026.  
 **Catálogo visual:** Ajustes → Acerca de Nottas → Componentes de Nottas.  
-**Archivo:** `app/src/main/assets/componentes.html`.  
-**Principio de implementación:** nunca rediseñar masivamente la interfaz operativa sin validar cada familia y probar Android.
+**Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
+**Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
 ## Intención
 
@@ -29,14 +29,14 @@ Nottas conserva su identidad actual: sobria, limpia, orgánica, con calidad de d
 | 13 | Interacciones | Swipe, drag, feedback, animación, gestos, avisos a pantalla completa |
 | 14 | Posicionamiento | Ejes, márgenes, centros ópticos, safe areas, alineación de títulos y acciones |
 
-## Fundamentos propuestos (pendientes de aprobación)
+## Fundamentos visuales
 
 - **Color primario claro:** `#1677FF`; oscuro de referencia: `#4B9AFF`. No introducir un segundo azul sin token explícito.
 - **Neutros claros:** fondo `#F5F5F7`, superficie `#FFFFFF`, texto `#1D1D1F`. Oscuro: fondo `#101012`, superficie `#1C1C1E`, texto `#F5F5F7`.
-- **Tipografía:** Inter como candidata; el laboratorio incluye fallback del sistema. **La fuente Inter todavía NO está empaquetada.** Si se adopta, añadir el archivo local y preservar su licencia.
+- **Tipografía:** familia nativa del sistema Android (Roboto y equivalentes), normalizada en formularios, tarjetas y controles. **Inter sigue en evaluación y no está empaquetada.**
 - **Iconos:** Lucide como biblioteca candidata, con trazo coherente de 1,8 px y tamaño base de 20–22 px. Los símbolos del laboratorio son una muestra SVG local, **no una integración completa de Lucide**; pendiente sustituir los iconos de producción de forma controlada y registrar la licencia de los recursos incorporados.
 - **Espaciado:** escala 4, 8, 12, 16, 24 px; sin valores nuevos arbitrarios salvo casos justificados.
-- **Geometría:** botones redondeados con 12 px; tarjetas 15–18 px; acciones circulares y áreas táctiles de al menos 44 × 44 px.
+- **Geometría:** controles de 12 px, tarjetas de 16 px, encabezados de 56 px y áreas táctiles principales de 44 × 44 px cuando el ancho lo permite. Eventos del calendario conservan geometría temporal específica.
 - **Checks:** redondos en tareas, listas y subtareas. **Switches:** azules; nunca usar verde decorativo por defecto.
 - **Sombras/transparencias:** discretas, solo cuando expresan jerarquía.
 - **Tema oscuro:** usar equivalentes semánticos por token, no inversiones ad hoc.
@@ -98,13 +98,55 @@ La identidad gráfica incluye **dónde se coloca** cada componente, no solo cóm
 - [ ] Comprobar encabezado de recordatorio simple y agrupado: alineación de flecha y wordmark, márgenes, barras y distintos tamaños.
 - [ ] Verificar teclado/IME, accesibilidad, áreas táctiles, dispositivo estrecho y ausencia de regresiones de guardado, alarma o sincronización.
 
+## Integración 1.3 — sistema visual compartido (3 de noviembre de 2026)
+
+### Fuente de verdad
+
+- `app/src/main/assets/design-system.css` se carga **después** de los estilos históricos de `nottas.html`, con tokens CSS para colores claro/oscuro, superficies, tipografía, radios, rellenos, espacios y áreas táctiles. El catálogo `componentes.html` consume los mismos tokens; ningún elemento de producción debe recibir estilos exclusivos de la galería.
+- Objetivo: sustituir estilos aislados progresivamente; los valores comunes viven en tokens `--ns-*` y las excepciones deben ser explícitas.
+- Los controles nativos de Android (por ejemplo `ReminderActivity.kt`) no consumen CSS: deben traducir los mismos tamaños a dp y conservar sus correcciones ópticas justificadas.
+
+### Componentes alineados
+
+| Familia | Integración actual |
+|---|---|
+| Notas y tareas | Tarjetas base, títulos, contenido secundario, radios, relleno, separación y checks |
+| Calendario (filas/agenda) | Tarjetas, títulos, metadatos, espaciado, navegación e indicadores circulares |
+| Propuestas y seguimiento | Superficies y metadatos ajustados al lenguaje de tarjetas |
+| Equipo de trabajo | Paneles, tarjetas de estado y acciones consistentes |
+| Ajustes | Encabezados, navegación, filas, controles, espaciados y secciones más compactas |
+| Editor | Alineación de volver, check, título y estrella; rueda/fecha de la fase 1.2 |
+| Barra lateral | Alineación de filas y jerarquía de etiquetas |
+| Filtros, ventanas y diálogos | Botones, esquinas, separación y objetivos táctiles coherentes |
+| Selección | Checks circulares de calendario, notas y subtareas, todos con acento azul |
+
+**Excepciones intencionales:** los bloques de Día/Semana requieren alturas, solapamientos y anchuras propias; las tarjetas con gestos conservan su contenedor y animación; los estados y categorías pueden usar colores semánticos. No imponer el mismo tamaño a controles que tienen funciones distintas.
+
+### Regla editorial: interfaz sin texto de relleno
+
+- La acción se entiende por su **nombre visible** y por el propio control. No escribir subtítulos que digan de nuevo «configura», «elige», «organiza», «puedes…» o describan obviedades.
+- Una fila ordinaria muestra: **título + control + estado**, sin explicación si el resultado es evidente.
+- Mostrar texto secundario **solo cuando añade un dato**: estado real, alcance de un ajuste, restricción de roles, condición para ejecutar la acción, gesto no descubrible o consecuencia importante.
+- Conservar advertencias de eliminación irreversible, pérdida de datos, seguridad, permisos, sincronización, respaldo y limitaciones de solo lectura.
+- Los mensajes vacíos informan de la ausencia de datos; no deben adoptar tono publicitario ni instruccional.
+- Los textos del catálogo y los documentos de desarrollo pueden seguir describiendo las decisiones visuales porque son material de evaluación, no interfaz de uso cotidiano.
+
+### Validaciones requeridas
+
+- [ ] Comparar notas, tareas, eventos y propuestas en claro/oscuro, con títulos y metadatos largos, en pantallas estrechas y grandes.
+- [ ] Comprobar alineación óptica de iconos, encabezados y checks, sin recortes ni desplazamiento de texto al cambiar estados.
+- [ ] Probar teclado, editor enriquecido, filtros, barra lateral, gestos de edición/eliminación, recordatorios a pantalla completa.
+- [ ] Confirmar que el nuevo CSS se carga desde recursos APK sin red, y que la galería comparte tokens con producción.
+- [ ] Verificar contraste, tamaños táctiles, narración accesible y esquemas de color de categorías.
+- [ ] Validar los roles director/asistente, sincronización, propuestas y lectura de Google Calendar sin regresiones.
+
 ## Fases pendientes
 
 1. Validar visualmente los ocho módulos del laboratorio, incluidos los selectores 1.2, corregir contraste, proporciones y comportamiento en dispositivos reales.
 2. Confirmar biblioteca de iconos y fuente; empaquetar recursos localmente con avisos de licencia aplicables.
-3. Crear tokens compartidos de CSS y funciones/componentes comunes, preservando los estilos existentes mientras se migra.
+3. Reducir gradualmente los estilos históricos duplicados ahora que existe `design-system.css`, sin alterar posicionamiento ni interacciones.
 4. Completar los selectores de recordatorio/repetición; migrar encabezados y ventanas restantes bajo la norma posicional, sin modificar flujos ya validados.
-5. Migrar con pruebas: Inicio → notas/tareas → captura rápida → calendario → asistente → ajustes → recordatorios Android nativos.
+5. Completar el ajuste fino de pantallas y variantes que siguen con estilos específicos; la base común ya está aplicada a Inicio, listas, formularios, calendario, asistente, ajustes y navegación.
 6. Comprobar consistencia visual, contraste, teclado, tamaños, gestos, rendimiento y sincronización; no introducir cambios funcionales accidentales.
 
 ## Fuentes y licencias candidatas
