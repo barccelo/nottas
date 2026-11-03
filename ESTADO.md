@@ -1,7 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Wordmark monocromático de «Acerca de» en recordatorios.
+Última actualización: 2 de noviembre de 2026 · Cambio de Propuesta a Agendada y recordatorios desde tarjeta.
 
+
+## Cambios v0.27.109 — cambio directo de Propuesta y recordatorios desde tarjeta
+
+- Tocar «Propuesta» confirma directamente a «Agendada», sin abrir las opciones de estado. Tocar «Agendada» abre el menú habitual con Realizada, Diferida y otros estados. Funciona en tarjetas y en el editor del espacio compartido autorizado.
+- Se registra la aceptación en el historial, se conserva el resto del evento y se sincroniza el estado confirmado.
+- El metadato de recordatorio en la tarjeta abre un panel de edición rápida, consistente con los de fecha, hora y categoría. Permite elegir múltiples avisos, quitarlos o usar «Sin aviso», y ofrece acceso al editor completo para alertas personalizadas.
+- La configuración se guarda en `reminders`/`reminder` y activa la sincronización con las alarmas nativas. No modifica Cloudflare ni el esquema de datos.
+- Pendiente comprobar en ambos roles, la lista de recordatorios y Obtenerium.
 
 ## Cambios v0.27.108 — wordmark monocromático en recordatorios
 
@@ -180,7 +188,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.108** (`versionCode 189`).
+- Versión del código Android: **0.27.109** (`versionCode 190`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

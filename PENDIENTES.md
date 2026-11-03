@@ -1,10 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · v0.27.108 pendiente de revisión visual en Android.
+Última revisión: 2 de noviembre de 2026 · Cambios v0.27.109 pendientes de validación.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.109 · Estado:** pulsar Propuesta en tarjeta y editor, comprobar cambio inmediato a Agendada; segundo toque abre opciones. Validar autorización, sincronización e historial.
+- [ ] **v0.27.109 · Recordatorio:** pulsar el metadato de alerta de la tarjeta; comprobar selección múltiple, «Sin aviso», persistencia y acceso a opciones personalizadas.
+- [ ] **v0.27.109 · Alarmas:** verificar que añadir o quitar avisos desde la tarjeta actualiza las alarmas de Android sin duplicados.
+- [ ] **v0.27.109 · Obtainium:** comprobar APK firmada y actualización preservando datos.
+
 
 - [ ] **v0.27.108 · Identidad monocromática:** verificar que el encabezado individual y múltiple usa exactamente el acabado negro de «Acerca de», sin tonos originales y con opacidad discreta; flecha y proporciones intactas.
 - [ ] **v0.27.108 · Obtainium:** verificar firma, publicación y actualización sin pérdida de datos.

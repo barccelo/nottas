@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.109 — 2 de noviembre de 2026
+
+- Un toque en Propuesta cambia inmediatamente a Agendada; desde Agendada aparece la lista habitual de estados. Disponible en tarjeta y editor.
+- El recordatorio de la tarjeta se convierte en un control pulsable con selección de múltiples alertas y acceso al editor completo.
+- Conservar el historial, los datos del evento y los mecanismos existentes de sincronización y alarmas.
+- Publicación de APK firmada para Obtainium.
+
+
 ## 0.27.108 — 2 de noviembre de 2026
 
 - El wordmark de los recordatorios usa el tratamiento monocromático negro con opacidad 78 % de Ajustes → «Acerca de», sin alterar el trazado original de las letras.

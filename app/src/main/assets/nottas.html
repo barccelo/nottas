@@ -3237,6 +3237,10 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       <div id="cardMetaStatusHint" class="cardMetaHint">Elige el estado del evento.</div>
       <div id="cardMetaStatusOptions" class="cardMetaStatusOptions"></div>
     </div>
+    <div id="cardMetaReminder" class="cardMetaPanel hidden">
+      <div id="cardMetaReminderHint" class="cardMetaHint">Selecciona uno o varios avisos.</div>
+      <div id="cardMetaReminderOptions" class="cardMetaStatusOptions" role="group" aria-label="Recordatorios del evento"></div>
+    </div>
   </div>
 </div>
 
@@ -6641,21 +6645,39 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     if(!cardMetaContext||cardMetaContext.source==="editor")return null;
     return state.tasks.find(t=>t.id===cardMetaContext.taskId&&!t.deletedAt&&t.workspaceId===cardMetaContext.workspaceId)||null;
   }
+  // Confirm a proposal with one tap; subsequent taps on Agendada show the menu.
+  function acceptProposedCardTask(t){
+    if(!t||t.deletedAt||!itemInActiveWorkspace(t)||!isSharedWorkspace()||
+       !["owner","assistant"].includes(currentWorkspaceRole()))return false;
+    if((t.approvalStatus||"confirmed")!=="proposed"||
+       (t.meetingStatus||"scheduled")!=="scheduled")return false;
+    const before=meetingScheduleSnapshot(t);
+    t.approvalStatus="confirmed";t.requiresApproval=false;
+    t.meetingTracked=true;t.meetingStatus="scheduled";
+    t.meetingHistory=(Array.isArray(t.meetingHistory)?t.meetingHistory:[]).slice(-49).concat([{
+      at:Date.now(),by:currentUserId(),action:"Agendada",from:before,
+      to:meetingScheduleSnapshot(t),note:t.meetingNote||""
+    }]);
+    touch(t);scheduleSave();render();showToast("Evento agendado");
+    return true;
+  }
   function openCardMeta(task,part,source="card"){
-    if(!["date","time","category","status"].includes(part))return;
+    if(!["date","time","category","status","reminder"].includes(part))return;
+    if(part==="status"&&source==="card"&&acceptProposedCardTask(task))return;
     if(source!=="editor"&&(!task||!itemInActiveWorkspace(task)))return;
     if(source==="editor"&&!["category","status"].includes(part))return;
     hideMetadataKeyboard();
     cardMetaContext={source,part,taskId:task?.id||"",workspaceId:task?.workspaceId||currentWorkspaceId()};
     cardMetaCancelArmed="";
-    const labels={date:"Fecha",time:"Hora",category:"Categoría",status:"Estado del evento"};
+    const labels={date:"Fecha",time:"Hora",category:"Categoría",status:"Estado del evento",reminder:"Recordatorio"};
     $("cardMetaHeading").textContent=labels[part];
     $("cardMetaCaption").textContent=source==="editor"?"Herramientas del evento":"Editar sin abrir la tarjeta";
-    for(const k of ["Date","Time","Category","Status"])$("cardMeta"+k).classList.toggle("hidden",k.toLowerCase()!==part);
+    for(const k of ["Date","Time","Category","Status","Reminder"])$("cardMeta"+k).classList.toggle("hidden",k.toLowerCase()!==part);
     if(part==="date")$("cardMetaDateInput").value=task?.dueDate||localDateISO();
     if(part==="time")$("cardMetaTimeInput").value=task?.dueTime||"09:00";
     if(part==="category")renderCardMetaCategories();
     if(part==="status")renderCardMetaStatuses();
+    if(part==="reminder")renderCardMetaReminders();
     openOverlay("cardMetaOverlay");
     // Focus a non-text control, avoiding Android IME reopening.
     $("cardMetaClose").focus({preventScroll:true});
@@ -6685,6 +6707,48 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       closeCardMeta();
     }));
     $("cardMetaNewCategory").classList.toggle("hidden",currentWorkspace()?.kind!=="assistant");
+  }
+  function renderCardMetaReminders(){
+    const task=cardMetaTask(),box=$("cardMetaReminderOptions");
+    box.replaceChildren();if(!task)return;
+    const selected=taskReminderOffsets(task),set=new Set(selected);
+    $("cardMetaReminderHint").textContent=task.dueDate?
+      "Selecciona uno o varios avisos. Los cambios se guardan automáticamente.":
+      "Configura los avisos; añade una fecha para que puedan activarse.";
+    const preset=[0,5,10,15,30,60,1440];
+    const options=[{value:null,label:"Sin aviso"},...[...preset,...selected.filter(n=>!preset.includes(n))].map(n=>({value:n,label:reminderMinutesLabel(n)}))];
+    for(const option of options){
+      const active=option.value===null?!selected.length:set.has(option.value);
+      const button=document.createElement("button");
+      button.type="button";button.className="cardMetaStatusChoice cardMetaReminderChoice";
+      button.setAttribute("aria-pressed",String(active));
+      button.innerHTML='<span>'+esc(option.label)+'</span>'+
+        '<span class="stateIndicator" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m3 8 3.4 3.4L13 4.6"/></svg></span>';
+      button.addEventListener("click",()=>{
+        const task=cardMetaTask();if(!task)return;
+        const current=new Set(taskReminderOffsets(task));
+        if(option.value===null)current.clear();
+        else if(current.has(option.value))current.delete(option.value);
+        else current.add(option.value);
+        const updated=normalizeReminderMinutes([...current]);
+        task.reminders=updated;
+        task.reminder=updated.length?reminderMinutesToLegacy(updated[0]):"none";
+        touch(task);scheduleSave();render();
+        if(updated.length&&task.dueDate)requestReminderPermission();
+        renderCardMetaReminders();
+      });
+      box.appendChild(button);
+    }
+    const more=document.createElement("button");
+    more.type="button";more.className="cardMetaSecondary";
+    more.textContent="Más opciones de recordatorio";
+    more.addEventListener("click",()=>{
+      const task=cardMetaTask();if(!task)return;
+      closeCardMeta();openTask(task);
+      taskReminderPanelOpen=true;syncTaskInlineForm();
+      $("taskInlineReminderOptions").scrollIntoView({block:"nearest"});
+    });
+    box.appendChild(more);
   }
   function commitCardMetaSchedule(value){
     const ctx=cardMetaContext,t=cardMetaTask();
@@ -6824,7 +6888,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       time?'<button type="button" class="taskMetaAction taskMetaItem" data-card-meta="time" aria-label="Cambiar hora: '+esc(time)+'">'+taskMetaSvg("clock")+esc(time)+'</button>':""].filter(Boolean).join("");
     const context=[
       '<button class="taskMetaAction taskMetaItem taskMetaSubtle" type="button" data-card-meta="category" aria-label="Cambiar categoría: '+esc(catName(t.category))+'">'+categorySymbolHtml(cat(t.category))+esc(catName(t.category))+'</button>',
-      taskReminderOffsets(t).length?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("bell")+esc(reminderMinutesLabel(taskReminderOffsets(t)[0]))+'</span>':"",
+      taskReminderOffsets(t).length?'<button type="button" class="taskMetaAction taskMetaItem taskMetaSubtle" data-card-meta="reminder" aria-label="Editar recordatorios: '+esc(taskReminderOffsets(t).map(reminderMinutesLabel).join(", "))+'">'+taskMetaSvg("bell")+esc(reminderMinutesLabel(taskReminderOffsets(t)[0]))+'</button>':"",
       t.locationText?'<span class="taskMetaItem taskMetaSubtle">'+taskMetaSvg("pin")+esc(t.locationText)+'</span>':"",
       t.priority!=="normal"?'<span class="taskMetaItem taskMetaSubtle '+esc(t.priority)+'">'+esc(priorityLabel(t.priority))+'</span>':"",
       t.items?.length?'<span class="taskMetaItem taskMetaSubtle">'+esc(subtaskProgress(t))+'</span>':"",
@@ -10012,7 +10076,21 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   $("taskLocation").addEventListener("change",commitTaskHistory);
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
   $("assistantTaskStatus").addEventListener("click",()=>{
-    if(!$("assistantTaskStatus").disabled)openCardMeta(null,"status","editor");
+    if($("assistantTaskStatus").disabled)return;
+    if(editorTaskApprovalStatus==="proposed"&&editorMeetingStatus==="scheduled"){
+      commitTaskHistory();
+      editorTaskApprovalStatus="confirmed";
+      editorTaskRequiresApproval=false;
+      editorMeetingTracked=true;
+      editorMeetingStatus="scheduled";
+      editorMeetingStatusChanged=true;
+      syncAssistantTaskStrip();
+      persistOpenTask(false);
+      renderMeetingFollowup();commitTaskHistory();
+      showToast("Evento agendado");
+      return;
+    }
+    openCardMeta(null,"status","editor");
   });
   const meetingCheck=$("taskDoneBtn");
   let meetingPressTimer=null,meetingPressStartX=0,meetingPressStartY=0,meetingPressFired=false,meetingPressUntil=0;
