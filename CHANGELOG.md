@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.113 — 3 de noviembre de 2026
+
+- Integración transversal de Nottas Design System 1.3: tokens y estilo compartido (`design-system.css`) para tarjetas, listas, calendario, propuestas, paneles, navegación y ajustes.
+- Tarjetas con geometría unificada, jerarquía tipográfica coherente, rellenos y separación normalizados, preservando el layout especial de la cuadrícula temporal y los gestos.
+- Checks circulares consistentes en tareas, notas, subtareas y filas de calendario; controles de encabezado y filtros más uniformes.
+- Eliminación de textos explicativos repetitivos en Ajustes, navegación, formularios, filtros y ayudas. Se mantienen restricciones, estados y advertencias útiles.
+- Catálogo de Componentes vinculado a los tokens de producción, y `DESIGN_SYSTEM.md` ampliado con regla editorial de concisión y pruebas de compatibilidad.
+- Sin cambios del esquema de datos, la nube ni la sincronización. Pendiente validación visual de dispositivo Android.
+
 ## 0.27.112 — 3 de noviembre de 2026
 
 - Nottas Design System 1.2: ruedas de hora más ligeras, menor carga visual, selección por tipografía y contraste sin recuadro azul.
