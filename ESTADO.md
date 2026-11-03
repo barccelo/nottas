@@ -11,9 +11,6 @@
 - La tipografía Inter y la biblioteca Lucide siguen en evaluación: NO se han incorporado sus archivos ni migrado los componentes de producción.
 - Pendiente validar en Android el iframe de la galería, scroll, controles interactivos, temas, vuelta atrás, y confirmar APK firmada/Obtainium.
 
-Última actualización: 2 de noviembre de 2026 · Cambio de Propuesta a Agendada y recordatorios desde tarjeta.
-
-
 ## Cambios v0.27.109 — cambio directo de Propuesta y recordatorios desde tarjeta
 
 - Tocar «Propuesta» confirma directamente a «Agendada», sin abrir las opciones de estado. Tocar «Agendada» abre el menú habitual con Realizada, Diferida y otros estados. Funciona en tarjetas y en el editor del espacio compartido autorizado.
