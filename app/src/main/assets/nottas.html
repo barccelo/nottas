@@ -6236,8 +6236,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   function calendarPeriodText(){
     if(calendarView==="day")return calendarDateLabel(calendarDate,{weekday:"long",day:"numeric",month:"long"});
     if(calendarView==="week"){const start=mondayOf(calendarDate),end=addCalendarDays(start,6);return calendarDateLabel(start,{day:"numeric",month:"short"})+" – "+calendarDateLabel(end,{day:"numeric",month:"short"});}
-    if(calendarView==="agenda")return "Agenda · "+calendarDateLabel(calendarDate,{month:"long",year:"numeric"});
-    return calendarDateLabel(calendarDate,{month:"long",year:"numeric"});
+    const month=dateFromISO(calendarDate),label=nottasMonthYear(month.getFullYear(),month.getMonth());
+    if(calendarView==="agenda")return "Agenda · "+label;
+    return label;
   }
   function renderCalendarMonth(){
     const selected=dateFromISO(calendarDate),first=new Date(selected.getFullYear(),selected.getMonth(),1,12),offset=(first.getDay()+6)%7,start=new Date(first);start.setDate(first.getDate()-offset);
