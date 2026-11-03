@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.112 — 3 de noviembre de 2026
+
+- Nottas Design System 1.2: ruedas de hora más ligeras, menor carga visual, selección por tipografía y contraste sin recuadro azul.
+- Calendario del catálogo con encabezado de mes/año pulsable y selector secundario por ruedas para mes/día/año, con desplazamiento y toque.
+- Editor de tareas/eventos: nuevo selector detallado en el mes de la fecha, confirmación «Listo» con validación existente y formato de mes/año sin «de».
+- Encabezados del calendario Mes/Agenda con formato limpio «Noviembre 2026».
+- Encabezados nativos de recordatorios alineados en altura, márgenes, espaciado y centro óptico del wordmark.
+- Documentadas las reglas de posicionamiento, eje y simetría en `DESIGN_SYSTEM.md`. Sin cambios de esquema de datos, sincronización ni servicios.
+
 ## 0.27.111 — 3 de noviembre de 2026
 
 - Catálogo ampliado con prototipo de selector de hora: ruedas independientes, scroll-snap vertical, entrada numérica del valor central y reinicio a 09:30.
