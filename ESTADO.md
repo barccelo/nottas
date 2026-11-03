@@ -1,6 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 3 de noviembre de 2026 · Nottas Design System 1.2, selectores ligeros y alineación.
+Última actualización: 3 de noviembre de 2026 · Design System 1.3 integrado en las pantallas operativas.
+
+## Cambios v0.27.113 — unificación visual y depuración editorial
+
+- Nuevo archivo local `app/src/main/assets/design-system.css` cargado después de los estilos históricos y compartido con el catálogo `componentes.html`.
+- Tokens de colores (claro/oscuro), radios, superficies, tipografía, separación y geometría de encabezados aplicados transversalmente a listas de notas/tareas, filas del calendario, propuestas, paneles de equipo y Ajustes.
+- Checks de calendario, notas y subtareas normalizados a diseño circular azul, manteniendo su lógica y gestos existentes. Editor de tareas: ejes visuales comunes de volver/check/título/estrella.
+- Eliminados más de 40 textos redundantes o instructivos de Ajustes, navegación lateral, filtros, ayudas del editor y vistas compartidas. Permanecen las advertencias y estados necesarios.
+- Catálogo visual sincronizado con los tokens de producción y actualizado a Design System 1.3. `DESIGN_SYSTEM.md` incorpora norma editorial de textos breves y excepciones funcionales de layout.
+- Queda pendiente validar visualmente en Android, especialmente tema oscuro, controles pequeños, desplazamientos y apertura de recordatorios; no hay cambios de datos, sincronización ni servicios.
 
 ## Cambios v0.27.112 — Design System 1.2
 
