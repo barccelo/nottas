@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.111 — 3 de noviembre de 2026
+
+- Catálogo ampliado con prototipo de selector de hora: ruedas independientes, scroll-snap vertical, entrada numérica del valor central y reinicio a 09:30.
+- Selector de fecha mensual con navegación, selección y acción «Hoy».
+- Muestra de botones para las vistas Día, Semana, Mes y Agenda, sin cambiar las vistas reales del calendario.
+- Ambos selectores son locales, demostrativos y aislados de los eventos, recordatorios, sincronización y preferencias de Nottas. Pendiente validar en Android y confirmar publicación por Obtainium.
+
 ## 0.27.110 — 3 de noviembre de 2026
 
 - Añadido laboratorio de componentes en Ajustes → Acerca de Nottas, con seis familias de referencia: tipografía, iconos, botones, selección, tarjetas y colores.
