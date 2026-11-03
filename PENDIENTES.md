@@ -1,6 +1,15 @@
 # Pendientes de Nottas
 
-Última revisión: 3 de noviembre de 2026 · Laboratorio de identidad visual v0.27.110 pendiente de validación.
+Última revisión: 3 de noviembre de 2026 · Laboratorio visual ampliado v0.27.111 pendiente de validación.
+
+## Prioridad inmediata — selectores del laboratorio v0.27.111
+
+- [ ] **Rueda de hora:** comprobar scroll vertical lento/rápido y centrado exacto de horas/minutos.
+- [ ] **Edición directa:** tocar el número central, editar de 00–23 y 00–59, confirmar, cancelar y usar el teclado sin que salte el valor.
+- [ ] **Fecha:** avanzar/retroceder meses y años, pulsar días contiguos y «Hoy», comprobar selección y año bisiesto.
+- [ ] **Temas:** verificar ambos selectores en claro/oscuro y en un teléfono de pantalla estrecha.
+- [ ] **Aislamiento:** comprobar que las vistas de muestra no alteran el calendario real, las alarmas, el tema ni los datos guardados.
+- [ ] **Obtainium:** verificar APK firmada, publicación, actualización y conservación de datos.
 
 ## Prioridad inmediata — Nottas Design System
 
