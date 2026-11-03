@@ -2132,6 +2132,37 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
 #list.taskChronologicalList > .taskGroupHourHeader{margin:0 4px;min-height:26px}
 #list.taskChronologicalList > .taskGroupHourHeader.isUntimed{min-height:23px}
 #list.taskChronologicalList > .taskGroupHourHeader + .swipeRow{margin-top:0}
+
+/* Design System 1.2: light wheels and shared alignment rules. */
+:root{--ns-header-touch:44px;--ns-header-gap:8px;--ns-picker-subtle:#c0c0c6}
+.timePickerSheet .timeWheelColumn::before{background:transparent!important}
+.timePickerSheet .timeWheelItem{color:var(--ns-picker-subtle);font-weight:430}
+.timePickerSheet .timeWheelItem.selected{font-weight:690}
+.timePickerSheet .timePartInput,.timePickerSheet .timePartInput:focus{border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important}
+.timePickerSheet .timePartInput::selection{background:rgba(118,118,128,.18)}
+#editorOverlay .taskInlineWheelSelection{background:transparent!important}
+#editorOverlay .taskInlineWheelItem{color:var(--ns-picker-subtle);font-weight:420}
+#editorOverlay .taskInlineWheelItem.selected{color:#1d1d1f;font-size:26px;font-weight:680}
+html[data-theme="dark"] #editorOverlay .taskInlineWheelItem.selected{color:#f5f5f7}
+#editorOverlay .taskInlineWheelEdit::selection{background:rgba(118,118,128,.2)}
+#editorOverlay .taskInlinePanelHead{grid-template-columns:44px minmax(0,1fr) 44px;min-height:44px;align-items:center}
+#editorOverlay .taskInlineMiniBtn{display:grid;place-items:center;width:44px;height:44px;background:transparent;color:inherit;border-radius:50%;padding:10px}
+#editorOverlay .taskInlinePanelHead #taskInlineMonthLabel{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;width:100%;padding:4px;border:0;background:transparent;border-radius:10px;color:inherit;font-size:14px;font-weight:650;white-space:nowrap}
+#editorOverlay .taskInlinePanelHead #taskInlineMonthLabel svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;transition:transform .16s}
+#editorOverlay .taskInlinePanelHead #taskInlineMonthLabel[aria-expanded="true"] svg{transform:rotate(180deg)}
+#editorOverlay .taskInlineCalendarGrid button{font-size:12px}
+#editorOverlay .taskInlineCalendarGrid button.selected,#editorOverlay .taskInlineCalendarGrid button.rangeStart,#editorOverlay .taskInlineCalendarGrid button.rangeEnd{border-radius:50%}
+.taskInlineDetailedDate.hidden,.taskInlineDateMonthView.hidden{display:none!important}
+.taskInlineDetailWheels{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.8fr) minmax(0,1.15fr);gap:5px;align-items:center;max-width:360px;margin:0 auto}
+.taskInlineDateWheel{height:184px;min-width:0;overflow-y:auto;scrollbar-width:none;scroll-snap-type:y mandatory;overscroll-behavior:contain;padding:70px 0;-webkit-overflow-scrolling:touch}
+.taskInlineDateWheel::-webkit-scrollbar{display:none}
+.taskInlineDateWheel button{display:flex;align-items:center;justify-content:center;width:100%;height:44px;min-height:44px;scroll-snap-align:center;background:transparent;border:0;color:#bcbcc3;font-size:18px;font-weight:420;font-variant-numeric:tabular-nums}
+.taskInlineDateWheel button[aria-selected="true"]{color:#1d1d1f;font-size:23px;font-weight:700}
+html[data-theme="dark"] .taskInlineDateWheel button[aria-selected="true"]{color:#f5f5f7}
+.taskInlineDetailDone{display:flex;justify-content:flex-end;margin:7px 0 0}
+.taskInlineDetailDone button{min-height:42px;border:0;border-radius:11px;background:#f2f2f7;color:#1d1d1f;padding:0 18px;font-size:13px;font-weight:650}
+html[data-theme="dark"] .taskInlineDetailDone button{background:#303035;color:#f5f5f7}
+
 /* Nottas Design System 1.0: isolated component laboratory. */
 #settingsOverlay .dsCatalogScreen{padding:0;overflow:hidden;min-height:0}
 #settingsOverlay .dsCatalogScreen iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:#f5f5f7;border-radius:13px}
@@ -2557,10 +2588,20 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
             </div>
           </div>
           <div id="taskInlineDatePanel" class="taskInlineExpand hidden"><div id="taskInlineDateHint" class="taskInlineDateHint">Selecciona el primer día</div>
-            <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"></path></svg></button><strong id="taskInlineMonthLabel"></strong><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"></path></svg></button></div>
+            <div class="taskInlinePanelHead"><button id="taskInlineMonthPrev" class="taskInlineMiniBtn" type="button" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6"></path></svg></button><button id="taskInlineMonthLabel" type="button" class="taskInlineMonthHeader" aria-label="Seleccionar mes, día y año" aria-expanded="false" aria-controls="taskInlineDetailedDate"></button><button id="taskInlineMonthNext" class="taskInlineMiniBtn" type="button" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"></path></svg></button></div>
+            <div id="taskInlineDateMonthView" class="taskInlineDateMonthView">
             <div class="taskInlineWeekdays"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
             <div id="taskInlineCalendarGrid" class="taskInlineCalendarGrid"></div>
             <div class="taskInlineQuickRow"><button id="taskInlineToday" type="button">Hoy</button><button id="taskInlineTomorrow" type="button">Mañana</button><button id="taskInlineClearDate" type="button">Sin fecha</button><button id="taskInlineSingleDay" type="button">Solo un día</button></div>
+            </div>
+            <div id="taskInlineDetailedDate" class="taskInlineDetailedDate hidden" aria-label="Selector de mes, día y año">
+              <div class="taskInlineDetailWheels">
+                <div id="taskInlineDetailMonth" class="taskInlineDateWheel" role="listbox" aria-label="Mes" tabindex="0"></div>
+                <div id="taskInlineDetailDay" class="taskInlineDateWheel" role="listbox" aria-label="Día" tabindex="0"></div>
+                <div id="taskInlineDetailYear" class="taskInlineDateWheel" role="listbox" aria-label="Año" tabindex="0"></div>
+              </div>
+              <div class="taskInlineDetailDone"><button id="taskInlineDetailApply" type="button">Listo</button></div>
+            </div>
           </div>
           <div id="taskInlineTimePanel" class="taskInlineExpand hidden">
             <div class="taskInlineWheelWrap">
@@ -3341,7 +3382,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="soon",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false,assistantDeliveryWarningShown=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -8349,7 +8390,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
     $("taskInlineTimePanel").classList.toggle("hidden",taskInlineOpenPanel!=="time");
     if(taskInlineOpenPanel!=="time")finishInlineWheelEdit();
+    if(taskInlineOpenPanel!=="date")taskInlineDetailedOpen=false;
     if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
+    syncTaskInlineDetailVisibility();
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
   }
@@ -8371,7 +8414,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   function renderTaskInlineCalendar(){
     const host=$("taskInlineCalendarGrid");if(!host)return;
     const y=taskInlineMonth.getFullYear(),m=taskInlineMonth.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);
-    $("taskInlineMonthLabel").textContent=new Date(y,m,1).toLocaleDateString("es",{month:"long",year:"numeric"});
+    $("taskInlineMonthLabel").innerHTML=esc(nottasMonthYear(y,m))+' <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
     const selected=$("taskDate").value,last=$("taskEndDate").value,today=localDateISO();
     $("taskInlineDateHint").textContent=taskInlineDateTarget==="end"?"Selecciona el último día (incluido)":"Selecciona el primer día";
     $("taskInlineSingleDay").classList.toggle("hidden",!last);
@@ -8757,6 +8800,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   }
   function handleEditorBack(){
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
+    if(taskInlineDetailedOpen&&taskInlineOpenPanel==="date"){taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();return true}
     if(closeOpenEditorPanel())return true;
     const taskTools=$("taskRichToolbar"),noteTools=$("richToolbar");
     if(taskTools&&!taskTools.classList.contains("hidden")){taskTools.classList.add("hidden");return true}
