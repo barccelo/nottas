@@ -1,6 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 3 de noviembre de 2026 · Laboratorio de identidad visual Nottas Design System 1.0.
+Última actualización: 3 de noviembre de 2026 · Laboratorio Nottas Design System 1.1, selectores de hora y calendario.
+
+## Cambios v0.27.111 — selectores de hora y fecha en el laboratorio
+
+- El catálogo «Componentes de Nottas» incorpora una rueda de horas/minutos con scroll-snap y edición directa del valor central, además de un selector mensual de fecha con navegación, «Hoy» y selección de día.
+- Se añaden botones de muestra para Día/Semana/Mes/Agenda, exclusivamente como referencia gráfica. Las vistas de calendario reales y los selectores de producción no se modifican.
+- Todo es local y demostrativo: no cambia eventos, alarmas, ajustes de tema, sincronización ni datos de usuario.
+- Pendiente verificar en Android el desplazamiento, edición, selector mensual, adaptación a pantallas estrechas, temas, navegación y publicación firmada por Obtainium.
 
 ## Cambios v0.27.110 — catálogo de componentes (fase 1)
 
