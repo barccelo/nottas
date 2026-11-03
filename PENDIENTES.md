@@ -1,6 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 3 de noviembre de 2026 · Design System v0.27.112, pruebas Android pendientes.
+Última revisión: 3 de noviembre de 2026 · Design System 1.3 (v0.27.113) pendiente de validación en Android.
+
+## Prioridad inmediata — v0.27.113
+
+- [ ] **Pantallas:** comparar tarjetas de tareas/notas, filas de calendario, propuestas, Ajustes, barra lateral, equipo y filtros para verificar radios, rellenos, tipografía y alineación.
+- [ ] **Checks:** comprobar círculos en subtareas, notas con listas y filas del calendario en ambos temas, incluido estado completado.
+- [ ] **Gestos:** editar/eliminar por swipe, arrastrar subtareas, abrir tarjetas, pulsar metadatos y navegar el calendario sin interferencias de CSS.
+- [ ] **Encabezados:** flecha y texto en el mismo eje; verificar tamaños mínimos, diálogos, recordatorios nativos, tareas y notas.
+- [ ] **Estética:** revisar contraste y colores semánticos, textos largos, pantallas estrechas, teclado y modo oscuro.
+- [ ] **Copy:** comprobar que ayudas redundantes no reaparecen por renderizado dinámico; se conservan estados y advertencias de datos, roles y sincronización.
+- [ ] **Publicación:** validar compilación, firma, Release v0.27.113 y Obtainium manteniendo los datos.
+- [ ] **Próximas adopciones:** reducir CSS histórico duplicado con pruebas, evaluar recursos Inter/Lucide empaquetados localmente si se aprueban.
 
 ## Prioridad inmediata — v0.27.112
 
