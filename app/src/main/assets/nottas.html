@@ -8411,6 +8411,80 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(value>start&&!editorTaskReminders.length)setEditorTaskReminders([0],false);
     syncTaskEditorMeta();commitTaskHistory();return true;
   }
+
+  // Design System 1.2: month-day-year selector, isolated until confirmation.
+  const nottasMonthNames=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const nottasMonthShort=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+  function nottasMonthYear(y,m){const n=nottasMonthNames[m];return n[0].toUpperCase()+n.slice(1)+" "+y}
+  function syncTaskInlineDetailVisibility(){
+    $("taskInlineDateMonthView").classList.toggle("hidden",taskInlineDetailedOpen);
+    $("taskInlineDetailedDate").classList.toggle("hidden",!taskInlineDetailedOpen);
+    $("taskInlineMonthLabel").setAttribute("aria-expanded",String(taskInlineDetailedOpen));
+  }
+  function makeTaskInlineDetailedWheel(id,values,selected,onValue){
+    const old=$(id),host=old.cloneNode(false);old.replaceWith(host);
+    host.innerHTML=values.map(v=>'<button type="button" role="option" aria-selected="'+(v.value===selected)+'" data-value="'+v.value+'">'+esc(v.label)+'</button>').join("");
+    let current=selected,scrollTimer=0;
+    host.scrollTop=Math.max(0,values.findIndex(v=>v.value===selected))*44;
+    function select(value){
+      if(current===value)return;
+      current=value;
+      host.querySelectorAll("button").forEach(btn=>btn.setAttribute("aria-selected",String(Number(btn.dataset.value)===value)));
+      onValue(value);
+    }
+    host.addEventListener("scroll",()=>{
+      clearTimeout(scrollTimer);
+      scrollTimer=setTimeout(()=>{
+        if(!host.isConnected)return;
+        const i=Math.max(0,Math.min(values.length-1,Math.round(host.scrollTop/44)));
+        select(values[i].value);
+      },110);
+    });
+    host.addEventListener("click",e=>{
+      const btn=e.target.closest("button[data-value]");if(!btn)return;
+      const value=Number(btn.dataset.value),i=values.findIndex(v=>v.value===value);
+      host.scrollTo({top:i*44,behavior:"smooth"});select(value);
+    });
+    host.addEventListener("keydown",e=>{
+      if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
+      e.preventDefault();
+      const i=values.findIndex(v=>v.value===current);
+      const next=Math.max(0,Math.min(values.length-1,i+(e.key==="ArrowDown"?1:-1)));
+      host.scrollTop=next*44;select(values[next].value);
+    });
+  }
+  function renderTaskInlineDetailedDate(){
+    if(!taskInlineDetailedOpen)return;
+    const date=taskInlineDetailDraft,y=date.getFullYear(),m=date.getMonth();
+    const months=nottasMonthShort.map((label,value)=>({label,value}));
+    const days=Array.from({length:new Date(y,m+1,0).getDate()},(_,i)=>({value:i+1,label:String(i+1).padStart(2,"0")}));
+    const years=Array.from({length:201},(_,i)=>({value:1900+i,label:String(1900+i)}));
+    const change=(part,value)=>{
+      const year=part==="year"?value:taskInlineDetailDraft.getFullYear();
+      const month=part==="month"?value:taskInlineDetailDraft.getMonth();
+      const day=part==="day"?value:taskInlineDetailDraft.getDate();
+      taskInlineDetailDraft=new Date(year,month,Math.min(day,new Date(year,month+1,0).getDate()));
+      taskInlineMonth=new Date(year,month,1);
+      renderTaskInlineCalendar();
+      renderTaskInlineDetailedDate();
+    };
+    makeTaskInlineDetailedWheel("taskInlineDetailMonth",months,m,v=>change("month",v));
+    makeTaskInlineDetailedWheel("taskInlineDetailDay",days,date.getDate(),v=>change("day",v));
+    makeTaskInlineDetailedWheel("taskInlineDetailYear",years,y,v=>change("year",v));
+  }
+  function toggleTaskInlineDetailedDate(open){
+    taskInlineDetailedOpen=!!open;
+    if(open){
+      const iso=taskInlineDateTarget==="end"?$("taskEndDate").value||$("taskDate").value:$("taskDate").value;
+      const source=iso?dateFromISO(iso):taskInlineMonth;
+      taskInlineDetailDraft=new Date(source.getFullYear(),source.getMonth(),source.getDate());
+      taskInlineMonth=new Date(source.getFullYear(),source.getMonth(),1);
+      renderTaskInlineCalendar();
+    }
+    syncTaskInlineDetailVisibility();
+    if(open)requestAnimationFrame(renderTaskInlineDetailedDate);
+  }
+
   function renderTaskInlineCalendar(){
     const host=$("taskInlineCalendarGrid");if(!host)return;
     const y=taskInlineMonth.getFullYear(),m=taskInlineMonth.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,start=new Date(y,m,1-offset);
@@ -10099,8 +10173,23 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   }
   $("taskInlineStartBtn").addEventListener("click",()=>toggleInlineTimePanelFor("start"));
   $("taskInlineEndBtn").addEventListener("click",()=>toggleInlineTimePanelFor("end"));
-  $("taskInlineMonthPrev").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()-1,1);renderTaskInlineCalendar()});
-  $("taskInlineMonthNext").addEventListener("click",()=>{taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+1,1);renderTaskInlineCalendar()});
+  $("taskInlineMonthLabel").addEventListener("click",()=>toggleTaskInlineDetailedDate(!taskInlineDetailedOpen));
+  $("taskInlineDetailApply").addEventListener("click",()=>{
+    const iso=localDateISO(taskInlineDetailDraft);
+    if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(iso))return}
+    else setTaskInlineDate(iso);
+    taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();setTaskInlinePanel("");
+  });
+  function stepTaskInlineMonth(delta){
+    taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+delta,1);
+    if(taskInlineDetailedOpen){
+      const y=taskInlineMonth.getFullYear(),m=taskInlineMonth.getMonth();
+      taskInlineDetailDraft=new Date(y,m,Math.min(taskInlineDetailDraft.getDate(),new Date(y,m+1,0).getDate()));
+    }
+    renderTaskInlineCalendar();if(taskInlineDetailedOpen)renderTaskInlineDetailedDate();
+  }
+  $("taskInlineMonthPrev").addEventListener("click",()=>stepTaskInlineMonth(-1));
+  $("taskInlineMonthNext").addEventListener("click",()=>stepTaskInlineMonth(1));
   ["hour","minute"].forEach((name,part)=>{
     const input=inlineWheelEditingInput(part);
     input.addEventListener("input",()=>{input.value=input.value.replace(/\D/g,"").slice(0,2)});
