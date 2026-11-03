@@ -132,13 +132,16 @@ class ReminderActivity : Activity() {
                 setColorFilter(Color.BLACK, android.graphics.PorterDuff.Mode.SRC_IN)
                 alpha = 0.78f
                 scaleType = ImageView.ScaleType.FIT_CENTER
+                // The wordmark's visible paths sit below its vector viewport centre.
+                // Correct optical alignment with the back-arrow's 44dp touch target.
+                translationY = -dp(3).toFloat()
                 contentDescription = "Nottas"
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             }
             addView(
                 brand,
                 LinearLayout.LayoutParams(dp(84), dp(28)).apply {
-                    marginStart = dp(5)
+                    marginStart = dp(8)
                 }
             )
         }
@@ -164,12 +167,12 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val header = buildReminderHeader(dp(46))
+        val header = buildReminderHeader(dp(56))
         content.addView(
             header,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(46)
+                dp(56)
             )
         )
 
@@ -589,7 +592,7 @@ class ReminderActivity : Activity() {
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(28), dp(26), dp(28), dp(26))
+            setPadding(dp(20), dp(22), dp(20), dp(26))
         }
         root.addView(
             content,
@@ -599,12 +602,12 @@ class ReminderActivity : Activity() {
             )
         )
 
-        val header = buildReminderHeader(dp(54))
+        val header = buildReminderHeader(dp(56))
         content.addView(
             header,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(54)
+                dp(56)
             )
         )
 
