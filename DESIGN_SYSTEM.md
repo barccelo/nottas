@@ -1,6 +1,6 @@
-# Nottas Design System — 1.0 (laboratorio)
+# Nottas Design System — 1.2 (catálogo + adopción puntual)
 
-**Estado:** propuesta en revisión, no adoptada en toda la aplicación.  
+**Estado:** normas visuales en adopción progresiva. Rueda de hora, calendario del editor y encabezado de recordatorios tienen ajustes puntuales aplicados; el resto sigue pendiente.  
 **Inicio:** 3 de noviembre de 2026.  
 **Catálogo visual:** Ajustes → Acerca de Nottas → Componentes de Nottas.  
 **Archivo:** `app/src/main/assets/componentes.html`.  
@@ -27,6 +27,7 @@ Nottas conserva su identidad actual: sobria, limpia, orgánica, con calidad de d
 | 11 | Ventanas | Hojas inferiores, modales, diálogos, paneles |
 | 12 | Estados | Activo, seleccionado, pendiente, completado, diferido, error, deshabilitado |
 | 13 | Interacciones | Swipe, drag, feedback, animación, gestos, avisos a pantalla completa |
+| 14 | Posicionamiento | Ejes, márgenes, centros ópticos, safe areas, alineación de títulos y acciones |
 
 ## Fundamentos propuestos (pendientes de aprobación)
 
@@ -60,12 +61,49 @@ La pantalla «Componentes de Nottas» presenta seis módulos: (1) tipografía, (
 - Pendiente comprobar scroll rápido/lento, toque de edición directa, entrada de 00–23 y 00–59, selección de fechas entre años y meses, tamaños reducidos, tema oscuro, retorno y accesibilidad.
 - La evaluación de Vanilla Calendar/Ionic continúa siendo opcional: no se han introducido dependencias de terceros en esta ampliación.
 
+## Design System 1.2 — decisiones de posición y selectores (3 de noviembre de 2026)
+
+### Norma de posicionamiento y simetría
+
+La identidad gráfica incluye **dónde se coloca** cada componente, no solo cómo se dibuja:
+
+- **Rejilla:** múltiplos de 4 px para ritmo y alineación; espacios recurrentes 8/12/16/24 px. Evitar offsets individuales sin justificación óptica.
+- **Encabezado de pantalla:** altura visual de referencia **56 dp**, control de navegación con objetivo táctil **44 × 44 dp**, icono centrado geométricamente en su objetivo y separación fija **8 dp** respecto al inicio del título o wordmark. Alinear por eje vertical compartido antes de compensaciones.
+- **Alineación óptica:** cuando un recurso vectorial contiene espacio interno desigual, es admisible una corrección leve del propio recurso documentada; no desplazar por separado el botón y el título a ojo. En recordatorios, el wordmark tiene una corrección vertical de -3 dp por su viewport.
+- **Margen de contenido:** 16 px por defecto en vistas Web; 20 dp en los encabezados nativos de recordatorios actuales. El componente de encabezado gobierna su alineación; no usar márgenes ad hoc según pantalla.
+- **Anclajes:** flecha/título, fecha/hora, check/texto, icono/etiqueta y acciones comparten ejes estables. El centro óptico se prueba en pantallas reales con los dos temas.
+- **Safe areas/teclado:** respetar barras de sistema y área de navegación; controles flotantes no deben tapar campos ni acciones.
+- **Estado:** la regla del encabezado ya se aplica al recordatorio nativo. La unificación de todos los demás encabezados queda como migración posterior.
+
+### Selector de hora ligero
+
+- Rueda de dos columnas hora/minuto y separador centrado; selección indicada principalmente por peso y contraste.
+- **Sin recuadro azul** ni contenedor visual opaco alrededor del valor; los números adyacentes usan gris suave.
+- Conservar scroll vertical y edición directa tocando el valor central; durante la edición, selección de texto neutra, sin foco azul invasivo.
+- Aplicación puntual al prototipo y a la rueda real del formulario existente; conservar su lógica de confirmación y recordatorios.
+
+### Selector de fecha mensual y detallado
+
+- Vista mensual con encabezado **«Noviembre 2026»** (sin «de» y con mayúscula inicial), flechas de mes y día seleccionado circular.
+- Tocar el título de mes/año abre **ruedas de mes / día / año**, desplazables y pulsables, con tipografía de selección marcada y vecinos atenuados.
+- En la galería, todo es demostrativo; en el editor de tareas, **«Listo» confirma la fecha** mediante las funciones existentes de inicio/fin, respetando la validación del fin y el historial.
+- Soporte de 1900 a 2100 en las ruedas; los días se ajustan automáticamente al mes y a los años bisiestos. La navegación por meses sigue disponible.
+- La fecha en encabezados mensuales y Agenda usa el mismo formato sin «de». Las fechas largas en otras posiciones conservan su redacción natural en español.
+- No se altera el esquema de datos, la sincronización ni los recordatorios nativos.
+
+### Validación de esta entrega
+
+- [ ] Comprobar en Android la galería: hora sin fondo ni borde azul, calendario mensual, abrir/cerrar ruedas, elegir valores y «Hoy», modo claro/oscuro.
+- [ ] Comprobar en el editor de eventos/tareas: mes pulsable, selección mediante scroll/toque, «Listo», inicio/fin, límites, año bisiesto, retorno/back y ausencia de cambios hasta confirmar.
+- [ ] Comprobar encabezado de recordatorio simple y agrupado: alineación de flecha y wordmark, márgenes, barras y distintos tamaños.
+- [ ] Verificar teclado/IME, accesibilidad, áreas táctiles, dispositivo estrecho y ausencia de regresiones de guardado, alarma o sincronización.
+
 ## Fases pendientes
 
-1. Validar visualmente en teléfonos Android los seis módulos del laboratorio y ajustar proporciones, contraste, tipografía y variantes.
+1. Validar visualmente los ocho módulos del laboratorio, incluidos los selectores 1.2, corregir contraste, proporciones y comportamiento en dispositivos reales.
 2. Confirmar biblioteca de iconos y fuente; empaquetar recursos localmente con avisos de licencia aplicables.
 3. Crear tokens compartidos de CSS y funciones/componentes comunes, preservando los estilos existentes mientras se migra.
-4. Completar el catálogo de selectores con variantes de recordatorio/repetición y después añadir ventanas, encabezados y navegación; mantener intactos la rueda y el calendario de producción hasta validar.
+4. Completar los selectores de recordatorio/repetición; migrar encabezados y ventanas restantes bajo la norma posicional, sin modificar flujos ya validados.
 5. Migrar con pruebas: Inicio → notas/tareas → captura rápida → calendario → asistente → ajustes → recordatorios Android nativos.
 6. Comprobar consistencia visual, contraste, teclado, tamaños, gestos, rendimiento y sincronización; no introducir cambios funcionales accidentales.
 
