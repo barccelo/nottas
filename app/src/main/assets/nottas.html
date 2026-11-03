@@ -2539,7 +2539,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
             <svg class="taskDayChevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div id="taskDayDetails" class="taskDayDetails hidden">
-            <div class="taskDayHint">Toca cada día para marcarlo o desmarcarlo.</div>
+            
             <div id="taskDayButtons" class="taskDayButtons"></div>
           </div>
         </div>
@@ -3045,7 +3045,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
             <button id="teamShowCreate" type="button" class="teamMinorButton"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-plus"></use></svg><strong>Crear un equipo</strong><small>Nuevo espacio compartido</small></button>
             <button id="teamShowJoin" type="button" class="teamMinorButton"><svg class="nsIcon" viewBox="0 0 24 24" aria-hidden="true"><use href="#ns-enter"></use></svg><strong>Unirme a un equipo</strong><small>Introducir invitación</small></button>
           </div>
-          <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button><p class="teamHint">Podrás invitar al director y asignarle su rol.</p></div>
+          <div id="teamCreateForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceName">Nombre del equipo</label><input id="teamWorkspaceName" class="teamInput" maxlength="100" placeholder="Oficina"><button id="teamCreateWorkspace" class="btn primary full" type="button">Crear equipo</button></div>
           <div id="teamJoinForm" class="teamInlineForm hidden"><label class="teamLabel" for="teamWorkspaceCode">Código de invitación</label><input id="teamWorkspaceCode" class="teamInput" autocapitalize="characters" maxlength="16" placeholder="Código"><button id="teamJoinWorkspace" class="btn primary full" type="button">Unirme al equipo</button></div>
         </div>
         <div id="teamWorkspaceDetail" class="teamPanel teamWorkspaceDetailPanel hidden">
@@ -3118,7 +3118,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       </div>
       <details class="teamDiagnosticGroup teamDiagnosticDisclosure" id="teamAdminMaintenance">
         <summary>Administración avanzada de espacios</summary>
-        <p class="teamHint">Opciones excepcionales de gestión. Antes de eliminar, comprueba el espacio seleccionado y conserva una copia de seguridad.</p>
+        
         <div id="assistantDeleteSection" class="hidden" style="margin-top:12px">
       <div class="sectionTitle">Eliminar espacio de Cloudflare</div>
       <div class="assistantSectionHint">Solo el propietario puede eliminar un espacio compartido del servidor. Esta operación es definitiva y borra sus tareas compartidas, notas, historial de llamadas y, si lo tiene, la conexión Google Calendar. No afecta a otros espacios.</div>
@@ -3143,9 +3143,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       </details>
       <details class="teamDiagnosticGroup teamDiagnosticDisclosure" id="teamTechnicalDiagnostics">
         <summary>Configuración técnica</summary>
-        <p class="teamHint">Ajustes de compatibilidad y pruebas. Las funciones habituales de cuenta, equipo y calendarios están en las secciones principales.</p>
+        
         <div class="sectionTitle">Conexión al servidor</div>
-    <div class="assistantSectionHint">Opciones de soporte para la sesión y el servidor. No vuelvas a registrar una cuenta existente sin respaldo de su clave.</div>
+    <div class="assistantSectionHint">No vuelvas a registrar una cuenta existente sin respaldar su clave.</div>
     <div class="assistantGrid">
       <div class="field wide"><div class="label">URL del Worker</div><input id="assistantServerUrl" class="assistantInput" type="url" placeholder="https://nottas-assistant-api....workers.dev"></div>
       <div class="field wide"><div class="label">Tu nombre</div><input id="assistantDisplayName" class="assistantInput" type="text" maxlength="80" placeholder="Nombre"></div>
@@ -3185,20 +3185,20 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
 
     
         <div class="sectionTitle">Llamar</div>
-    <div class="assistantSectionHint">Disponible para el propietario del espacio compartido. La llamada llega al asistente mediante FCM y abre la pantalla urgente de Nottas.</div>
+    <div class="assistantSectionHint">Solo el propietario del espacio puede iniciar una llamada.</div>
     <button id="assistantCallBtn" class="btn full assistantCallBtn" type="button">Llamar al asistente</button>
     <div id="assistantLastCallStatus" class="assistantSectionHint" aria-live="polite"></div>
 
     
         <div id="assistantNoticeSection" class="hidden">
       <div class="sectionTitle">Mensajes</div>
-      <div class="assistantSectionHint">Avisos a pantalla completa para el jefe y el asistente. Puedes responder o simplemente cerrar.</div>
+      
       <button id="assistantNoticeSettingsBtn" class="btn full" type="button">Abrir mensajes</button>
     </div>
     
         <div id="assistantGoogleSection" class="hidden">
       <div class="sectionTitle">Google Calendar</div>
-      <div class="assistantSectionHint">Conexión de solo lectura con calendario@losroblesenlinea.com.ve. Por ahora permite autorizar la cuenta y descubrir sus calendarios.</div>
+      <div class="assistantSectionHint">Solo lectura · calendario@losroblesenlinea.com.ve</div>
       <div id="assistantGoogleStatus" class="assistantSectionHint">Comprueba la conexión.</div>
       <div class="assistantActions">
         <button id="assistantGoogleConnectBtn" class="btn secondary" type="button">Conectar cuenta Google</button>
@@ -3246,7 +3246,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   <div class="sheet directorInboxSheet">
     <div class="sheetHandle"></div>
     <div class="sheetHeader"><h2>Por agendar</h2><button id="directorInboxClose" class="closeBtn" type="button" aria-label="Cerrar"><svg viewBox="0 0 16 16"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"></path></svg></button></div>
-    <p id="directorInboxIntro" class="directorInboxIntro">Propuestas pendientes y reuniones que requieren seguimiento, sin alarmas adicionales.</p>
+    <p id="directorInboxIntro" class="directorInboxIntro hidden" aria-hidden="true"></p>
     <div id="directorInboxTabs" class="directorInboxTabs" role="tablist" aria-label="Tipo de seguimiento">
       <button type="button" data-director-tab="proposals" role="tab" aria-selected="true">Por agendar <span id="directorCountProposals">0</span></button>
       <button type="button" data-director-tab="review" role="tab" aria-selected="false">Sin cerrar <span id="directorCountReview">0</span></button>
@@ -4182,14 +4182,11 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const role=editableAssistantPresetRole();
     if(!role){
       parent.replaceChildren();
-      if(hint)hint.textContent="Selecciona un espacio Asistente conectado para editar tus mensajes rápidos.";
+      if(hint){hint.textContent="Selecciona un espacio compartido.";hint.classList.remove("hidden")}
       return;
     }
     const title=role==="owner"?"Del director al asistente":"Del asistente al director";
-    if(hint)hint.textContent=(role==="owner"?
-      "Mensajes que el director envía al asistente.":
-      "Mensajes que el asistente envía al director.")+
-      " Mantén pulsado para editar antes de enviar.";
+    if(hint){hint.textContent="";hint.classList.add("hidden")}
     parent.innerHTML=
       '<div class="assistantPresetSettingsGroup"><div class="assistantPresetSettingsHeading">'+title+'</div>'+
       getAssistantPresets(role).map((message,index)=>
@@ -8512,7 +8509,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     cats.sort((a,b)=>Number(categoryScope(b)==="event")-Number(categoryScope(a)==="event"));
     cats=cats.filter(c=>!q||String(c.name||"").toLocaleLowerCase("es").includes(q)).slice(0,q?8:12);
     const exact=q&&activeCategories().some(c=>String(c.name||"").toLocaleLowerCase("es")===q);
-    let out='<div class="taskInlineCategoryHint">'+(q?"Sugerencias":"Elige una categoría")+'</div>';
+    let out="";
     out+=cats.map(c=>'<button class="taskInlineCategorySuggestion" type="button" role="option" data-task-category-suggestion="'+esc(c.id)+'">'+categorySymbolHtml(c)+'<span>'+esc(c.name)+'</span>'+(c.id===current?'<span style="margin-left:auto;color:#8e8e93">✓</span>':'')+'</button>').join("");
     if(q&&!exact)out+='<button class="taskInlineCategorySuggestion taskInlineCategorySuggestionCreate" type="button" data-task-category-create="1"><span>＋</span><span>Crear “'+esc(String(field.value||"").trim())+'”</span></button>';
     if(!cats.length&&!q)out+='<div class="taskInlineCategoryHint">Escribe para crear una nueva.</div>';
