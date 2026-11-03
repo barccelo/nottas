@@ -93,6 +93,45 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
 #dsToast[hidden]{display:none}
 @media(min-width:560px){body{max-width:650px;margin:0 auto}.ds-icon-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+
+/* Design System 1.1 — self-contained interactive selector prototypes */
+.ds-picker-summary{display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--ds-surface-2);border-radius:13px;padding:12px 13px;margin-bottom:13px}
+.ds-picker-summary span{font-size:11px;color:var(--ds-muted);display:block}
+.ds-picker-summary strong{font-size:17px;display:block;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ds-wheels{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:4px;align-items:center;max-width:320px;margin:0 auto 8px}
+.ds-wheel{position:relative;min-width:0;height:220px;overflow:hidden}
+.ds-wheel:before{content:"";position:absolute;top:88px;left:6px;right:6px;height:44px;border-radius:12px;background:var(--ds-surface-2);pointer-events:none}
+.ds-wheel-scroll{position:relative;height:220px;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:88px 0}
+.ds-wheel-scroll::-webkit-scrollbar{display:none}
+.ds-wheel-item{height:44px;width:100%;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;color:var(--ds-muted);font-size:20px;font-weight:480;line-height:1;border:0;background:transparent;font-variant-numeric:tabular-nums}
+.ds-wheel-item[aria-selected="true"]{font-size:27px;font-weight:690;color:var(--ds-text)}
+.ds-wheel-separator{text-align:center;font-size:27px;font-weight:670}
+.ds-wheel-input{position:absolute;z-index:4;top:88px;left:8px;right:8px;width:calc(100% - 16px);height:44px;padding:0 4px;border:2px solid var(--ds-blue);background:var(--ds-surface);border-radius:10px;text-align:center;color:var(--ds-text);font-size:24px;font-weight:690;font-variant-numeric:tabular-nums}
+.ds-wheel-input[hidden]{display:none}
+.ds-picker-foot{display:flex;align-items:center;justify-content:space-between;gap:9px;margin-top:11px}
+.ds-picker-foot .ds-note{font-size:11px}
+.ds-calendar-top{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:5px 0 10px}
+.ds-calendar-title{font-size:16px;letter-spacing:-.02em;font-weight:680;text-transform:capitalize;flex:1;min-width:0;text-align:center}
+.ds-calendar-nav{border:0;background:transparent;color:var(--ds-text);border-radius:50%;display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;padding:0}
+.ds-calendar-nav:active{background:var(--ds-surface-2)}
+.ds-calendar-nav svg{width:19px;height:19px}
+.ds-weekdays,.ds-month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.ds-weekdays span{text-align:center;font-size:11px;color:var(--ds-muted);font-weight:630;padding:7px 0}
+.ds-calendar-day{border:0;background:transparent;min-height:41px;display:grid;place-items:center;border-radius:11px;color:var(--ds-text);font-size:13px;font-variant-numeric:tabular-nums;padding:0}
+.ds-calendar-day.other{color:var(--ds-muted);opacity:.53}
+.ds-calendar-day.today:not(.selected){box-shadow:inset 0 0 0 1px var(--ds-blue)}
+.ds-calendar-day.selected{background:var(--ds-blue);color:#fff;font-weight:720}
+.ds-calendar-day:not(.selected):active{background:var(--ds-surface-2)}
+.ds-picker-note{font-size:11px;line-height:1.45;color:var(--ds-muted);margin:10px 0 0}
+.ds-calendar-mode{display:flex;gap:3px;background:var(--ds-surface-2);border-radius:11px;padding:3px;margin:12px 0}
+.ds-calendar-mode button{flex:1;min-height:36px;background:transparent;border:0;border-radius:8px;font-size:12px;color:var(--ds-muted);font-weight:630}
+.ds-calendar-mode button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:var(--ds-shadow)}
+.ds-calendar-preview{padding:12px;background:var(--ds-surface-2);border-radius:12px;min-height:72px}
+.ds-calendar-preview strong{font-size:13px}
+.ds-calendar-preview p{font-size:11px;color:var(--ds-muted);margin:4px 0 0}
+.ds-preview-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:680;color:var(--ds-muted);margin:15px 0 6px}
+@media(max-width:335px){.ds-calendar-day{min-height:36px}.ds-picker-summary{padding:9px}}
+
 </style>
 </head>
 <body>
@@ -189,7 +228,44 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
     <p class="ds-note" style="margin:12px 0 0">Escala base de espacio: 4 · 8 · 12 · 16 · 24 px. Esquinas: 12 px para botones, 15–18 px para tarjetas y paneles; controles circulares cuando corresponda.</p>
   </div>
 </section>
-<p class="ds-foot">Nottas Design System · Laboratorio 1.0<br>Fase siguiente: selectores de fecha y hora, encabezados, modales, navegación y calendario.</p>
+
+<section class="ds-section" aria-labelledby="ds-hora">
+  <div class="ds-section-head"><div class="ds-index">07 / SELECTORES</div><h2 id="ds-hora">Selector de hora</h2><p class="ds-description">Prototipo de la rueda propia de Nottas: desplazamiento vertical por horas y minutos, valor centrado y edición directa al tocar la selección.</p></div>
+  <div class="ds-body">
+    <div class="ds-picker-summary"><div><span>Hora seleccionada</span><strong id="dsTimeSummary" aria-live="polite">09:30</strong></div><button class="ds-button outline" id="dsTimeReset" type="button">Restablecer</button></div>
+    <div class="ds-wheels">
+      <div class="ds-wheel">
+        <div id="dsHourWheel" class="ds-wheel-scroll" role="listbox" aria-label="Horas" tabindex="0"></div>
+        <input id="dsHourEdit" class="ds-wheel-input" type="text" inputmode="numeric" maxlength="2" aria-label="Escribir hora de 0 a 23" hidden>
+      </div>
+      <div class="ds-wheel-separator" aria-hidden="true">:</div>
+      <div class="ds-wheel">
+        <div id="dsMinuteWheel" class="ds-wheel-scroll" role="listbox" aria-label="Minutos" tabindex="0"></div>
+        <input id="dsMinuteEdit" class="ds-wheel-input" type="text" inputmode="numeric" maxlength="2" aria-label="Escribir minutos de 0 a 59" hidden>
+      </div>
+    </div>
+    <p class="ds-picker-note">Prueba el desplazamiento, la inercia y un toque en el número central para escribirlo. Este prototipo no programa ningún recordatorio.</p>
+  </div>
+</section>
+<section class="ds-section" aria-labelledby="ds-fecha">
+  <div class="ds-section-head"><div class="ds-index">08 / SELECTORES</div><h2 id="ds-fecha">Calendario y selector de fecha</h2><p class="ds-description">Calendario mensual compacto con navegación, selección, «Hoy» y previsualización de fecha. Mantiene el lenguaje visual de la agenda sin reemplazar sus vistas actuales.</p></div>
+  <div class="ds-body">
+    <div class="ds-picker-summary"><div><span>Fecha seleccionada</span><strong id="dsDateSummary" aria-live="polite">—</strong></div><button class="ds-button outline" id="dsDateToday" type="button">Hoy</button></div>
+    <div class="ds-calendar-top"><button class="ds-calendar-nav" id="dsMonthPrev" type="button" aria-label="Mes anterior"><svg><use href="#ic-back"/></svg></button><div id="dsMonthTitle" class="ds-calendar-title">—</div><button class="ds-calendar-nav" id="dsMonthNext" type="button" aria-label="Mes siguiente"><svg><use href="#ic-forward"/></svg></button></div>
+    <div class="ds-weekdays" aria-hidden="true"><span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+    <div class="ds-month-grid" id="dsMonthGrid" role="group" aria-label="Elegir día"></div>
+    <div class="ds-preview-label">Ejemplo de encabezado de agenda</div>
+    <div class="ds-calendar-mode" role="group" aria-label="Vista de calendario ficticia">
+      <button type="button" data-calendar-mode="Día" aria-pressed="false">Día</button>
+      <button type="button" data-calendar-mode="Semana" aria-pressed="false">Semana</button>
+      <button type="button" data-calendar-mode="Mes" aria-pressed="true">Mes</button>
+      <button type="button" data-calendar-mode="Agenda" aria-pressed="false">Agenda</button>
+    </div>
+    <div class="ds-calendar-preview" aria-live="polite"><strong id="dsCalendarPreviewTitle">Vista Mes</strong><p id="dsCalendarPreviewDesc">Propuesta visual de navegación. Las vistas operativas del calendario siguen sin cambios.</p></div>
+    <p class="ds-picker-note">Las fechas y vistas son de prueba. No se crean eventos, no se altera Google Calendar ni se cambia ninguna preferencia.</p>
+  </div>
+</section>
+<p class="ds-foot">Nottas Design System · Laboratorio 1.1<br>Fase siguiente: encabezados, modales y unificación progresiva de la navegación.</p>
 <div id="dsToast" role="status" aria-live="polite" hidden></div>
 <script>
 (function(){
@@ -216,6 +292,115 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
       });
     });
   });
+
+  // Time wheel prototype: isolated local state and scroll-snap. No NottasNative bridge.
+  var dsTime={hour:9,minute:30};
+  function dsPad(n){return String(n).padStart(2,"0");}
+  function dsTimeDisplay(){document.getElementById("dsTimeSummary").textContent=dsPad(dsTime.hour)+":"+dsPad(dsTime.minute);}
+  function dsBuildWheel(id,part,max,inputId){
+    var wheel=document.getElementById(id),edit=document.getElementById(inputId),rowHeight=44,scrollCommit;
+    var fragment=document.createDocumentFragment();
+    for(var i=0;i<=max;i++){
+      var btn=document.createElement("button");btn.type="button";btn.className="ds-wheel-item";
+      btn.setAttribute("role","option");btn.setAttribute("data-index",String(i));
+      btn.textContent=dsPad(i);btn.setAttribute("aria-selected",String(dsTime[part]===i));
+      fragment.appendChild(btn);
+    }
+    wheel.appendChild(fragment);
+    var items=Array.from(wheel.children);
+    function display(){
+      items.forEach(function(btn,i){btn.setAttribute("aria-selected",String(dsTime[part]===i));});
+      dsTimeDisplay();
+    }
+    function select(index,smooth){
+      dsTime[part]=Math.max(0,Math.min(max,index));display();
+      wheel.scrollTo({top:dsTime[part]*rowHeight,behavior:smooth?"smooth":"auto"});
+    }
+    function finishScroll(){
+      if(!edit.hidden)return;
+      var index=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/rowHeight)));
+      dsTime[part]=index;display();
+    }
+    wheel.addEventListener("scroll",function(){clearTimeout(scrollCommit);scrollCommit=setTimeout(finishScroll,75);});
+    function beginEdit(){
+      edit.hidden=false;edit.value=dsPad(dsTime[part]);
+      edit.focus();edit.select();
+    }
+    function commitEdit(){
+      if(edit.hidden)return;
+      edit.hidden=true;
+      var raw=edit.value.trim();
+      if(/^\d{1,2}$/.test(raw)&&Number(raw)<=max)select(Number(raw),false);else select(dsTime[part],false);
+    }
+    wheel.addEventListener("click",function(e){
+      var target=e.target.closest("[data-index]");if(!target)return;
+      var index=Number(target.dataset.index);
+      if(index===dsTime[part]&&Math.abs(wheel.scrollTop-index*rowHeight)<14)beginEdit();
+      else select(index,true);
+    });
+    wheel.addEventListener("keydown",function(e){
+      if(e.key==="ArrowUp"||e.key==="ArrowDown"){e.preventDefault();select(dsTime[part]+(e.key==="ArrowDown"?1:-1),true);}
+      if(e.key==="Enter"||e.key===" "){e.preventDefault();beginEdit();}
+    });
+    edit.addEventListener("keydown",function(e){
+      if(e.key==="Enter"){e.preventDefault();edit.blur();}
+      if(e.key==="Escape"){edit.value=dsPad(dsTime[part]);edit.blur();}
+    });
+    edit.addEventListener("blur",commitEdit);
+    return function(value){select(value,false);};
+  }
+  var dsHourReset=dsBuildWheel("dsHourWheel","hour",23,"dsHourEdit");
+  var dsMinuteReset=dsBuildWheel("dsMinuteWheel","minute",59,"dsMinuteEdit");
+  document.getElementById("dsTimeReset").addEventListener("click",function(){dsHourReset(9);dsMinuteReset(30);});
+  // Defer initial positions until the gallery iframe has laid out.
+  requestAnimationFrame(function(){dsHourReset(9);dsMinuteReset(30);});
+  // Calendar prototype: month traversal and local selection only.
+  var dsDate=new Date(),dsMonth=new Date(dsDate.getFullYear(),dsDate.getMonth(),1);
+  var dsDateFmt=new Intl.DateTimeFormat("es-ES",{day:"numeric",month:"short",year:"numeric"});
+  var dsMonthFmt=new Intl.DateTimeFormat("es-ES",{month:"long",year:"numeric"});
+  function dsSameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+  function dsRenderMonth(){
+    document.getElementById("dsDateSummary").textContent=dsDateFmt.format(dsDate);
+    document.getElementById("dsMonthTitle").textContent=dsMonthFmt.format(dsMonth);
+    var grid=document.getElementById("dsMonthGrid"),y=dsMonth.getFullYear(),m=dsMonth.getMonth();
+    var offset=(new Date(y,m,1).getDay()+6)%7;
+    var days=new Date(y,m+1,0).getDate(),visibleDays=Math.ceil((offset+days)/7)*7;
+    var start=new Date(y,m,1-offset);
+    var fragment=document.createDocumentFragment();
+    var today=new Date();
+    for(var i=0;i<visibleDays;i++){
+      var date=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+      var btn=document.createElement("button");btn.type="button";btn.textContent=String(date.getDate());
+      btn.className="ds-calendar-day";
+      if(date.getMonth()!==m)btn.classList.add("other");
+      if(dsSameDay(date,dsDate))btn.classList.add("selected");
+      if(dsSameDay(date,today))btn.classList.add("today");
+      btn.setAttribute("aria-label",new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(date));
+      btn.setAttribute("aria-pressed",String(dsSameDay(date,dsDate)));
+      btn.dataset.year=String(date.getFullYear());btn.dataset.month=String(date.getMonth());btn.dataset.day=String(date.getDate());
+      fragment.appendChild(btn);
+    }
+    grid.replaceChildren(fragment);
+  }
+  document.getElementById("dsMonthGrid").addEventListener("click",function(e){
+    var btn=e.target.closest("button.ds-calendar-day");if(!btn)return;
+    dsDate=new Date(Number(btn.dataset.year),Number(btn.dataset.month),Number(btn.dataset.day));
+    dsMonth=new Date(dsDate.getFullYear(),dsDate.getMonth(),1);
+    dsRenderMonth();
+  });
+  document.getElementById("dsMonthPrev").addEventListener("click",function(){dsMonth=new Date(dsMonth.getFullYear(),dsMonth.getMonth()-1,1);dsRenderMonth();});
+  document.getElementById("dsMonthNext").addEventListener("click",function(){dsMonth=new Date(dsMonth.getFullYear(),dsMonth.getMonth()+1,1);dsRenderMonth();});
+  document.getElementById("dsDateToday").addEventListener("click",function(){dsDate=new Date();dsMonth=new Date(dsDate.getFullYear(),dsDate.getMonth(),1);dsRenderMonth();});
+  document.querySelectorAll("[data-calendar-mode]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      document.querySelectorAll("[data-calendar-mode]").forEach(function(b){b.setAttribute("aria-pressed",String(b===btn));});
+      var view=btn.getAttribute("data-calendar-mode");
+      document.getElementById("dsCalendarPreviewTitle").textContent="Vista "+view;
+      document.getElementById("dsCalendarPreviewDesc").textContent="Referencia visual de navegación. El calendario real conserva sus vistas y datos.";
+    });
+  });
+  dsRenderMonth();
+
   window.addEventListener("message",function(e){
     if(!e.data||e.data.type!=="nottas-theme")return;
     var target=e.data.value==="dark"?"dark":"light";
