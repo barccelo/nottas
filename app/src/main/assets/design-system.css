@@ -250,6 +250,90 @@ html[data-theme="dark"] #settingsOverlay .assistantPresetSettingsGroup {
   color: var(--ns-secondary);
 }
 
+/* A circular checkbox is the only checklist control in Nottas. */
+input[type="checkbox"].calendarTaskCheck,
+input[type="checkbox"].noteBlockCheck,
+input[type="checkbox"].subtaskEditorCheck {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.6px solid #a8a8ad;
+  background: var(--ns-surface);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+input[type="checkbox"].calendarTaskCheck:checked,
+input[type="checkbox"].noteBlockCheck:checked,
+input[type="checkbox"].subtaskEditorCheck:checked,
+.check:checked {
+  background: var(--ns-accent);
+  border-color: var(--ns-accent);
+}
+
+input[type="checkbox"].calendarTaskCheck:checked::after,
+input[type="checkbox"].noteBlockCheck:checked::after,
+input[type="checkbox"].subtaskEditorCheck:checked::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.taskDoneBtn.active {color: var(--ns-accent);}
+
+/* Header buttons share an axis and a 44px hit target.
+   The visible icon stays small to avoid extra ornamentation. */
+#taskSortOverlay .sheetHeader,
+#timeOverlay .sheetHeader,
+#quickOverlay .sheetHeader,
+#categoryOverlay .sheetHeader,
+#assistantOverlay .sheetHeader,
+#calendarOverlay .sheetHeader {
+  min-height: var(--ns-header-height);
+  align-items: center;
+}
+
+#taskSortOverlay .sheetHeader .closeBtn,
+#timeOverlay .sheetHeader .closeBtn,
+#quickOverlay .sheetHeader .closeBtn,
+#categoryOverlay .sheetHeader .closeBtn,
+#assistantOverlay .sheetHeader .closeBtn,
+#calendarOverlay .sheetHeader .closeBtn,
+#cardMetaOverlay .cardMetaClose {
+  width: var(--ns-hit-area);
+  height: var(--ns-hit-area);
+  flex: 0 0 var(--ns-hit-area);
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ns-secondary);
+}
+
+#cardMetaOverlay .cardMetaClose {line-height: 1;}
+
+#taskSortOverlay .sheetHeader h2,
+#timeOverlay .sheetHeader h2,
+#quickOverlay .sheetHeader h2,
+#categoryOverlay .sheetHeader h2,
+#assistantOverlay .sheetHeader h2 {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 680;
+  letter-spacing: -.025em;
+}
+
 /* Consistent editor header axes. Keep editor keyboard/scroll logic intact. */
 #editorOverlay.taskEditorMode .taskTitleRow {
   grid-template-columns: 40px 40px minmax(0, 1fr) 40px;
