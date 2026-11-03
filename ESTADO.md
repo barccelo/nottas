@@ -1,5 +1,16 @@
 # Estado actual de Nottas
 
+Última actualización: 3 de noviembre de 2026 · Laboratorio de identidad visual Nottas Design System 1.0.
+
+## Cambios v0.27.110 — catálogo de componentes (fase 1)
+
+- Nueva pantalla de laboratorio en Ajustes → Acerca de Nottas → Componentes de Nottas. Muestra seis familias: tipografía, iconografía, botones, checks/switches/filtros, tarjetas y colores/superficies.
+- Vista previa clara/oscura y controles demostrativos independientes de las preferencias y datos reales. Archivo local `app/src/main/assets/componentes.html`; no utiliza CDN, servicios de red ni bibliotecas externas.
+- Navegación de retorno desde la flecha de Ajustes y Back de Android hacia «Acerca de Nottas». Mantiene intactos los formularios operativos y los recordatorios nativos.
+- Nueva especificación `DESIGN_SYSTEM.md` con inventario de 13 familias, propuestas de tokens, licencias candidatas y plan de adopción progresiva.
+- La tipografía Inter y la biblioteca Lucide siguen en evaluación: NO se han incorporado sus archivos ni migrado los componentes de producción.
+- Pendiente validar en Android el iframe de la galería, scroll, controles interactivos, temas, vuelta atrás, y confirmar APK firmada/Obtainium.
+
 Última actualización: 2 de noviembre de 2026 · Cambio de Propuesta a Agendada y recordatorios desde tarjeta.
 
 
