@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Componentes de Nottas · Vista previa</title>
+<style>
+*{box-sizing:border-box}
+:root{--ds-blue:#1677ff;--ds-bg:#f5f5f7;--ds-surface:#fff;--ds-surface-2:#ededf1;--ds-text:#1d1d1f;--ds-muted:#72727b;--ds-border:#dfdfe5;--ds-red:#d93c45;--ds-shadow:0 6px 20px rgba(22,24,37,.055);font-family:Inter,-apple-system,BlinkMacSystemFont,Roboto,"Segoe UI",sans-serif;color:var(--ds-text);background:var(--ds-bg);-webkit-font-smoothing:antialiased}
+:root[data-theme="dark"]{color-scheme:dark;--ds-blue:#4b9aff;--ds-bg:#101012;--ds-surface:#1c1c1e;--ds-surface-2:#2b2b30;--ds-text:#f5f5f7;--ds-muted:#b1b1ba;--ds-border:#39393e;--ds-red:#ff696e;--ds-shadow:none}
+body{margin:0;padding:12px 10px 28px;background:var(--ds-bg);color:var(--ds-text);line-height:1.45}
+button,input{font:inherit;-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--ds-blue);outline-offset:3px}
+svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ds-top{padding:7px 4px 13px}.ds-overline{font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:720;color:var(--ds-blue)}
+h1{font-size:24px;font-weight:720;letter-spacing:-.045em;line-height:1.15;margin:8px 0 7px}
+.ds-intro{margin:0;font-size:12px;line-height:1.5;color:var(--ds-muted)}
+.ds-theme{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:3px;background:var(--ds-surface-2);border-radius:12px;margin:15px 0 5px}
+.ds-theme button{min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--ds-muted);font-size:13px;font-weight:620}
+.ds-theme button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:var(--ds-shadow)}
+.ds-section{margin:16px 0 0;background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:18px;overflow:hidden}
+.ds-section-head{padding:17px 16px 12px}
+.ds-index{font-size:10px;color:var(--ds-blue);font-weight:750;letter-spacing:.09em}
+h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
+.ds-description{font-size:12px;color:var(--ds-muted);line-height:1.45;margin:0}
+.ds-body{padding:0 16px 17px}.ds-rule{border-top:1px solid var(--ds-border);margin:13px 0}
+.ds-spec{font-size:10px;color:var(--ds-muted);letter-spacing:.02em;margin:11px 0 7px}
+.ds-type-xl{font-size:28px;line-height:1.15;letter-spacing:-.045em;font-weight:720}
+.ds-type-lg{font-size:21px;line-height:1.25;letter-spacing:-.032em;font-weight:690}
+.ds-type-md{font-size:16px;line-height:1.35;font-weight:620}
+.ds-type-body{font-size:14px;line-height:1.5}
+.ds-type-small{font-size:12px;color:var(--ds-muted)}
+.ds-icon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.ds-icon-cell{min-width:0;text-align:center}
+.ds-icon-tile{height:57px;background:var(--ds-surface-2);display:grid;place-items:center;border-radius:13px}
+.ds-icon-tile svg{width:23px;height:23px}
+.ds-icon-cell span{display:block;font-size:10px;color:var(--ds-muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ds-btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ds-button{border:1px solid transparent;min-height:43px;border-radius:12px;padding:9px 13px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:650;transition:background .14s,transform .14s}
+.ds-button:active{transform:scale(.98)}
+.ds-button svg{width:17px;height:17px}
+.ds-button.primary{background:var(--ds-blue);color:white}
+.ds-button.secondary{background:var(--ds-surface-2);color:var(--ds-text)}
+.ds-button.outline{background:transparent;border-color:var(--ds-border);color:var(--ds-text)}
+.ds-button.destructive{background:rgba(220,60,65,.09);color:var(--ds-red)}
+.ds-button:disabled{opacity:.4;cursor:default}
+.ds-icon-button{width:44px;height:44px;min-width:44px;border:1px solid var(--ds-border);border-radius:50%;background:var(--ds-surface);display:grid;place-items:center;color:var(--ds-text)}
+.ds-fab{width:52px;height:52px;border:0;border-radius:50%;background:var(--ds-blue);color:white;display:grid;place-items:center;box-shadow:0 5px 15px rgba(22,119,255,.22)}
+.ds-fab svg{width:25px;height:25px}
+.ds-demo-line{min-height:51px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--ds-border);font-size:13px}
+.ds-demo-line:last-child{border-bottom:0}
+.ds-demo-line strong{font-size:13px;font-weight:620}
+.ds-demo-line p{font-size:11px;margin:2px 0 0;color:var(--ds-muted)}
+.ds-circle-check{position:relative;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:0 0 44px;cursor:pointer}
+.ds-circle-check input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.ds-circle-check span{width:22px;height:22px;border-radius:50%;border:1.7px solid #a3a3aa;display:grid;place-items:center;transition:background .15s,border-color .15s}
+.ds-circle-check input:checked+span{background:var(--ds-blue);border-color:var(--ds-blue)}
+.ds-circle-check span svg{display:none;color:#fff;width:15px;height:15px;stroke-width:2.7}
+.ds-circle-check input:checked+span svg{display:block}
+.ds-circle-check input:focus-visible+span{outline:2px solid var(--ds-blue);outline-offset:4px}
+.ds-switch{position:relative;display:inline-flex;align-items:center;justify-content:center;width:53px;height:44px;flex:0 0 53px;cursor:pointer}
+.ds-switch input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.ds-switch span{position:relative;width:48px;height:29px;border-radius:20px;background:#d1d1d6;transition:background .16s}
+.ds-switch span:after{content:"";position:absolute;left:3px;top:3px;width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0002;transition:transform .16s}
+.ds-switch input:checked+span{background:var(--ds-blue)}
+.ds-switch input:checked+span:after{transform:translateX(19px)}
+.ds-switch input:focus-visible+span{outline:2px solid var(--ds-blue);outline-offset:3px}
+.ds-segment{display:flex;gap:3px;background:var(--ds-surface-2);padding:3px;border-radius:12px}
+.ds-segment button{flex:1;min-height:38px;border:0;border-radius:9px;background:transparent;color:var(--ds-muted);font-size:12px;font-weight:640}
+.ds-segment button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:var(--ds-shadow)}
+.ds-chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.ds-chip{padding:7px 11px;border-radius:99px;border:1px solid var(--ds-border);background:var(--ds-surface);color:var(--ds-text);font-size:12px;font-weight:600}
+.ds-chip[aria-pressed="true"]{background:var(--ds-text);border-color:var(--ds-text);color:var(--ds-surface)}
+.ds-cards{display:grid;gap:9px}
+.ds-card{border:1px solid var(--ds-border);border-radius:15px;background:var(--ds-surface);padding:13px}
+.ds-card-row{display:flex;gap:9px;align-items:flex-start}
+.ds-card h3{font-size:14px;margin:0 0 4px;line-height:1.35;font-weight:680;letter-spacing:-.012em}
+.ds-card p{font-size:12px;margin:0;color:var(--ds-muted);line-height:1.48}
+.ds-card-meta{margin-top:9px;display:flex;flex-wrap:wrap;gap:8px;color:var(--ds-muted);font-size:11px;align-items:center}
+.ds-card-meta svg{width:13px;height:13px;vertical-align:-2px}
+.ds-note{font-size:12px;color:var(--ds-muted);line-height:1.55}
+.ds-card.event{border-left:3px solid var(--ds-blue)}
+.ds-state{display:inline-flex;padding:4px 8px;border-radius:99px;background:var(--ds-surface-2);font-size:10px;font-weight:640;color:var(--ds-text)}
+.ds-state.agenda{background:rgba(22,119,255,.1);color:var(--ds-blue)}
+.ds-swatches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.ds-swatch{min-width:0}
+.ds-swatch-square{height:35px;border-radius:9px;border:1px solid var(--ds-border)}
+.ds-swatch label{display:block;font-size:9px;color:var(--ds-muted);margin-top:4px;overflow:hidden;white-space:nowrap}
+.ds-foot{font-size:11px;color:var(--ds-muted);text-align:center;margin:17px 10px 0;line-height:1.55}
+#dsToast{position:sticky;bottom:12px;z-index:5;width:fit-content;max-width:95%;margin:0 auto;padding:9px 13px;background:var(--ds-text);color:var(--ds-surface);border-radius:12px;font-size:12px;font-weight:600;box-shadow:0 5px 18px #0002}
+#dsToast[hidden]{display:none}
+@media(min-width:560px){body{max-width:650px;margin:0 auto}.ds-icon-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></symbol>
+  <symbol id="ic-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="ic-forward" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="m4.5 12 5 5 10-10"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+  <symbol id="ic-pencil" viewBox="0 0 24 24"><path d="m15 5 4 4M4 20l4.5-1L20 7.5a2.1 2.1 0 0 0-3-3L5.5 16Z"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 4h4M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+  <symbol id="ic-filter" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="18" r="2"/></symbol>
+</svg>
+<header class="ds-top">
+  <div class="ds-overline">Identidad gráfica · laboratorio</div>
+  <h1>Componentes de Nottas</h1>
+  <p class="ds-intro">Catálogo visual de referencia. Los controles de esta página son demostraciones y no modifican tus tareas, notas ni ajustes.</p>
+  <div class="ds-theme" role="group" aria-label="Tema de la vista previa">
+    <button type="button" data-theme-option="light" aria-pressed="true">Vista clara</button>
+    <button type="button" data-theme-option="dark" aria-pressed="false">Vista oscura</button>
+  </div>
+</header>
+<section class="ds-section" aria-labelledby="ds-tipo">
+  <div class="ds-section-head"><div class="ds-index">01 / IDENTIDAD</div><h2 id="ds-tipo">Tipografía</h2><p class="ds-description">Una jerarquía consistente en títulos, contenido y metadatos. Inter es la candidata; aún no se ha incorporado el archivo de fuente.</p></div>
+  <div class="ds-body">
+    <div class="ds-spec">Título principal · 28 px / 720</div><div class="ds-type-xl">Una agenda más clara.</div>
+    <div class="ds-rule"></div><div class="ds-spec">Título de sección · 21 px / 690</div><div class="ds-type-lg">Mis tareas de hoy</div>
+    <div class="ds-rule"></div><div class="ds-spec">Título de tarjeta · 16 px / 620</div><div class="ds-type-md">Reunión de coordinación</div>
+    <div class="ds-rule"></div><div class="ds-spec">Texto general · 14 px</div><div class="ds-type-body">Un espacio para organizar ideas, compromisos y recordatorios.</div>
+    <div class="ds-spec">Metadatos · 12 px</div><div class="ds-type-small">Mañana · 9:30 a. m. · Oficina</div>
+  </div>
+</section>
+<section class="ds-section" aria-labelledby="ds-iconos">
+  <div class="ds-section-head"><div class="ds-index">02 / IDENTIDAD</div><h2 id="ds-iconos">Iconografía</h2><p class="ds-description">Trazo uniforme de 1,8 px, esquinas redondeadas y dimensiones normalizadas. Muestra de referencia antes de integrar la biblioteca definitiva.</p></div>
+  <div class="ds-body"><div class="ds-icon-grid">
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-calendar"/></svg></div><span>Calendario</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-clock"/></svg></div><span>Hora</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-back"/></svg></div><span>Volver</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-forward"/></svg></div><span>Siguiente</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-bell"/></svg></div><span>Avisos</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-settings"/></svg></div><span>Filtros</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-check"/></svg></div><span>Completar</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-plus"/></svg></div><span>Añadir</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-pencil"/></svg></div><span>Editar</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-trash"/></svg></div><span>Eliminar</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-search"/></svg></div><span>Buscar</span></div>
+    <div class="ds-icon-cell"><div class="ds-icon-tile"><svg><use href="#ic-filter"/></svg></div><span>Ordenar</span></div>
+  </div></div>
+</section>
+<section class="ds-section" aria-labelledby="ds-botones">
+  <div class="ds-section-head"><div class="ds-index">03 / CONTROLES</div><h2 id="ds-botones">Botones</h2><p class="ds-description">Una única escala de dimensiones, radios y estados. Pulsa los ejemplos para comprobar su respuesta.</p></div>
+  <div class="ds-body">
+    <div class="ds-spec">Acciones principales y secundarias</div>
+    <div class="ds-btn-row"><button class="ds-button primary" data-demo-action="Acción principal">Guardar</button><button class="ds-button secondary" data-demo-action="Acción secundaria">Cancelar</button><button class="ds-button outline" data-demo-action="Acción de contorno">Elegir fecha</button></div>
+    <div class="ds-spec">Acciones destructivas y deshabilitadas</div>
+    <div class="ds-btn-row"><button class="ds-button destructive" data-demo-action="Acción de eliminación"><svg><use href="#ic-trash"/></svg> Eliminar</button><button class="ds-button primary" disabled>Deshabilitado</button></div>
+    <div class="ds-spec">Acciones circulares y flotantes</div>
+    <div class="ds-btn-row"><button class="ds-icon-button" aria-label="Volver, demostración" data-demo-action="Volver"><svg><use href="#ic-back"/></svg></button><button class="ds-icon-button" aria-label="Calendario, demostración" data-demo-action="Calendario"><svg><use href="#ic-calendar"/></svg></button><button class="ds-fab" aria-label="Añadir, demostración" data-demo-action="Añadir"><svg><use href="#ic-plus"/></svg></button></div>
+  </div>
+</section>
+<section class="ds-section" aria-labelledby="ds-seleccion">
+  <div class="ds-section-head"><div class="ds-index">04 / CONTROLES</div><h2 id="ds-seleccion">Checks y switches</h2><p class="ds-description">Checks exclusivamente circulares. Interruptores azules, proporcionados y con una animación uniforme.</p></div>
+  <div class="ds-body">
+    <div class="ds-demo-line"><div><strong>Completar tarea</strong><p>Selección circular y área táctil de 44 px</p></div><label class="ds-circle-check"><input type="checkbox" aria-label="Completar tarea de ejemplo"><span><svg><use href="#ic-check"/></svg></span></label></div>
+    <div class="ds-demo-line"><div><strong>Mostrar recordatorios</strong><p>Interruptor activo</p></div><label class="ds-switch"><input type="checkbox" checked aria-label="Mostrar recordatorios de ejemplo"><span></span></label></div>
+    <div class="ds-demo-line"><div><strong>Activar horario</strong><p>Interruptor inactivo</p></div><label class="ds-switch"><input type="checkbox" aria-label="Activar horario de ejemplo"><span></span></label></div>
+    <div class="ds-spec">Pestañas segmentadas</div><div class="ds-segment" role="group" aria-label="Vista de ejemplo"><button type="button" aria-pressed="true">Día</button><button type="button" aria-pressed="false">Semana</button><button type="button" aria-pressed="false">Mes</button></div>
+    <div class="ds-spec">Filtros</div><div class="ds-chip-row" role="group" aria-label="Filtros de ejemplo"><button type="button" class="ds-chip" aria-pressed="true">Hoy</button><button type="button" class="ds-chip" aria-pressed="false">Pendientes</button><button type="button" class="ds-chip" aria-pressed="false">Todas</button></div>
+  </div>
+</section>
+<section class="ds-section" aria-labelledby="ds-tarjetas">
+  <div class="ds-section-head"><div class="ds-index">05 / SUPERFICIES</div><h2 id="ds-tarjetas">Tarjetas</h2><p class="ds-description">La misma estructura y ritmo visual para notas, tareas y eventos, respetando su contenido específico.</p></div>
+  <div class="ds-body ds-cards">
+    <article class="ds-card"><div class="ds-card-row"><label class="ds-circle-check"><input type="checkbox" aria-label="Completar tarea ficticia"><span><svg><use href="#ic-check"/></svg></span></label><div style="flex:1;min-width:0"><h3>Preparar informe semanal</h3><p>Revisar los puntos pendientes de la reunión.</p><div class="ds-card-meta"><span><svg><use href="#ic-calendar"/></svg> Hoy</span><span><svg><use href="#ic-clock"/></svg> 14:00</span></div></div></div></article>
+    <article class="ds-card event"><h3>Consejo Directivo</h3><p>Oficina · Sala de reuniones</p><div class="ds-card-meta"><span><svg><use href="#ic-clock"/></svg> 9:00–10:00</span><span class="ds-state agenda">Agendada</span></div></article>
+    <article class="ds-card"><h3>Ideas para el proyecto</h3><p>Una nota puede contener texto, listas y otros bloques, sin que su tarjeta resulte visualmente pesada.</p><div class="ds-card-meta"><span class="ds-state">Nota</span><span>Actualizada hoy</span></div></article>
+    <p class="ds-note">Todos los ejemplos de esta pantalla son ficticios. No crean ni modifican registros.</p>
+  </div>
+</section>
+<section class="ds-section" aria-labelledby="ds-color">
+  <div class="ds-section-head"><div class="ds-index">06 / FUNDAMENTOS</div><h2 id="ds-color">Color y superficies</h2><p class="ds-description">Una paleta base y equivalencias automáticas para los dos temas.</p></div>
+  <div class="ds-body">
+    <div class="ds-swatches">
+      <div class="ds-swatch"><div class="ds-swatch-square" style="background:var(--ds-blue)"></div><label>Accento</label></div>
+      <div class="ds-swatch"><div class="ds-swatch-square" style="background:var(--ds-bg)"></div><label>Fondo</label></div>
+      <div class="ds-swatch"><div class="ds-swatch-square" style="background:var(--ds-surface)"></div><label>Tarjeta</label></div>
+      <div class="ds-swatch"><div class="ds-swatch-square" style="background:var(--ds-text)"></div><label>Texto</label></div>
+      <div class="ds-swatch"><div class="ds-swatch-square" style="background:var(--ds-border)"></div><label>Borde</label></div>
+    </div>
+    <p class="ds-note" style="margin:12px 0 0">Escala base de espacio: 4 · 8 · 12 · 16 · 24 px. Esquinas: 12 px para botones, 15–18 px para tarjetas y paneles; controles circulares cuando corresponda.</p>
+  </div>
+</section>
+<p class="ds-foot">Nottas Design System · Laboratorio 1.0<br>Fase siguiente: selectores de fecha y hora, encabezados, modales, navegación y calendario.</p>
+<div id="dsToast" role="status" aria-live="polite" hidden></div>
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+  document.querySelectorAll("[data-theme-option]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var theme=btn.getAttribute("data-theme-option");
+      root.setAttribute("data-theme",theme);
+      document.querySelectorAll("[data-theme-option]").forEach(function(b){b.setAttribute("aria-pressed",String(b===btn));});
+    });
+  });
+  var toast=document.getElementById("dsToast");
+  document.querySelectorAll("[data-demo-action]").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      toast.textContent=btn.getAttribute("data-demo-action")+" · vista previa";
+      toast.hidden=false;
+    });
+  });
+  document.querySelectorAll(".ds-segment,.ds-chip-row").forEach(function(group){
+    group.querySelectorAll("button").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        group.querySelectorAll("button").forEach(function(b){b.setAttribute("aria-pressed",String(b===btn));});
+      });
+    });
+  });
+  window.addEventListener("message",function(e){
+    if(!e.data||e.data.type!=="nottas-theme")return;
+    var target=e.data.value==="dark"?"dark":"light";
+    root.setAttribute("data-theme",target);
+    document.querySelectorAll("[data-theme-option]").forEach(function(btn){btn.setAttribute("aria-pressed",String(btn.getAttribute("data-theme-option")===target));});
+  });
+})();
+</script>
+</body>
+</html>
