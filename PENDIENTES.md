@@ -1,5 +1,19 @@
 # Pendientes de Nottas
 
+Última revisión: 3 de noviembre de 2026 · Laboratorio de identidad visual v0.27.110 pendiente de validación.
+
+## Prioridad inmediata — Nottas Design System
+
+- [ ] **v0.27.110 · Acceso:** Ajustes → Acerca de Nottas → Componentes de Nottas debe abrir la galería sin afectar otras secciones.
+- [ ] **v0.27.110 · Navegación:** flecha atrás y Back Android regresan a «Acerca de Nottas»; al cerrar Ajustes se vuelve a la interfaz normal.
+- [ ] **v0.27.110 · Contenido:** seis módulos visibles y legibles; el scroll dentro de la galería responde con normalidad en pantallas pequeñas y grandes.
+- [ ] **v0.27.110 · Temas:** previsualización clara/oscura con contraste correcto; al cambiar el tema de la muestra NO se modifica el tema real de Nottas.
+- [ ] **v0.27.110 · Controles:** botones, checks, interruptores, pestañas y filtros de la muestra responden sin crear/editar datos ni disparar alarmas.
+- [ ] **v0.27.110 · Publicación:** validar compilación, firma, GitHub Release y actualización por Obtainium conservando datos.
+- [ ] **Decisión estética:** revisar y aprobar tipografía, símbolos, tamaños, botones, tarjetas, color y contrastes del catálogo.
+- [ ] **Fase siguiente:** confirmar Inter/Lucide, incorporar activos locales y licencias, extraer tokens reutilizables; después extender el catálogo con selectores, navegación, ventanas y calendario.
+- [ ] **Migración:** sustituir controles de producción progresivamente, sin rediseños generales ni regresiones de navegación, recordatorios o sincronización. Ver `DESIGN_SYSTEM.md`.
+
 Última revisión: 2 de noviembre de 2026 · Cambios v0.27.109 pendientes de validación.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
