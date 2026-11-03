@@ -1,7 +1,13 @@
 # Estado actual de Nottas
 
-Última actualización: 2 de noviembre de 2026 · Wordmark y flecha unificados en recordatorios nativos.
+Última actualización: 2 de noviembre de 2026 · Wordmark monocromático de «Acerca de» en recordatorios.
 
+
+## Cambios v0.27.108 — wordmark monocromático en recordatorios
+
+- El encabezado nativo de recordatorios individuales y múltiples aplica al mismo wordmark original el tratamiento monocromático de Ajustes → «Acerca de»: negro y opacidad del 78 %, en lugar de los degradados azul y naranja.
+- Se conserva el tamaño discreto, la alineación del chevrón, el área táctil y la acción de volver de v0.27.107. No se alteran recordatorios ni sincronización.
+- Pendiente validar visualmente el resultado en Android (individual y apilado). APK firmada mediante GitHub Actions para Obtainium.
 
 ## Cambios v0.27.107 — identidad visual en el encabezado de recordatorios
 
@@ -174,7 +180,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.107** (`versionCode 188`).
+- Versión del código Android: **0.27.108** (`versionCode 189`).
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 

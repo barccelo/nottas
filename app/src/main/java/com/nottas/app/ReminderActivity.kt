@@ -126,6 +126,11 @@ class ReminderActivity : Activity() {
 
             val brand = ImageView(this@ReminderActivity).apply {
                 setImageResource(R.drawable.nottas_wordmark)
+                // Match Settings > Acerca de: the same wordmark, rendered
+                // in monochrome black with the same 78% opacity as its CSS.
+                // SRC_IN tints the gradients and both Ts uniformly.
+                setColorFilter(Color.BLACK, android.graphics.PorterDuff.Mode.SRC_IN)
+                alpha = 0.78f
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 contentDescription = "Nottas"
                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO

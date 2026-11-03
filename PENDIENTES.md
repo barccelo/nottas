@@ -1,10 +1,14 @@
 # Pendientes de Nottas
 
-Última revisión: 2 de noviembre de 2026 · v0.27.107 pendiente de validación en Android.
+Última revisión: 2 de noviembre de 2026 · v0.27.108 pendiente de revisión visual en Android.
 
 Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de esta lista no sustituye la comprobación del código ni las pruebas en Android.
 
 ## Prioridad inmediata
+
+- [ ] **v0.27.108 · Identidad monocromática:** verificar que el encabezado individual y múltiple usa exactamente el acabado negro de «Acerca de», sin tonos originales y con opacidad discreta; flecha y proporciones intactas.
+- [ ] **v0.27.108 · Obtainium:** verificar firma, publicación y actualización sin pérdida de datos.
+
 
 - [ ] **v0.27.107 · Encabezado de recordatorios:** comprobar el mismo wordmark del sidebar, colores y dos T sin bordes ni deformaciones, tamaño discreto, flecha simétrica y centrado vertical en recordatorio individual y múltiple.
 - [ ] **v0.27.107 · Volver:** verificar que el chevrón regresa sin completar ni posponer y no afecta los gestos del recordatorio.

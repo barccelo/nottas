@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.108 — 2 de noviembre de 2026
+
+- El wordmark de los recordatorios usa el tratamiento monocromático negro con opacidad 78 % de Ajustes → «Acerca de», sin alterar el trazado original de las letras.
+- Se conserva el chevrón y la disposición compartida del encabezado de recordatorios.
+- Versión Android incrementada y APK firmada mediante el flujo de publicación para Obtainium.
+
+
 ## 0.27.107 — 2 de noviembre de 2026
 
 - Reemplazado el encabezado de texto de los recordatorios por el wordmark vectorial de la barra lateral, con las T originales y sus tonos.
