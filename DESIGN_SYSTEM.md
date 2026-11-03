@@ -51,12 +51,21 @@ La pantalla «Componentes de Nottas» presenta seis módulos: (1) tipografía, (
 - Se accede desde «Acerca de Nottas»; el botón volver de Ajustes y Back de Android deben regresar a esa pantalla.
 - Los ejemplos son **propuestas de referencia**, no componentes ya migrados a las pantallas operativas.
 
+## Extensión de laboratorio 1.1 — rueda de hora y calendario (3 de noviembre de 2026)
+
+- **07 · Selector de hora:** prototipo autónomo con rueda de 24 horas y 60 minutos, scroll-snap vertical, resaltado central y escritura directa tocando el número seleccionado. «Restablecer» vuelve a 09:30, sin afectar la hora guardada en Nottas.
+- **08 · Calendario / selector de fecha:** cuadrícula mensual con semana iniciada el lunes, meses anterior/siguiente, selección de día, botón «Hoy» y resumen de fecha. Cabecera de referencia con Día/Semana/Mes/Agenda: los botones muestran la selección visual, pero no son versiones funcionales de esas cuatro vistas.
+- Ejemplos de datos ficticios y estado local dentro de `componentes.html`; ninguna operación de escritura, modificación de eventos, alarmas, Google Calendar o preferencias.
+- Criterio de implementación: **no reemplazar la rueda actual de Nottas ni su calendario sin aprobación de este prototipo y pruebas funcionales en Android**.
+- Pendiente comprobar scroll rápido/lento, toque de edición directa, entrada de 00–23 y 00–59, selección de fechas entre años y meses, tamaños reducidos, tema oscuro, retorno y accesibilidad.
+- La evaluación de Vanilla Calendar/Ionic continúa siendo opcional: no se han introducido dependencias de terceros en esta ampliación.
+
 ## Fases pendientes
 
 1. Validar visualmente en teléfonos Android los seis módulos del laboratorio y ajustar proporciones, contraste, tipografía y variantes.
 2. Confirmar biblioteca de iconos y fuente; empaquetar recursos localmente con avisos de licencia aplicables.
 3. Crear tokens compartidos de CSS y funciones/componentes comunes, preservando los estilos existentes mientras se migra.
-4. Incorporar selectores de fecha/hora y ventanas/encabezados al laboratorio, respetando la rueda de hora y el calendario desarrollados en Nottas.
+4. Completar el catálogo de selectores con variantes de recordatorio/repetición y después añadir ventanas, encabezados y navegación; mantener intactos la rueda y el calendario de producción hasta validar.
 5. Migrar con pruebas: Inicio → notas/tareas → captura rápida → calendario → asistente → ajustes → recordatorios Android nativos.
 6. Comprobar consistencia visual, contraste, teclado, tamaños, gestos, rendimiento y sincronización; no introducir cambios funcionales accidentales.
 
