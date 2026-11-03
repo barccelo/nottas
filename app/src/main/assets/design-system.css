@@ -187,9 +187,7 @@ html[data-theme="dark"] #settingsOverlay .assistantPresetSettingsGroup {
   gap: 12px;
 }
 
-#settingsOverlay .settingsNavItem:has(#assistantSummaryDesc:not(:empty)) {
-  min-height: 66px;
-}
+#settingsOverlay #assistantSettingsBtn {min-height: 66px;}
 
 #settingsOverlay .settingsRow {
   min-height: 56px;
@@ -222,6 +220,35 @@ html[data-theme="dark"] #settingsOverlay .assistantPresetSettingsGroup {
 }
 
 .btn {font-weight: 640;}
+
+/* Action lists and side navigation follow the same horizontal rhythm. */
+.taskSortOrderList button {
+  min-height: 54px;
+  padding: 10px 13px;
+  gap: 10px;
+  border-radius: var(--ns-control-radius);
+}
+
+.taskSortFilter,
+.taskSortGroup,
+.cardMetaSecondary,
+.cardMetaPrimary,
+#cardMetaOverlay .cardMetaInput {
+  border-radius: var(--ns-control-radius);
+}
+
+.noteActionRow {gap: 12px; padding-inline: 10px;}
+.sideItem {gap: 10px; padding-inline: 12px; border-radius: var(--ns-control-radius);}
+.sidebarSectionTitle {padding-inline: 12px;}
+#cardMetaOverlay .cardMetaTop {align-items: center; min-height: 44px;}
+
+/* Metadata is visually subordinate to card titles, not an independent heading. */
+.item .label,
+.item .preview,
+.calendarTaskMeta,
+.directorInboxDetails small {
+  color: var(--ns-secondary);
+}
 
 /* Consistent editor header axes. Keep editor keyboard/scroll logic intact. */
 #editorOverlay.taskEditorMode .taskTitleRow {
