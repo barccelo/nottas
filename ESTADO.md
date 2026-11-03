@@ -1,6 +1,15 @@
 # Estado actual de Nottas
 
-Última actualización: 3 de noviembre de 2026 · Laboratorio Nottas Design System 1.1, selectores de hora y calendario.
+Última actualización: 3 de noviembre de 2026 · Nottas Design System 1.2, selectores ligeros y alineación.
+
+## Cambios v0.27.112 — Design System 1.2
+
+- En Ajustes → Acerca de Nottas → Componentes: ruedas de hora más ligeras, sin recuadro azul; resumen simplificado, calendario mensual con mes/año pulsables y rueda secundaria de mes/día/año.
+- En el editor real de tareas/eventos: selector de hora con selección visual tenue, fecha mensual con título «Noviembre 2026» y nueva selección detallada de mes/día/año mediante ruedas, aplicada solo al pulsar «Listo» y utilizando las validaciones existentes.
+- En el calendario principal se normaliza el encabezado de Mes/Agenda sin «de» (por ejemplo, «Noviembre 2026»).
+- En recordatorios Android, se normaliza la geometría del encabezado: altura 56 dp, objetivo de flecha 44 dp, separación 8 dp, wordmark con alineación óptica, margen de contenido común.
+- DESIGN_SYSTEM.md amplía el catálogo a 14 familias, incluida posición y alineación. No se han cambiado respaldos, datos ni sincronización.
+- Publicación: GitHub Actions compila y firma para Obtainium. Pendiente validación visual/funcional en dispositivo.
 
 ## Cambios v0.27.111 — selectores de hora y fecha en el laboratorio
 
