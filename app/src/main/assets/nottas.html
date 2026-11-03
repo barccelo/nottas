@@ -2132,6 +2132,10 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
 #list.taskChronologicalList > .taskGroupHourHeader{margin:0 4px;min-height:26px}
 #list.taskChronologicalList > .taskGroupHourHeader.isUntimed{min-height:23px}
 #list.taskChronologicalList > .taskGroupHourHeader + .swipeRow{margin-top:0}
+/* Nottas Design System 1.0: isolated component laboratory. */
+#settingsOverlay .dsCatalogScreen{padding:0;overflow:hidden;min-height:0}
+#settingsOverlay .dsCatalogScreen iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:#f5f5f7;border-radius:13px}
+html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101012}
 </style>
 </head>
 <body>
@@ -2963,8 +2967,13 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       <div class="settingsGroup">
       <div class="settingsRow"><div class="left"><div class="title">Versión</div><div class="desc">Versión instalada.</div></div><span id="versionLabel" style="font-size:12px;color:#8e8e93">—</span></div>
     </div>
+      <div class="sectionTitle">Identidad visual</div>
+      <div class="settingsGroup"><button data-settings-open="components" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-palette"></use></svg> <span>Componentes de Nottas<small>Catálogo de tipografía, iconos, botones y tarjetas</small></span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
       <div class="sectionTitle">Asistencia</div>
       <div class="settingsGroup"><button id="settingsAdvancedBtn" class="settingsAboutAction" type="button"><span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-folder"></use></svg> <span>Soporte y diagnóstico<small>Herramientas técnicas para resolver incidencias</small></span></span><svg class="nsIcon" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><use href="#ns-chevron"></use></svg></button></div>
+    </section>
+    <section class="settingsScreen dsCatalogScreen hidden" data-settings-page="components" aria-label="Componentes de Nottas">
+      <iframe id="nottasComponentsFrame" src="componentes.html" title="Catálogo de componentes Nottas" loading="lazy"></iframe>
     </section>
   </div>
 </div>
@@ -9317,7 +9326,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   let currentSettingsPage="home",returnToSettingsFromTeam=false;
   const settingsPageNames={
     home:"Ajustes",appearance:"Apariencia",alerts:"Notificaciones",
-    messages:"Mensajes rápidos",backup:"Datos y respaldo",about:"Acerca de Nottas"
+    messages:"Mensajes rápidos",backup:"Datos y respaldo",about:"Acerca de Nottas",components:"Componentes de Nottas"
   };
   function showSettingsPage(page){
     const target=Object.prototype.hasOwnProperty.call(settingsPageNames,page)?page:"home";
@@ -9331,6 +9340,14 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
     const active=target==="home"?$("settingsMain"):
       document.querySelector('#settingsOverlay [data-settings-page="'+target+'"]');
     if(active)active.scrollTop=0;
+    if(target==="components"){
+      const frame=$("nottasComponentsFrame");
+      if(frame){
+        const syncPreviewTheme=()=>{try{frame.contentWindow?.postMessage({type:"nottas-theme",value:uiTheme},"*")}catch(_){}};
+        if(!frame.dataset.previewThemeListener){frame.addEventListener("load",syncPreviewTheme);frame.dataset.previewThemeListener="1"}
+        syncPreviewTheme();
+      }
+    }
   }
   function closeTeamSettings(){
     closeOverlay("assistantOverlay");
@@ -10285,7 +10302,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
   document.querySelectorAll("[data-wake-snooze]").forEach(b=>b.addEventListener("click",()=>{const minutes=Number(b.dataset.wakeSnooze)||15;try{NottasNative.snoozeWake(minutes)}catch(_){}refreshWakeControlUI();closeOverlay("wakeControlOverlay");showToast("Pausado "+(minutes<60?minutes+" min":minutes/60+" h"))}));
   $("settingsBtn").addEventListener("click",()=>{renderSettingsSummary();showSettingsPage("home");openOverlay("settingsOverlay")});
   $("settingsClose").addEventListener("click",()=>closeOverlay("settingsOverlay"));
-  $("settingsBackBtn").addEventListener("click",()=>showSettingsPage("home"));
+  $("settingsBackBtn").addEventListener("click",()=>showSettingsPage(currentSettingsPage==="components"?"about":"home"));
   document.querySelectorAll("#settingsOverlay [data-settings-open]").forEach(button=>
     button.addEventListener("click",()=>{renderSettingsSummary();showSettingsPage(button.dataset.settingsOpen)})
   );
@@ -10529,7 +10546,7 @@ html[data-theme="dark"] .directorDiscardChoices button{background:#2c2c2e}
       return true;
     }
     if($("settingsOverlay").classList.contains("show")){
-      if(currentSettingsPage!=="home"){showSettingsPage("home");return true}
+      if(currentSettingsPage!=="home"){showSettingsPage(currentSettingsPage==="components"?"about":"home");return true}
       closeOverlay("settingsOverlay");
       return true;
     }
