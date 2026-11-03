@@ -7,8 +7,8 @@
 <title>Componentes de Nottas · Vista previa</title>
 <style>
 *{box-sizing:border-box}
-:root{--ds-blue:#1677ff;--ds-bg:#f5f5f7;--ds-surface:#fff;--ds-surface-2:#ededf1;--ds-text:#1d1d1f;--ds-muted:#72727b;--ds-border:#dfdfe5;--ds-red:#d93c45;--ds-shadow:0 6px 20px rgba(22,24,37,.055);font-family:Inter,-apple-system,BlinkMacSystemFont,Roboto,"Segoe UI",sans-serif;color:var(--ds-text);background:var(--ds-bg);-webkit-font-smoothing:antialiased}
-:root[data-theme="dark"]{color-scheme:dark;--ds-blue:#4b9aff;--ds-bg:#101012;--ds-surface:#1c1c1e;--ds-surface-2:#2b2b30;--ds-text:#f5f5f7;--ds-muted:#b1b1ba;--ds-border:#39393e;--ds-red:#ff696e;--ds-shadow:none}
+:root{--ds-blue:var(--ns-accent,#1677ff);--ds-bg:var(--ns-page,#f5f5f7);--ds-surface:var(--ns-surface,#fff);--ds-surface-2:var(--ns-surface-muted,#ededf1);--ds-text:var(--ns-text,#1d1d1f);--ds-muted:var(--ns-secondary,#72727b);--ds-border:var(--ns-divider,#dfdfe5);--ds-red:#d93c45;--ds-shadow:0 6px 20px rgba(22,24,37,.055);font-family:Inter,-apple-system,BlinkMacSystemFont,Roboto,"Segoe UI",sans-serif;color:var(--ds-text);background:var(--ds-bg);-webkit-font-smoothing:antialiased}
+:root[data-theme="dark"]{color-scheme:dark;--ds-blue:var(--ns-accent,#4b9aff);--ds-bg:var(--ns-page,#101012);--ds-surface:var(--ns-surface,#1c1c1e);--ds-surface-2:var(--ns-surface-muted,#2b2b30);--ds-text:var(--ns-text,#f5f5f7);--ds-muted:var(--ns-secondary,#b1b1ba);--ds-border:var(--ns-divider,#39393e);--ds-red:#ff696e;--ds-shadow:none}
 body{margin:0;padding:12px 10px 28px;background:var(--ds-bg);color:var(--ds-text);line-height:1.45}
 button,input{font:inherit;-webkit-tap-highlight-color:transparent}
 button{cursor:pointer}
@@ -163,6 +163,7 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
 .ds-preview-axis{margin:0 0 0 59px;font-size:10px;color:var(--ds-muted)}
 
 </style>
+<link rel="stylesheet" href="design-system.css">
 </head>
 <body>
 <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -189,7 +190,7 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
   </div>
 </header>
 <section class="ds-section" aria-labelledby="ds-tipo">
-  <div class="ds-section-head"><div class="ds-index">01 / IDENTIDAD</div><h2 id="ds-tipo">Tipografía</h2><p class="ds-description">Una jerarquía consistente en títulos, contenido y metadatos. Inter es la candidata; aún no se ha incorporado el archivo de fuente.</p></div>
+  <div class="ds-section-head"><div class="ds-index">01 / IDENTIDAD</div><h2 id="ds-tipo">Tipografía</h2><p class="ds-description">Una jerarquía consistente en títulos, contenido y metadatos. La tipografía actual es la del sistema. Inter continúa en evaluación.</p></div>
   <div class="ds-body">
     <div class="ds-spec">Título principal · 28 px / 720</div><div class="ds-type-xl">Una agenda más clara.</div>
     <div class="ds-rule"></div><div class="ds-spec">Título de sección · 21 px / 690</div><div class="ds-type-lg">Mis tareas de hoy</div>
@@ -309,7 +310,7 @@ h2{font-size:16px;line-height:1.2;letter-spacing:-.02em;margin:3px 0 5px}
     <p class="ds-picker-note">Las fechas y vistas son de prueba. No se crean eventos, no se altera Google Calendar ni se cambia ninguna preferencia.</p>
   </div>
 </section>
-<p class="ds-foot">Nottas Design System · Laboratorio 1.2<br>Selectores ligeros, posición, simetría y alineación de encabezados.</p>
+<p class="ds-foot">Nottas Design System · 1.3<br>Componentes y reglas compartidas con la interfaz operativa.</p>
 <div id="dsToast" role="status" aria-live="polite" hidden></div>
 <script>
 (function(){
