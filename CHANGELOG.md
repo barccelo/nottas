@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## 0.27.114 — 4 de noviembre de 2026
+
+- Vencimiento por hora: con fin explícito se usa el fin; sin fin se usa la hora inicial; sin horas, el día siguiente.
+- Para tareas de varias jornadas se utiliza la fecha final y su hora de fin, o la medianoche siguiente si no se definió.
+- Borde rojo y texto de fecha se actualizan al cambiar el minuto y al volver al primer plano, sin reconstruir tarjetas ni interrumpir gestos.
+- El calendario ya no añade una hora ficticia para determinar el pasado; esa duración se conserva solo para dibujar bloques sin fin.
+- Se respetan los estados de completado, «Pendiente de verificar» y la sincronización. Sin migraciones de datos.
+- Android versionCode 195; publicación firmada por Actions para Obtainium.
+
 ## 0.27.113 — 3 de noviembre de 2026
 
 - Integración transversal de Nottas Design System 1.3: tokens y estilo compartido (`design-system.css`) para tarjetas, listas, calendario, propuestas, paneles, navegación y ajustes.

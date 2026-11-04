@@ -1,6 +1,14 @@
 # Estado actual de Nottas
 
-Última actualización: 3 de noviembre de 2026 · Design System 1.3 integrado en las pantallas operativas.
+Última actualización: 4 de noviembre de 2026 · vencimiento por hora integrado (v0.27.114).
+
+## Cambios v0.27.114 — vencimiento por hora
+
+- Tareas sin hora final vencen al llegar a la hora inicial, no al acabar el día. Si hay hora final, se toma esa; si faltan ambas, se espera al inicio del día siguiente.
+- Los intervalos de varios días vencen en la última jornada, según la hora final o al terminar el último día si no se fijó ninguna.
+- Actualización del borde y el metadato de fecha a cada cambio de minuto, sin reconstruir la lista; revisión al volver de segundo plano.
+- Calendario local utiliza el mismo criterio temporal; mantiene por separado una duración visual de 60 minutos cuando no hay hora final.
+- Sin cambios de esquema, alarmas, servicios ni estados de verificación. Pendiente prueba en Android y confirmación de Release firmada.
 
 ## Cambios v0.27.113 — unificación visual y depuración editorial
 

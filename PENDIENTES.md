@@ -1,6 +1,14 @@
 # Pendientes de Nottas
 
-Última revisión: 3 de noviembre de 2026 · Design System 1.3 (v0.27.113) pendiente de validación en Android.
+Última revisión: 4 de noviembre de 2026 · corrección temporal v0.27.114 pendiente de prueba en Android.
+
+## Prioridad inmediata — v0.27.114
+
+- [ ] Comprobar tarea con hora inicial y sin fin: borde rojo y fecha roja al llegar la hora sin cerrar la aplicación.
+- [ ] Verificar hora final explícita, fecha sin hora y duración de varios días.
+- [ ] Confirmar que tareas completadas o cerradas no vencen y «Pendiente de verificar» no cambia.
+- [ ] Comprobar transición automática a otro día y regreso desde segundo plano, y consistencia en calendario.
+- [ ] Confirmar compilación firmada, Release v0.27.114 y actualización segura por Obtainium.
 
 ## Prioridad inmediata — v0.27.113
 

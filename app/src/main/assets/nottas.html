@@ -5473,7 +5473,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       t.completedDates=t.completedDates.map(day=>addCalendarDays(date,taskDaysBetween(original,day)));
     t.dueDate=date;t.endDate=span?addCalendarDays(date,span):"";
   }
-  function isOverdue(t){return !!t.dueDate&&!t.done&&!meetingOutcomeClosed(t)&&taskRangeEnd(t)<localDateISO()}
+  function isOverdue(t){
+    if(!t?.dueDate||t.done||meetingOutcomeClosed(t))return false;
+    const deadlineDate=taskRangeEnd(t),nowDate=new Date(),today=localDateISO(nowDate);
+    if(deadlineDate!==today)return deadlineDate<today;
+    // For a range, no end time means the final day ends at midnight.
+    // For a single-day task, the start time is its deadline if no end time exists.
+    const deadlineTime=taskMultiDay(t)?t.endTime:(t.endTime||t.dueTime);
+    const deadlineMinutes=timeToMinutes(deadlineTime);
+    return deadlineMinutes!==null&&deadlineMinutes<=nowDate.getHours()*60+nowDate.getMinutes();
+  }
   function dueLabel(t){
     if(!t.dueDate)return "";
     const todayDate=new Date(),today=localDateISO(todayDate),tomorrowDate=new Date(todayDate);
@@ -6258,9 +6267,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     return end!==null&&end<=current.getHours()*60+current.getMinutes();
   }
   function calendarTaskPast(t,date){
-    if(taskMultiDay(t)&&t.endDate>=date)return calendarEventPast(t.endDate,t.endTime,!t.dueTime);
-    const end=t.dueTime?(t.endTime||minutesToTime(calendarTaskVisualEndMinutes(t))):"";
-    return calendarEventPast(date,end,!t.dueTime);
+    const endDate=taskRangeEnd(t);
+    const end=taskMultiDay(t)?(t.endTime||""):(t.endTime||t.dueTime||"");
+    return calendarEventPast(endDate,end,!end);
   }
   function calendarGooglePast(g){return calendarEventPast(g.date,g.endTime,!!g.allDay)}
   function calendarTaskRangeLabel(t){if(!t?.dueTime)return "Sin hora";return t.dueTime+(t.endTime?"–"+t.endTime:"")}
@@ -10574,6 +10583,32 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
+  // Update overdue styling on minute boundaries without disrupting scroll or swipe.
+  let taskDeadlineClockDay=localDateISO();
+  function refreshTaskDeadlineIndicators(){
+    if(!state||document.hidden)return;
+    const today=localDateISO();
+    if(today!==taskDeadlineClockDay){
+      taskDeadlineClockDay=today;
+      render();
+      if($("calendarOverlay").classList.contains("show"))renderCalendar();
+      return;
+    }
+    if(mode!=="tasks"||trash)return;
+    document.querySelectorAll("#list .item.swipeCard[data-task]").forEach(card=>{
+      const task=state.tasks.find(t=>t.id===card.dataset.task);
+      if(!task)return;
+      const overdue=isOverdue(task);
+      card.classList.toggle("overdue",overdue);
+      card.querySelector('[data-card-meta="date"]')?.classList.toggle("overdueText",overdue);
+    });
+  }
+  function scheduleTaskDeadlineRefresh(){
+    const msToNextMinute=60000-Date.now()%60000+100;
+    setTimeout(()=>{refreshTaskDeadlineIndicators();scheduleTaskDeadlineRefresh()},msToNextMinute);
+  }
+  scheduleTaskDeadlineRefresh();
+
   // FCM remains the fast path. A foreground reconciliation is the safety net
   // for a missed/invalid FCM token and for transient connection failures.
   // No 15-second polling, no background periodic network requests.
@@ -10597,8 +10632,8 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   },ASSISTANT_FOREGROUND_RECONCILE_MS);
   // Inbox content is refreshed separately, less frequently.
   setInterval(()=>{if(!document.hidden&&assistantConfigured()&&directorOwnedSpaces().length)refreshDirectorProposals(true)},120000);
-  window.addEventListener("focus",()=>{consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration();scheduleAssistantSync(200)}});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}}});
+  window.addEventListener("focus",()=>{refreshTaskDeadlineIndicators();consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration();scheduleAssistantSync(200)}});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){refreshTaskDeadlineIndicators();consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}}});
 
   // Close the uppermost calendar layer before leaving its date and view.
   // This is also used by Android's native Back dispatcher.
