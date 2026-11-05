@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## Documentación — 5 de noviembre de 2026 (sin nueva versión de la app)
+
+- Se crea `CONTINUIDAD.md` como ficha operativa compacta para retomar el proyecto entre chats: versión, último cambio, validaciones y siguiente paso.
+- Se enlaza el protocolo desde `README.md`, `ESTADO.md`, `PENDIENTES.md` y `DESIGN_SYSTEM.md` y se corrige la referencia antigua de versión en `ESTADO.md`.
+- Cambio exclusivamente documental: no modifica APK, versión de Android, Cloudflare ni publicación en Obtainium.
+
 ## 0.27.115 — 5 de noviembre de 2026
 
 - Tareas con subtareas se abren con tarjeta resumen colapsada, que se expande al tocar.
@@ -471,4 +477,4 @@ Los cambios de código y la publicación de la APK deben verificarse por separad
 
 ## Procedimiento de publicación
 
-Actualizar este historial, `ESTADO.md` y `PENDIENTES.md` con cada versión; registrar solo cambios confirmados y distinguir los pendientes de validación.
+Actualizar este historial, `ESTADO.md` y `PENDIENTES.md` con cada versión y mantener `CONTINUIDAD.md` como ficha actualizada de reanudación; registrar solo cambios confirmados y distinguir los pendientes de validación.
