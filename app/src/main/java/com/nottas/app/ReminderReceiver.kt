@@ -11,6 +11,9 @@ import android.content.Intent
 import android.os.Build
 import org.json.JSONArray
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import kotlin.math.abs
 
 object ReminderScheduler {
@@ -159,6 +162,138 @@ object ReminderScheduler {
         } catch (_: Throwable) {
             false
         }
+    }
+
+
+    /**
+     * Apply a signed-in workspace's server-authoritative FCM schedule delta
+     * without loading the WebView. Other local and shared reminders are retained.
+     * The normal JS sync remains the source of full device state on app resume.
+     */
+    @Synchronized
+    fun applySharedTaskUpdate(context: Context, update: JSONObject): Boolean {
+        return try {
+            val id = update.optString("id").trim()
+            val workspaceId = update.optString("workspaceId").trim()
+            if (id.isEmpty() || workspaceId.isEmpty() || id.length > 120 || workspaceId.length > 100) return false
+
+            val current = readActive(context)
+            val previous = current.optJSONObject(id)
+            if (previous != null && previous.optString("workspaceId") != workspaceId) return false
+
+            // Ignore reordered stale FCM messages. Server change sequence is monotonic.
+            val versionsPrefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            val versions = try { JSONObject(versionsPrefs.getString("remote_task_versions", "{}") ?: "{}") }
+                catch (_: Throwable) { JSONObject() }
+            val versionKey = "$workspaceId:$id"
+            val seq = update.optLong("seq", 0L)
+            if (seq > 0 && seq <= versions.optLong(versionKey, 0L)) return true
+
+            val activeArray = JSONArray()
+            current.keys().forEach { taskId ->
+                if (taskId != id) current.optJSONObject(taskId)?.let { activeArray.put(it) }
+            }
+
+            val incoming = JSONObject()
+                .put("id", id)
+                .put("workspaceId", workspaceId)
+                .put("approvalStatus", update.optString("approvalStatus", "confirmed"))
+                .put("meetingStatus", update.optString("meetingStatus", "scheduled"))
+                .put("done", update.optBoolean("done", false))
+                .put("deleted", update.optBoolean("deleted", false))
+            if (eligible(incoming)) activeArray.put(incoming)
+
+            // Keep all other task alarms as-is; the normal scheduler re-validates
+            // them and preserves still-eligible snoozes.
+            val rows = JSONArray()
+            val oldItems = readItems(context)
+            oldItems.keys().forEach { alarmId ->
+                val row = oldItems.optJSONObject(alarmId) ?: return@forEach
+                if (row.optString("taskId") == id && row.optString("workspaceId") == workspaceId) return@forEach
+                val taskId = row.optString("taskId", alarmId.substringBefore("::"))
+                if (!current.has(taskId) || row.optLong("at", 0L) <= System.currentTimeMillis()) return@forEach
+                rows.put(JSONObject()
+                    .put("id", taskId)
+                    .put("workspaceId", row.optString("workspaceId"))
+                    .put("alarmId", alarmId)
+                    .put("text", row.optString("text"))
+                    .put("date", row.optString("date"))
+                    .put("at", row.optLong("at"))
+                )
+            }
+
+            if (eligible(incoming)) {
+                val date = try { LocalDate.parse(update.optString("dueDate")) }
+                    catch (_: Throwable) { null }
+                if (date != null) {
+                    val end = try { LocalDate.parse(update.optString("endDate")) }
+                        catch (_: Throwable) { null }
+                    val last = if (end != null && end.isAfter(date)) end else date
+                    val time = try { LocalTime.parse(update.optString("dueTime").ifBlank { "09:00" }) }
+                        catch (_: Throwable) { LocalTime.of(9, 0) }
+                    val text = update.optString("text").trim().take(150)
+                    val offsets = linkedSetOf<Int>()
+                    val explicit = update.optJSONArray("reminders")
+                    if (explicit != null) {
+                        for (i in 0 until explicit.length()) {
+                            val n = explicit.optInt(i, -1)
+                            if (n in 0..525600) offsets.add(n)
+                        }
+                    } else {
+                        val legacy = update.optString("reminder", "none")
+                        val n = when (legacy) {
+                            "at" -> 0; "1m" -> 1; "5m" -> 5; "10m" -> 10
+                            "15m" -> 15; "30m" -> 30; "1h" -> 60; "1d" -> 1440
+                            else -> if (legacy.startsWith("custom:")) legacy.substringAfter(":").toIntOrNull() else null
+                        }
+                        if (n != null && n in 0..525600) offsets.add(n)
+                    }
+                    val completed = mutableSetOf<String>()
+                    val completedArray = update.optJSONArray("completedDates")
+                    if (completedArray != null) {
+                        for (i in 0 until completedArray.length()) completed.add(completedArray.optString(i))
+                    }
+                    val now = System.currentTimeMillis()
+                    var day = date
+                    var count = 0
+                    while (!day.isAfter(last) && count < 366) {
+                        val dayLabel = day.toString()
+                        if (!completed.contains(dayLabel)) {
+                            val dueAt = day.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            for (offset in offsets) {
+                                val at = dueAt - offset.toLong() * 60_000L
+                                if (at > now && text.isNotBlank()) {
+                                    rows.put(JSONObject()
+                                        .put("id", id)
+                                        .put("workspaceId", workspaceId)
+                                        .put("alarmId", "$id::$dayLabel::r$offset")
+                                        .put("text", text)
+                                        .put("date", dayLabel)
+                                        .put("at", at))
+                                }
+                            }
+                        }
+                        day = day.plusDays(1)
+                        count++
+                    }
+                }
+            }
+            val applied = sync(context, JSONObject()
+                .put("policyVersion", 2)
+                .put("activeTasks", activeArray)
+                .put("reminders", rows).toString()
+            )
+            if (applied && seq > 0) {
+                versions.put(versionKey, seq)
+                if (versions.length() > 500) {
+                    val keys = mutableListOf<String>()
+                    versions.keys().forEach { keys.add(it) }
+                    keys.take(versions.length() - 500).forEach { versions.remove(it) }
+                }
+                versionsPrefs.edit().putString("remote_task_versions", versions.toString()).apply()
+            }
+            applied
+        } catch (_: Throwable) { false }
     }
 
     fun rescheduleAll(context: Context) {
