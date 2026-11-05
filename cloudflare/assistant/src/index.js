@@ -607,6 +607,7 @@ async function pushSync(request, auth, env) {
   const conflicts = [];
   const touchedWorkspaces = new Set();
   const proposalSignals = new Map();
+  const reminderSignals = new Map();
   const pushDelivery = [];
 
   for (const change of changes) {
@@ -722,14 +723,47 @@ async function pushSync(request, auth, env) {
     ).bind(workspaceId, entityType, entityId, op, JSON.stringify(payload), Date.now(), auth.userId).first();
     accepted.push({ workspaceId, entityType, entityId, rev: nextRev, updatedAt: incomingUpdatedAt, seq: inserted?.seq || 0, payload });
     touchedWorkspaces.add(workspaceId);
-    if(entityType==="task" && membershipRoles.get(workspaceId)==="assistant" &&
-       !deletedAt && payload.approvalStatus==="proposed" &&
-       (!current || safeJson(current.payload_json, {}).approvalStatus!=="proposed" ||
-        String(safeJson(current.payload_json, {}).dueDate||"")!==String(payload.dueDate||"") ||
-        String(safeJson(current.payload_json, {}).dueTime||"")!==String(payload.dueTime||""))) {
-      proposalSignals.set(workspaceId, {
-        id: entityId, title: textValue(payload.text||"Nueva propuesta",120)
-      });
+    if (entityType === "task") {
+      const previous = current ? safeJson(current.payload_json, {}) : null;
+      // Compact, server-authoritative schedule changes reach Android even with
+      // the app closed. Never put the full task body/subtasks into FCM data.
+      const scheduleFields = ["text","dueDate","endDate","dueTime","endTime","reminders",
+        "reminder","approvalStatus","meetingStatus","done","completedDates","deletedAt"];
+      const relevant = !previous || scheduleFields.some(key =>
+        JSON.stringify(previous[key] ?? null) !== JSON.stringify(payload[key] ?? null));
+      if (relevant) {
+        const queue = reminderSignals.get(workspaceId) || [];
+        queue.push({
+          id: entityId, workspaceId, text: textValue(payload.text || "Evento", 150),
+          dueDate: textValue(payload.dueDate || "", 10),
+          endDate: textValue(payload.endDate || "", 10),
+          dueTime: textValue(payload.dueTime || "", 5),
+          approvalStatus: textValue(payload.approvalStatus || "confirmed", 32),
+          meetingStatus: textValue(payload.meetingStatus || "scheduled", 32),
+          done: !!payload.done, deleted: !!deletedAt,
+          reminders: Array.isArray(payload.reminders) ? payload.reminders.slice(0,12) : null,
+          reminder: textValue(payload.reminder || "none", 24),
+          completedDates: Array.isArray(payload.completedDates)
+            ? payload.completedDates.filter(d => String(d) >= new Date(Date.now()-86400000).toISOString().slice(0,10)).slice(0,90)
+            : []
+        });
+        reminderSignals.set(workspaceId,queue);
+      }
+      if (membershipRoles.get(workspaceId)==="assistant" && !deletedAt) {
+        const changedDate = !previous || ["dueDate","dueTime","endDate","endTime"].some(key =>
+          String(previous[key] || "") !== String(payload[key] || ""));
+        const approvalNeedsAction = ["proposed","changes_requested"].includes(payload.approvalStatus) &&
+          (!previous || previous.approvalStatus !== payload.approvalStatus || changedDate);
+        const deferredNeedsAttention = payload.meetingStatus === "deferred" &&
+          (!previous || previous.meetingStatus !== "deferred");
+        if (approvalNeedsAction || deferredNeedsAttention) {
+          const prefix = payload.approvalStatus === "changes_requested" ? "Solicitan nueva fecha: " :
+            deferredNeedsAttention ? "Evento diferido: " : "";
+          proposalSignals.set(workspaceId, {
+            id: entityId, title: prefix + textValue(payload.text || "Nueva propuesta", 110)
+          });
+        }
+      }
     }
   }
 
@@ -742,6 +776,9 @@ async function pushSync(request, auth, env) {
       const proposal=proposalSignals.get(workspaceId);
       const delivery = await pushWorkspaceSync(workspaceId, auth.userId, env);
       pushDelivery.push({workspaceId, ...delivery});
+      if (reminderSignals.has(workspaceId)) {
+        await pushWorkspaceReminderPatches(workspaceId, auth.userId, reminderSignals.get(workspaceId), env);
+      }
       if(proposal&&workspace.kind==="assistant"&&workspace.owner_user_id!==auth.userId) {
         await sendPushToUser(workspace.owner_user_id,{
           type:"director_proposal",workspaceId,proposalId:proposal.id,title:proposal.title
@@ -816,7 +853,7 @@ async function pendingAssistantProposals(workspaceId, auth, env) {
   if (workspace?.kind !== "assistant") return json({ error: "assistant_workspace_required" }, 400);
   const result = await env.DB.prepare(
     "SELECT id,payload_json,updated_at FROM items WHERE workspace_id=? AND entity_type='task' AND deleted_at IS NULL " +
-    "AND json_extract(payload_json,'$.approvalStatus')='proposed' AND json_extract(payload_json,'$.deletedAt') IS NULL ORDER BY updated_at DESC LIMIT 250"
+    "AND json_extract(payload_json,'$.approvalStatus') IN ('proposed','changes_requested') AND json_extract(payload_json,'$.deletedAt') IS NULL ORDER BY updated_at DESC LIMIT 250"
   ).bind(workspaceId).all();
   const proposals = (result.results || []).map(row => {
     const p = safeJson(row.payload_json, {});
@@ -826,6 +863,7 @@ async function pendingAssistantProposals(workspaceId, auth, env) {
       dueTime: textValue(p.dueTime, 5), endTime: textValue(p.endTime, 5),
       locationText: textValue(p.locationText, 160),
       message: textValue(p.proposalMessage, 280),
+      approvalStatus: textValue(p.approvalStatus, 32),
       createdBy: textValue(p.createdBy, 120),
       updatedAt: Number(row.updated_at) || 0
     };
@@ -1188,6 +1226,19 @@ async function pushAvailabilityChanged(ownerUserId, env) {
     type: "availability_changed",
     workspaceId: r.workspace_id
   }, env)));
+}
+
+async function pushWorkspaceReminderPatches(workspaceId, actorUserId, patches, env) {
+  const rows = await env.DB.prepare(
+    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
+  ).bind(workspaceId, actorUserId).all();
+  const recipients=(rows.results||[]).map(r=>r.user_id);
+  // Each patch is small enough for FCM's data-message limit.
+  // Ordinary sync pushes remain the fallback for full state reconciliation.
+  for (const patch of patches||[]) {
+    const payload={type:"sync_task",workspaceId,taskData:JSON.stringify(patch)};
+    await Promise.all(recipients.map(userId=>sendPushToUser(userId,payload,env)));
+  }
 }
 
 async function pushWorkspaceSync(workspaceId, actorUserId, env) {
