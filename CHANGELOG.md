@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## 0.27.116 — 5 de noviembre de 2026
+
+- Se evita el doble resumen de subtareas: una sola tarjeta contraída, con el aspecto del Design System; el acceso de herramientas no duplica el componente.
+- Los selectores integrados de fecha y hora preservan la visibilidad del encabezado y parte superior al abrirse, especialmente al diferir o reprogramar.
+- Notas con título existentes se abren sin teclado automático; nuevas o sin título conservan entrada directa.
+- Nuevo icono del indicador «Actualizar» mediante SVG de dos flechas con alineación y grosor uniformes.
+- Sin cambios de esquema, backend, alertas ni datos. Compilación firmada y pruebas Android por verificar.
+
 ## Documentación — 5 de noviembre de 2026 (sin nueva versión de la app)
 
 - Se crea `CONTINUIDAD.md` como ficha operativa compacta para retomar el proyecto entre chats: versión, último cambio, validaciones y siguiente paso.
