@@ -10,7 +10,8 @@
 - [ ] Diferir o reprogramar evento con y sin fecha: verificar que selector de fecha y luego selector de hora se abren mostrando **el encabezado y campos superiores completos**, sin desplazamiento automático. Comprobar pantallas de distintas alturas, teclado visible y Back.
 - [ ] Abrir nota existente con título: no aparece teclado. Notas nuevas o sin título: el campo correspondiente recibe el foco. Confirmar navegación entre notas sin teclado residual.
 - [ ] Deslizar para actualizar la lista de notas y tareas, comprobar icono, alineación, animación de carga y contraste en modo claro/oscuro.
-- [ ] Confirmar Gradle v0.27.116, versionCode 197, compilación firmada, Release y actualización en Obtainium sin pérdida de datos. Las pruebas en Android no se deducen del éxito de CI.
+- [x] Confirmados Gradle v0.27.116 (`versionCode 197`), compilación y firma y Release con APK en GitHub.
+- [ ] Comprobar actualización por Obtainium en Android, sin pérdida de datos; las pruebas funcionales no se deducen del éxito de CI.
 
 ## Prioridad inmediata — v0.27.115
 
