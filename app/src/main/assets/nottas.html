@@ -8279,17 +8279,30 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(!mw.children.length)mw.innerHTML=Array.from({length:60},(_,i)=>'<div class="taskInlineWheelItem" data-inline-wheel-value="'+i+'">'+String(i).padStart(2,"0")+'</div>').join("");
     [hw,mw].forEach((wheel,idx)=>{
       if(wheel.dataset.ready==="1")return;wheel.dataset.ready="1";let timer=null,last=-1;
-      wheel.addEventListener("scroll",()=>{if(taskInlineEditingPart>=0&&!taskInlineWheelMute)finishInlineWheelEdit();clearTimeout(timer);timer=setTimeout(()=>{
-        const max=idx===0?23:59,value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/INLINE_TIME_ROW)));
-        if(!taskInlineWheelMute&&value!==last){last=value;hapticTick();applyTaskInlineWheelValue(idx,value)}
-      },40)},{passive:true});
+      wheel.addEventListener("scroll",()=>{
+        // Ignore programmatic recentering: delayed callbacks must not overwrite a tap.
+        if(taskInlineWheelMute)return;
+        if(taskInlineEditingPart>=0)finishInlineWheelEdit();
+        clearTimeout(timer);timer=setTimeout(()=>{
+          const max=idx===0?23:59,value=Math.max(0,Math.min(max,Math.round(wheel.scrollTop/INLINE_TIME_ROW)));
+          if(!taskInlineWheelMute&&value!==last){last=value;hapticTick();applyTaskInlineWheelValue(idx,value)}
+        },40);
+      },{passive:true});
       wheel.addEventListener("click",e=>{
         const item=e.target.closest("[data-inline-wheel-value]");if(!item)return;
         const value=Number(item.dataset.inlineWheelValue),selected=idx===0?currentTaskInlineTime().h:currentTaskInlineTime().m;
+        clearTimeout(timer);last=value;
         if(value===selected && Math.abs(wheel.scrollTop-value*INLINE_TIME_ROW)<INLINE_TIME_ROW/2){
+          // A fallback displayed hour (for a task with no time yet) must be saved
+          // before exposing numeric editing; otherwise the keyboard shows a ghost value.
+          const targetId=taskInlineTimeTarget==="end"?"taskEndTime":"taskTime";
+          if(!$(targetId).value)applyTaskInlineWheelValue(idx,value);
           beginInlineWheelEdit(idx);return;
         }
-        wheel.scrollTo({top:value*INLINE_TIME_ROW,behavior:"smooth"});
+        // A tap selects immediately. The wheel is repositioned without a smooth
+        // intermediate scroll that used to commit other values before the target.
+        applyTaskInlineWheelValue(idx,value);
+        positionTaskInlineTimeWheels(false);
       });
     });
   }
@@ -8319,7 +8332,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const selected=wheel.querySelector('[data-inline-wheel-value="'+value+'"]');
     if(selected)selected.classList.add("inlineWheelEditingTarget");
     input.classList.remove("hidden");
-    requestAnimationFrame(()=>{if(taskInlineEditingPart===part){input.focus();input.select()}});
+    requestAnimationFrame(()=>{if(taskInlineEditingPart===part){input.focus({preventScroll:true});input.select()}});
   }
   function positionTaskInlineTimeWheels(smooth=false){
     buildTaskInlineTimeWheels();const v=currentTaskInlineTime();taskInlineWheelMute=true;
@@ -8398,7 +8411,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     saveUI();
     if(key==="reminder")taskReminderPanelOpen=!wasOpen;
     else taskReminderPanelOpen=false;
-    if(taskActiveTool==="subtasks")taskSubtasksExpanded=true;
+    if(key==="subtasks")taskSubtasksExpanded=!wasOpen;
     syncTaskInlineForm();
     const btn=document.querySelector('[data-task-tool="'+key+'"]');
     if(btn)btn.scrollIntoView({block:"nearest",inline:"nearest"});
@@ -8411,7 +8424,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(!$("taskToolsHeader")||!overlay)return;
     overlay.classList.toggle("taskToolsExpanded",taskToolsExpanded);
     overlay.classList.toggle("taskToolsCompact",!taskToolsExpanded);
-    overlay.classList.toggle("taskToolsHasSubtasks",!taskToolsExpanded&&taskActiveTool==="subtasks");
+    overlay.classList.toggle("taskToolsHasSubtasks",!taskToolsExpanded&&taskSubtasksExpanded);
     // The description always precedes the subtask list. Never reparent the
     // list into the active tool section: that puts notes below subtasks when
     // the compact toolbar is used.
@@ -8699,8 +8712,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     // The legacy inline toggle only offers «Añadir» for an empty list.
     $("taskInlineSubtasksToggle").classList.toggle("hidden",count>0);
     const preview=$("taskSubtasksSummaryCard");
-    preview.classList.toggle("hidden",!count||taskSubtasksExpanded);
+    preview.classList.toggle("hidden",!count);
     preview.setAttribute("aria-expanded",String(taskSubtasksExpanded));
+    preview.setAttribute("aria-label",taskSubtasksExpanded?"Ocultar subtareas":"Mostrar subtareas");
     $("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();syncNottasSelectTriggers();syncTaskToolsLayout();
   }
   function meetingIsTracked(t){
@@ -10347,7 +10361,13 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   $("taskLocation").addEventListener("input",scheduleTaskHistory);
   $("taskLocation").addEventListener("change",commitTaskHistory);
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
-  $("taskSubtasksSummaryCard").addEventListener("click",()=>{taskSubtasksExpanded=true;taskToolsExpanded=false;taskActiveTool="subtasks";syncTaskInlineForm();$("taskSubtasksBox").scrollIntoView({block:"nearest",behavior:"smooth"})});
+  $("taskSubtasksSummaryCard").addEventListener("click",()=>{
+    taskSubtasksExpanded=!taskSubtasksExpanded;
+    taskToolsExpanded=false;
+    if(taskSubtasksExpanded)taskActiveTool="subtasks";
+    else if(taskActiveTool==="subtasks")taskActiveTool="";
+    syncTaskInlineForm();
+  });
   $("assistantTaskStatus").addEventListener("click",()=>{
     if($("assistantTaskStatus").disabled)return;
     if(["proposed","changes_requested"].includes(editorTaskApprovalStatus)&&editorMeetingStatus==="scheduled"){
@@ -10916,7 +10936,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
         picker.classList.add("hidden");return true;
       }
       if(taskInlineOpenPanel==="date"||taskInlineOpenPanel==="time"){
-        if(target.closest(taskInlineOpenPanel==="date"?"#taskInlineDatePanel":"#taskInlineTimePanel"))return false;
+        // Switching between the start/end fields is part of the active picker,
+        // not an outside tap. Leave the event for the field’s click handler.
+        if(target.closest("#taskInlineDatePanel,#taskInlineTimePanel,#taskInlineStartBtn,#taskInlineEndBtn,#taskInlineDateBtn,#taskInlineEndDateBtn,#taskDateBtn,#taskDateChip,#taskTimeQuickBtn,#taskTimeChip"))return false;
         setTaskInlinePanel("");return true;
       }
       const rich=$("taskForm").classList.contains("hidden")?$("richToolbar"):$("taskRichToolbar");
