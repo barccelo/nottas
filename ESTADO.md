@@ -1,6 +1,6 @@
 # Estado actual de Nottas
 
-Última actualización: 5 de noviembre de 2026 · controles de subtareas y selector horario v0.27.117 (publicación por verificar).
+Última actualización: 5 de noviembre de 2026 · controles de subtareas y selector horario v0.27.117 (APK firmada publicada; pendiente verificación Android).
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
@@ -10,7 +10,7 @@
 - Corregido el cierre involuntario del selector al cambiar entre **hora de inicio** y **hora de fin**: el controlador global ya no trata esos botones como toques fuera del panel. Tocar de nuevo la hora ya activa continúa cerrándolo.
 - En la rueda de hora/minutos, tocar un valor distinto lo aplica **inmediatamente**, sin esperar a terminar un scroll animado. Los scrolls programáticos no disparan confirmaciones tardías.
 - Tocar el valor central aún ofrece edición numérica; si el campo no tenía hora guardada, se confirma primero el valor visible para evitar discrepancias con el teclado. Enfoque numérico sin desplazar el encabezado.
-- Sin cambios de modelo de datos, alarmas ni Cloudflare. **Pendiente** validar gestos y teclado en Android real, además de la compilación, firma y Release de v0.27.117.
+- Sin cambios de modelo de datos, alarmas ni Cloudflare. **Confirmadas** compilación, firma y Release de v0.27.117 con APK. **Pendiente:** validar gestos, rueda y teclado en Android real, incluida actualización desde Obtainium.
 
 ## Cambios v0.27.116 — editor y consistencia visual
 
@@ -258,7 +258,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android prevista en esta intervención: **0.27.117** (`versionCode 198`); comprobar Gradle, GitHub Actions y Release antes de confirmar su publicación. La versión 0.27.116 sí tuvo Release firmada.
+- Versión del código Android: **0.27.117** (`versionCode 198`), confirmada en Gradle, GitHub Actions y APK firmada en Releases el 5 de noviembre de 2026.
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
