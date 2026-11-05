@@ -1992,7 +1992,7 @@ html[data-theme="dark"] .sidebarWordmark{filter:none!important}
   transform:translate(-50%,-24px);transition:opacity .12s,transform .12s,visibility .12s;
 }
 .pullSyncIndicator.active{opacity:1;visibility:visible;transform:translate(-50%,0)}
-.pullSyncIndicator svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pullSyncIndicator svg{width:20px;height:20px;display:block;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .pullSyncIndicator.loading svg{animation:nottasPullSyncSpin .9s linear infinite}
 @keyframes nottasPullSyncSpin{to{transform:rotate(360deg)}}
 html[data-theme="dark"] .pullSyncIndicator{background:#29292e;color:#f5f5f7;border-color:#45454b}
@@ -2238,7 +2238,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   <div id="categories" class="scroller"></div>
   <div id="list" class="list"></div>
   <div id="pullSyncIndicator" class="pullSyncIndicator" role="status" aria-live="polite" aria-hidden="true">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 11a7 7 0 1 1-2-5M19 4v6h-6"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9c2.4 0 4.7 1 6.4 2.6L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9c-2.4 0-4.7-1-6.4-2.6L3 16"/><path d="M8 16H3v5"/></svg>
     <span id="pullSyncText">Desliza para actualizar</span>
   </div>
 </div>
@@ -6911,7 +6911,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
           if(!editor)openTask(t,null,{autoFocus:false});
           taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
           setTaskInlinePanel("date");
-          $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+          focusEditorPanelFromTop();
           showToast("Selecciona una fecha para agendar");
           return;
         }
@@ -6961,7 +6961,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
             openTask(t,null,{autoFocus:false});deferredDateAwaitingTime=true;
             taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
             setTaskInlinePanel("date");
-            $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+            focusEditorPanelFromTop();
           }
         }
         showToast("Estado actualizado");
@@ -7121,7 +7121,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     sheet.classList.remove("sheetDragging","sheetExpanded");
     sheet.style.removeProperty("--sheet-drag-y");
   }
-  function openOverlay(id){const overlay=$(id);syncVisualViewport();resetSheetState(overlay);overlay.classList.add("show");overlay.setAttribute("aria-hidden","false")}
+  function openOverlay(id){const overlay=$(id);syncVisualViewport();resetSheetState(overlay);overlay.classList.add("show");overlay.setAttribute("aria-hidden","false");if(id==="editorOverlay"){const sheet=overlay.querySelector(".editorSheet");if(sheet)sheet.scrollTop=0}}
   function closeOverlay(id){const overlay=$(id);overlay.classList.remove("show");overlay.setAttribute("aria-hidden","true");resetSheetState(overlay)}
   function setSheetExpanded(sheet,expanded){
     if(!sheet)return;
@@ -8433,7 +8433,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       btn.setAttribute("aria-expanded",String(active));btn.setAttribute("aria-pressed",String(active));
     });
     document.querySelectorAll("[data-task-tool-section]").forEach(section=>{
-      section.classList.toggle("active",!taskToolsExpanded&&section.dataset.taskToolSection===taskActiveTool);
+      section.classList.toggle("active",!taskToolsExpanded&&section.dataset.taskToolSection===taskActiveTool&&!(section.dataset.taskToolSection==="subtasks"&&editorSubtasks?.length));
     });
     const expand=$("taskToolsExpand");
     expand.classList.toggle("active",taskToolsExpanded);
@@ -8444,6 +8444,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5-5 5 5M7 20l5-5 5 5"/></svg>':
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>';
   }
+  function focusEditorPanelFromTop(){
+    // Inline pickers must never push the title or upper fields above the viewport.
+    // Allow additional picker content below the fold instead of using scrollIntoView.
+    const sheet=$("editorOverlay")?.querySelector(".editorSheet");
+    if(!sheet)return;
+    const focused=document.activeElement;
+    if(focused instanceof HTMLElement&&sheet.contains(focused)&&focused.matches("input,textarea,[contenteditable]"))focused.blur();
+    sheet.scrollTop=0;
+    requestAnimationFrame(()=>{if($("editorOverlay").classList.contains("show"))sheet.scrollTop=0});
+  }
   function setTaskInlinePanel(name){
     taskInlineOpenPanel=taskInlineOpenPanel===name?"":name;
     $("taskInlineDatePanel").classList.toggle("hidden",taskInlineOpenPanel!=="date");
@@ -8453,7 +8463,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();
     syncTaskInlineDetailVisibility();
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
-    if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
+    if(taskInlineOpenPanel)focusEditorPanelFromTop();
   }
   let deferredDateAwaitingTime=false;
   function finishTaskDateChoice(){
@@ -8685,6 +8695,9 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const summary=count?(Math.round((p||0)*100)+"% · "+count):"Añadir";
     $("taskInlineSubtasksSummary").textContent=summary;
     $("taskSubtasksSummaryCount").textContent=summary;
+    // When subtasks already exist, their single collapsed entry is the canonical summary card.
+    // The legacy inline toggle only offers «Añadir» for an empty list.
+    $("taskInlineSubtasksToggle").classList.toggle("hidden",count>0);
     const preview=$("taskSubtasksSummaryCard");
     preview.classList.toggle("hidden",!count||taskSubtasksExpanded);
     preview.setAttribute("aria-expanded",String(taskSubtasksExpanded));
@@ -8783,7 +8796,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       deferredDateAwaitingTime=true;
       closeTaskMeetingMenu();
       taskInlineDateTarget="start";taskInlineMonth=dateFromISO($("taskDate").value||localDateISO());
-      setTaskInlinePanel("date");$("taskInlineDatePanel").scrollIntoView({block:"nearest"});return;
+      setTaskInlinePanel("date");focusEditorPanelFromTop();return;
     }
     if(!canManageMeetingInEditor())return;
     if(!["scheduled","deferred","realized","not_realized","cancelled"].includes(action))return;
@@ -8792,7 +8805,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       taskInlineDateTarget="start";
       taskInlineMonth=dateFromISO(localDateISO());
       setTaskInlinePanel("date");
-      $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+      focusEditorPanelFromTop();
       showToast("Selecciona la nueva fecha para agendar");
       return;
     }
@@ -8817,7 +8830,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       deferredDateAwaitingTime=true;
       taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
       setTaskInlinePanel("date");
-      $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+      focusEditorPanelFromTop();
     }
   }
   function assistantStatusLabel(status){
@@ -9049,7 +9062,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
-    openOverlay("editorOverlay");setTimeout(()=>{$("noteBlocksEditor").querySelector(".richText")?.focus()},80)
+    openOverlay("editorOverlay");
+    // Existing titled notes open in reading mode, without raising the Android keyboard.
+    // New notes and untitled notes remain ready for immediate entry.
+    const shouldFocusNote=!n||!$("noteTitle").textContent.trim();
+    if(shouldFocusNote)setTimeout(()=>{
+      if($("editorOverlay").classList.contains("show")&&editingNoteId===(n?.id||null)){
+        (n?$("noteTitle"):$("noteBlocksEditor").querySelector(".richText"))?.focus({preventScroll:true});
+      }
+    },80);
+    else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   }
   function closeEditor(options={}){
     closeTaskMeetingMenu();
