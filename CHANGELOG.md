@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## 0.27.117 — 5 de noviembre de 2026
+
+- La tarjeta única de subtareas permanece visible y permite expandir/contraer sin desaparecer; herramientas sincronizadas con el mismo estado.
+- Cambio de hora inicial a final dentro del selector sin cierre accidental por el control general de toque exterior.
+- El toque sobre una hora/minuto aplica la selección de inmediato, sin esperar al scroll; edición numérica central conserva valor visible y foco estable.
+- Cambios de interacción de la interfaz local; sin migraciones, alarmas ni backend. APK firmada y prueba Android pendientes de confirmación.
+
 ## 0.27.116 — 5 de noviembre de 2026
 
 - Se evita el doble resumen de subtareas: una sola tarjeta contraída, con el aspecto del Design System; el acceso de herramientas no duplica el componente.
