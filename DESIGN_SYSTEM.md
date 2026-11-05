@@ -140,6 +140,14 @@ La identidad gráfica incluye **dónde se coloca** cada componente, no solo cóm
 - [ ] Verificar contraste, tamaños táctiles, narración accesible y esquemas de color de categorías.
 - [ ] Validar los roles director/asistente, sincronización, propuestas y lectura de Google Calendar sin regresiones.
 
+## Regla de apertura y posición del contenido (5 de noviembre de 2026)
+
+- Al abrir una pantalla de edición o un selector integrado, **mantener visible el encabezado y los controles superiores**. Si el contenido excede el alto de la pantalla, el desplazamiento debe ocurrir hacia abajo, nunca cortando automáticamente la parte superior.
+- Evitar invocar `scrollIntoView` de un panel al abrirlo dentro de un formulario de pantalla completa: puede desplazar al usuario al final. Restaurar el scroll del contenedor de edición al inicio en aperturas pertinentes y permitir desplazamiento manual para continuar.
+- Una herramienta no debe duplicar tarjetas-resumen de contenido ya existente. Mantener una sola representación canónica, con iconografía, márgenes, radios y jerarquía compartidos.
+- Las notas ya tituladas abren en modo lectura sin teclado; las nuevas y sin título permiten entrada inmediata.
+- Indicadores temporales, como actualizar al deslizar, usan iconos vectoriales simétricos (viewBox 24, trazo aprox. 1.8, extremos redondeados, objetivo de alineación óptica).
+
 ## Fases pendientes
 
 1. Validar visualmente los ocho módulos del laboratorio, incluidos los selectores 1.2, corregir contraste, proporciones y comportamiento en dispositivos reales.
