@@ -6,17 +6,17 @@
 ## Punto de reanudación
 
 - **Repositorio/rama:** `barccelo/nottas` · `main`.
-- **Versión prevista del código Android:** `0.27.116` (`versionCode 197`), pendiente de confirmar en Gradle tras el último commit; verificar versión, compilación firmada y Release.
-- **Publicación:** la existencia de esta versión en el código **no confirma** una APK firmada ni su disponibilidad en GitHub Releases/Obtainium. Comprobarlas antes de afirmarlo.
+- **Versión del código Android:** `0.27.116` (`versionCode 197`), confirmada en `app/build.gradle.kts`.
+- **Publicación:** Release firmada `v0.27.116` con `Nottas-v0.27.116.apk` **confirmada en GitHub** el 5 de noviembre de 2026; la instalación y comportamiento en Obtainium/Android continúan por verificar. Cada versión posterior requiere su propia comprobación.
 - **Última entrega funcional documentada:** subtareas inicialmente contraídas con tarjeta-resumen; orden «Añadir subtarea» antes de «Elementos marcados»; indicador activo en herramientas de formato; corrección del flujo Diferida → Propuesta/Agendada y solicitud de nueva fecha; actualización de alarmas nativas mediante FCM `sync_task`.
 - **Backend:** `ESTADO.md` indica que el Worker de Cloudflare fue actualizado para enviar `sync_task`; el funcionamiento extremo a extremo entre dispositivos continúa **por verificar**.
-- **Situación:** implementado en el código según la documentación, pero las pruebas reales y la publicación firmada de v0.27.115 siguen sin confirmación en los documentos.
+- **Situación:** v0.27.115 y v0.27.116 publicadas como APK firmadas en Releases; continúan pendientes las pruebas reales del funcionamiento y actualización por Obtainium.
 
 ## Última intervención — v0.27.116 (5 de noviembre)
 
 - Corrección de tarjeta duplicada de subtareas (conservar el resumen de Design System), scroll de selectores de fecha/hora anclado al inicio, notas con título sin teclado automático e icono de actualización unificado.
 - Cambios de interfaz guardados en `app/src/main/assets/nottas.html`. No se han modificado datos ni servicios.
-- **Siguiente paso:** validar visualmente en Android, confirmar nueva APK firmada / Release v0.27.116 y continuar pruebas director–asistente/FCM de la versión anterior. La existencia de código no acredita pruebas físicas.
+- **Siguiente paso:** validar visualmente la APK v0.27.116 en Android y su actualización por Obtainium; continuar pruebas director–asistente/FCM pendientes. La publicación confirmada no acredita pruebas físicas.
 
 ## Siguiente trabajo prioritario
 
