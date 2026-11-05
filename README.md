@@ -4,12 +4,15 @@ Aplicación Android local-first de notas y tareas con interfaz inspirada en la M
 
 ## Continuidad técnica entre versiones y chats
 
-- [ESTADO.md](ESTADO.md): versión vigente del código, funciones, diagnóstico y punto de continuación.
+**Para iniciar un chat nuevo sobre Nottas, leer primero [CONTINUIDAD.md](CONTINUIDAD.md).** Resume la versión comprobada del código, el último trabajo, las validaciones abiertas y el protocolo de reanudación.
+
+- [CONTINUIDAD.md](CONTINUIDAD.md): ficha operativa breve y primer punto de lectura entre conversaciones.
+- [ESTADO.md](ESTADO.md): estado técnico, funciones y diagnóstico detallado.
 - [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md): sistema visual en evaluación, inventario de componentes y etapas de adopción.
 - [PENDIENTES.md](PENDIENTES.md): mejoras, errores y verificaciones pendientes.
 - [CHANGELOG.md](CHANGELOG.md): historial de los cambios incluidos en cada versión.
 
-**Regla de publicación:** actualizar los tres archivos junto con cada cambio de versión. Confirmar la APK en GitHub Actions/Releases antes de indicar que ya está publicada.
+**Regla de continuidad:** actualizar `CONTINUIDAD.md` al cerrar cada intervención relevante, incluso sin cambio de versión. Para cambios de aplicación, mantener también `ESTADO.md`, `PENDIENTES.md` y `CHANGELOG.md`. Confirmar la APK firmada en GitHub Actions/Releases antes de afirmar que ya está disponible en Obtainium.
 
 ## Incluye
 
