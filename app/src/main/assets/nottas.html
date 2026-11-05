@@ -6902,7 +6902,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
         if(kind==="meeting"&&value==="cancelled"&&cardMetaCancelArmed!==(t.id||"editor")){
           cardMetaCancelArmed=t.id||"editor";button.querySelector(".stateCopy strong").textContent="Confirmar cancelación";return;
         }
-        if(kind==="approval"&&approval===value){closeCardMeta();return}
+        if(kind==="approval"&&approval===value&&!(meeting==="deferred"&&["proposed","changes_requested"].includes(value))){closeCardMeta();return}
         if(kind==="meeting"&&meeting===value&&(value!=="scheduled"||approval==="confirmed")){
           closeCardMeta();return;
         }
@@ -6958,7 +6958,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
           }
           touch(t);scheduleSave();render();
           if(kind==="meeting"&&value==="deferred"){
-            openTask(t,null,{autoFocus:false});
+            openTask(t,null,{autoFocus:false});deferredDateAwaitingTime=true;
             taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
             setTaskInlinePanel("date");
             $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
@@ -8455,6 +8455,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(taskInlineOpenPanel==="time")requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
     if(taskInlineOpenPanel)setTimeout(()=>$("taskInlineForm")?.scrollIntoView({block:"nearest"}),20);
   }
+  let deferredDateAwaitingTime=false;
+  function finishTaskDateChoice(){
+    if(deferredDateAwaitingTime){
+      deferredDateAwaitingTime=false;
+      if(!$("taskTime").value)$("taskTime").value="09:00";
+      syncTaskTimeButton();syncTaskEditorMeta();
+      setTaskInlinePanel("time");
+      requestAnimationFrame(()=>positionTaskInlineTimeWheels(false));
+    }else setTaskInlinePanel("");
+  }
   function setTaskInlineDate(value){
     $("taskDate").value=value||"";
     if(!value||$("taskEndDate").value<=value)$("taskEndDate").value="";
@@ -8560,7 +8570,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     host.innerHTML=out;host.querySelectorAll("[data-inline-date]").forEach(btn=>btn.addEventListener("click",()=>{
       if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(btn.dataset.inlineDate))return}
       else setTaskInlineDate(btn.dataset.inlineDate);
-      setTaskInlinePanel("");
+      finishTaskDateChoice();
     }));
   }
   function hideTaskInlineCategorySuggestions(){
@@ -8770,6 +8780,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   // Existing check continues to handle personal tasks without meeting states.
   function setEditorMeetingStatus(action){
     if(action==="reprogram"){
+      deferredDateAwaitingTime=true;
       closeTaskMeetingMenu();
       taskInlineDateTarget="start";taskInlineMonth=dateFromISO($("taskDate").value||localDateISO());
       setTaskInlinePanel("date");$("taskInlineDatePanel").scrollIntoView({block:"nearest"});return;
@@ -8803,6 +8814,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     syncTaskEditorMeta();
     closeTaskMeetingMenu();persistOpenTask(false);commitTaskHistory();
     if(action==="deferred"){
+      deferredDateAwaitingTime=true;
       taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
       setTaskInlinePanel("date");
       $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
@@ -9011,7 +9023,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     $("editorTitle").textContent=t?"Editar tarea":"Nueva tarea";$("taskForm").classList.remove("hidden");$("noteForm").classList.add("hidden");
     $("taskText").innerHTML=t?sanitizeInlineHtml(t.textHtml||plainToInlineHtml(t.text)):"";$("taskLocation").value=t?.locationText||"";setCategoryPicker("taskCategory",t?t.category:(activeCategory!=="all"?activeCategory:"inbox"));$("taskTags").value=t?normalizeTags(t.tags).join(", "):(activeTag||"");const newEventDefaults=!t&&isSharedWorkspace()?defaultNewEventTimes():null;$("taskDate").value=t?t.dueDate:(newEventDefaults?.date||"");$("taskEndDate").value=t?t.endDate||"":(newEventDefaults?.endDate||"");$("taskTime").value=t?t.dueTime:(newEventDefaults?.start||"");$("taskEndTime").value=t?t.endTime||"":(newEventDefaults?.end||"");$("taskPriority").value=t?t.priority:"normal";$("taskRecurrence").value=t?t.recurrence||"none":"none";const legacyReminder=editorTaskReminders.length?reminderMinutesToLegacy(editorTaskReminders[0]):"at";$("taskReminder").value=[...$("taskReminder").options].some(o=>o.value===legacyReminder)?legacyReminder:"at";
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
-    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=false;taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
+    taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=false;deferredDateAwaitingTime=false;taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");
     if(options.autoFocus!==false)setTimeout(()=>{
       if($("editorOverlay").classList.contains("show")&&editingTaskId===(t?.id||null))$("taskText").focus();
@@ -10266,7 +10278,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const iso=localDateISO(taskInlineDetailDraft);
     if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(iso))return}
     else setTaskInlineDate(iso);
-    taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();setTaskInlinePanel("");
+    taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();finishTaskDateChoice();
   });
   function stepTaskInlineMonth(delta){
     taskInlineMonth=new Date(taskInlineMonth.getFullYear(),taskInlineMonth.getMonth()+delta,1);
@@ -10287,8 +10299,8 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       if(e.key==="Escape"){e.preventDefault();finishInlineWheelEdit(false)}
     });
   });
-  $("taskInlineToday").addEventListener("click",()=>{if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(localDateISO()))return}else setTaskInlineDate(localDateISO());setTaskInlinePanel("")});
-  $("taskInlineTomorrow").addEventListener("click",()=>{const d=addCalendarDays(localDateISO(),1);if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(d))return}else setTaskInlineDate(d);setTaskInlinePanel("")});
+  $("taskInlineToday").addEventListener("click",()=>{if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(localDateISO()))return}else setTaskInlineDate(localDateISO());finishTaskDateChoice()});
+  $("taskInlineTomorrow").addEventListener("click",()=>{const d=addCalendarDays(localDateISO(),1);if(taskInlineDateTarget==="end"){if(!setTaskInlineEndDate(d))return}else setTaskInlineDate(d);finishTaskDateChoice()});
   $("taskInlineClearDate").addEventListener("click",()=>{commitTaskHistory();$("taskDate").value="";$("taskEndDate").value="";$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0";syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");commitTaskHistory()});
   $("taskInlineSingleDay").addEventListener("click",()=>{$("taskEndDate").value="";syncTaskEditorMeta();commitTaskHistory();setTaskInlinePanel("")});
   $("taskAllDayToggle").addEventListener("change",()=>{commitTaskHistory();if($("taskAllDayToggle").checked){if(!$("taskDate").value)$("taskDate").value=localDateISO();$("taskTime").value="";$("taskEndTime").value="";$("taskTimeButton").dataset.reminderActive="0"}else{if(!$("taskDate").value)$("taskDate").value=localDateISO();if(!$("taskTime").value)$("taskTime").value="09:00";if(!$("taskEndTime").value)$("taskEndTime").value="10:00"}syncTaskTimeButton();syncTaskEditorMeta();commitTaskHistory()});
