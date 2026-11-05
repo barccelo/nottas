@@ -160,4 +160,4 @@ La identidad gráfica incluye **dónde se coloca** cada componente, no solo cóm
 
 ## Regla de continuidad
 
-Al aprobar una familia, documentar aquí el estándar definitivo, desarrollar el componente reutilizable y sustituir instancias antiguas por etapas. Mantener `ESTADO.md`, `PENDIENTES.md` y `CHANGELOG.md` sincronizados en cada publicación.
+Al aprobar una familia, documentar aquí el estándar definitivo, desarrollar el componente reutilizable y sustituir instancias antiguas por etapas. Mantener `ESTADO.md`, `PENDIENTES.md` y `CHANGELOG.md` sincronizados en cada publicación. En chats nuevos, consultar primero [`CONTINUIDAD.md`](CONTINUIDAD.md) para el punto de reanudación, y después este documento para las decisiones visuales.
