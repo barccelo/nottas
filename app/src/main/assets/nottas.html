@@ -6899,28 +6899,44 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
         if(kind==="meeting"&&meeting===value&&(value!=="scheduled"||approval==="confirmed")){
           closeCardMeta();return;
         }
-        if(kind==="meeting"&&value==="scheduled"&&!t.dueDate){
-          showToast("Selecciona una fecha antes de agendar");return;
+        if(kind==="meeting"&&value==="scheduled"&&!(editor?$("taskDate").value:t.dueDate)){
+          closeCardMeta();
+          if(!editor)openTask(t,null,{autoFocus:false});
+          taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
+          setTaskInlinePanel("date");
+          $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+          showToast("Selecciona una fecha para agendar");
+          return;
         }
         closeCardMeta();
         if(editor){
           if(kind==="approval")setEditorTaskApproval(value);
           else{
-            if(value==="scheduled"){editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false}
+            if(value==="scheduled"){editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;if(!editorTaskReminders.length)editorTaskReminders=defaultTaskReminderOffsets()}
             setEditorMeetingStatus(value);syncAssistantTaskStrip();
           }
           syncTaskInlineForm();
         }else{
           if(kind==="approval"){
             t.approvalStatus=value;t.requiresApproval=["proposed","changes_requested"].includes(value);
+            if(["proposed","changes_requested"].includes(value)){
+              t.meetingTracked=true;t.meetingStatus="scheduled";t.done=false;
+            }
+            if(value==="confirmed"||value==="scheduled"){
+              t.meetingStatus="scheduled";
+              if(!taskReminderOffsets(t).length){t.reminders=defaultTaskReminderOffsets();t.reminder=reminderMinutesToLegacy(t.reminders[0])}
+            }
           }else{
             const before=meetingScheduleSnapshot(t);
             t.meetingTracked=true;
             if(value==="deferred"){
               t.dueDate="";t.endDate="";t.dueTime="";t.endTime="";
-              t.reminders=[];t.reminder="none";
+              // Preserve chosen reminders; deferred tasks remain ineligible for native alarms.
             }
-            if(value==="scheduled"){t.approvalStatus="confirmed";t.requiresApproval=false}
+            if(value==="scheduled"){
+              t.approvalStatus="confirmed";t.requiresApproval=false;
+              if(!taskReminderOffsets(t).length){t.reminders=defaultTaskReminderOffsets();t.reminder=reminderMinutesToLegacy(t.reminders[0])}
+            }
             t.done=value==="realized";
             if(value==="realized"){
               if(taskMultiDay(t))t.completedDates=taskDays(t);
@@ -6934,6 +6950,12 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
             }]);
           }
           touch(t);scheduleSave();render();
+          if(kind==="meeting"&&value==="deferred"){
+            openTask(t,null,{autoFocus:false});
+            taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
+            setTaskInlinePanel("date");
+            $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+          }
         }
         showToast("Estado actualizado");
       });
@@ -8748,13 +8770,19 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(!canManageMeetingInEditor())return;
     if(!["scheduled","deferred","realized","not_realized","cancelled"].includes(action))return;
     if(action==="scheduled"&&!$("taskDate").value){
-      showToast("Selecciona una nueva fecha y hora");return;
+      closeTaskMeetingMenu();
+      taskInlineDateTarget="start";
+      taskInlineMonth=dateFromISO(localDateISO());
+      setTaskInlinePanel("date");
+      $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+      showToast("Selecciona la nueva fecha para agendar");
+      return;
     }
     commitTaskHistory();
     if(action==="deferred"){
       $("taskDate").value="";$("taskEndDate").value="";
       $("taskTime").value="";$("taskEndTime").value="";
-      editorTaskReminders=[];syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");
+      syncTaskTimeButton();syncTaskEditorMeta();setTaskInlinePanel("");
     }
     editorMeetingTracked=true;editorMeetingStatus=action;editorMeetingStatusChanged=true;
     if(action==="realized"&&taskMultiDay({dueDate:$("taskDate").value,endDate:$("taskEndDate").value}))
@@ -8767,6 +8795,11 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     }
     syncTaskEditorMeta();
     closeTaskMeetingMenu();persistOpenTask(false);commitTaskHistory();
+    if(action==="deferred"){
+      taskInlineDateTarget="start";taskInlineMonth=dateFromISO(localDateISO());
+      setTaskInlinePanel("date");
+      $("taskInlineDatePanel").scrollIntoView({block:"nearest",behavior:"smooth"});
+    }
   }
   function assistantStatusLabel(status){
     return status==="proposed"?"Propuesta":status==="scheduled"||status==="confirmed"?"Agendada":status==="rejected"?"Rechazada":status==="changes_requested"?"Reprogramar":status==="cancelled"?"Cancelada":"Agendada";
@@ -8803,7 +8836,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const partial=taskMultiDay(t)&&taskCompletedDates(t).length>0&&!t.done;
     const visual=tracking==="scheduled"&&partial?"in_progress":tracking;
     const pendingDecision=["proposed","changes_requested","rejected"].includes(st);
-    const activeMeetingState=visual&&visual!=="scheduled"&&(["realized","not_realized","cancelled","deferred"].includes(visual)||!pendingDecision);
+    const activeMeetingState=visual&&visual!=="scheduled"&&!pendingDecision;
     const label=activeMeetingState?meetingStatusLabel(visual):assistantStatusLabel(st);
     return '<button type="button" class="taskMetaStatusAction" data-card-meta="status" aria-label="Cambiar estado: '+esc(label)+'">'+
       (activeMeetingState?meetingStatusChipHtml(visual):assistantStatusChipHtml(st))+'</button>';
@@ -8815,7 +8848,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     strip.classList.toggle("hidden",!shared);if(!shared)return;
     const approval=editorTaskApprovalStatus||"confirmed";
     const meeting=editorMeetingTracked?editorMeetingStatus:"scheduled";
-    const label=meeting!=="scheduled"?meetingStatusLabel(meeting):assistantStatusLabel(approval);
+    const label=["proposed","changes_requested","rejected"].includes(approval)?assistantStatusLabel(approval):meeting!=="scheduled"?meetingStatusLabel(meeting):assistantStatusLabel(approval);
     const allowed=["assistant","owner"].includes(currentWorkspaceRole());
     status.textContent=label;status.className="assistantTaskStatus "+approval;
     status.disabled=!allowed;status.title=allowed?"Cambiar estado del evento":"Sin acceso al espacio";
@@ -8827,6 +8860,13 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   function setEditorTaskApproval(status){
     if(!["proposed","scheduled","confirmed","rejected","changes_requested","cancelled"].includes(status))return;
     editorTaskApprovalStatus=status;editorTaskRequiresApproval=["proposed","changes_requested"].includes(status);
+    if(status==="proposed"||status==="changes_requested"){
+      editorMeetingTracked=true;editorMeetingStatus="scheduled";editorMeetingStatusChanged=true;
+    }
+    if(status==="confirmed"||status==="scheduled"){
+      if(editorMeetingStatus==="deferred"&&$("taskDate").value)editorMeetingStatus="scheduled";
+      if(!editorTaskReminders.length)editorTaskReminders=defaultTaskReminderOffsets();
+    }
     syncAssistantTaskStrip();
     if(editingTaskId)persistOpenTask(false);
     renderMeetingFollowup();
@@ -8853,6 +8893,10 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(existing&&existing.meetingStatus==="deferred"&&snap.meetingTracked&&snap.dueDate&&
        ["owner","assistant"].includes(currentWorkspaceRole())&&["confirmed","scheduled"].includes(snap.approvalStatus)){
       snap.meetingStatus="scheduled";editorMeetingStatus="scheduled";
+      if(!snap.reminders.length){
+        snap.reminders=normalizeReminderMinutes(editorTaskReminders.length?editorTaskReminders:defaultTaskReminderOffsets());
+        snap.reminder=snap.reminders.length?reminderMinutesToLegacy(snap.reminders[0]):"none";
+      }
     }
     let changed=false,target=existing;
     if(existing){
@@ -10265,7 +10309,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   $("taskSubtasksSummaryCard").addEventListener("click",()=>{taskSubtasksExpanded=true;taskToolsExpanded=false;taskActiveTool="subtasks";syncTaskInlineForm();$("taskSubtasksBox").scrollIntoView({block:"nearest",behavior:"smooth"})});
   $("assistantTaskStatus").addEventListener("click",()=>{
     if($("assistantTaskStatus").disabled)return;
-    if(editorTaskApprovalStatus==="proposed"&&editorMeetingStatus==="scheduled"){
+    if(["proposed","changes_requested"].includes(editorTaskApprovalStatus)&&editorMeetingStatus==="scheduled"){
       commitTaskHistory();
       editorTaskApprovalStatus="confirmed";
       editorTaskRequiresApproval=false;
