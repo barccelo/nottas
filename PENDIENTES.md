@@ -1,8 +1,16 @@
 # Pendientes de Nottas
 
-Última revisión: 5 de noviembre de 2026 · v0.27.115: validar sincronización de director y diferidas.
+Última revisión: 5 de noviembre de 2026 · v0.27.116: validar ajustes visuales y el flujo anterior de director/asistente.
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
+
+## Prioridad inmediata — v0.27.116
+
+- [ ] Abrir tarea con subtareas existentes; comprobar **una sola tarjeta** de resumen en modo contraído, incluso después de pulsar la herramienta Subtareas, contraer/expandir y regresar al editor.
+- [ ] Diferir o reprogramar evento con y sin fecha: verificar que selector de fecha y luego selector de hora se abren mostrando **el encabezado y campos superiores completos**, sin desplazamiento automático. Comprobar pantallas de distintas alturas, teclado visible y Back.
+- [ ] Abrir nota existente con título: no aparece teclado. Notas nuevas o sin título: el campo correspondiente recibe el foco. Confirmar navegación entre notas sin teclado residual.
+- [ ] Deslizar para actualizar la lista de notas y tareas, comprobar icono, alineación, animación de carga y contraste en modo claro/oscuro.
+- [ ] Confirmar Gradle v0.27.116, versionCode 197, compilación firmada, Release y actualización en Obtainium sin pérdida de datos. Las pruebas en Android no se deducen del éxito de CI.
 
 ## Prioridad inmediata — v0.27.115
 
