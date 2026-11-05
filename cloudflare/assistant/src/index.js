@@ -734,7 +734,7 @@ async function pushSync(request, auth, env) {
       if (relevant) {
         const queue = reminderSignals.get(workspaceId) || [];
         queue.push({
-          id: entityId, workspaceId, text: textValue(payload.text || "Evento", 150),
+          id: entityId, workspaceId, seq: Number(inserted?.seq || 0), text: textValue(payload.text || "Evento", 150),
           dueDate: textValue(payload.dueDate || "", 10),
           endDate: textValue(payload.endDate || "", 10),
           dueTime: textValue(payload.dueTime || "", 5),
