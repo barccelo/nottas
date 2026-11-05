@@ -228,7 +228,7 @@ object ReminderScheduler {
                 if (date != null) {
                     val end = try { LocalDate.parse(update.optString("endDate")) }
                         catch (_: Throwable) { null }
-                    val last = if (end != null && end.isAfter(date)) end else date
+                    val last: LocalDate = if (end != null && end.isAfter(date)) end else date
                     val time = try { LocalTime.parse(update.optString("dueTime").ifBlank { "09:00" }) }
                         catch (_: Throwable) { LocalTime.of(9, 0) }
                     val text = update.optString("text").trim().take(150)
@@ -254,7 +254,7 @@ object ReminderScheduler {
                         for (i in 0 until completedArray.length()) completed.add(completedArray.optString(i))
                     }
                     val now = System.currentTimeMillis()
-                    var day = date
+                    var day: LocalDate = date
                     var count = 0
                     while (!day.isAfter(last) && count < 366) {
                         val dayLabel = day.toString()
