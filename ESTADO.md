@@ -1,6 +1,17 @@
 # Estado actual de Nottas
 
-Última actualización: 4 de noviembre de 2026 · vencimiento por hora integrado (v0.27.114).
+Última actualización: 5 de noviembre de 2026 · editor, diferidas y sincronización nativa FCM v0.27.115.
+
+## Cambios v0.27.115 — subtareas, diferidas y alarmas de equipo
+
+- El editor abre tareas con subtareas contraídas y muestra una tarjeta-resumen con progreso y número de elementos; tocarla abre la lista de subtareas.
+- «Añadir subtarea» queda antes de «Elementos marcados», ahora separado al final del bloque.
+- Las herramientas de formato marcan visualmente negrita, cursiva, subrayado y tachado activos según la selección del texto, incluidas opciones accesibles aria-pressed.
+- Se corrigió la transición Diferida → Agendada/Propuesta: al diferir se conserva la preferencia de recordatorios sin activarlos, se abre automáticamente fecha y después hora; al agendar se recuperan avisos predeterminados cuando faltan. La propuesta vuelve a ser seleccionable tras un diferimiento.
+- El estado de propuesta y solicitud de nueva fecha tiene prioridad visual frente al estado diferido; la bandeja del director incluye cambios solicitados y notificaciones de diferimientos.
+- El Worker envía mensajes compactos sync_task con secuencia del servidor para actualizar los recordatorios Android en segundo plano. FirebaseMessagingService actualiza el planificador nativo sin requerir WebView visible; la sincronización completa sigue conciliando datos al regresar a la app.
+- El Worker activo en Cloudflare ya contiene los nuevos envíos sync_task; la app requiere actualización a v0.27.115. No cambia la base de datos ni el esquema local.
+- Pendiente validación entre dos dispositivos (director pantalla apagada/encendida, propuesta → agendada, desfases FCM, fecha/hora, cambios de red) y compilación firmada/Obtainium.
 
 ## Cambios v0.27.114 — vencimiento por hora
 
