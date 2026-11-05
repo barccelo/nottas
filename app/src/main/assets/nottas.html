@@ -8036,6 +8036,25 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const id=target.dataset.richBlock||"";
     if(id){const b=findNoteBlockById(blocksForScope(richScopeForTarget(target)),id);if(b)b.html=htmlValue}
   }
+  function syncRichFormatIndicators(){
+    const selection=window.getSelection(),range=selection&&selection.rangeCount?selection.getRangeAt(0):null;
+    const target=range?richTargetFromNode(range.commonAncestorContainer):null;
+    const scope=target?richScopeForTarget(target):null;
+    document.querySelectorAll("[data-rich-command]").forEach(button=>{
+      const valid=!!scope&&button.dataset.richScope===scope;
+      let active=false;
+      if(valid){
+        try{active=!!document.queryCommandState(button.dataset.richCommand)}catch(_){}
+        if(!active){
+          const tags={bold:["B","STRONG"],italic:["I","EM"],underline:["U"],strikeThrough:["S","STRIKE","DEL"]}[button.dataset.richCommand]||[];
+          let node=selection?.anchorNode;
+          while(node&&node!==target){if(node.nodeType===1&&tags.includes(node.tagName)){active=true;break}node=node.parentNode}
+        }
+      }
+      button.classList.toggle("is-active",active);
+      button.setAttribute("aria-pressed",String(active));
+    });
+  }
   function rememberRichSelection(){
     const sel=window.getSelection();if(!sel||!sel.rangeCount)return false;
     const range=sel.getRangeAt(0),target=richTargetFromNode(range.commonAncestorContainer);
@@ -8043,6 +8062,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const scope=richScopeForTarget(target);if(!scope)return false;
     activeRichBlockId=target.dataset.richBlock||null;activeRichScope=scope;savedRichScope=scope;
     try{savedRichRange=range.cloneRange()}catch(_){savedRichRange=null}
+    syncRichFormatIndicators();
     return true;
   }
   function restoreRichSelection(scope,target){
@@ -8056,6 +8076,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     const toolbar=$(scope==="task"?"taskRichToolbar":"richToolbar");if(!toolbar)return;
     toolbar.classList.toggle("hidden",!open);
     if(open)rememberRichSelection();
+    syncRichFormatIndicators();
   }
   function applyRichCommand(command,scopeHint=null){
     const scope=scopeHint||activeRichScope;
@@ -8067,7 +8088,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     if(!restoreRichSelection(scope,target)){showToast("Coloca el cursor o selecciona texto");return}
     try{document.execCommand(command,false,null)}catch(_){}
     syncRichTargetModel(target);
-    rememberRichSelection();
+    rememberRichSelection();syncRichFormatIndicators();
     if(scope==="task")commitTaskHistory();
   }
 
@@ -10410,6 +10431,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   $("addSubtaskBtn").addEventListener("click",addEditorSubtask);
   $("addTaskBlockBtn").addEventListener("click",addTaskBlock);
   $("addNoteBlockBtn").addEventListener("click",addNoteBlock);
+  document.addEventListener("selectionchange",()=>{if(!$("taskRichToolbar").classList.contains("hidden")||!$("richToolbar").classList.contains("hidden"))syncRichFormatIndicators()});
   document.querySelectorAll("[data-rich-command]").forEach(btn=>{
     btn.addEventListener("pointerdown",e=>e.preventDefault());
     btn.addEventListener("click",()=>applyRichCommand(btn.dataset.richCommand||"",btn.dataset.richScope||null));
