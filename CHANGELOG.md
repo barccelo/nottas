@@ -1,5 +1,15 @@
 # Historial de cambios de Nottas
 
+## 0.27.115 — 5 de noviembre de 2026
+
+- Tareas con subtareas se abren con tarjeta resumen colapsada, que se expande al tocar.
+- «Añadir subtarea» se ubica por encima de «Elementos marcados». El listado completado conserva sus controles de edición y selección.
+- Las herramientas de texto muestran estado visual activo según la selección.
+- Mejoras al flujo de tareas diferidas: selector automático de nueva fecha y posterior hora, transiciones de estado sin bloqueos, repropuesta y recuperación de recordatorios al agendar.
+- Solicitudes de nueva fecha se incluyen en la bandeja del director; el servidor emite señales específicas para propuesta/reprogramación.
+- Notificaciones FCM de actualización de una tarea programan o cancelan alarmas en Android nativo con pantalla apagada, sin esperar a abrir la aplicación; reconciliación completa al retomar.
+- Sin cambios de esquema local o D1. Pendiente prueba cruzada en dos teléfonos y validación de instalación vía Obtainium.
+
 ## 0.27.114 — 4 de noviembre de 2026
 
 - Vencimiento por hora: con fin explícito se usa el fin; sin fin se usa la hora inicial; sin horas, el día siguiente.
