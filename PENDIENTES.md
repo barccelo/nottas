@@ -1,8 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 5 de noviembre de 2026 · v0.27.116: validar ajustes visuales y el flujo anterior de director/asistente.
+Última revisión: 5 de noviembre de 2026 · v0.27.117: tarjeta de subtareas persistente y selector de hora.
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
+
+## Prioridad inmediata — v0.27.117
+
+- [ ] **Subtareas:** abrir tarea con subtareas y alternar contraer/expandir repetidamente con la misma tarjeta. Confirmar que **no desaparece**, siempre conserva progreso y cantidad, y no se duplica con las herramientas.
+- [ ] **Barra de herramientas:** pulsar Subtareas para expandir/contraer; cambiar a otra herramienta y regresar sin ocultar accidentalmente la lista ni mover la descripción debajo de ella.
+- [ ] **Rueda:** tocar horas/minutos distintos (sin arrastrar) y confirmar que se actualiza el campo al instante, sin saltos ni valores intermedios. Comprobar pulsación del número central y teclado numérico, incluso en tarea sin hora previa.
+- [ ] **Inicio/fin:** abrir hora inicial, tocar hora final con rueda abierta y teclado abierto, volver a inicio. No debe cerrarse inesperadamente ni descartar el valor. Solo pulsar el campo ya activo debe cerrar el selector.
+- [ ] **Regresión:** respetar encabezado visible, cierre con toque externo real, gestos de scroll, accesibilidad, tema oscuro y guardado de fechas/horas en Android.
+- [ ] **Publicación:** comprobar v0.27.117 (versionCode 198), GitHub Actions, firma de APK y Release para Obtainium. La existencia de Release no equivale a prueba en dispositivo.
 
 ## Prioridad inmediata — v0.27.116
 
