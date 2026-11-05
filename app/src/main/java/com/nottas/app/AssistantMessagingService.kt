@@ -58,6 +58,19 @@ class AssistantMessagingService : FirebaseMessagingService() {
                     AssistantResponseNotifier.show(this, callId, who, data["response"].orEmpty())
                 }
             }
+            "sync_task" -> {
+                // HIGH priority data push: reschedule native alarms while the
+                // director's screen is off or Nottas is not running.
+                try {
+                    val task = JSONObject(data["taskData"].orEmpty())
+                    if (task.optString("workspaceId") == data["workspaceId"] &&
+                        task.optString("id").isNotBlank()) {
+                        ReminderScheduler.applySharedTaskUpdate(this, task)
+                    }
+                } catch (_: Throwable) {
+                    // The queued event triggers a full reconciliation on resume.
+                }
+            }
             "sync" -> {
                 if (!AssistantForegroundBridge.isForeground()) {
                     AssistantNotification.show(
