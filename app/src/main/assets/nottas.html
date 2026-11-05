@@ -4377,7 +4377,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     let needsSync=false;
     for(const event of events){
       if(event.type==="push_token")assistantRegisterPushToken();
-      else if(event.type==="sync"||event.type==="director_proposal")needsSync=true;
+      else if(event.type==="sync"||event.type==="sync_task"||event.type==="director_proposal")needsSync=true;
       else if(event.type==="assistant_notice"){
         assistantRememberNotice(event.noticeId);
         assistantMessageUnread++;renderAssistantMessageBadge();
