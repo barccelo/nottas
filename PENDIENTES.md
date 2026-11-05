@@ -11,7 +11,8 @@
 - [ ] **Rueda:** tocar horas/minutos distintos (sin arrastrar) y confirmar que se actualiza el campo al instante, sin saltos ni valores intermedios. Comprobar pulsación del número central y teclado numérico, incluso en tarea sin hora previa.
 - [ ] **Inicio/fin:** abrir hora inicial, tocar hora final con rueda abierta y teclado abierto, volver a inicio. No debe cerrarse inesperadamente ni descartar el valor. Solo pulsar el campo ya activo debe cerrar el selector.
 - [ ] **Regresión:** respetar encabezado visible, cierre con toque externo real, gestos de scroll, accesibilidad, tema oscuro y guardado de fechas/horas en Android.
-- [ ] **Publicación:** comprobar v0.27.117 (versionCode 198), GitHub Actions, firma de APK y Release para Obtainium. La existencia de Release no equivale a prueba en dispositivo.
+- [x] **Publicación:** v0.27.117 (`versionCode 198`) compilada y firmada; APK verificada en GitHub Releases para Obtainium.
+- [ ] **Actualización Android:** instalar desde Obtainium y comprobar que conserva datos y que los gestos funcionan en dispositivo real.
 
 ## Prioridad inmediata — v0.27.116
 
