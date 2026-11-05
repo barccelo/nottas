@@ -2,6 +2,8 @@
 
 Última revisión: 5 de noviembre de 2026 · v0.27.115: validar sincronización de director y diferidas.
 
+**Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
+
 ## Prioridad inmediata — v0.27.115
 
 - [ ] **Subtareas:** abrir una tarea con elementos y comprobar que aparece la tarjeta resumen contraída; tocarla expande los elementos sin desplazar la descripción al final.
@@ -308,7 +310,7 @@ Estados: **Por verificar**, **Pendiente**, **En evaluación**. El contenido de e
 
 ## Uso de esta lista
 
-Al implementar una mejora: actualizar su estado, registrar la versión y trasladar el resultado a `CHANGELOG.md` y `ESTADO.md`. No marcar elementos como terminados sin comprobación. Los pendientes históricos se revisarán progresivamente para distinguir lo ya implementado de lo que aún falte.
+Al implementar una mejora: actualizar su estado, registrar la versión y trasladar el resultado a `CHANGELOG.md` y `ESTADO.md`; resumir el punto de reanudación en `CONTINUIDAD.md`. No marcar elementos como terminados sin comprobación. Los pendientes históricos se revisarán progresivamente para distinguir lo ya implementado de lo que aún falte.
 
 
 ## Editor de listas — seguimiento 0.27.79
