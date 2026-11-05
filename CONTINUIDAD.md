@@ -6,16 +6,16 @@
 ## Punto de reanudación
 
 - **Repositorio/rama:** `barccelo/nottas` · `main`.
-- **Versión en preparación:** `0.27.117` (`versionCode 198`), pendiente de confirmar compilación, firma y publicación. La última Release verificada antes de esta intervención fue `v0.27.116`.
-- **Publicación:** última Release previamente confirmada `v0.27.116` (APK firmada); **v0.27.117 pendiente de verificar** en Actions/Releases. La instalación y el funcionamiento Android siguen pendientes de prueba física.
+- **Versión del código Android:** `0.27.117` (`versionCode 198`), confirmada en Gradle y GitHub Actions.
+- **Publicación:** APK `Nottas-v0.27.117.apk` firmada y publicada en [GitHub Releases](https://github.com/barccelo/nottas/releases/tag/v0.27.117) el 5 de noviembre de 2026. La instalación mediante Obtainium y el funcionamiento Android siguen pendientes de prueba física.
 - **Última entrega funcional documentada:** subtareas inicialmente contraídas con tarjeta-resumen; orden «Añadir subtarea» antes de «Elementos marcados»; indicador activo en herramientas de formato; corrección del flujo Diferida → Propuesta/Agendada y solicitud de nueva fecha; actualización de alarmas nativas mediante FCM `sync_task`.
 - **Backend:** `ESTADO.md` indica que el Worker de Cloudflare fue actualizado para enviar `sync_task`; el funcionamiento extremo a extremo entre dispositivos continúa **por verificar**.
-- **Situación:** v0.27.115 y v0.27.116 publicadas como APK firmadas en Releases; 0.27.117 en preparación. Continúan pendientes pruebas reales en Android y Obtainium.
+- **Situación:** v0.27.115, v0.27.116 y v0.27.117 publicadas con APK firmada en Releases. Continúan pendientes las pruebas reales en Android y Obtainium.
 
 ## Última intervención — v0.27.117 (5 de noviembre)
 
 - Correcciones en `app/src/main/assets/nottas.html`: tarjeta de subtareas permanente con toggle bidireccional; cambio de inicio/fin sin cierre por toque externo; selección de rueda inmediata y edición central consistente con el valor guardado.
-- **Pendiente:** probar tarjetas y cambios de hora con teclado abierto en Android; confirmar compilación, APK firmada y Release v0.27.117 para Obtainium. No hay cambios de backend o datos.
+- **Publicado:** v0.27.117 con APK firmada verificada en Releases. **Pendiente:** probar tarjetas y cambios de hora con teclado abierto en Android y comprobar actualización en Obtainium. No hay cambios de backend ni datos.
 - El trabajo previo de diferidas/FCM y la validación en dos dispositivos sigue abierto.
 
 ## Intervención anterior — v0.27.116 (5 de noviembre)
