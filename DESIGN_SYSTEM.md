@@ -148,6 +148,14 @@ La identidad gráfica incluye **dónde se coloca** cada componente, no solo cóm
 - Las notas ya tituladas abren en modo lectura sin teclado; las nuevas y sin título permiten entrada inmediata.
 - Indicadores temporales, como actualizar al deslizar, usan iconos vectoriales simétricos (viewBox 24, trazo aprox. 1.8, extremos redondeados, objetivo de alineación óptica).
 
+## Selectores y controles persistentes — 5 de noviembre de 2026
+
+- Una tarjeta que representa un conjunto existente (p. ej. subtareas) permanece presente durante los estados **expandido/contraído**; el mismo componente alterna esos estados y conserva su resumen, sin duplicación visual.
+- Los selectores de hora tienen dos objetivos independientes (inicio y fin). Tocar el otro objetivo cambia el destino del selector **sin cerrarlo**; volver a tocar el objetivo activo puede cerrarlo.
+- Los botones de los objetivos del selector se consideran parte de la interacción interna, aunque estén fuera del panel desplegado. Un toque exterior real sí lo cierra.
+- Tocar directamente una opción de rueda aplica ese valor sin depender de una animación de scroll posterior. Al editar por teclado el valor central, lo visible y lo guardado deben coincidir.
+- Los movimientos programáticos y el enfoque no deben modificar involuntariamente valores ni desplazar fuera de pantalla el encabezado.
+
 ## Fases pendientes
 
 1. Validar visualmente los ocho módulos del laboratorio, incluidos los selectores 1.2, corregir contraste, proporciones y comportamiento en dispositivos reales.
