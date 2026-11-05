@@ -6,7 +6,7 @@
 - Los selectores integrados de fecha y hora preservan la visibilidad del encabezado y parte superior al abrirse, especialmente al diferir o reprogramar.
 - Notas con título existentes se abren sin teclado automático; nuevas o sin título conservan entrada directa.
 - Nuevo icono del indicador «Actualizar» mediante SVG de dos flechas con alineación y grosor uniformes.
-- Sin cambios de esquema, backend, alertas ni datos. Compilación firmada y pruebas Android por verificar.
+- Sin cambios de esquema, backend, alertas ni datos. APK compilada y firmada, publicada en GitHub Releases para Obtainium; quedan pendientes las pruebas manuales en Android.
 
 ## Documentación — 5 de noviembre de 2026 (sin nueva versión de la app)
 
