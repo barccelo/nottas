@@ -5,7 +5,7 @@
 - La tarjeta única de subtareas permanece visible y permite expandir/contraer sin desaparecer; herramientas sincronizadas con el mismo estado.
 - Cambio de hora inicial a final dentro del selector sin cierre accidental por el control general de toque exterior.
 - El toque sobre una hora/minuto aplica la selección de inmediato, sin esperar al scroll; edición numérica central conserva valor visible y foco estable.
-- Cambios de interacción de la interfaz local; sin migraciones, alarmas ni backend. APK firmada y prueba Android pendientes de confirmación.
+- Cambios de interacción de la interfaz local; sin migraciones, alarmas ni backend. Compilación, firma y APK en Releases confirmadas para Obtainium; validación manual Android pendiente.
 
 ## 0.27.116 — 5 de noviembre de 2026
 
