@@ -4462,9 +4462,16 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     let task=state.tasks.find(t=>t.id===item.id&&t.workspaceId===item.workspaceId&&!t.deletedAt);
     if(!task){await assistantSync(true,true);task=state.tasks.find(t=>t.id===item.id&&t.workspaceId===item.workspaceId&&!t.deletedAt)}
     if(!task){showToast("No se pudo recuperar la propuesta");return}
-    if(task.approvalStatus!=="proposed"){refreshDirectorProposals(true);showToast("Esta propuesta ya fue resuelta");return}
+    if(!["proposed","changes_requested"].includes(task.approvalStatus)){refreshDirectorProposals(true);showToast("Esta propuesta ya fue resuelta");return}
     task.approvalStatus=newStatus;
     task.requiresApproval=false;
+    if(newStatus==="confirmed"||newStatus==="scheduled"){
+      task.meetingStatus="scheduled";
+      if(!taskReminderOffsets(task).length){
+        task.reminders=defaultTaskReminderOffsets();
+        task.reminder=task.reminders.length?reminderMinutesToLegacy(task.reminders[0]):"none";
+      }
+    }
     task.approvalHistory=[...(task.approvalHistory||[]).slice(-49),{
       at:Date.now(),by:currentUserId(),status:newStatus
     }];
@@ -4492,12 +4499,12 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   function pendingDirectorProposals(includeMuted=false){
     const output=[];
     for(const ws of directorOwnedSpaces()){
-      const remote=directorProposalsByWorkspace.get(ws.id),local=(state.tasks||[]).filter(t=>t.workspaceId===ws.id&&!t.deletedAt&&(t.approvalStatus||"confirmed")==="proposed");
+      const remote=directorProposalsByWorkspace.get(ws.id),local=(state.tasks||[]).filter(t=>t.workspaceId===ws.id&&!t.deletedAt&&["proposed","changes_requested"].includes(t.approvalStatus||"confirmed"));
       const missing=new Map(local.map(t=>[String(t.id),t]));
       if(remote){
         for(const item of remote){
           const current=(state.tasks||[]).find(t=>t.id===item.id&&t.workspaceId===ws.id);
-          if(current&&(current.deletedAt||current.approvalStatus!=="proposed"))continue;
+          if(current&&(current.deletedAt||!["proposed","changes_requested"].includes(current.approvalStatus)))continue;
           output.push({...item,workspaceId:ws.id,workspaceName:ws.name});
           missing.delete(String(item.id));
         }
