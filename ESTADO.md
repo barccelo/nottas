@@ -1,8 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 5 de noviembre de 2026 · editor, diferidas y sincronización nativa FCM v0.27.115.
+Última actualización: 5 de noviembre de 2026 · correcciones de interfaz v0.27.116 (pendiente de publicación y validación Android).
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
+
+## Cambios v0.27.116 — editor y consistencia visual
+
+- Subtareas existentes: se mantiene **una sola** tarjeta de resumen, la de estilo Design System 1.3. Se oculta el botón de subtareas redundante en las herramientas cuando ya hay elementos; al entrar en ellas se muestra la lista editable.
+- Selector de fecha/hora en tareas diferidas o reprogramadas: eliminado el desplazamiento automático de paneles que recortaba título y controles superiores. Cada apertura del selector devuelve el scroll del editor al inicio; el contenido inferior puede quedar fuera del viewport y se alcanza desplazándose.
+- Notas existentes con título: se abren sin enfocar el contenido ni elevar el teclado. Notas nuevas y notas sin título mantienen el enfoque de edición.
+- Indicador de refresco por gesto: nuevo SVG equilibrado, trazo 1.8 con terminaciones redondeadas y caja de 20 px acorde al sistema de iconos.
+- Cambio local del editor HTML/CSS sin modificaciones de datos, Cloudflare ni alarmas. **Pendiente** confirmar la compilación firmada de v0.27.116 y prueba real en Android de los cuatro escenarios.
 
 ## Cambios v0.27.115 — subtareas, diferidas y alarmas de equipo
 
@@ -242,7 +250,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.115** (`versionCode 196`), comprobada en `app/build.gradle.kts` el 5 de noviembre de 2026.
+- Versión del código Android: **0.27.116** (`versionCode 197`), pendiente de confirmar con Gradle, CI y Release de esta entrega.
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
