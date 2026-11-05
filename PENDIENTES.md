@@ -1,6 +1,18 @@
 # Pendientes de Nottas
 
-Última revisión: 4 de noviembre de 2026 · corrección temporal v0.27.114 pendiente de prueba en Android.
+Última revisión: 5 de noviembre de 2026 · v0.27.115: validar sincronización de director y diferidas.
+
+## Prioridad inmediata — v0.27.115
+
+- [ ] **Subtareas:** abrir una tarea con elementos y comprobar que aparece la tarjeta resumen contraída; tocarla expande los elementos sin desplazar la descripción al final.
+- [ ] **Orden:** comprobar «Añadir subtarea» antes de «Elementos marcados»; expandir elementos completados, editar sus textos, desmarcar y arrastrar sin perder datos.
+- [ ] **Formato:** seleccionar y cambiar negrita, cursiva, tachado, subrayado; comprobar estado visual, foco y selección tanto con teclado físico como virtual.
+- [ ] **Diferidas:** diferir tarea → elegir fecha → se abre hora; re-agendar, reproponer, solicitar nueva fecha y aprobar desde director, comprobando que el estado no queda bloqueado.
+- [ ] **Solicitud de nueva fecha:** comprobar aviso y aparición en bandeja del director con la aplicación cerrada o pantalla apagada.
+- [ ] **FCM:** director con pantalla apagada mientras asistente pasa Propuesta → Agendada: Android programa alarma y la muestra a su hora, sin abrir la app; comprobar edición y cancelación remotas.
+- [ ] **Sincronización:** probar alarmas personales y de otros espacios simultáneas, mensajes FCM fuera de orden, modo avión, reconexión, reinicio de Android, permiso de alarmas y revocación de notificaciones.
+- [ ] **Worker:** corroborar en producción la recepción de sync_task y la notificación director_proposal; verificar tokens push y errores antes de considerar resuelto completamente.
+- [ ] **Release:** compilar APK firmada, validar versiónCode 196 y publicación v0.27.115 para Obtainium.
 
 ## Prioridad inmediata — v0.27.114
 
