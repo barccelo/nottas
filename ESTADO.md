@@ -2,6 +2,8 @@
 
 Última actualización: 5 de noviembre de 2026 · editor, diferidas y sincronización nativa FCM v0.27.115.
 
+**Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
+
 ## Cambios v0.27.115 — subtareas, diferidas y alarmas de equipo
 
 - El editor abre tareas con subtareas contraídas y muestra una tarjeta-resumen con progreso y número de elementos; tocarla abre la lista de subtareas.
@@ -240,7 +242,7 @@
 ## Fuente de referencia
 
 - Repositorio: `barccelo/nottas`, rama `main`.
-- Versión del código Android: **0.27.109** (`versionCode 190`).
+- Versión del código Android: **0.27.115** (`versionCode 196`), comprobada en `app/build.gradle.kts` el 5 de noviembre de 2026.
 - La publicación de la APK firmada depende del resultado de GitHub Actions; la versión del código no demuestra por sí sola que la APK esté disponible.
 - Arquitectura: aplicación Android con interfaz WebView local-first; datos y copias locales; integración optativa de espacios compartidos y calendario mediante Cloudflare.
 
