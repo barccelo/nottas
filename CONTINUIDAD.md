@@ -5,6 +5,10 @@
 
 ## Nottas Web y sincronización — 10 de noviembre de 2026
 
+**Reversión correctiva (10-11-2026):** a petición del usuario, se restauró en `feature/nottas-web-initial` el archivo `web/index.html` de commit `46429cac` (previo al cambio de sondeo de 1,5 s y aplicación optimista). Worker `nottas-web-preview` publicado de nuevo con éxito. El usuario observó que creación y borrado web→Android dejaron de recibir actualización automáticamente después del cambio posterior; el retroceso busca recuperar ese comportamiento probado, pero la recepción en móvil aún requiere nueva prueba. Android/APK y backend no cambiaron en esta reversión. La web vuelve a sondeo de 8 s, no push. Investigar FCM y la entrega de eliminaciones sin tocar producción antes de pruebas.
+
+
+
 - **Revisión de latencia web (10-11-2026):** en rama `feature/nottas-web-initial`, `web/index.html` hace consultas incrementales cada 1,5 s cuando la pestaña está visible (antes 8 s), reconcilia con snapshot periódico y aplica inmediatamente la confirmación del servidor tras crear/eliminar desde la web. Protege contra respuestas antiguas que pudieran sobrescribir una escritura reciente. El Worker `nottas-web-preview` se actualizó mediante API Cloudflare; sintaxis JavaScript validada. El navegador todavía no recibe FCM/Web Push ni tiene un canal SSE/WebSocket. Se requiere prueba de usuario con notas y tareas Android↔web, especialmente las escrituras Android que tardaban 6-8 s y una nota web que tardó 20 s o no desaparecía sin refresco.
 
 
