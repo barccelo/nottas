@@ -6,6 +6,11 @@
 
 ## Prioridad inmediata — validación Nottas Web (previsualización)
 
+- [x] Reducir refresco de la web de 8 s a 1,5 s y actualizar localmente tras POST confirmado, con defensa contra respuestas de sync antiguas (10-11-2026).
+- [ ] Confirmar en navegador real que las altas/bajas Android→web aparezcan sin refresco manual y que las notas web→Android se sincronicen consistentemente (el usuario reportó una nota de 20 s y una eliminación no reflejada).
+- [ ] Evaluar un transporte web push autenticado (SSE/WebSocket/Web Push) si sigue siendo imprescindible latencia subsegundo sin sondeo frecuente.
+
+
 - [x] Publicar Worker web independiente con acceso HTTPS y separación visible Personal/Oficina.
 - [x] Mostrar subtareas de tareas y casillas de notas, incluida anidación, sin perder el payload.
 - [x] Programar refresco automático de la web, también al recuperar foco.
