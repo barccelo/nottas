@@ -1,7 +1,15 @@
 # Continuidad operativa de Nottas
 
-**Actualizado:** 5 de noviembre de 2026.  
+**Actualizado:** 10 de noviembre de 2026 (Nottas Web experimental y avisos FCM de misma cuenta).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
+
+## Nottas Web y sincronización — 10 de noviembre de 2026
+
+- La versión experimental web se desarrolla en `feature/nottas-web-initial` (PR #8, todavía en borrador). Se publicó una previsualización separada en `https://nottas-web-preview.losrobles.workers.dev/` con navegación Personal/Oficina, tarjetas, listas/casillas de nota, subtareas de tarea, edición, fecha/hora, búsqueda y sincronización incremental automática (8 s cuando está visible, snapshot completo periódico).
+- La web vincula la cuenta mediante clave temporal desde Android; la sesión se conserva en `sessionStorage` de la pestaña. No se modifican datos Android al actualizar la interfaz web.
+- **Backend publicado:** PR #9 fusionado a `main`, GitHub Actions `deploy-worker` finalizó correctamente (run 42862252735); ahora los cambios emiten FCM `sync` también a otros dispositivos del mismo usuario, incluidos espacios Personal. No se cambió el esquema D1.
+- **Sin validar en dispositivos:** la recepción efectiva de FCM en Android, creación web→Android, eliminar y restaurar, conflictos de edición, conservación de bloques enriquecidos, permisos de Oficina y comportamiento de Nottas Web en navegador real. No afirmar que la sincronización está verificada por el éxito de CI.
+- **Android:** sigue v0.27.117 (versionCode 198); no hay APK nueva para Obtainium por estos cambios web/backend.
 
 ## Punto de reanudación
 
