@@ -2,6 +2,9 @@
 
 ## Nottas Web experimental y sincronización — 10 de noviembre de 2026 (sin nueva APK)
 
+- 10/11: la previsualización Nottas Web reduce el refresco automático de 8 a 1,5 segundos en primer plano; aplica inmediatamente altas/bajas confirmadas, descarta respuestas antiguas y gestiona pausas por errores. La web sigue mediante sondeo incremental; no dispone aún de push. Sin nuevo Android ni APK.
+
+
 - Backend Worker: corregido aviso de cambios FCM para dispositivos del mismo usuario, en espacios personales y compartidos; PR #9 fusionado, CI/despliegue run 42862252735 exitoso.
 - Nottas Web permanece en rama `feature/nottas-web-initial`: interfaz experimental accesible mediante Worker de previsualización, navegación Personal/Oficina, listas y subtareas, controles de edición y refresco incremental.
 - **No forma parte de una APK nueva ni constituye versión web estable:** pendientes pruebas de navegador, Android y sincronización end-to-end.
