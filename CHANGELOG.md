@@ -2,6 +2,9 @@
 
 ## Nottas Web experimental y sincronización — 10 de noviembre de 2026 (sin nueva APK)
 
+- **Reversión correctiva (10/11):** retirados los cambios web de sondeo cada 1,5 s y actualización optimista por regresión de sincronización informada; redeploy de versión anterior confirmada por usuario, sin tocar Android ni backend. Retorna 8 s en web. Falta prueba posterior de extremo a extremo.
+
+
 - 10/11: la previsualización Nottas Web reduce el refresco automático de 8 a 1,5 segundos en primer plano; aplica inmediatamente altas/bajas confirmadas, descarta respuestas antiguas y gestiona pausas por errores. La web sigue mediante sondeo incremental; no dispone aún de push. Sin nuevo Android ni APK.
 
 
