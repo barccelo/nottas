@@ -15,7 +15,7 @@ La interfaz estática está en `web/index.html` y utiliza los tokens y criterios
 - No se registra una nueva cuenta, no se solicita ni expone un token Android existente, y la clave temporal se borra del formulario después de canjearse.
 - El token de sesión permanece solo en memoria del navegador. Cerrar/recargar obliga a vincular otra vez. La sesión emitida permanece en el servidor hasta su revocación; añadir gestión y caducidad de sesiones web antes de ofrecerlo como acceso público definitivo.
 - Solo se muestran entidades que ya están sincronizadas en D1. Datos que permanezcan únicamente en WebView de Android no aparecerán automáticamente.
-- Los bloques de notas enriquecidas son de solo lectura en la web: se puede editar su título sin sobrescribir los bloques. No se modifican roles, aprobación, historial de reuniones ni alarmas nativas desde el editor web.
+- Las notas de párrafo simple pueden editar texto y título; los bloques enriquecidos son de solo lectura en el contenido, pero permiten editar el título sin sobrescribir los bloques. No se modifican roles, aprobación, historial de reuniones ni alarmas nativas desde el editor web.
 - La web requiere conexión. Aún no hay cola offline ni edición simultánea con resolución visual de conflictos.
 - No se almacena ninguna clave, token o URL privada en el repositorio. No incluir el Worker personal en el código.
 - No está probado en navegadores reales ni se ha desplegado Cloudflare Pages; no publicar como producto estable sin pruebas de seguridad, integración y sincronización entre dispositivos.
