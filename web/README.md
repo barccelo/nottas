@@ -16,7 +16,7 @@ La interfaz estática está en `web/index.html` y utiliza los tokens y criterios
 - La sesión se mantiene solo en sessionStorage de la pestaña y se intenta restaurar al recargar; cerrar la pestaña o pulsar Salir elimina la sesión del navegador. La sesión emitida permanece en el servidor hasta su revocación; añadir gestión y caducidad de sesiones web antes de ofrecerlo como acceso público definitivo.
 - Solo se muestran entidades que ya están sincronizadas en D1. Datos que permanezcan únicamente en WebView de Android no aparecerán automáticamente.
 - Las notas de párrafo simple pueden editar texto y título; los bloques enriquecidos son de solo lectura en el contenido, pero permiten editar el título sin sobrescribir los bloques. No se modifican roles, aprobación, historial de reuniones ni alarmas nativas desde el editor web.
-- La web permite crear nota/tarea, editar subtareas y fecha/hora, ver Personal/Oficina como espacios separados y utilizar Ctrl/Cmd+K para buscar, Ctrl/Cmd+N para nueva nota y Ctrl/Cmd+Enter para guardar. La web requiere conexión. Refresca cambios incrementales cada 8 segundos cuando la pestaña está visible, al enfocar y tras guardar; cada 5 minutos concilia un snapshot completo. No hay cola offline ni edición simultánea con resolución visual de conflictos.
+- La web permite crear nota/tarea, editar subtareas y fecha/hora, ver Personal/Oficina como espacios separados y utilizar Ctrl/Cmd+K para buscar, Ctrl/Cmd+N para nueva nota y Ctrl/Cmd+Enter para guardar. La web requiere conexión. Refresca cambios incrementales cada 1,5 segundos cuando la pestaña está visible; se actualiza al enfocar y realiza un snapshot completo cada 5 minutos. Después de una escritura, aplica la respuesta aceptada del servidor inmediatamente en la interfaz y después reconcilia; las respuestas HTTP anteriores al guardado se descartan. Cuando hay errores de red aplica un margen de reintento de 10 segundos. No hay cola offline ni edición simultánea con resolución visual de conflictos.
 - No se almacena ninguna clave, token o URL privada en el repositorio. No incluir el Worker personal en el código.
 - La previsualización fue desplegada como Cloudflare Worker `nottas-web-preview` y se validó la sintaxis JavaScript, pero no se han probado los flujos desde un navegador real; no publicar como producto estable sin pruebas de seguridad, integración y sincronización entre dispositivos.
 
@@ -32,3 +32,8 @@ La interfaz estática está en `web/index.html` y utiliza los tokens y criterios
 - Validar límites del endpoint snapshot (5000 entradas por espacio), reglas de roles y enlaces temporales.
 
 Esta rama no cambia Android, Worker ni esquema de D1. La publicación de una web de producción y una eventual APK de actualización son tareas separadas.
+
+
+## Corrección de latencia — 10/11/2026
+
+La web usa consultas incrementales, **no FCM/Web Push**. El móvil sí utiliza FCM. Se redujo la espera de la web desde 8 s a 1,5 s en primer plano y se corrigió que crear/eliminar desde la web dependiera de un GET adicional para reflejarse. El transporte web verdaderamente push requerirá un canal de eventos autenticado (WebSocket/SSE/Push) implementado y probado por separado; evitar afirmar que existe. Los avisos FCM y la entrega en Android pueden sufrir latencia variable; confirmar en pruebas reales.
