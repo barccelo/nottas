@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## Nottas Web experimental y sincronización — 10 de noviembre de 2026 (sin nueva APK)
+
+- Backend Worker: corregido aviso de cambios FCM para dispositivos del mismo usuario, en espacios personales y compartidos; PR #9 fusionado, CI/despliegue run 42862252735 exitoso.
+- Nottas Web permanece en rama `feature/nottas-web-initial`: interfaz experimental accesible mediante Worker de previsualización, navegación Personal/Oficina, listas y subtareas, controles de edición y refresco incremental.
+- **No forma parte de una APK nueva ni constituye versión web estable:** pendientes pruebas de navegador, Android y sincronización end-to-end.
+
 ## 0.27.117 — 5 de noviembre de 2026
 
 - La tarjeta única de subtareas permanece visible y permite expandir/contraer sin desaparecer; herramientas sincronizadas con el mismo estado.
