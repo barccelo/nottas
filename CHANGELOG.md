@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## Nottas Web: recepción en tiempo real desde Android — 10 de noviembre de 2026
+
+- Agregado WebSocket autenticado `/v1/realtime` y Durable Object SQLite hibernable que envía avisos vacíos de invalidación por usuario después de escrituras de notas/tareas. Conexiones restringidas al origen de Nottas Web y a sesiones existentes.
+- Cliente web experimental basado en `0305339`: escucha eventos y actualiza al recibirlos, al reconectar o al recuperar la pestaña. Sin polling cada segundo; permanece el refresco manual.
+- Backend PR #11: pruebas exitosas `42905553337`, despliegue `42905627037`; Worker web actualizado en Cloudflare. El comportamiento end-to-end **aún necesita validación real**. No hay APK nueva, ni cambio D1, ni modificación Android.
+
 ## Corrección de notificaciones FCM para la misma cuenta — 10 de noviembre de 2026
 
 - Solucionada regresión de backend: `pushWorkspaceSync` excluía al autor de cambios, por lo que la misma cuenta no recibía el aviso de sincronización en Android. La corrección incluye al autor para espacios Personal y Oficina.

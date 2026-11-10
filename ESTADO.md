@@ -4,6 +4,12 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Avisos de sincronización Android → Web — 10/11/2026
+
+- Backend PR #11 integrado: WebSocket WSS autenticado por sesión, un Durable Object SQLite hibernable por cuenta, publicación de señales `sync` a los navegadores por cada escritura aceptada; Android conserva el FCM ya probado.
+- Cliente web experimental basado estrictamente en `0305339`: solo agrega socket, escucha y refresco cuando llega señal, sin polling, además de reconexión/refresh al volver la pestaña. Despliegue de backend `42905627037` y previsualización web confirmado; CI `42905553337` exitoso.
+- Pendiente validación de sincronización en navegador real y Android para altas/bajas de notas/tareas; no está verificada la latencia. Sin nueva APK ni migración D1.
+
 ## Corrección FCM same-account desplegada — 10/11/2026
 
 - PR #10 fusionado: `pushWorkspaceSync` incluye al autor en miembros activos; corrige aviso nulo para Personal y omitido para dispositivos propios en Oficina. PR #9 había omitido esta función concreta.

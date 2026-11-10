@@ -4,6 +4,15 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Prioridad vigente — validar tiempo real Android → Web
+
+- [x] Implementar canal de eventos en navegador (WebSocket autenticado + Durable Object con hibernación) sin polling periódico; PR #11 fusionado, backend y web publicados.
+- [x] Probar autenticación, separación por usuario y avisos de creación/eliminación en CI (`42905553337`); backend desplegado (`42905627037`), recurso DO registrado.
+- [ ] Verificar en navegador real Android→Web al crear, editar y eliminar **nota y tarea** de Personal y Oficina; comprobar reconexión tras pestaña oculta y red interrumpida.
+- [ ] Verificar que Web→Android (FCM) siga siendo automático al crear/eliminar nota/tarea; no modificar este flujo para solucionar un problema del receptor web.
+- [ ] Si falla la conexión WSS, inspeccionar petición WebSocket, subprotocolo de autenticación, respuesta 101, Origin, CSP y binding `SYNC_HUB`. No reinstaurar polling como solución improvisada.
+- [ ] Vigilar cuota del Durable Object (eventos y conexiones); no hay sondeo periódico D1.
+
 ## Prioridad vigente — validar reparación FCM del PR #10
 
 - [x] Encontrar fallo exacto: `pushWorkspaceSync` excluía al propio autor; en Personal no notificaba a ningún dispositivo de la misma cuenta.

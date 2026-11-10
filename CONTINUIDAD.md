@@ -3,6 +3,15 @@
 **Actualizado:** 10 de noviembre de 2026 (Nottas Web experimental y avisos FCM de misma cuenta).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
 
+## Sincronización por eventos Android → Nottas Web — 10 de noviembre de 2026
+
+- **Problema:** Android sí recibía avisos FCM originados en la web, pero el navegador base carecía de canal de entrada: Android→web no se actualizaba hasta pulsar «Actualizar». No era el mismo receptor ni había simetría.
+- **Solución backend:** PR #11 (fusionado a `main`), agrega WebSocket autenticado `/v1/realtime` con subprotocolo de sesión y origen web limitado. Durable Object SQLite `SYNC_HUB` usa hibernación y separa conexiones por usuario. Cada `POST /v1/sync` aceptado envía un aviso **sin contenido** a las sesiones web de los miembros activos, sin cambiar FCM Android ni D1 de notas.
+- **Cliente web:** en `feature/nottas-web-initial`, `web/index.html` conserva la base `0305339` y añade exclusivamente conexión/reconexión WSS y recarga del snapshot al recibir el evento o volver a enfocar. **No usa polling periódico**. Web Worker `nottas-web-preview` publicado con CSP que permite WSS.
+- **Verificado:** GitHub Actions suite backend run `42905553337` exitosa; despliegue Worker backend run `42905627037` exitoso; recurso Durable Object registrado y Worker backend/web publicados e inspeccionados en Cloudflare. **Por verificar en dos dispositivos:** conexión WebSocket real y creación/eliminación Android→web; asimismo regresión Web→Android. No dar por probada la latencia real solo con despliegues.
+- **Costos:** el canal abierto permite hibernación y no realiza consultas D1 temporizadas; hay solicitudes al producirse eventos, reconexiones y operaciones del usuario. No es consumo de cuota cero.
+- **Android/APK:** no se modificaron los fuentes Android ni se publicó una APK nueva por este cambio; continúa v0.27.117. No reintroducir las revisiones web con polling de 8 o 1,5 segundos.
+
 ## Reparación de FCM Web → Android — 10 de noviembre de 2026
 
 - **Causa comprobada:** la reparación #9 modificó erróneamente `pushWorkspaceReminderPatches` pero `pushWorkspaceSync` seguía consultando miembros con `AND user_id<>?`: excluía al autor de cada cambio. En Personal resultaba **cero destinatarios**, y en Oficina omitía otros dispositivos de la misma cuenta. Algunas tareas podían aparentar funcionar por `sync_task`, pero notas y eliminaciones dependían del refresh Android.
