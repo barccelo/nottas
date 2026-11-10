@@ -6,6 +6,9 @@
 
 ## Nottas Web experimental — 10 de noviembre
 
+- **Ajuste de latencia en previsualización (10-11):** web refresca deltas cada 1,5 s (antes 8 s), evita pisar cambios por respuestas en vuelo y refleja inmediatamente operaciones confirmadas por POST. Publicado en Worker de prueba separado, no en Android. No se ha demostrado todavía sincronización instantánea Android→web; no existe push web, solo comprobaciones periódicas.
+
+
 - PR #8 (rama `feature/nottas-web-initial`, **sin fusionar**) implementa vista web independiente en `web/index.html` y previsualización en Cloudflare Worker `nottas-web-preview`.
 - Separación visible Personal / Oficina, navegación de notas/tareas/papelera, búsqueda, representación de subtareas y bloques checklist anidados, edición básica de subtareas y casillas de notas, fecha/hora y guardado mediante API /v1/sync. Polling incremental 8 segundos en pestaña visible, reconciliación completa periódica, refresco al foco y después de guardar.
 - La vinculación de cuenta usa clave temporal de Android y sesión solo de pestaña (`sessionStorage`). Contenido enriquecido no se sobrescribe desde la web; todavía no tiene editor enriquecido completo.
