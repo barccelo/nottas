@@ -1246,9 +1246,13 @@ async function pushWorkspaceReminderPatches(workspaceId, actorUserId, patches, e
 }
 
 async function pushWorkspaceSync(workspaceId, actorUserId, env) {
+  // Notify all authorized members, INCLUDING the author. The author may be
+  // editing in a web session while another registered device is Android.
+  // Excluding the author caused web -> same-account Android changes to wait
+  // for the Android foreground reconciliation instead of receiving FCM.
   const result = await env.DB.prepare(
-    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
-  ).bind(workspaceId, actorUserId).all();
+    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active'"
+  ).bind(workspaceId).all();
   const deliveries = await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
     type: "sync",
     workspaceId,
