@@ -4,6 +4,13 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — versión base vigente restaurada (10 de noviembre)
+
+- Se restauró el contenido de `web/index.html` de commit `0305339` (blob `c45d98d9`) en la rama experimental y se volvió a publicar en `nottas-web-preview` por solicitud explícita del usuario. La reversión anterior a `46429cac` era incorrecta: corresponde a una versión posterior.
+- La base vigente **no usa polling**, tampoco Web Push: sincroniza al entrar, refrescar manualmente y después de guardar. La sesión está en memoria y la edición es la básica original.
+- Worker API de `main` posterior a PR #9 permanece vigente sin modificación en esta reversión. Android, D1 y APK tampoco cambiaron. Las pruebas end-to-end de latencia y bajas están pendientes.
+- Los detalles del apartado histórico de Nottas Web siguiente describen implementaciones **ya revertidas**, no capacidades actuales.
+
 ## Nottas Web experimental — 10 de noviembre
 
 **Reversión de regresión (10-11):** Web Worker `nottas-web-preview` restaurado al código de commit `46429cac`, tras reportes de que Web→Android dejó de actualizar instantáneamente. Retirados sondeo web de 1,5 s y aplicación optimista de escrituras; vuelve sondeo web de 8 s. El backend FCM y la APK no se modificaron. Pendiente validar en Android y diagnosticar las bajas. 
