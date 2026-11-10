@@ -21,11 +21,115 @@ dialog{width:min(540px,calc(100% - 24px));max-height:90vh;overflow:auto;border:1
 dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:grid;gap:6px;font-size:13px;font-weight:600}.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.notice{font-size:13px;color:var(--muted);line-height:1.5}.status{font-size:13px;color:var(--muted);min-height:20px}.hidden{display:none!important}
 @media(prefers-color-scheme:dark){:root{--bg:#101012;--surface:#1c1c1e;--fg:#f5f5f7;--muted:#a2a2ab;--line:#39393e;--blue:#4b9aff}}
 @media(max-width:730px){.app{grid-template-columns:1fr;grid-template-rows:60px auto auto}header{padding:10px 14px}aside{border:0;border-bottom:1px solid var(--line);display:flex;gap:4px;padding:6px 10px;overflow-x:auto}aside .nav{width:auto;white-space:nowrap;margin:0}main{padding:16px}.brand{font-size:19px}.cards{columns:1}}
-</style></head><body>
+</style><link rel="stylesheet" href="/assets/nottas-ui.css"></head><body>
 <div class="app">
-<header><div class="brand"><i>N</i>ottas</div><input class="search" id="search" aria-label="Buscar" placeholder="Buscar notas y tareas" disabled><span id="status" class="status" role="status">Sin conectar</span></header>
-<aside><button class="nav" data-view="all" aria-pressed="true">Todo</button><button class="nav" data-view="note">Notas</button><button class="nav" data-view="task">Tareas</button><button class="nav" data-view="deleted">Papelera</button></aside>
-<main><div class="toolbar"><h1 id="heading">Mis notas y tareas</h1><select id="workspace" aria-label="Espacio de trabajo" style="width:auto" disabled></select><button id="refresh" class="secondary" disabled>Actualizar</button><button id="create" class="primary" disabled>+ Crear</button><button id="logout" class="secondary" disabled>Salir</button></div><div class="cards" id="cards"></div><p id="empty" class="notice">Vincula tu cuenta para consultar los datos que se hayan sincronizado con Cloudflare.</p></main>
+  <header>
+    <button id="sidebarToggle" class="icon-action menu-toggle" type="button" aria-label="Abrir menú"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-menu"></use></svg></button>
+    <div class="brand"><img class="brand-wordmark" src="/assets/nottas_wordmark.svg" alt="Nottas" /></div>
+    <div class="search-wrap">
+      <svg class="ns-icon search-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="/assets/nottas-icons.svg#ns-nav-search"></use></svg>
+      <input class="search" id="search" aria-label="Buscar" placeholder="Buscar en Nottas" autocomplete="off" disabled />
+      <button id="searchClear" class="search-clear hidden" type="button" aria-label="Limpiar búsqueda"><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-close"></use></svg></button>
+    </div>
+    <div class="header-actions">
+      <div class="status-chip"><span class="status-dot"></span><span id="status" class="status" role="status">Sin conectar</span></div>
+      <button id="refreshQuick" class="icon-action" type="button" aria-label="Actualizar" title="Actualizar" data-requires-account><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-refresh"></use></svg></button>
+      <button id="settingsQuick" class="icon-action" type="button" aria-label="Ajustes" title="Ajustes"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-settings"></use></svg></button>
+    </div>
+  </header>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+  <aside aria-label="Navegación de Nottas">
+    <div class="aside-group">
+      <button class="aside-item" type="button" data-section="home" aria-pressed="true"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg><span>Inicio</span></button>
+      <button class="aside-item" type="button" data-section="calendar" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg><span>Calendario</span></button>
+      <button class="aside-item" type="button" data-section="team" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-users"></use></svg><span>Equipo de trabajo</span></button>
+    </div>
+    <div class="aside-divider"></div>
+    <div class="aside-group">
+      <div class="aside-label">Espacios</div>
+      <div id="spaceLinks"></div>
+    </div>
+    <div class="aside-group">
+      <div class="aside-label">Tareas</div>
+      <button class="aside-item" type="button" data-smart-filter="today"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-today"></use></svg>Hoy<small data-count="today"></small></button>
+      <button class="aside-item" type="button" data-smart-filter="pending"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-pending"></use></svg>Pendientes<small data-count="pending"></small></button>
+      <button class="aside-item" type="button" data-smart-filter="pinned"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-pinned"></use></svg>Destacadas<small data-count="pinned"></small></button>
+      <button class="nav" type="button" data-view="task" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>Todas<small data-count="tasks"></small></button>
+      <button class="aside-item" type="button" data-smart-filter="done"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-done"></use></svg>Completadas<small data-count="done"></small></button>
+    </div>
+    <div class="aside-group">
+      <div class="aside-label">Notas</div>
+      <button class="nav" type="button" data-view="note" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg>Todas<small data-count="notes"></small></button>
+      <button class="aside-item" type="button" data-smart-filter="notes-pinned"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-pinned"></use></svg>Fijadas<small data-count="fixed"></small></button>
+    </div>
+    <div class="aside-footer">
+      <button class="nav" type="button" data-view="all" aria-pressed="true"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>Todo<small data-count="all"></small></button>
+      <button class="nav" type="button" data-view="deleted" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-trash"></use></svg>Papelera<small data-count="trash"></small></button>
+      <button class="aside-item" type="button" data-section="settings" aria-pressed="false"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-settings"></use></svg>Ajustes</button>
+    </div>
+  </aside>
+  <main>
+    <section id="homeScreen" class="section-screen">
+      <div id="homeToolbar" class="toolbar">
+        <h1 id="heading">Nottas</h1>
+        <label class="workspace-select-wrap" aria-label="Espacio de trabajo"><svg class="ns-icon tiny" viewBox="0 0 24 24" aria-hidden="true"><use href="/assets/nottas-icons.svg#ns-users"></use></svg><select id="workspace" aria-label="Espacio de trabajo" disabled></select></label>
+        <div class="desktop-actions">
+          <button id="refresh" class="secondary icon-only" type="button" aria-label="Actualizar" title="Actualizar" disabled><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-refresh"></use></svg></button>
+          <button id="newTask" class="secondary" type="button" data-requires-account><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-done"></use></svg>Tarea</button>
+          <button id="create" class="primary" type="button" disabled><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-plus"></use></svg>Nueva nota</button>
+          <button id="logout" class="secondary" type="button" disabled>Salir</button>
+        </div>
+      </div>
+      <div id="quickFilters" class="filter-chips">
+        <button type="button" class="active" data-quick="all" aria-pressed="true">Todo</button>
+        <button type="button" data-quick="today" aria-pressed="false">Hoy</button>
+        <button type="button" data-quick="pending" aria-pressed="false">Pendientes</button>
+        <button type="button" data-quick="pinned" aria-pressed="false">Destacadas</button>
+        <button type="button" data-quick="done" aria-pressed="false">Completadas</button>
+      </div>
+      <div id="cards" class="cards"></div>
+      <p id="empty" class="notice">Vincula tu cuenta para consultar los datos sincronizados.</p>
+    </section>
+    <section id="calendarScreen" class="section-screen hidden" aria-label="Calendario">
+      <div class="section-top"><h1>Calendario</h1><button id="calendarToday" class="secondary" type="button">Hoy</button></div>
+      <div class="panel-card">
+        <div class="calendar-toolbar">
+          <div class="calendar-modes" role="tablist" aria-label="Vistas de calendario">
+            <button type="button" data-calendar-mode="day">Día</button>
+            <button type="button" data-calendar-mode="week">Semana</button>
+            <button type="button" data-calendar-mode="month" class="active">Mes</button>
+            <button type="button" data-calendar-mode="agenda">Agenda</button>
+          </div>
+          <div class="calendar-navigation">
+            <button id="calendarPrevious" class="icon-action" type="button" aria-label="Anterior"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-back"></use></svg></button>
+            <strong id="calendarPeriodLabel">Calendario</strong>
+            <button id="calendarNext" class="icon-action" type="button" aria-label="Siguiente"><svg class="ns-icon" style="transform:rotate(180deg)" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-back"></use></svg></button>
+          </div>
+        </div>
+        <div id="calendarBody" style="margin-top:19px"></div>
+      </div>
+    </section>
+    <section id="teamScreen" class="section-screen hidden" aria-label="Equipo de trabajo">
+      <div class="section-top"><h1>Equipo de trabajo</h1></div>
+      <div id="teamCards" class="team-grid"></div>
+      <p class="section-caption" style="margin-top:18px">Los mensajes rápidos, las llamadas y los permisos de colaboración se gestionan desde Nottas Android.</p>
+    </section>
+    <section id="settingsScreen" class="section-screen hidden" aria-label="Ajustes">
+      <div class="section-top"><h1>Ajustes</h1></div>
+      <div class="settings-grid">
+        <div class="settings-subnav">
+          <button type="button" data-settings-page="appearance" aria-pressed="true">Apariencia</button>
+          <button type="button" data-settings-page="alerts" aria-pressed="false">Notificaciones y recordatorios</button>
+          <button type="button" data-settings-page="team" aria-pressed="false">Equipo de trabajo</button>
+          <button type="button" data-settings-page="messages" aria-pressed="false">Mensajes rápidos</button>
+          <button type="button" data-settings-page="backup" aria-pressed="false">Datos y respaldo</button>
+          <button type="button" data-settings-page="about" aria-pressed="false">Acerca de Nottas</button>
+          <button id="settingsLogout" type="button" data-requires-account>Salir de la cuenta</button>
+        </div>
+        <div class="settings-content"><h2 id="settingsTitle" style="font-size:20px;margin:6px 0 8px;letter-spacing:-.025em">Apariencia</h2><div id="settingsBody"></div></div>
+      </div>
+    </section>
+  </main>
 </div>
 <dialog id="login"><form id="loginForm"><h2 style="margin:0">Vincular Nottas Web</h2><p class="notice">En Nottas Android, abre Ajustes → Asistente → vincular otro dispositivo y genera una clave temporal de cuenta. No utilices el código de invitación a un espacio.</p>
 <label>Dirección HTTPS del Worker<input id="server" type="url" autocomplete="url" value="https://nottas-assistant-api.losrobles.workers.dev" required></label>
@@ -92,7 +196,7 @@ function setStatus(s){$("status").textContent=s}
 function apiPath(path){return state.api+path}
 async function request(path,method="GET",body=null,token=state.token){const response=await fetch(apiPath(path),{method,headers:{"Authorization":"Bearer "+token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined,cache:"no-store"});let data;try{data=await response.json()}catch{throw new Error("Respuesta inesperada del servidor")}if(!response.ok)throw new Error(data.error||"Error HTTP "+response.status);return data}
 function selectWorkspace(){state.workspaceId=$("workspace").value;render()}
-function render(){const ws=state.workspaceId;const query=$("search").value.toLocaleLowerCase();$("heading").textContent=({all:"Mis notas y tareas",note:"Notas",task:"Tareas",deleted:"Papelera"})[state.view];document.querySelectorAll(".nav").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view===state.view)));const list=[...state.items.values()].filter(x=>x.workspaceId===ws&&(state.view==="deleted"?!!x.payload.deletedAt:!x.payload.deletedAt)&&(state.view==="all"||state.view==="deleted"||x.entityType===state.view)).filter(x=>(getTitle(x)+" "+getBody(x)).toLocaleLowerCase().includes(query)).sort((a,b)=>Number(b.payload.updatedAt||0)-Number(a.payload.updatedAt||0));const cards=$("cards");cards.replaceChildren();for(const item of list){const b=document.createElement("button");b.className="card";b.type="button";const title=document.createElement("strong");title.textContent=getTitle(item);const body=document.createElement("p");body.textContent=getBody(item).slice(0,1000);const meta=document.createElement("div");meta.className="meta";meta.textContent=(item.entityType==="task"?"Tarea":"Nota")+(item.payload.done?" · Completada":"")+(item.payload.dueDate?" · "+item.payload.dueDate:"");b.append(title,body,meta);b.addEventListener("click",()=>openEditor(item));cards.append(b)}$("empty").textContent=list.length?"":"No hay elementos en esta vista.";show($("empty"),!list.length)}
+function render(){if(window.NottasWebVisual?.render)return window.NottasWebVisual.render();const ws=state.workspaceId;const query=$("search").value.toLocaleLowerCase();$("heading").textContent=({all:"Mis notas y tareas",note:"Notas",task:"Tareas",deleted:"Papelera"})[state.view];document.querySelectorAll(".nav").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view===state.view)));const list=[...state.items.values()].filter(x=>x.workspaceId===ws&&(state.view==="deleted"?!!x.payload.deletedAt:!x.payload.deletedAt)&&(state.view==="all"||state.view==="deleted"||x.entityType===state.view)).filter(x=>(getTitle(x)+" "+getBody(x)).toLocaleLowerCase().includes(query)).sort((a,b)=>Number(b.payload.updatedAt||0)-Number(a.payload.updatedAt||0));const cards=$("cards");cards.replaceChildren();for(const item of list){const b=document.createElement("button");b.className="card";b.type="button";const title=document.createElement("strong");title.textContent=getTitle(item);const body=document.createElement("p");body.textContent=getBody(item).slice(0,1000);const meta=document.createElement("div");meta.className="meta";meta.textContent=(item.entityType==="task"?"Tarea":"Nota")+(item.payload.done?" · Completada":"")+(item.payload.dueDate?" · "+item.payload.dueDate:"");b.append(title,body,meta);b.addEventListener("click",()=>openEditor(item));cards.append(b)}$("empty").textContent=list.length?"":"No hay elementos en esta vista.";show($("empty"),!list.length)}
 async function refresh(silent=false){
   if(!state.token)return;
   if(state.busy||$("editor").open||state.refreshing){state.pendingRefresh=true;return}
@@ -127,4 +231,4 @@ async function remove(){if(!state.current||state.busy||!confirm("¿Mover este el
 $("loginForm").addEventListener("submit",connect);$("editForm").addEventListener("submit",save);$("type").addEventListener("change",configureEditor);$("remove").addEventListener("click",remove);$("cancel").addEventListener("click",()=>$("editor").close());$("editor").addEventListener("close",()=>{if(state.pendingRefresh)refresh(true)});$("refresh").addEventListener("click",()=>refresh());$("workspace").addEventListener("change",selectWorkspace);$("search").addEventListener("input",render);document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>{state.view=b.dataset.view;render()}));$("create").addEventListener("click",()=>openEditor());$("logout").addEventListener("click",()=>{stopRealtime();state.token="";state.api="";state.items.clear();state.workspaces=[];$("search").value="";["search","workspace","refresh","create","logout"].forEach(id=>$(id).disabled=true);render();setStatus("Sin conectar");$("login").show()});document.addEventListener("visibilitychange",()=>{if(document.hidden)stopRealtime();else if(state.token){startRealtime();refresh(true)}});
 window.addEventListener("online",()=>{if(state.token){stopRealtime();startRealtime();refresh(true)}});
 $("login").showModal();
-</script></body></html>
+</script><script src="/assets/nottas-ui.js" defer></script></body></html>
