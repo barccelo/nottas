@@ -6,6 +6,11 @@
 
 ## Prioridad inmediata — validación Nottas Web (previsualización)
 
+- [x] Revertir cambio web de sondeo de 1,5 s tras regresión reportada; versión previa desplegada (10-11-2026).
+- [ ] Confirmar con Android que creación Web→Android recuperó actualización sin gesto manual y verificar borrado Web→Android. Analizar entrega real FCM, registro del dispositivo y procesamiento de `sync` sin reintroducir regresiones.
+- [ ] Diseñar canal push real Android→Web con autorización y bajo consumo de cuota (la web actual usa sondeo, no FCM); verificar capacidad antes de sustituirlo.
+
+
 - [x] Reducir refresco de la web de 8 s a 1,5 s y actualizar localmente tras POST confirmado, con defensa contra respuestas de sync antiguas (10-11-2026).
 - [ ] Confirmar en navegador real que las altas/bajas Android→web aparezcan sin refresco manual y que las notas web→Android se sincronicen consistentemente (el usuario reportó una nota de 20 s y una eliminación no reflejada).
 - [ ] Evaluar un transporte web push autenticado (SSE/WebSocket/Web Push) si sigue siendo imprescindible latencia subsegundo sin sondeo frecuente.
