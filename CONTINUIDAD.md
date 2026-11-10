@@ -1,7 +1,20 @@
 # Continuidad operativa de Nottas
 
-**Actualizado:** 10 de noviembre de 2026 (Nottas Web experimental y avisos FCM de misma cuenta).  
+**Actualizado:** 10 de noviembre de 2026 (sincronización Android ↔ Web confirmada por el usuario; FCM + WebSocket sin polling).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
+
+## Configuración de sincronización confirmada por el usuario — 10 de noviembre de 2026
+
+**ESTADO VIGENTE Y REFERENCIA PARA NO INTRODUCIR REGRESIONES.** Tras instalar el receptor WebSocket, el usuario confirmó expresamente que **la sincronización entre Android y Nottas Web funciona automáticamente en ambos sentidos** («Ahora sí. Perfecto perfectísimo perfectote»). Esto sustituye los estados *pendiente de prueba* que aparecen en las secciones históricas posteriores. La confirmación es una prueba funcional del usuario; no equivale a una batería exhaustiva de dispositivos, desconexiones o permisos.
+
+- **Web → Android:** se guarda por `POST /v1/sync`; el Worker envía `sync` mediante **Firebase Cloud Messaging (FCM)** también a los dispositivos de la cuenta autora. Corrección crucial: `pushWorkspaceSync` NO debe filtrar `user_id<>?` (PR #10).
+- **Android → Web:** después de aceptar la escritura, el Worker emite una señal `{"type":"sync"}` **sin contenido de notas/tareas** a los clientes WebSocket autenticados de los miembros activos; el navegador actualiza por la API `/v1/sync?full=1`. Usa `wss://nottas-assistant-api.losrobles.workers.dev/v1/realtime`, con origen restringido a `https://nottas-web-preview.losrobles.workers.dev`.
+- **Canal web:** Durable Object SQLite `SyncHub` (binding `SYNC_HUB`, migración `sync-hub-v1`) con hibernación; habitaciones separadas por identidad de usuario, token de sesión en subprotocolo WSS (no en la URL). El navegador se reconecta con backoff y concilia al reconectar, recuperar la pestaña o pulsar «Actualizar». **Sin polling ni consultas periódicas a D1**; las solicitudes se generan por eventos, operaciones o reconexión.
+- **Código de referencia:** Worker en `cloudflare/assistant/src/index.js` y `cloudflare/assistant/wrangler.toml` de `main` (PR #11, merge `55af3a4ff17660ba2d5bbbacc7bc72d09ccc1e40`; PR #10 corrige FCM); Web en `feature/nottas-web-initial:web/index.html`, basada en la interfaz `0305339`, con añadido WebSocket (commit `53093c9c3353884c3763775759ca37bd4c3c0819`). El código web desplegado está en el Worker independiente `nottas-web-preview` de Cloudflare. La documentación detallada está en `web/README.md` de esa rama.
+- **Pruebas/publicación:** backend CI run `42905553337` y deployment run `42905627037` exitosos; recursos Durable Objects y código web publicado comprobados. La comprobación de uso real **ahora sí está confirmada por el usuario**. La APK Android no se modificó ni hubo una nueva publicación por este cambio (v0.27.117).
+- **Regla de regresión:** antes de modificar cualquiera de los dos canales, conservar y probar los cuatro flujos: crear y eliminar nota/tarea desde Android y desde la web, con recepción automática en el otro dispositivo; no sustituir WSS por polling ni excluir al autor de FCM. Mantener los cambios de UI y la sincronización aislados. No dar por confirmadas pruebas más amplias (reconexión, múltiples usuarios, conflicto de edición) que no se han ejecutado.
+
+**Importante:** los relatos de versiones anteriores más abajo —incluido «sin WebSocket», «sin polling» de la base y las regresiones de 8 s/1,5 s— son **históricos, no describen el despliegue vigente**.
 
 ## Sincronización por eventos Android → Nottas Web — 10 de noviembre de 2026
 

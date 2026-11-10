@@ -1,8 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 10 de noviembre de 2026 · Nottas Web experimental y FCM same-account publicado; Android permanece en v0.27.117.
+Última actualización: 10 de noviembre de 2026 · sincronización bidireccional Android ↔ Web confirmada por el usuario; Android v0.27.117.
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
+
+## ESTADO ACTUAL — sincronización Android ↔ Web confirmada (10/11/2026)
+
+- **Confirmación funcional del usuario:** los cambios de Nottas Android y Nottas Web ahora aparecen automáticamente en el otro dispositivo. Tras reportes de fallos de creación y eliminación, el usuario confirmó que la implementación WebSocket final funciona («Ahora sí»). No atribuir esta confirmación a CI solamente.
+- **Arquitectura de referencia que no debe romperse:** Android recibe FCM `sync` para todos los miembros activos, **incluido el autor** (PR #10); la web recibe invalidaciones `sync` por WebSocket autenticado WSS y Durable Object `SYNC_HUB` hibernable (PR #11), y consulta `/v1/sync?full=1` al recibirlas. No hay polling de 8 s o 1,5 s.
+- **Ubicación:** backend `main:cloudflare/assistant/src/index.js` y `wrangler.toml`; web `feature/nottas-web-initial:web/index.html` desplegada en `nottas-web-preview.losrobles.workers.dev`. Interfaz web basada en `0305339`, con escucha WSS, sin añadir de nuevo los editores experimentales revertidos.
+- **Pruebas vs. publicación:** CI `42905553337` y deploy `42905627037` correctos; despliegue web verificado; funcionamiento en los dispositivos del usuario confirmado. Siguen pendientes pruebas de desconexión prolongada, carga, multiusuario y todos los permisos de oficina. Android sin APK nueva (v0.27.117).
+- **Protección de regresión:** cada intervención de sincronización requiere comprobar crear/eliminar notas y tareas en ambas direcciones, sin acción manual de actualización. Mantener los canales FCM y WSS separados en implementación y compatibles con `/v1/sync`.
 
 ## Avisos de sincronización Android → Web — 10/11/2026
 

@@ -1,8 +1,17 @@
 # Pendientes de Nottas
 
-Última revisión: 10 de noviembre de 2026 · Nottas Web experimental; Android v0.27.117.
+Última revisión: 10 de noviembre de 2026 · sincronización Android ↔ Web confirmada por el usuario; faltan pruebas complementarias.
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
+
+## Sincronización bidireccional — configuración conservada (10/11/2026)
+
+- [x] Usuario confirma sincronización automática Android ↔ Web tras implementar canal WSS (PR #11) y reparar avisos FCM del mismo usuario (PR #10).
+- [x] Confirmación funcional en uso real por el usuario; no depende únicamente del éxito de GitHub Actions.
+- [x] Sin polling periódico: WebSocket hibernable `SYNC_HUB` emite invalidación, y la web consulta el estado al recibir el evento; Android mantiene FCM.
+- [ ] Pruebas complementarias antes de cambios: reconexión tras cierre/segundo plano, desconexión de red, múltiples miembros Oficina, permisos y conflictos simultáneos. No se debe interpretar como regresión ya observada.
+- [ ] Convertir en pruebas automatizadas completas la matriz de creación/edición/eliminación de nota/tarea desde ambos dispositivos; proteger la entrega FCM al autor y el canal WSS.
+- **Regla:** mantener esta configuración como versión de referencia; jamás reintroducir polling de 8 s/1,5 s ni revertir a la web sin WebSocket como «solución».
 
 ## Prioridad vigente — validar tiempo real Android → Web
 

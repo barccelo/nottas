@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## Sincronización Android ↔ Web confirmada — 10 de noviembre de 2026
+
+- **Validación de usuario:** tras las correcciones FCM del PR #10 y WebSocket del PR #11, el usuario confirma que los cambios aparecen automáticamente en ambos sentidos; antes solo Web → Android respondía sin refresco manual.
+- **Arquitectura estabilizada:** Android recibe notificaciones FCM `sync`, incluyendo al autor; Nottas Web recibe avisos `sync` mediante WSS con subprotocolo de sesión, Durable Object SQLite hibernable `SYNC_HUB` y refresco reactivo `/v1/sync?full=1`. No hay polling periódico. La señal no incluye contenido de usuario.
+- **Conservar:** backend de `main`, web de `feature/nottas-web-initial` desplegada en `nottas-web-preview`; basada en interfaz `0305339` y ampliada únicamente para escuchar WebSocket. Pruebas CI/deploy aprobadas; confirmación de uso real recibida. Se mantiene Android v0.27.117, sin nueva APK por esta intervención.
+- **Prevención:** verificar altas/bajas de notas/tareas en los dos sentidos antes de tocar sincronización. Casos de desconexión, multiusuario y conflictos aún no validados de forma exhaustiva.
+
 ## Nottas Web: recepción en tiempo real desde Android — 10 de noviembre de 2026
 
 - Agregado WebSocket autenticado `/v1/realtime` y Durable Object SQLite hibernable que envía avisos vacíos de invalidación por usuario después de escrituras de notas/tareas. Conexiones restringidas al origen de Nottas Web y a sesiones existentes.
