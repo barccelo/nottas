@@ -5,6 +5,9 @@
 
 ## Nottas Web y sincronización — 10 de noviembre de 2026
 
+- **Revisión de latencia web (10-11-2026):** en rama `feature/nottas-web-initial`, `web/index.html` hace consultas incrementales cada 1,5 s cuando la pestaña está visible (antes 8 s), reconcilia con snapshot periódico y aplica inmediatamente la confirmación del servidor tras crear/eliminar desde la web. Protege contra respuestas antiguas que pudieran sobrescribir una escritura reciente. El Worker `nottas-web-preview` se actualizó mediante API Cloudflare; sintaxis JavaScript validada. El navegador todavía no recibe FCM/Web Push ni tiene un canal SSE/WebSocket. Se requiere prueba de usuario con notas y tareas Android↔web, especialmente las escrituras Android que tardaban 6-8 s y una nota web que tardó 20 s o no desaparecía sin refresco.
+
+
 - La versión experimental web se desarrolla en `feature/nottas-web-initial` (PR #8, todavía en borrador). Se publicó una previsualización separada en `https://nottas-web-preview.losrobles.workers.dev/` con navegación Personal/Oficina, tarjetas, listas/casillas de nota, subtareas de tarea, edición, fecha/hora, búsqueda y sincronización incremental automática (8 s cuando está visible, snapshot completo periódico).
 - La web vincula la cuenta mediante clave temporal desde Android; la sesión se conserva en `sessionStorage` de la pestaña. No se modifican datos Android al actualizar la interfaz web.
 - **Backend publicado:** PR #9 fusionado a `main`, GitHub Actions `deploy-worker` finalizó correctamente (run 42862252735); ahora los cambios emiten FCM `sync` también a otros dispositivos del mismo usuario, incluidos espacios Personal. No se cambió el esquema D1.
