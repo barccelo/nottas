@@ -103,7 +103,7 @@
       document.querySelectorAll('[data-count="'+k+'"]').forEach(el=>{el.textContent=n?String(n):""});
     }
     document.querySelectorAll("[data-smart-filter]").forEach(el=>{
-      const selected=smartFilter===el.dataset.smartFilter&&screen==="home";
+      const selected=(el.dataset.smartFilter==="notes-pinned"?state.view==="note"&&smartFilter==="pinned":smartFilter===el.dataset.smartFilter)&&screen==="home";
       el.setAttribute("aria-pressed",String(selected));
       el.classList.toggle("active",selected);
     });
@@ -206,6 +206,7 @@
     const content=$("calendarBody");if(!content)return;
     content.replaceChildren();
     const label=$("calendarPeriodLabel");
+    $("calendarPrevious").disabled=calendarMode==="agenda";$("calendarNext").disabled=calendarMode==="agenda";
     document.querySelectorAll("[data-calendar-mode]").forEach(b=>b.classList.toggle("active",b.dataset.calendarMode===calendarMode));
     const tasks=tasksWithDates();
     const y=cursor.getFullYear(),m=cursor.getMonth();
@@ -283,7 +284,7 @@
     const title={appearance:"Apariencia",alerts:"Notificaciones y recordatorios",team:"Equipo de trabajo",messages:"Mensajes rápidos",backup:"Datos y respaldo",about:"Acerca de Nottas"};
     $("settingsTitle").textContent=title[settingsPage]||"Ajustes";
     if(settingsPage==="appearance"){
-      const themeRow=settingsRow("ns-palette","Tema oscuro");
+      const themeRow=settingsRow("ns-palette","Tema oscuro","Solo en este navegador.");
       const input=elt("input","");input.type="checkbox";input.checked=document.documentElement.dataset.theme==="dark";input.setAttribute("aria-label","Tema oscuro");
       input.onchange=()=>setTheme(input.checked?"dark":"light");
       themeRow.append(input);
