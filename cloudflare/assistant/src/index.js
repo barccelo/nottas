@@ -772,6 +772,10 @@ async function pushSync(request, auth, env) {
     const workspace = await env.DB.prepare("SELECT kind,owner_user_id FROM workspaces WHERE id=?").bind(workspaceId).first();
     if (workspace?.kind === "personal" && workspace.owner_user_id === auth.userId) {
       await pushAvailabilityChanged(auth.userId, env);
+      // A web session and Android phone belong to the same account: notify
+      // the owner's other registered devices, not just other workspace members.
+      const delivery = await pushWorkspaceSync(workspaceId, auth.userId, env);
+      pushDelivery.push({workspaceId, ...delivery});
     } else {
       const proposal=proposalSignals.get(workspaceId);
       const delivery = await pushWorkspaceSync(workspaceId, auth.userId, env);
@@ -1230,8 +1234,8 @@ async function pushAvailabilityChanged(ownerUserId, env) {
 
 async function pushWorkspaceReminderPatches(workspaceId, actorUserId, patches, env) {
   const rows = await env.DB.prepare(
-    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active' AND user_id<>?"
-  ).bind(workspaceId, actorUserId).all();
+    "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active'"
+  ).bind(workspaceId).all();
   const recipients=(rows.results||[]).map(r=>r.user_id);
   // Each patch is small enough for FCM's data-message limit.
   // Ordinary sync pushes remain the fallback for full state reconciliation.
