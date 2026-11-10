@@ -5,6 +5,8 @@
 
 ## Rama experimental Nottas Web (10 de noviembre de 2026)
 
+- **Corrección web posterior:** arreglados los separadores JavaScript que impedían inicializar eventos, enlace del API restringido al Worker oficial y diálogo de vinculación no modal. Despliegue de `nottas-web-preview` actualizado con éxito en Cloudflare (10-11-2026). Sigue pendiente prueba real en navegador y vinculación; no se ha tocado Android.
+
 - Rama: `feature/nottas-web-initial`; contiene `web/index.html` (vista adaptable, búsqueda, lectura, creación y edición controlada de notas/tareas, completar tareas, papelera y selección de espacios) y `web/README.md` (vinculación de cuenta y pruebas).
 - Reutiliza `/v1/auth/redeem`, `/v1/me` y `/v1/sync` existentes en el Worker; no introduce endpoint, esquema D1 ni cambio de Android.
 - Vinculación con clave temporal generada en Android. La sesión web vive en memoria del navegador; antes de acceso público definitivo falta revocación/caducidad gestionable del lado servidor.
