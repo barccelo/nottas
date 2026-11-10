@@ -48,6 +48,13 @@ async function route(request, env) {
     return googleCallback(request, env);
   }
 
+  // Browser WebSocket sessions cannot send Authorization headers. Authenticate
+  // a token carried as a subprotocol, never in the URL/query string. The token
+  // remains in the browser's existing in-memory Nottas session.
+  if (path === "/v1/realtime" && request.method === "GET") {
+    return connectRealtime(request, env);
+  }
+
   const auth = await authenticate(request, env);
   if (!auth) return json({ error: "unauthorized" }, 401);
 
@@ -268,6 +275,81 @@ async function authenticate(request, env) {
   await env.DB.prepare("UPDATE sessions SET last_seen_at=? WHERE token_hash=?")
     .bind(Date.now(), tokenHash).run();
   return { userId: row.user_id, deviceId: row.device_id, displayName: row.display_name };
+}
+
+// All realtime frames are invalidation signals, never user content.
+// Durable Objects provide an event-driven browser channel without polling D1.
+export class SyncHub {
+  constructor(state) {
+    this.state = state;
+  }
+
+  async fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname === "/connect" && request.headers.get("Upgrade")?.toLowerCase() === "websocket") {
+      const [client, server] = Object.values(new WebSocketPair());
+      this.state.acceptWebSocket(server);
+      return new Response(null, {
+        status: 101,
+        webSocket: client,
+        headers: { "Sec-WebSocket-Protocol": "nottas-sync-v1" }
+      });
+    }
+    if (url.pathname === "/notify" && request.method === "POST") {
+      for (const ws of this.state.getWebSockets()) {
+        try { ws.send('{"type":"sync"}'); } catch { try { ws.close(1011, "Connection error"); } catch {} }
+      }
+      return new Response(null, { status: 204 });
+    }
+    return new Response("Not found", { status: 404 });
+  }
+
+  async webSocketMessage(ws) {
+    // Clients are read-only. The authenticated HTTP sync endpoint is the
+    // sole authority for writes.
+    ws.close(1008, "Read-only channel");
+  }
+
+  async webSocketClose(ws, code, reason) {
+    try { ws.close(code, reason); } catch {}
+  }
+}
+
+async function connectRealtime(request, env) {
+  if (request.headers.get("Upgrade")?.toLowerCase() !== "websocket") {
+    return new Response("WebSocket required", { status: 426 });
+  }
+  // Restrict browser-origin access to the separate Nottas Web frontend.
+  if (request.headers.get("Origin") !== "https://nottas-web-preview.losrobles.workers.dev") {
+    return new Response("Origin not allowed", { status: 403 });
+  }
+  const protocols = (request.headers.get("Sec-WebSocket-Protocol") || "")
+    .split(",").map(value => value.trim());
+  if (!protocols.includes("nottas-sync-v1")) return new Response("Invalid protocol", { status: 400 });
+  const tokens = protocols.filter(value => /^nottas-token\\.[A-Za-z0-9_-]{43}$/.test(value));
+  if (tokens.length !== 1) return new Response("Invalid session", { status: 401 });
+  const token = tokens[0].slice("nottas-token.".length);
+  const authenticated = await authenticate(new Request(request.url, {
+    headers: { Authorization: "Bearer " + token }
+  }), env);
+  if (!authenticated) return new Response("Unauthorized", { status: 401 });
+  if (!env.SYNC_HUB) return new Response("Realtime unavailable", { status: 503 });
+  const hub = env.SYNC_HUB.get(env.SYNC_HUB.idFromName(authenticated.userId));
+  return hub.fetch(new Request("https://internal/connect", {
+    headers: { Upgrade: "websocket", "Sec-WebSocket-Protocol": "nottas-sync-v1" }
+  }));
+}
+
+async function notifyRealtimeUser(userId, env) {
+  if (!env.SYNC_HUB) return;
+  try {
+    const hub = env.SYNC_HUB.get(env.SYNC_HUB.idFromName(userId));
+    await hub.fetch(new Request("https://internal/notify", { method: "POST" }));
+  } catch (error) {
+    // The database write has already succeeded. Realtime outages must never
+    // reject or roll back a change; users can still refresh manually.
+    console.warn("Nottas realtime delivery failed", String(error?.message || error).slice(0,160));
+  }
 }
 
 async function me(auth, env) {
@@ -1253,7 +1335,11 @@ async function pushWorkspaceSync(workspaceId, actorUserId, env) {
   const result = await env.DB.prepare(
     "SELECT user_id FROM workspace_members WHERE workspace_id=? AND status='active'"
   ).bind(workspaceId).all();
-  const deliveries = await Promise.all((result.results || []).map(r => sendPushToUser(r.user_id, {
+  const recipients = (result.results || []).map(r => r.user_id);
+  // Broadcast to browsers on the same account or shared office immediately
+  // after accepting the write. No timers, refresh polling or database reads.
+  await Promise.all(recipients.map(userId => notifyRealtimeUser(userId, env)));
+  const deliveries = await Promise.all(recipients.map(userId => sendPushToUser(userId, {
     type: "sync",
     workspaceId,
     changedBy: actorUserId
