@@ -13,3 +13,12 @@ FIREBASE_PROJECT_ID = "nottas"
 FIREBASE_SENDER_ID = "1007779053216"
 FIREBASE_APP_ID = "1:1007779053216:android:c8059f4fdc72f1ddad93c5"
 FIREBASE_API_KEY = "AIzaSyCkZ40YbeOSj400bvVLmu_gLzkSKtQMw4o"
+
+# Browser realtime invalidation channel; hibernating WebSockets avoid D1 polling.
+[[durable_objects.bindings]]
+name = "SYNC_HUB"
+class_name = "SyncHub"
+
+[[migrations]]
+tag = "sync-hub-v1"
+new_sqlite_classes = ["SyncHub"]

@@ -13,7 +13,7 @@ const credentials = JSON.stringify({
 });
 
 function fixture({ kind = "personal", entityType = "note", deleting = false } = {}) {
-  const events = [];
+  const events = [], realtimeEvents = [];
   const actor = "owner";
   const participants = kind === "personal" ? [actor] : [actor, "assistant"];
   const now = Date.now();
@@ -90,8 +90,13 @@ function fixture({ kind = "personal", entityType = "note", deleting = false } = 
       payload, rev: payload.rev, updatedAt: now, ...(deleting ? { deletedAt: now } : {})
     }] })
   });
-  return { env: { DB: db, FCM_SERVICE_ACCOUNT_JSON: credentials },
-    request, events, participants, restore: () => { globalThis.fetch = previousFetch; } };
+  return { env: { DB: db, FCM_SERVICE_ACCOUNT_JSON: credentials,
+    SYNC_HUB: { idFromName: userId => userId, get: userId => ({ fetch: async request => {
+      realtimeEvents.push({ userId, path: new URL(request.url).pathname });
+      return new Response(null, { status: 204 });
+    } }) }
+  },
+    request, events, realtimeEvents, participants, restore: () => { globalThis.fetch = previousFetch; } };
 }
 
 for (const kind of ["personal", "assistant"]) {
@@ -112,6 +117,9 @@ for (const kind of ["personal", "assistant"]) {
         assert.deepEqual(new Set(notifications.map(event => event.token)),
           new Set(f.participants.map(user => user + "-token")));
         assert.ok(notifications.every(event => event.data.workspaceId === "workspace-1"));
+        assert.equal(f.realtimeEvents.length, f.participants.length);
+        assert.deepEqual(new Set(f.realtimeEvents.map(e => e.userId)), new Set(f.participants));
+        assert.ok(f.realtimeEvents.every(e => e.path === "/notify"));
       } finally {
         f.restore();
       }
