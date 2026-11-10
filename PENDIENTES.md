@@ -4,6 +4,17 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Nottas Web — revisión del espejo visual (10/11/2026)
+
+- [x] Adaptar navegación, wordmark, iconografía y tokens originales del Design System 1.3 a escritorio y móvil web.
+- [x] Publicar tarjetas/controles, filtros, calendario visual de tareas, vista de espacios y Ajustes basados en las secciones Android; tema oscuro local.
+- [x] Preservar de forma exacta la lógica original de guardado y WebSocket, sin polling ni cambios en Android; publicar `/classic` como respaldo.
+- [x] Validar sintaxis JS, IDs, iconos, recursos y despliegue con Cloudflare.
+- [ ] **Validar visualmente en navegador real** Chrome/Edge, ambos temas y distintos tamaños (header, wordmark, sidebar, calendario y diálogos).
+- [ ] **Pruebas de regresión reales** después del rediseño: crear y eliminar nota/tarea en ambas direcciones, Actualizar, reconexión, Personal y Oficina; comparación con `/classic`.
+- [ ] Revisar paridad funcional pendiente: editor enriquecido y subtareas editables, ajustes y categorías sincronizadas, calendario completo y Google Calendar, mensajes y llamadas; la UI actual no simula funciones que no existen.
+- [ ] Tras validación, decidir promoción de la web experimental a versión estable; no fusionar a `main` basándose solo en revisión estática.
+
 ## Sincronización bidireccional — configuración conservada (10/11/2026)
 
 - [x] Usuario confirma sincronización automática Android ↔ Web tras implementar canal WSS (PR #11) y reparar avisos FCM del mismo usuario (PR #10).

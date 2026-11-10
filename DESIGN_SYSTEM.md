@@ -6,6 +6,18 @@
 **Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
 **Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
+## Adaptación de escritorio — Nottas Web (10 de noviembre de 2026)
+
+La web usa la **identidad existente**, no un diseño alternativo. El origen autoritativo sigue siendo `app/src/main/assets/design-system.css`, `nottas.html`, `nottas_wordmark.svg` y el presente documento.
+
+- **Fuentes web** (rama `feature/nottas-web-initial`): `web/nottas-ui.css` adapta los tokens `#1677ff` / `#4b9aff`, neutros claros/oscuros, radios 12/16 px, ritmos 4/8/12/16/24, iconos de trazo consistente, objetivo táctil de 44 px, checks circulares y estados; `web/nottas-ui.js` compone las vistas de presentación sin modificar sincronización.
+- **Recursos conservados:** `web/nottas_wordmark.svg` replica el recurso Android original; `web/nottas-icons.svg` contiene los 31 símbolos nativos `ns-*` y glifos de navegación de trazados extraídos de la app, sin incorporar librerías de iconos externas.
+- **Responsive:** escritorio con sidebar fija, contenido de tarjetas y vistas independientes; en pantallas pequeñas sidebar desplegable, búsqueda y acciones compactas. Respetar foco, contraste, área táctil y `prefers-reduced-motion`.
+- **Ajustes:** conservar las familias Apariencia, Notificaciones y recordatorios, Equipo de trabajo, Mensajes rápidos, Datos y respaldo, Acerca de Nottas. En la web solo se ofrecen controles funcionales (p. ej., tema local); no simular ajustes de Android exclusivos del sistema, llamadas o respaldos.
+- **Calendario:** navegación Día/Semana/Mes/Agenda a partir de tareas internas con fecha. No confundir esta vista gráfica con la implementación completa Android/Google Calendar.
+- **Preservación técnica:** el rediseño no altera `/v1/sync`, la sesión, el WebSocket ni FCM. No agregar polling. Conservar `/classic` como opción de recuperación durante validaciones.
+- **Estado:** desplegado en Cloudflare y validado estáticamente; requiere comparación visual y pruebas de interacción en navegador y móvil antes de declarar paridad completa.
+
 ## Intención
 
 Nottas conserva su identidad actual: sobria, limpia, orgánica, con calidad de detalle y consistencia entre pantallas, sin reproducir literalmente iOS. Se conserva el logotipo, las dos T de notificaciones, el wordmark y los gestos característicos. El laboratorio solo muestra ejemplos; no edita notas, tareas, eventos, ajustes ni sincronización.

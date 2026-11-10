@@ -4,6 +4,15 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — capa gráfica Android adaptada a escritorio (10/11/2026)
+
+- Rediseño publicado en `nottas-web-preview.losrobles.workers.dev`, con respaldo visual original en `/classic`. Código bajo `feature/nottas-web-initial` (no fusionado a `main`).
+- Identidad reproducida desde archivos reales de Android: wordmark SVG, 31 símbolos `ns-*` y glifos laterales, tokens del Design System 1.3, geometría, checks, tarjetas, dark mode, sidebar, encabezados y Ajustes.
+- Navegación Inicio/Tareas/Notas/Calendario/Equipo/Ajustes; filtros Hoy/Pendientes/Destacadas/Completadas, espacios de cuenta, notas/tareas, tarjetas de checklist y calendario visual Día/Semana/Mes/Agenda de **tareas internas con fecha**.
+- Apariencia web configurable localmente; notificaciones, respaldo, colaboración avanzada y funciones Android-only claramente indicadas y no simuladas.
+- Conserva funciones originales `request`, `refresh`, `connect`, `save`, `push`, `remove` y WSS, comprobadas por comparación literal con baseline `53093c9`; no polling, ni cambios en Android/backend/D1. No hay APK nueva.
+- QA: validación estática JS, referencias DOM/SVG, despliegue y assets inspeccionados en Cloudflare. **Pendiente:** inspección visual real y verificación funcional en ambos dispositivos después del rediseño, incluidos los dos temas.
+
 ## ESTADO ACTUAL — sincronización Android ↔ Web confirmada (10/11/2026)
 
 - **Confirmación funcional del usuario:** los cambios de Nottas Android y Nottas Web ahora aparecen automáticamente en el otro dispositivo. Tras reportes de fallos de creación y eliminación, el usuario confirmó que la implementación WebSocket final funciona («Ahora sí»). No atribuir esta confirmación a CI solamente.

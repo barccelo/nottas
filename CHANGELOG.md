@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — identidad gráfica de Android adaptada — 10 de noviembre de 2026
+
+- Rediseño web publicado con el wordmark, el sprite de iconos `ns-*`, colores, checks, tarjetas, tipografía, navegación y jerarquía extraídos de `DESIGN_SYSTEM.md` 1.3 y los assets Android.
+- Vistas Inicio, Notas/Tareas y filtros, Papelera, Calendario Día/Semana/Mes/Agenda (datos internos con fecha), espacios de Equipo y secciones de Ajustes; tema local claro/oscuro, diseño responsivo de escritorio a móvil.
+- El backend FCM/WSS, el cliente de sincronización y la APK permanecen intactos. No se añadió polling; versión anterior accesible en `/classic`.
+- Verificación: código JavaScript, IDs, símbolos y recursos comprobados, Worker web publicado y verificado. Pendiente test visual y de funcionamiento en navegador real posterior al rediseño. No implica paridad completa con todos los ajustes y capacidades de Android.
+
 ## Sincronización Android ↔ Web confirmada — 10 de noviembre de 2026
 
 - **Validación de usuario:** tras las correcciones FCM del PR #10 y WebSocket del PR #11, el usuario confirma que los cambios aparecen automáticamente en ambos sentidos; antes solo Web → Android respondía sin refresco manual.
