@@ -4,7 +4,7 @@ La interfaz estática está en `web/index.html` y utiliza los tokens y criterios
 
 ## Acceso y sincronización
 
-1. Alojar `web/` en un origen HTTPS confiable (por ejemplo, Cloudflare Pages). No está desplegado todavía.
+1. Vista de prueba desplegada en `https://nottas-web-preview.losrobles.workers.dev/` mediante Cloudflare Worker independiente; no sustituye el API existente.
 2. En Android: Ajustes → Asistente → generar **clave de vinculación de cuenta** (no invitación al equipo). Caduca a los 10 minutos y es de uso único.
 3. En Nottas Web, introducir la URL HTTPS del Worker configurado en Android y la clave.
 4. El navegador obtiene una sesión independiente mediante `POST /v1/auth/redeem`; consulta los espacios autorizados mediante `GET /v1/me` y carga el snapshot con `GET /v1/sync?full=1`.
