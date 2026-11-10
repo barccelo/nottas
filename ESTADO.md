@@ -4,6 +4,12 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Corrección FCM same-account desplegada — 10/11/2026
+
+- PR #10 fusionado: `pushWorkspaceSync` incluye al autor en miembros activos; corrige aviso nulo para Personal y omitido para dispositivos propios en Oficina. PR #9 había omitido esta función concreta.
+- Tests específicos de alta/baja en Personal/Oficina y suite Worker aprobados (Actions `42903491020`); publicación del Worker confirmada (Actions `42903588121`) y código de Cloudflare verificado. Pendiente validar Android físico.
+- Sin cambios de frontend, D1 o APK. Se preserva `web/index.html` de `0305339`. La web base **no hace polling**.
+
 ## Nottas Web — versión base vigente restaurada (10 de noviembre)
 
 - Se restauró el contenido de `web/index.html` de commit `0305339` (blob `c45d98d9`) en la rama experimental y se volvió a publicar en `nottas-web-preview` por solicitud explícita del usuario. La reversión anterior a `46429cac` era incorrecta: corresponde a una versión posterior.

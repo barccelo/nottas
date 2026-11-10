@@ -3,6 +3,14 @@
 **Actualizado:** 10 de noviembre de 2026 (Nottas Web experimental y avisos FCM de misma cuenta).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
 
+## Reparación de FCM Web → Android — 10 de noviembre de 2026
+
+- **Causa comprobada:** la reparación #9 modificó erróneamente `pushWorkspaceReminderPatches` pero `pushWorkspaceSync` seguía consultando miembros con `AND user_id<>?`: excluía al autor de cada cambio. En Personal resultaba **cero destinatarios**, y en Oficina omitía otros dispositivos de la misma cuenta. Algunas tareas podían aparentar funcionar por `sync_task`, pero notas y eliminaciones dependían del refresh Android.
+- **Arreglo:** PR #10, commit de fusión `4b9ac6bfaa5f0ed72428336f49a68afbd4d72fea`, elimina **solo en `pushWorkspaceSync`** el filtro que excluía al autor. Se mantiene la misma API, permisos, esquema D1, Android y web.
+- **Pruebas:** cuatro tests de regresión para creación y eliminación, Personal/Oficina, más suite preexistente; GitHub Actions run `42903491020` exitoso. Despliegue backend run `42903588121` exitoso; fuente desplegada en Cloudflare inspeccionada y verificada sin la condición de exclusión.
+- **Estado de uso:** requiere prueba física del móvil de que `sync` FCM se entrega/procesa y las notas y tareas se crean/borran sin refresco manual. Éxito de CI y envío FCM simulado no prueban latencia real.
+- **Cliente web de referencia:** sigue siendo exactamente `0305339`, sin polling y sin cambios de frontend. No reintroducir versiones posteriores por intentar reparar este fallo.
+
 ## **Versión base web recuperada — 10 de noviembre de 2026 (vigente)**
 
 - El usuario eligió explícitamente la versión disponible durante la indicación «Acceder desde otro teléfono», no la revisión posterior `46429cac`. Se restauró el contenido **exacto** de `web/index.html` de `0305339bdee26ea3a53955aa3e600b4e14f7c32e` (blob `c45d98d9445bf7af01359c6ee7e5d357c4dcf09c`) en `feature/nottas-web-initial`; commit de reversión `20d024c261a5acab88235ffe29894348c0cc85db`.

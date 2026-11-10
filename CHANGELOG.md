@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## Corrección de notificaciones FCM para la misma cuenta — 10 de noviembre de 2026
+
+- Solucionada regresión de backend: `pushWorkspaceSync` excluía al autor de cambios, por lo que la misma cuenta no recibía el aviso de sincronización en Android. La corrección incluye al autor para espacios Personal y Oficina.
+- PR #10 fusionado; pruebas de creación/eliminación de notas/tareas y suite previa correctas (Actions `42903491020`); Worker desplegado (Actions `42903588121`) y código publicado verificado.
+- Se conserva Nottas Web exactamente en versión `0305339`; sin cambios Android, nueva APK ni migración D1. Pendiente validación en dispositivo físico.
+
 ## Reversión Nottas Web a versión seleccionada — 10 de noviembre de 2026
 
 - Restaurado `web/index.html` al contenido exacto de `0305339` (blob `c45d98d9`), el cliente web que estaba publicado cuando se explicó «Acceder desde otro teléfono». Se había restaurado erróneamente una revisión posterior (`46429cac`).

@@ -4,6 +4,16 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Prioridad vigente — validar reparación FCM del PR #10
+
+- [x] Encontrar fallo exacto: `pushWorkspaceSync` excluía al propio autor; en Personal no notificaba a ningún dispositivo de la misma cuenta.
+- [x] Corregir backend sin tocar web ni Android, con tests de alta y baja en espacios Personal y Oficina.
+- [x] Suite de pruebas de GitHub Actions en PR y despliegue Cloudflare confirmados; verificación del código vivo.
+- [ ] **Prueba real en Android:** desde web crear y eliminar nota y tarea, verificar que Android recibe cambios inmediatamente sin intervención; repetir en Personal y Oficina. Si falla, comprobar registro FCM y recepción nativa.
+- [ ] Si recepción FCM falla en un móvil, inspeccionar `pushDelivery.accepted`, `/v1/devices/push-status` y el tratamiento Android de `sync` sin introducir nuevas modificaciones de interfaz.
+- [ ] Mantener pruebas de regresión obligatorias; no volver a reemplazar `web/index.html` como intento de arreglar notificaciones.
+- [ ] Canal real Android→web basado en eventos requiere diseño independiente; la base web seleccionada sigue sin polling ni Web Push.
+
 ## Prioridad actual — versión base protegida
 
 - [x] Recuperar la versión web exacta de `0305339` («Acceder desde otro teléfono»), no la posterior `46429cac`; desplegada en Cloudflare y versión fijada en documentación.
