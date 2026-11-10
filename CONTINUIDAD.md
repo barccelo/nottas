@@ -3,6 +3,14 @@
 **Actualizado:** 10 de noviembre de 2026 (Nottas Web experimental y avisos FCM de misma cuenta).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
 
+## **Versión base web recuperada — 10 de noviembre de 2026 (vigente)**
+
+- El usuario eligió explícitamente la versión disponible durante la indicación «Acceder desde otro teléfono», no la revisión posterior `46429cac`. Se restauró el contenido **exacto** de `web/index.html` de `0305339bdee26ea3a53955aa3e600b4e14f7c32e` (blob `c45d98d9445bf7af01359c6ee7e5d357c4dcf09c`) en `feature/nottas-web-initial`; commit de reversión `20d024c261a5acab88235ffe29894348c0cc85db`.
+- Cloudflare confirmó el redespliegue del Worker independiente `nottas-web-preview`. Esta versión **NO tiene polling automático** ni push en navegador: solo sincroniza al vincular, pulsar Actualizar y tras escribir. Sesión web solo en memoria; volver a vincular tras recargar.
+- Se recuperó la web anterior a añadidos de edición, navegación de espacios y polling. El backend actualmente publicado (PR #9) permanece intacto: la restauración **no retrocedió todo el sistema**. Android v0.27.117 y datos sin cambios.
+- **Prioridad:** probar en dispositivo real creación/eliminación de notas y tareas Web↔Android; verificar registros FCM, entrega, actualizaciones y permisos. No implementar nuevas funciones o polling hasta confirmar la referencia de comportamiento. Diferenciar la versión del código web de la versión backend/FCM.
+- Para detalles exactos consultar `web/README.md` en `feature/nottas-web-initial`. Los apartados de abajo sobre 8 s/1,5 s corresponden a **versiones históricas**, NO al despliegue vigente.
+
 ## Nottas Web y sincronización — 10 de noviembre de 2026
 
 **Reversión correctiva (10-11-2026):** a petición del usuario, se restauró en `feature/nottas-web-initial` el archivo `web/index.html` de commit `46429cac` (previo al cambio de sondeo de 1,5 s y aplicación optimista). Worker `nottas-web-preview` publicado de nuevo con éxito. El usuario observó que creación y borrado web→Android dejaron de recibir actualización automáticamente después del cambio posterior; el retroceso busca recuperar ese comportamiento probado, pero la recepción en móvil aún requiere nueva prueba. Android/APK y backend no cambiaron en esta reversión. La web vuelve a sondeo de 8 s, no push. Investigar FCM y la entrega de eliminaciones sin tocar producción antes de pruebas.
