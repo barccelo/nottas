@@ -37,3 +37,8 @@ Esta rama no cambia Android, Worker ni esquema de D1. La publicación de una web
 ## Corrección de latencia — 10/11/2026
 
 La web usa consultas incrementales, **no FCM/Web Push**. El móvil sí utiliza FCM. Se redujo la espera de la web desde 8 s a 1,5 s en primer plano y se corrigió que crear/eliminar desde la web dependiera de un GET adicional para reflejarse. El transporte web verdaderamente push requerirá un canal de eventos autenticado (WebSocket/SSE/Push) implementado y probado por separado; evitar afirmar que existe. Los avisos FCM y la entrega en Android pueden sufrir latencia variable; confirmar en pruebas reales.
+
+
+## Reversión por regresión (10/11/2026)
+
+Por reporte del usuario, se restauró `web/index.html` de commit `46429cac` y se redeplegó al Worker de prueba. Se retiraron la aceleración a 1,5 segundos y la aplicación optimista de POST. Se vuelve al comportamiento de 8 segundos con FCM backend sin cambios; está pendiente confirmación del comportamiento Android real y corrección segura de bajas. No usar la sección anterior de latencia como estado vigente.
