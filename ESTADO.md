@@ -6,6 +6,10 @@
 
 ## Nottas Web experimental — 10 de noviembre
 
+**Reversión de regresión (10-11):** Web Worker `nottas-web-preview` restaurado al código de commit `46429cac`, tras reportes de que Web→Android dejó de actualizar instantáneamente. Retirados sondeo web de 1,5 s y aplicación optimista de escrituras; vuelve sondeo web de 8 s. El backend FCM y la APK no se modificaron. Pendiente validar en Android y diagnosticar las bajas. 
+
+
+
 - **Ajuste de latencia en previsualización (10-11):** web refresca deltas cada 1,5 s (antes 8 s), evita pisar cambios por respuestas en vuelo y refleja inmediatamente operaciones confirmadas por POST. Publicado en Worker de prueba separado, no en Android. No se ha demostrado todavía sincronización instantánea Android→web; no existe push web, solo comprobaciones periódicas.
 
 
