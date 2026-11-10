@@ -345,12 +345,12 @@
   initTheme();
   $("sidebarToggle").addEventListener("click",()=>document.documentElement.classList.toggle("sidebar-open"));
   $("sidebarScrim").addEventListener("click",closeMenu);
-  document.querySelectorAll("[data-section]").forEach(el=>el.addEventListener("click",()=>showScreen(el.dataset.section)));
+  document.querySelectorAll("[data-section]").forEach(el=>el.addEventListener("click",()=>el.dataset.section==="home"?openHome("all"):showScreen(el.dataset.section)));
   document.querySelectorAll(".nav[data-view]").forEach(el=>el.addEventListener("click",()=>{smartFilter="all";showScreen("home")}));
   document.querySelectorAll("[data-smart-filter]").forEach(el=>el.addEventListener("click",()=>{
     const value=el.dataset.smartFilter;
-    if(value==="notes")state.view="note";else state.view="task";
-    smartFilter=value==="notes"?"all":value;
+    if(value==="notes"||value==="notes-pinned")state.view="note";else state.view="task";
+    smartFilter=value==="notes"?"all":value==="notes-pinned"?"pinned":value;
     showScreen("home");
   }));
   document.querySelectorAll("[data-quick]").forEach(el=>el.addEventListener("click",()=>{
