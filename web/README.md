@@ -4,6 +4,31 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
+## Adaptación de identidad Android a escritorio — 10/11/2026
+
+La interfaz visual de la previsualización `https://nottas-web-preview.losrobles.workers.dev/` incorpora ahora el lenguaje gráfico de Nottas Android, basado en `DESIGN_SYSTEM.md` 1.3 y el código vigente. La versión anterior se conserva accesible en `/classic` como medida de recuperación.
+
+**Fuentes y archivos de la web:**
+
+- `web/index.html`: estructura de navegación, paneles y editor básico existente. Conserva sin cambios las funciones originales `request`, `refresh`, `connect`, `openEditor`, `save`, `push`, `remove` y el canal WebSocket de sincronización.
+- `web/nottas-ui.css`: adaptación responsiva de los tokens reales de `app/src/main/assets/design-system.css` (colores `#1677FF`, `#4B9AFF`, fondos, radios, checks redondos, alineación, foco y accesibilidad).
+- `web/nottas-ui.js`: **solo capa de presentación**: cards de notas/tareas y subtareas, filtros de la barra lateral, calendarios Día/Semana/Mes/Agenda sobre tareas fechadas, espacios Personal/Oficina, información de equipo y secciones de Ajustes.
+- `web/nottas_wordmark.svg`: copia **idéntica** del wordmark de `app/src/main/assets/nottas_wordmark.svg`.
+- `web/nottas-icons.svg`: 31 símbolos SVG reales `ns-*` de `app/src/main/assets/nottas.html` y los 10 glifos de navegación trazados con las rutas nativas.
+- El Worker estático `nottas-web-preview` sirve `/assets/nottas-ui.css`, `/assets/nottas-ui.js`, `/assets/nottas_wordmark.svg` y `/assets/nottas-icons.svg`, además de `/` y `/classic`.
+
+**Alcance funcional real:**
+
+- Pantalla Inicio, navegación de Tareas/Notas, filtros Hoy/Pendientes/Destacadas/Completadas, Papelera, búsqueda, editor existente, tema claro/oscuro local en el navegador y navegación adaptada a escritorio/tablet/móvil.
+- Calendario Día/Semana/Mes/Agenda **basado en tareas con fecha ya sincronizadas**. No sustituye el calendario Android completo, ni carga Google Calendar de manera independiente, ni ofrece programación enriquecida desde ese panel.
+- «Equipo de trabajo» muestra espacios autorizados, roles y cantidades. Los mensajes/llamadas/permisos avanzados siguen en Android.
+- Ajustes conserva las mismas familias de secciones; **solo el tema web es editable**. Notificaciones, recordatorios, horario, mensajes rápidos, respaldos y otros ajustes nativos se indican como controles de Android, no botones web falsos. Preferencia de tema guardada en `localStorage` **solo para este navegador**, nunca en D1.
+- No se han modificado datos, esquemas, Android, el backend FCM ni el Durable Object. El cliente WebSocket anterior sigue sin polling; la capa estética no añade llamadas a API.
+
+**Verificación de esta integración:** se contrastaron clases y símbolos con archivos Android; se validaron sintaxis JavaScript, IDs duplicados/referencias, iconos y rutas; todas las funciones críticas del cliente original se compararon literalmente con el commit `53093c9` y resultaron idénticas. Cloudflare confirmó la publicación y el contenido de los assets, CSP WSS y ruta de respaldo. **Pendiente:** revisión visual y funcional desde navegador real, sobre todo dimensiones, tema oscuro, menús, editor y sincronización tras este cambio de presentación. La sincronización previa sí fue confirmada por el usuario.
+
+**Condición de calidad:** no declarar paridad funcional completa con Android: esa labor requiere nuevas implementaciones y pruebas separadas. No reemplazar datos o flujos existentes para lograr semejanza visual.
+
 ## Sincronización estable — validada por el usuario (10/11/2026)
 
 **Estado confirmado:** el usuario probó la configuración publicada tras el PR #11 y confirmó que la sincronización automática funciona en ambos sentidos («Ahora sí. Perfecto perfectísimo perfectote»). Anteriormente Web → Android funcionaba, mientras Android → Web requería «Actualizar». Este es el punto de referencia funcional que se debe preservar.
