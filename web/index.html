@@ -28,7 +28,7 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
 <main><div class="toolbar"><h1 id="heading">Mis notas y tareas</h1><select id="workspace" aria-label="Espacio de trabajo" style="width:auto" disabled></select><button id="refresh" class="secondary" disabled>Actualizar</button><button id="create" class="primary" disabled>+ Crear</button><button id="logout" class="secondary" disabled>Salir</button></div><div class="cards" id="cards"></div><p id="empty" class="notice">Vincula tu cuenta para consultar los datos que se hayan sincronizado con Cloudflare.</p></main>
 </div>
 <dialog id="login"><form id="loginForm"><h2 style="margin:0">Vincular Nottas Web</h2><p class="notice">En Nottas Android, abre Ajustes → Asistente → vincular otro dispositivo y genera una clave temporal de cuenta. No utilices el código de invitación a un espacio.</p>
-<label>Dirección HTTPS del Worker<input id="server" type="url" autocomplete="url" placeholder="https://tu-worker.workers.dev" required></label>
+<label>Dirección HTTPS del Worker<input id="server" type="url" autocomplete="url" value="https://nottas-assistant-api.losrobles.workers.dev" required></label>
 <label>Clave temporal<input id="key" type="password" autocomplete="off" spellcheck="false" required minlength="43" maxlength="43"></label>
 <p class="notice">Esta versión no crea una cuenta nueva. La sesión se mantiene solo en memoria y se pierde al recargar o cerrar la pestaña. Utiliza únicamente un Worker de confianza.</p><div id="loginError" class="status" role="alert"></div><div class="actions"><button class="primary">Vincular</button></div></form></dialog>
 <dialog id="editor"><form id="editForm"><h2 id="editHeading" style="margin:0">Editar</h2>
@@ -42,7 +42,7 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
 const $=id=>document.getElementById(id);
 const state={api:"",token:"",workspaces:[],workspaceId:"",view:"all",items:new Map(),current:null,busy:false};
 const show=(el,on)=>el.classList.toggle("hidden",!on);
-function textOnly(html){const el=document.createElement("div");el.innerHTML=String(html||"");return el.textContent||""}
+function textOnly(html){const el=document.createElement("div");el.textContent=String(html||"").replace(/<br\\s*\\/?\\s*>/gi,"\\n").replace(/<[^>]*>/g,"");return el.textContent||""}
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}\nfunction editablePlainNote(p){return !p.blocks?.length||(p.blocks.length===1&&p.blocks[0].type==="paragraph"&&!p.blocks[0].children?.length&&!/<(?!br\\b)[a-z]/i.test(p.blocks[0].html||""))}\nfunction noteText(item){const p=item.payload;if(Array.isArray(p.blocks)&&p.blocks.length)return p.blocks.map(b=>textOnly(b.html||b.text||"")).join("\n");return String(p.body||"")}
 function getTitle(item){return String(item.entityType==="note"?(item.payload.title||"Sin título"):(item.payload.text||"Sin título"))}
 function getBody(item){return item.entityType==="note"?noteText(item):String(item.payload.description||"")}
