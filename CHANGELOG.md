@@ -1,5 +1,11 @@
 # Historial de cambios de Nottas
 
+## Reversión Nottas Web a versión seleccionada — 10 de noviembre de 2026
+
+- Restaurado `web/index.html` al contenido exacto de `0305339` (blob `c45d98d9`), el cliente web que estaba publicado cuando se explicó «Acceder desde otro teléfono». Se había restaurado erróneamente una revisión posterior (`46429cac`).
+- Desplegado el Worker de previsualización Cloudflare con éxito; se retiraron interfaces y refrescos automáticos agregados después de la versión base. **Estado vigente: sin polling web automático.**
+- Backend y Android sin modificaciones en esta reversión. Se mantiene pendiente demostrar entrega correcta de avisos FCM y eliminaciones en ambos sentidos. Historial posterior describe versiones **no vigentes**.
+
 ## Nottas Web experimental y sincronización — 10 de noviembre de 2026 (sin nueva APK)
 
 - **Reversión correctiva (10/11):** retirados los cambios web de sondeo cada 1,5 s y actualización optimista por regresión de sincronización informada; redeploy de versión anterior confirmada por usuario, sin tocar Android ni backend. Retorna 8 s en web. Falta prueba posterior de extremo a extremo.
