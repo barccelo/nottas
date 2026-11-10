@@ -4,6 +4,14 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Prioridad actual — versión base protegida
+
+- [x] Recuperar la versión web exacta de `0305339` («Acceder desde otro teléfono»), no la posterior `46429cac`; desplegada en Cloudflare y versión fijada en documentación.
+- [ ] Comprobar en Android que creación y eliminación de nota/tarea desde la web disparen FCM y aparezcan sin gesto manual; identificar si la variación se debe a entrega FCM, registro de dispositivo o ejecución del sync.
+- [ ] Decidir y diseñar notificación push en navegador solo tras validar la base; esta versión web **no** consulta periódicamente ni tiene Web Push.
+- [ ] Añadir pruebas de regresión para altas/bajas, Personal/Oficina y subtareas, y publicarlas como puerta de validación antes de nuevas funciones.
+- [ ] No reincorporar por ahora sondeo 8 s/1,5 s ni editor web ampliado; apartados siguientes son históricos.
+
 ## Prioridad inmediata — validación Nottas Web (previsualización)
 
 - [x] Revertir cambio web de sondeo de 1,5 s tras regresión reportada; versión previa desplegada (10-11-2026).
