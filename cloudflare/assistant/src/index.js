@@ -326,7 +326,7 @@ async function connectRealtime(request, env) {
   const protocols = (request.headers.get("Sec-WebSocket-Protocol") || "")
     .split(",").map(value => value.trim());
   if (!protocols.includes("nottas-sync-v1")) return new Response("Invalid protocol", { status: 400 });
-  const tokens = protocols.filter(value => /^nottas-token\\.[A-Za-z0-9_-]{43}$/.test(value));
+  const tokens = protocols.filter(value => /^nottas-token\.[A-Za-z0-9_-]{43}$/.test(value));
   if (tokens.length !== 1) return new Response("Invalid session", { status: 401 });
   const token = tokens[0].slice("nottas-token.".length);
   const authenticated = await authenticate(new Request(request.url, {
