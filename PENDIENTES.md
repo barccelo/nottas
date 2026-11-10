@@ -1,8 +1,22 @@
 # Pendientes de Nottas
 
-Última revisión: 5 de noviembre de 2026 · v0.27.117: tarjeta de subtareas persistente y selector de hora.
+Última revisión: 10 de noviembre de 2026 · Nottas Web experimental; Android v0.27.117.
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
+
+## Prioridad inmediata — validación Nottas Web (previsualización)
+
+- [x] Publicar Worker web independiente con acceso HTTPS y separación visible Personal/Oficina.
+- [x] Mostrar subtareas de tareas y casillas de notas, incluida anidación, sin perder el payload.
+- [x] Programar refresco automático de la web, también al recuperar foco.
+- [x] Fusionar y desplegar corrección de avisos FCM de cambios de la misma cuenta (run 42862252735).
+- [ ] Probar crear tarea/nota en web y comprobar aparición en Android sin actualizar manualmente; repetir Android→web y borrado desde ambos.
+- [ ] Verificar espacios Personal/Oficina, permisos director/asistente, tareas propuestas, aprobación y no contaminación de datos entre espacios.
+- [ ] Confirmar que la nota con subtareas/casillas reportada en Android conserva texto, estados, indentación y edición desde web.
+- [ ] Revisar conflictos, desconexiones, pestaña dormida, borrado/recuperación, permisos push y recordatorios Android.
+- [ ] Validar editor y tema claro/oscuro en Chrome/Edge y pantallas distintas; completar edición enriquecida y UI escritorio.
+- [ ] Revisar seguridad/caducidad/revocación de sesiones web antes de producción; no fusionar PR #8 sin validar.
+- [ ] Comprobar que Cloudflare responde a la previsualización desde navegador real y que el contenido creado vuelve a persistir correctamente.
 
 ## Prioridad inmediata — v0.27.117
 
