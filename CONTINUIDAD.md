@@ -8,7 +8,7 @@
 - Rama: `feature/nottas-web-initial`; contiene `web/index.html` (vista adaptable, búsqueda, lectura, creación y edición controlada de notas/tareas, completar tareas, papelera y selección de espacios) y `web/README.md` (vinculación de cuenta y pruebas).
 - Reutiliza `/v1/auth/redeem`, `/v1/me` y `/v1/sync` existentes en el Worker; no introduce endpoint, esquema D1 ni cambio de Android.
 - Vinculación con clave temporal generada en Android. La sesión web vive en memoria del navegador; antes de acceso público definitivo falta revocación/caducidad gestionable del lado servidor.
-- **No publicado:** sin despliegue web, sin ejecución de pruebas automatizadas o sobre dispositivos y sin APK nueva. Validar compatibilidad de payloads y conflicto de ediciones antes de fusionar.
+- **Despliegue de prueba:** `https://nottas-web-preview.losrobles.workers.dev/`, Worker independiente habilitado en Cloudflare. No se verificó respuesta desde navegador real ni flujos end-to-end; sin APK nueva. Validar compatibilidad de payloads y conflictos antes de fusionar.
 
 ## Punto de reanudación
 
