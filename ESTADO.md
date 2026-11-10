@@ -1,8 +1,16 @@
 # Estado actual de Nottas
 
-Última actualización: 5 de noviembre de 2026 · controles de subtareas y selector horario v0.27.117 (APK firmada publicada; pendiente verificación Android).
+Última actualización: 10 de noviembre de 2026 · Nottas Web experimental y FCM same-account publicado; Android permanece en v0.27.117.
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
+
+## Nottas Web experimental — 10 de noviembre
+
+- PR #8 (rama `feature/nottas-web-initial`, **sin fusionar**) implementa vista web independiente en `web/index.html` y previsualización en Cloudflare Worker `nottas-web-preview`.
+- Separación visible Personal / Oficina, navegación de notas/tareas/papelera, búsqueda, representación de subtareas y bloques checklist anidados, edición básica de subtareas y casillas de notas, fecha/hora y guardado mediante API /v1/sync. Polling incremental 8 segundos en pestaña visible, reconciliación completa periódica, refresco al foco y después de guardar.
+- La vinculación de cuenta usa clave temporal de Android y sesión solo de pestaña (`sessionStorage`). Contenido enriquecido no se sobrescribe desde la web; todavía no tiene editor enriquecido completo.
+- PR #9 fusionado a `main` y Worker publicado con éxito por GitHub Actions run 42862252735: notificaciones FCM de cambios compartidos y personales alcanzan también a dispositivos de la misma cuenta. La sincronización real web↔Android **no está verificada**.
+- No hay cambio de Gradle, APK, datos locales ni base D1. Necesarias pruebas funcionales y de roles antes de considerar Nottas Web estable.
 
 ## Cambios v0.27.117 — tarjeta persistente y selección estable de hora
 
