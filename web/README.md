@@ -4,6 +4,27 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
+## Editor y selector de espacios funcionales — 11/11/2026
+
+**Publicado en la web de previsualización:** `https://nottas-web-preview.losrobles.workers.dev/`. La versión visual anterior con sesión persistente y WSS permanece en `/stable` (assets CSS/JS propios), y la edición web básica histórica continúa en `/classic`.
+
+**Correcciones de interfaz**
+- Sustituido el `select` del encabezado Personal/Oficina por un botón y menú de espacios propio con iconos, roles y marca de selección. El `select#workspace` permanece oculto como control de compatibilidad; el cambio dispara el mismo evento `change` y conserva el espacio en la sesión.
+- Tarjetas con checks accionables para tarea completa, subtarea (incluida anidación) y casilla de nota; metadatos de fecha, duración, recordatorios, prioridad, estado de reunión, categoría y etiquetas. La acción rápida emite el mismo `POST /v1/sync` que el editor y después reconcilia con snapshot; no agrega polling.
+- `web/nottas-editor.js`: editor de bloques de Android (`paragraph`, `heading`, `subheading`, `quote`, `bullet`, `number`, `checklist`) con formato básico, checklist, subtareas editables/anidadas, checks, añadir/quitar/reordenar, título, prioridad, fecha/hora inicial y final, recurrencia, múltiples recordatorios numéricos, categoría y etiquetas. Usa el esquema real `items` + `subtasks`, `blocks`, `reminders`, `approvalStatus` y `meetingStatus`.
+- Para Oficina: mostrar el estado de aprobación y permitir que el dueño agende propuestas; estados `scheduled`, `deferred`, `realized`, `not_realized`, `cancelled` y observación. El backend mantiene los permisos y el historial. La UI no reemplaza las pantallas de confirmación de Android ni la interacción avanzada con el asistente.
+- Calendario: botón «Agendar» en la fecha seleccionada, que abre una nueva tarea prellenando su fecha.
+- Categorías: ahora se leen los cambios `entityType:"category"` del mismo snapshot `/v1/sync?full=1` sin petición adicional; se pueden seleccionar categorías sincronizadas y ver iconos originales del Design System.
+
+**Seguridad y preservación**
+- El modelo de notas/tareas es el de `app/src/main/assets/nottas.html` de `main`. Los datos originales se clonan y los campos no editados se conservan, incluidos hijos, revisiones, historial, estados de aprobación y contenido enriquecido sin modificar. HTML editable renderizado con una lista segura de etiquetas; texto pegado como texto plano.
+- La capa de presentación `web/nottas-ui.js` reusa los iconos `ns-*` y tokens de `web/nottas-ui.css`. No se han cambiado el backend Cloudflare, FCM, cliente WSS, autenticación, APK ni el esquema de D1.
+- Se compararon textualmente las funciones `stopRealtime/startRealtime`, `request`, `restoreAccount`, `push`, `remove` con el cliente previo: **idénticas**. `refresh` solo agrega categorías a su snapshot; no hace polling ni modifica `/v1/sync`.
+- QA **realizado**: sintaxis JS, IDs sin duplicados, todos los IDs del DOM referenciados, símbolos SVG disponibles, despliegue Cloudflare confirmado e inspeccionado; se verificaron `/stable`, `/classic`, WSS y ausencia de `setInterval`.
+- QA **pendiente**: crear y editar tareas reales de Oficina/Personal, subtareas, notas con formato, recordatorios y reuniones desde navegador y comprobar su representación y avisos en Android. No afirmar pruebas end-to-end ni paridad con todos los módulos Android.
+
+**Regla de regresión:** antes de tocar editor, crear/borrar/editar nota y tarea en ambos sentidos, validar confirmaciones y diferidas con permisos de Oficina, verificar WSS/FCM sin refresco manual, y conservar una ruta de respaldo funcional. El sistema de fecha/hora, categorías y estados debe seguir usando nombres y estructuras Android, nunca inventar campos equivalentes.
+
 ## Sesión de navegador que sobrevive a recargas — 10/11/2026
 
 - **Problema resuelto:** la versión anterior almacenaba `sessionToken` solo en la variable `state.token`; cualquier actualización de la página lo perdía y exigía otra clave temporal de vinculación.
@@ -32,7 +53,7 @@ La interfaz visual de la previsualización `https://nottas-web-preview.losrobles
 - Pantalla Inicio, navegación de Tareas/Notas, filtros Hoy/Pendientes/Destacadas/Completadas, Papelera, búsqueda, editor existente, tema claro/oscuro local en el navegador y navegación adaptada a escritorio/tablet/móvil.
 - Calendario Día/Semana/Mes/Agenda **basado en tareas con fecha ya sincronizadas**. No sustituye el calendario Android completo, ni carga Google Calendar de manera independiente, ni ofrece programación enriquecida desde ese panel.
 - «Equipo de trabajo» muestra espacios autorizados, roles y cantidades. Los mensajes/llamadas/permisos avanzados siguen en Android.
-- Ajustes conserva las mismas familias de secciones; **el tema web y la preferencia «Mantener sesión iniciada» son editables**. Notificaciones, recordatorios, horario, mensajes rápidos, respaldos y otros ajustes nativos se indican como controles de Android, no botones web falsos. Preferencia de tema guardada en `localStorage` **solo para este navegador**, nunca en D1.
+- Ajustes conserva las mismas familias de secciones; **el tema web y la preferencia «Mantener sesión iniciada» son editables**. El editor ahora incluye organización (categorías y etiquetas) y programación de tareas; las funciones nativas de sistema siguen siendo Android-only. Notificaciones, recordatorios, horario, mensajes rápidos, respaldos y otros ajustes nativos se indican como controles de Android, no botones web falsos. Preferencia de tema guardada en `localStorage` **solo para este navegador**, nunca en D1.
 - No se han modificado datos, esquemas, Android, el backend FCM ni el Durable Object. El cliente WebSocket anterior sigue sin polling; la capa estética no añade llamadas a API.
 
 **Verificación de esta integración:** se contrastaron clases y símbolos con archivos Android; se validaron sintaxis JavaScript, IDs duplicados/referencias, iconos y rutas; todas las funciones críticas del cliente original se compararon literalmente con el commit `53093c9` y resultaron idénticas. Cloudflare confirmó la publicación y el contenido de los assets, CSP WSS y ruta de respaldo. **Pendiente:** revisión visual y funcional desde navegador real, sobre todo dimensiones, tema oscuro, menús, editor y sincronización tras este cambio de presentación. La sincronización previa sí fue confirmada por el usuario.
