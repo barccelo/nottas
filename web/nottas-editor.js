@@ -81,6 +81,10 @@
       if(block.type==="number")editor.dataset.number=ordinal+".";
       editor.addEventListener("focus",()=>{richFocus=editor});
       editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML)});
+      editor.addEventListener("paste",event=>{
+        event.preventDefault();
+        document.execCommand("insertText",false,event.clipboardData?.getData("text/plain")||"");
+      });
       row.append(editor);
       const actions=el("div","editor-row-tools");
       const kind=el("select","editor-block-type");kind.title="Tipo de bloque";kind.setAttribute("aria-label","Tipo de bloque");
@@ -253,11 +257,11 @@
       payload.body=blocksText(finalBlocks);
       if(draft.type==="note"){
         payload.title=$("title").value.trim();
-        payload.titleHtml=escape(payload.title);
+        if(!original||payload.title!==original.payload.title)payload.titleHtml=escape(payload.title);
         if(!original){payload.category="inbox";payload.tags=[]}
       }else{
         payload.text=$("title").value.trim();
-        payload.textHtml=escape(payload.text);
+        if(!original||payload.text!==original.payload.text)payload.textHtml=escape(payload.text);
         payload.done=$("done").checked;
         const filterItems=nodes=>nodes.map(n=>({...n,children:filterItems(n.children||[])})).filter(n=>n.text.trim()||n.children.length);
         const items=filterItems(clone(draft.items));
