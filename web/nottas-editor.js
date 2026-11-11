@@ -61,7 +61,9 @@
   function moveIn(nodes,id,dir){const pos=nodes.findIndex(n=>n.id===id);if(pos>=0){const target=pos+dir;if(target<0||target>=nodes.length)return;[nodes[pos],nodes[target]]=[nodes[target],nodes[pos]];return}for(const n of nodes)moveIn(n.children||[],id,dir)}
   function rowsForBlocks(container,blocks,depth=0,disabled=false){
     if(depth>12)return;
+    let ordinal=0;
     for(const block of blocks){
+      ordinal=block.type==="number"?ordinal+1:0;
       const row=el("div","editor-block-row type-"+block.type);
       row.style.setProperty("--indent",(Math.min(4,depth)*18)+"px");
       if(block.type==="checklist"){
@@ -76,6 +78,7 @@
       editor.setAttribute("data-placeholder","Escribe aquí…");
       editor.innerHTML=safeHtml(block.html);
       editor.dataset.blockId=block.id;
+      if(block.type==="number")editor.dataset.number=ordinal+".";
       editor.addEventListener("focus",()=>{richFocus=editor});
       editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML)});
       row.append(editor);
@@ -164,6 +167,20 @@
     ["addParagraphBtn","addChecklistBtn","addBulletBtn","addSubtaskBtn"].forEach(id=>$(id).disabled=disabled);
     drawBlocks();drawSubtasks();syncPin();renderApproval();
   }
+  function fillCategories(workspaceId,selected){
+    const select=$("editCategory");select.replaceChildren();
+    const option=(id,name)=>{
+      const node=el("option","",name);node.value=id;select.append(node);
+    };
+    option("inbox","Sin categoría");
+    const categories=[...state.categories.values()].filter(x=>{
+      const c=x.payload;
+      return !c.deletedAt&&(!c.workspaceId||c.workspaceId===workspaceId);
+    }).sort((a,b)=>String(a.payload.name||"").localeCompare(String(b.payload.name||""),"es"));
+    for(const c of categories){if(c.payload.id==="inbox")continue;option(c.payload.id,String(c.payload.name||"Categoría"))}
+    if(selected&&!Array.from(select.options).some(o=>o.value===selected))option(selected,"Categoría anterior");
+    select.value=selected||"inbox";
+  }
   function open(item=null){
     if(!state.token||state.busy)return;
     state.current=item;
@@ -171,6 +188,8 @@
     draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null};
     $("type").value=type;$("type").disabled=!!item;
     $("title").value=type==="task"?String(p.text||""):String(p.title||"");
+    fillCategories(item?.workspaceId||state.workspaceId,p.category);
+    $("editTags").value=(Array.isArray(p.tags)?p.tags:[]).join(", ");
     const ws=state.workspaces.find(w=>w.id===(item?.workspaceId||state.workspaceId));
     $("editorWorkspaceLabel").textContent=ws?.kind==="personal"?"Personal":ws?.name||"Oficina";
     $("done").checked=!!p.done;
@@ -228,6 +247,8 @@
       const payload=original?clone(original.payload):{id,workspaceId:state.workspaceId,createdAt:ts,rev:1};
       const finalBlocks=draft.blocks.map(normalizedBlock).filter(b=>plain(b.html).trim()||b.children.length);
       payload.pinned=draft.pinned;
+      payload.category=$("editCategory").value||"inbox";
+      payload.tags=[...new Set($("editTags").value.split(",").map(t=>t.trim().replace(/^#+/,"").toLowerCase().slice(0,30)).filter(Boolean))].slice(0,12);
       payload.blocks=finalBlocks;
       payload.body=blocksText(finalBlocks);
       if(draft.type==="note"){
