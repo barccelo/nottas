@@ -308,6 +308,17 @@
         settingsRow("ns-database","Sincronización","Las notas y tareas conectadas se actualizan automáticamente en ambos sentidos."),
         settingsRow("ns-lock","Copia de seguridad","La exportación y restauración completas se realizan desde Nottas Android.")
       ]));
+      const sessionRow=settingsRow("ns-lock","Mantener sesión iniciada","Se conserva únicamente en este navegador. Desactívalo en equipos compartidos.");
+      const remember=elt("input","");remember.type="checkbox";
+      remember.checked=!!window.NottasBrowserSession?.remembered;
+      remember.disabled=!state.token;
+      remember.setAttribute("aria-label","Mantener sesión iniciada en este navegador");
+      remember.addEventListener("change",()=>{
+        const saved=window.NottasBrowserSession?.setRemember(remember.checked);
+        if(!saved){remember.checked=!remember.checked;alert("No se pudo modificar el almacenamiento de sesión de este navegador.")}
+      });
+      sessionRow.append(remember);
+      body.append(settingsGroup("Sesión web",[sessionRow]));
       const out=elt("button","secondary","Actualizar ahora");
       out.type="button";out.style.marginTop="15px";out.append(icon("ns-nav-refresh","tiny"));
       out.onclick=()=>refresh();body.append(out);
