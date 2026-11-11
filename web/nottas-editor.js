@@ -75,6 +75,7 @@
       editor.setAttribute("role","textbox");editor.setAttribute("aria-label",block.type==="checklist"?"Elemento de lista":block.type==="paragraph"?"Texto":"Bloque "+block.type);
       editor.setAttribute("data-placeholder","Escribe aquí…");
       editor.innerHTML=safeHtml(block.html);
+      editor.dataset.blockId=block.id;
       editor.addEventListener("focus",()=>{richFocus=editor});
       editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML)});
       row.append(editor);
@@ -118,7 +119,7 @@
           const b=el("button","editor-item-action");b.type="button";b.title=name;b.setAttribute("aria-label",name);b.disabled=disabled;
           b.append(icon(iconName));b.onclick=callback;return b;
         }
-        row.append(small("Añadir subtarea hija","ns-plus",()=>{node.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks();holder.querySelector('input.editor-subtask-input[value=""]')?.focus()}));
+        row.append(small("Añadir subtarea hija","ns-plus",()=>{node.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks()}));
         row.append(small("Subir","ns-back",()=>{moveIn(draft.items,node.id,-1);drawSubtasks()}));
         row.append(small("Bajar","ns-chevron",()=>{moveIn(draft.items,node.id,1);drawSubtasks()}));
         row.append(small("Eliminar","ns-trash",()=>{removeFrom(draft.items,node.id);syncParents(draft.items);drawSubtasks()}));
@@ -182,12 +183,13 @@
     $("editLocation").value=String(p.locationText||"");
     $("editMeetingStatus").value=["scheduled","deferred","realized","not_realized","cancelled"].includes(p.meetingStatus)?p.meetingStatus:"scheduled";
     $("editMeetingNote").value=String(p.meetingNote||"");
-    const offsets=Array.isArray(p.reminders)?p.reminders.map(Number):({"at":0,"5m":5,"10m":10,"15m":15,"30m":30,"1h":60,"1d":1440}[p.reminder]!==undefined?[{"at":0,"5m":5,"10m":10,"15m":15,"30m":30,"1h":60,"1d":1440}[p.reminder]]:[]);
+    const offsets=Array.isArray(p.reminders)?p.reminders.map(Number):(!item?[0,10]:({"at":0,"5m":5,"10m":10,"15m":15,"30m":30,"1h":60,"1d":1440}[p.reminder]!==undefined?[{"at":0,"5m":5,"10m":10,"15m":15,"30m":30,"1h":60,"1d":1440}[p.reminder]]:[]));
     draft.reminders=offsets.filter(n=>Number.isInteger(n)&&n>=0&&n<=525600);
     reminderChanged=false;
     const presets=[0,5,10,60,1440];
     document.querySelectorAll("#editorReminders input").forEach(c=>{c.checked=draft.reminders.includes(Number(c.value))});
     const additional=draft.reminders.filter(n=>!presets.includes(n));
+    draft.initialExtraReminder=additional[0];
     $("editExtraReminder").value=additional[0]??"";
     $("editExtraReminder").title=additional.length>1?"Los demás recordatorios personalizados se conservarán.":"";
     $("editError").textContent="";
@@ -219,7 +221,7 @@
     ev.preventDefault();
     if(!draft||state.busy||!state.token)return;
     try{
-      if(!$("title").value.trim())throw Error("Escribe un título.");
+      if(draft.type==="task"&&!$("title").value.trim())throw Error("Escribe un título para la tarea.");
       if(draft.type==="task")validateSchedule();
       const original=draft.original,ts=Date.now();
       const id=original?.entityId||crypto.randomUUID();
@@ -236,7 +238,8 @@
         payload.text=$("title").value.trim();
         payload.textHtml=escape(payload.text);
         payload.done=$("done").checked;
-        const items=clone(draft.items).filter(n=>n.text.trim()||n.children.length);
+        const filterItems=nodes=>nodes.map(n=>({...n,children:filterItems(n.children||[])})).filter(n=>n.text.trim()||n.children.length);
+        const items=filterItems(clone(draft.items));
         syncParents(items);
         payload.items=items;
         payload.subtasks=items.filter(n=>n.text.trim()).map(n=>({id:n.id,text:n.text,done:n.done}));
@@ -303,6 +306,16 @@
     n.checked=!n.checked;p.blocks=blocks;p.body=blocksText(blocks);
   })}
   $("editPinnedBtn").addEventListener("click",()=>{if(!draft)return;draft.pinned=!draft.pinned;syncPin()});
+  document.querySelectorAll("#editor [data-format]").forEach(button=>{
+    button.addEventListener("mousedown",e=>e.preventDefault());
+    button.addEventListener("click",()=>{
+      if(!draft||draft.original?.payload.deletedAt||!richFocus)return;
+      richFocus.focus();
+      document.execCommand(button.dataset.format,false,null);
+      const node=locate(draft.blocks,richFocus.dataset.blockId);
+      if(node)node.html=safeHtml(richFocus.innerHTML);
+    });
+  });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
   $("addSubtaskBtn").addEventListener("click",()=>{if(!draft)return;draft.items.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks()});
   [["addParagraphBtn","paragraph"],["addChecklistBtn","checklist"],["addBulletBtn","bullet"]].forEach(([id,type])=>{
