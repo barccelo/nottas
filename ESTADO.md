@@ -4,6 +4,14 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Sesión de Nottas Web que se conserva al recargar — 10/11/2026
+
+- Publicada la persistencia opcional de la sesión previamente vinculada: `localStorage` para «Mantener sesión iniciada» (predeterminado) o `sessionStorage` si se desactiva; validación `/v1/me` y reanudación del WebSocket al abrir. El control se encuentra también en Ajustes → Datos y respaldo.
+- Backend PR #12 añade revocación del token individual (`POST /v1/auth/logout`) y clasificación de nuevos dispositivos Web, manteniendo Android y los tokens de los otros dispositivos intactos. GitHub Actions prueba `42930298365` y deploy `42930374923` exitosos, código vivo comprobado.
+- Cliente frontend redeplegado en `nottas-web-preview`, con respaldo anterior `/classic` y sin cambiar funciones críticas ni el canal FCM/WSS (verificación textual y JS).
+- Pendiente prueba de usuario: recarga, cierre/reapertura, desconexión, logout y sincronización posterior. Se ha confirmado el despliegue, **no** estas pruebas de navegador.
+- Sin nueva APK ni cambio de esquema D1.
+
 ## Nottas Web — capa gráfica Android adaptada a escritorio (10/11/2026)
 
 - Rediseño publicado en `nottas-web-preview.losrobles.workers.dev`, con respaldo visual original en `/classic`. Código bajo `feature/nottas-web-initial` (no fusionado a `main`).

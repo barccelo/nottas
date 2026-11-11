@@ -3,6 +3,16 @@
 **Actualizado:** 10 de noviembre de 2026 (sincronización Android ↔ Web confirmada por el usuario; FCM + WebSocket sin polling).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
 
+## Nottas Web — sesión vinculada persistente (10 de noviembre de 2026)
+
+- **Problema:** cada recarga borraba `state.token` del navegador y exigía una nueva clave temporal Android, aunque la sesión siguiera válida en el servidor.
+- **Solución en producción web:** `feature/nottas-web-initial:web/index.html` conserva el `sessionToken` y el espacio seleccionado, valida la sesión con `/v1/me` al entrar, reconstruye la interfaz y reactiva el mismo WebSocket. **No crea credenciales nuevas ni añade polling.** El primer acceso sí usa «Acceder desde otro teléfono», clave temporal de un solo uso.
+- **Preferencia:** `Mantener sesión iniciada en este navegador` marcada por defecto al vincular; accesible en `Ajustes → Datos y respaldo → Sesión web`. Activada utiliza `localStorage` (sobrevive cierre y recargas del navegador); desactivada usa `sessionStorage` (recargas de pestaña). No habilitar persistencia en equipos compartidos.
+- **Cierre seguro:** PR #12 fusionado en `main` (commit `d70b9c5a63388a2f652fcf8fac350c34936fa9c2`) añade `POST /v1/auth/logout`, que revoca solo el token del cliente; `redeemAccountKey` identifica `web-*` como plataforma `web`. Sin alterar sesiones Android, FCM ni `/v1/sync`. La web elimina el token del almacenamiento al salir. Si falla la red, conserva el token al restaurar; solo borra por 401.
+- **Comprobaciones:** PR #12 CI `42930298365` exitoso; despliegue backend `42930374923` exitoso; API Cloudflare inspeccionada. Web de previsualización actualizada e inspeccionada; `request`, `refresh`, `save`, `push`, `remove`, `stopRealtime` y `startRealtime` idénticos a la versión anterior. Sin timers/polling nuevos y sin APK nueva.
+- **Pendiente de prueba humana:** recargar, cerrar/abrir navegador, cambiar «Mantener sesión» y salir; verificar en dispositivos reales la sincronización bidireccional que ya estaba confirmada antes de este cambio. Si se rechaza/revoca la sesión, habrá que vincular de nuevo; eso es intencional.
+- **Referencia:** `web/README.md` de `feature/nottas-web-initial`. No revertir FCM/WSS para resolver cuestiones de inicio de sesión.
+
 ## Nottas Web — identidad Android adaptada a escritorio (10 de noviembre de 2026)
 
 - **Versión web publicada:** `https://nottas-web-preview.losrobles.workers.dev/`. Se actualizó la capa visual sobre el cliente de sincronización por eventos **ya confirmado**. El cliente anterior permanece como respaldo en `https://nottas-web-preview.losrobles.workers.dev/classic`; no modificar ni sustituir el canal WSS/FCM para cambios estéticos.

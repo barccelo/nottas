@@ -4,6 +4,17 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Sesión persistente web — revisión de uso (10/11/2026)
+
+- [x] Conservar token de sesión de vinculación por navegador (con opción «Mantener sesión iniciada» predeterminada y conmutador de Ajustes), sin clave nueva ni polling.
+- [x] Recuperar sesión existente por `/v1/me` al cargar y volver a conectar WSS; conservarla ante fallos de red y eliminarla ante 401.
+- [x] Añadir cierre de sesión que revoca solo el token del navegador (PR #12, pruebas y despliegue correctos); mantener sesión Android intacta.
+- [x] Publicar la web modificada y verificar sintaxis, controles DOM y presencia de autenticación, WSS y ausencia de sondeo.
+- [ ] **Prueba real:** vincular una sola vez, recargar con F5, cerrar/abrir navegador, repetir en tema claro/oscuro y comprobar que no solicita otra clave.
+- [ ] **Prueba seguridad/función:** desactivar «Mantener sesión» y recargar, cerrar sesión desde Ajustes, confirmar que exige vinculación posterior y Android permanece conectado.
+- [ ] **Prueba de regresión:** creación/eliminación de notas y tareas Android ↔ Web sin botón Actualizar tras restaurar sesión.
+- **Protección:** no volver a guardar credenciales en una variable efímera exclusivamente ni introducir credenciales permanentes adicionales; advertir contra equipos compartidos.
+
 ## Nottas Web — revisión del espejo visual (10/11/2026)
 
 - [x] Adaptar navegación, wordmark, iconografía y tokens originales del Design System 1.3 a escritorio y móvil web.

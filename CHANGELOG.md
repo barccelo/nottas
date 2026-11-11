@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — sesión recordada en el navegador — 10 de noviembre de 2026
+
+- Nottas Web deja de perder la sesión por recargar: reutiliza el token ya emitido y recupera los espacios autorizados, manteniendo la sincronización FCM/WSS sin sondeo.
+- Nueva opción «Mantener sesión iniciada en este navegador» activada por defecto en la vinculación y configurable en Ajustes → Datos y respaldo. Al activarla se conserva la sesión en `localStorage` hasta salir o revocarla; al desactivarla, solo en `sessionStorage` de pestaña.
+- PR backend #12 introduce `POST /v1/auth/logout` para revocar el token del navegador sin desconectar Android; nuevos clientes `web-*` quedan registrados como tipo `web`. El backend y la web se desplegaron y verificaron; CI `42930298365`, deploy `42930374923`.
+- Se mantienen sin cambios guardar, eliminar, actualizar y WebSocket, sin introducir polling ni APK nueva. Falta confirmar el flujo de sesión en un navegador real.
+
 ## Nottas Web — identidad gráfica de Android adaptada — 10 de noviembre de 2026
 
 - Rediseño web publicado con el wordmark, el sprite de iconos `ns-*`, colores, checks, tarjetas, tipografía, navegación y jerarquía extraídos de `DESIGN_SYSTEM.md` 1.3 y los assets Android.
