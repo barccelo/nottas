@@ -72,7 +72,15 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
     <section id="homeScreen" class="section-screen">
       <div id="homeToolbar" class="toolbar">
         <h1 id="heading">Nottas</h1>
-        <label class="workspace-select-wrap" aria-label="Espacio de trabajo"><svg class="ns-icon tiny" viewBox="0 0 24 24" aria-hidden="true"><use href="/assets/nottas-icons.svg#ns-users"></use></svg><select id="workspace" aria-label="Espacio de trabajo" disabled></select></label>
+        <div class="workspace-picker" id="workspacePicker">
+          <select id="workspace" aria-label="Espacio de trabajo" class="hidden" disabled></select>
+          <button id="workspaceTrigger" class="workspace-trigger" type="button" aria-label="Cambiar espacio de trabajo" aria-haspopup="menu" aria-controls="workspaceMenu" aria-expanded="false" disabled>
+            <svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-users"></use></svg>
+            <span class="workspace-trigger-text" id="workspaceTriggerText">Personal</span>
+            <svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
+          </button>
+          <div class="workspace-menu hidden" id="workspaceMenu" role="menu" aria-label="Espacios de trabajo"></div>
+        </div>
         <div class="desktop-actions">
           <button id="refresh" class="secondary icon-only" type="button" aria-label="Actualizar" title="Actualizar" disabled><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-refresh"></use></svg></button>
           <button id="newTask" class="secondary" type="button" data-requires-account><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-done"></use></svg>Tarea</button>
@@ -188,6 +196,12 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
     </div>
     <div id="bodyRow" class="editor-section">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg><span id="editorBlocksLabel">Contenido</span></div>
+      <div class="editor-format-toolbar" role="toolbar" aria-label="Formato del texto">
+        <button type="button" data-format="bold" title="Negrita"><strong>B</strong></button>
+        <button type="button" data-format="italic" title="Cursiva"><em>I</em></button>
+        <button type="button" data-format="underline" title="Subrayar"><u>U</u></button>
+        <button type="button" data-format="strikeThrough" title="Tachado"><s>S</s></button>
+      </div>
       <div id="editBlocks" class="editor-block-list"></div>
       <div class="editor-add-block">
         <button type="button" id="addParagraphBtn" class="editor-add-action">+ Texto</button>
