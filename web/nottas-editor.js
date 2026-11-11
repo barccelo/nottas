@@ -63,7 +63,7 @@
     if(depth>12)return;
     for(const block of blocks){
       const row=el("div","editor-block-row type-"+block.type);
-      row.style.setProperty("--indent",String(Math.min(4,depth)));
+      row.style.setProperty("--indent",(Math.min(4,depth)*18)+"px");
       if(block.type==="checklist"){
         const check=el("input","editor-circle-check");
         check.type="checkbox";check.checked=!!block.checked;check.disabled=disabled;
@@ -104,7 +104,7 @@
       if(depth>12)return;
       for(const node of nodes){
         const row=el("div","editor-item-row"+(node.done?" is-checked":""));
-        row.style.setProperty("--indent",String(Math.min(6,depth)));
+        row.style.setProperty("--indent",(Math.min(6,depth)*17)+"px");
         const check=el("input","editor-circle-check");
         check.type="checkbox";check.checked=node.done;check.disabled=disabled;
         check.setAttribute("aria-label","Marcar subtarea "+node.text);
@@ -160,7 +160,7 @@
     $("doneRow").classList.toggle("hidden",type!=="task");
     $("editInfo").textContent=draft.original?.payload.deletedAt?"Este elemento está en la papelera y no se puede editar.":"";
     const disabled=!!draft.original?.payload.deletedAt;
-    $("title").disabled=disabled;$("save").disabled=disabled;
+    $("title").disabled=disabled;$("title").required=type==="task";$("save").disabled=disabled;
     ["addParagraphBtn","addChecklistBtn","addBulletBtn","addSubtaskBtn"].forEach(id=>$(id).disabled=disabled);
     drawBlocks();drawSubtasks();syncPin();renderApproval();
   }
