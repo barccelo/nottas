@@ -194,6 +194,13 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
         <label>Observación<textarea id="editMeetingNote" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
       </div>
     </div>
+    <div class="editor-section">
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-folder"></use></svg>Organización</div>
+      <div class="editor-grid">
+        <label>Categoría<select id="editCategory"><option value="inbox">Sin categoría</option></select></label>
+        <label>Etiquetas<input id="editTags" maxlength="240" placeholder="trabajo, urgente"></label>
+      </div>
+    </div>
     <div id="bodyRow" class="editor-section">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg><span id="editorBlocksLabel">Contenido</span></div>
       <div class="editor-format-toolbar" role="toolbar" aria-label="Formato del texto">
@@ -227,7 +234,7 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-const state={api:"",token:"",workspaces:[],workspaceId:"",view:"all",items:new Map(),current:null,busy:false,realtime:null,realtimeGeneration:0,reconnectTimer:null,reconnectDelay:1000,refreshing:false,pendingRefresh:false};
+const state={api:"",token:"",workspaces:[],workspaceId:"",view:"all",items:new Map(),categories:new Map(),current:null,busy:false,realtime:null,realtimeGeneration:0,reconnectTimer:null,reconnectDelay:1000,refreshing:false,pendingRefresh:false};
 const TRUSTED_API="https://nottas-assistant-api.losrobles.workers.dev";
 const WEB_SESSION_KEY="nottas_web_session_v1";
 let rememberThisBrowser=false,restoringAccount=false;
@@ -364,14 +371,15 @@ async function refresh(silent=false){
   if(!silent)setStatus("Sincronizando…");
   try{
     const data=await request("/v1/sync?full=1");
-    const next=new Map();
+    const next=new Map(),categories=new Map();
     for(const c of data.changes||[]){
-      if(!["note","task"].includes(c.entityType)||!c.payload)continue;
-      next.set(c.workspaceId+":"+c.entityType+":"+c.entityId,{
-        workspaceId:c.workspaceId,entityType:c.entityType,entityId:c.entityId,payload:c.payload
-      });
+      if(!c.payload)continue;
+      const key=c.workspaceId+":"+c.entityType+":"+c.entityId;
+      const entry={workspaceId:c.workspaceId,entityType:c.entityType,entityId:c.entityId,payload:c.payload};
+      if(c.entityType==="category"){categories.set(key,entry);continue}
+      if(c.entityType==="note"||c.entityType==="task")next.set(key,entry);
     }
-    state.items=next;render();
+    state.items=next;state.categories=categories;render();
     if(!silent)setStatus("Sincronizado");
   }catch(e){setStatus("Error al sincronizar");if(!silent)alert(e.message)}
   finally{
@@ -415,7 +423,7 @@ $("loginForm").addEventListener("submit",connect);$("editForm").addEventListener
   stopRealtime();
   let revoked=false;
   try{const response=await request("/v1/auth/logout","POST");revoked=!!response.ok}catch{}
-  clearSavedSession();state.token="";state.api="";state.items.clear();
+  clearSavedSession();state.token="";state.api="";state.items.clear();state.categories.clear();
   state.workspaces=[];state.workspaceId="";state.current=null;
   $("search").value="";
   ["search","workspace","refresh","create","logout"].forEach(id=>$(id).disabled=true);
@@ -427,7 +435,7 @@ $("logout").addEventListener("click",logoutBrowser);document.addEventListener("v
 window.addEventListener("online",()=>{if(state.token){if(!state.workspaces.length)restoreAccount();else{stopRealtime();startRealtime();refresh(true)}}});
 window.addEventListener("storage",event=>{
   if(event.key===WEB_SESSION_KEY&&!event.newValue&&state.token&&rememberThisBrowser){
-    stopRealtime();state.token="";state.api="";state.items.clear();state.workspaces=[];state.workspaceId="";
+    stopRealtime();state.token="";state.api="";state.items.clear();state.categories.clear();state.workspaces=[];state.workspaceId="";
     ["search","workspace","refresh","create","logout"].forEach(id=>$(id).disabled=true);
     render();setStatus("Sesión cerrada");
     $("loginError").textContent="La sesión se cerró en otra pestaña.";
