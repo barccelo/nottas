@@ -62,6 +62,7 @@ async function route(request, env) {
   if (calendarResponse) return calendarResponse;
 
   if (path === "/v1/me" && request.method === "GET") return me(auth, env);
+  if (path === "/v1/auth/logout" && request.method === "POST") return revokeSession(request, auth, env);
   if (path === "/v1/auth/issue-key" && request.method === "POST") return issueAccountKey(request, auth, env);
   if (path === "/v1/workspaces" && request.method === "GET") return listWorkspaces(auth, env);
   if (path === "/v1/workspaces" && request.method === "POST") return createWorkspace(request, auth, env);
@@ -189,7 +190,7 @@ async function redeemAccountKey(request, env) {
       .bind(tokenHash, user.id, deviceId, now, now),
     env.DB.prepare("INSERT INTO devices(id,user_id,label,platform,updated_at) VALUES(?,?,?,?,?) " +
       "ON CONFLICT(id) DO UPDATE SET user_id=excluded.user_id,label=excluded.label,updated_at=excluded.updated_at")
-      .bind(deviceId, user.id, label, "android", now)
+      .bind(deviceId, user.id, label, deviceId.startsWith("web-") ? "web" : "android", now)
   ]);
   const workspaces = await workspaceRows(user.id, env);
   return json({
@@ -261,6 +262,17 @@ async function register(request, env) {
     sessionToken: token,
     personalWorkspace: { id: workspaceId, name: "Personal", kind: "personal", role: "owner" }
   }, 201);
+}
+
+async function revokeSession(request, auth, env) {
+  // The caller can revoke only its own authenticated session; recovery
+  // credentials, other devices and FCM registrations are not affected.
+  const bearer = (request.headers.get("authorization") || "").match(/^Bearer\s+(.+)$/i);
+  if (!bearer) return json({ error: "unauthorized" }, 401);
+  const tokenHash = await sha256(bearer[1]);
+  await env.DB.prepare("DELETE FROM sessions WHERE token_hash=? AND user_id=? AND device_id=?")
+    .bind(tokenHash, auth.userId, auth.deviceId).run();
+  return json({ ok: true });
 }
 
 async function authenticate(request, env) {
