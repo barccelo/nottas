@@ -135,12 +135,81 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
 <label>Dirección HTTPS del Worker<input id="server" type="url" autocomplete="url" value="https://nottas-assistant-api.losrobles.workers.dev" required></label>
 <label>Clave temporal<input id="key" type="password" autocomplete="off" spellcheck="false" required minlength="43" maxlength="43"></label>
 <label class="login-remember"><input type="checkbox" id="rememberSession" checked><span><strong>Mantener sesión iniciada en este navegador</strong><small>Desactívalo en dispositivos compartidos. Puedes cerrar sesión desde Ajustes.</small></span></label><p class="notice">La clave temporal vincula este navegador una sola vez. La sesión se puede revocar al salir.</p><div id="loginError" class="status" role="alert"></div><div class="actions"><button class="primary">Vincular</button></div></form></dialog>
-<dialog id="editor"><form id="editForm"><h2 id="editHeading" style="margin:0">Editar</h2>
-<label>Tipo<select id="type"><option value="note">Nota</option><option value="task">Tarea</option></select></label>
-<label id="titleRow">Título<input id="title" maxlength="300"></label>
-<label id="bodyRow">Contenido<textarea id="body" rows="9"></textarea></label>
-<label id="doneRow">Estado<select id="done"><option value="false">Pendiente</option><option value="true">Completada</option></select></label>
-<p id="editInfo" class="notice"></p><div id="editError" class="status" role="alert"></div><div class="actions"><button type="button" id="remove" class="secondary danger">Mover a papelera</button><button type="button" id="cancel" class="secondary">Cancelar</button><button id="save" class="primary">Guardar</button></div></form></dialog>
+<dialog id="editor" aria-labelledby="editHeading">
+  <form id="editForm">
+    <div class="editor-heading">
+      <div><span class="editor-eyebrow" id="editorWorkspaceLabel">Personal</span><h2 id="editHeading">Editar tarea</h2></div>
+      <div class="editor-heading-actions">
+        <button type="button" id="editPinnedBtn" class="editor-flag" aria-label="Destacar" aria-pressed="false" title="Destacar"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-pinned"></use></svg></button>
+        <button type="button" id="editCloseBtn" class="editor-flag" aria-label="Cerrar" title="Cerrar"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-close"></use></svg></button>
+      </div>
+    </div>
+    <label id="typeRow" class="editor-compact-type">Tipo
+      <select id="type"><option value="note">Nota</option><option value="task">Tarea</option></select>
+    </label>
+    <label id="titleRow" class="editor-title-label">Título<input id="title" maxlength="300" placeholder="Título" required></label>
+    <div id="taskFields" class="editor-section hidden">
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg>Fecha y horario</div>
+      <div class="editor-grid">
+        <label>Comienza<input id="editDueDate" type="date"></label>
+        <label>Termina (día)<input id="editEndDate" type="date"></label>
+        <label>Hora de inicio<input id="editDueTime" type="time"></label>
+        <label>Hora de cierre<input id="editEndTime" type="time"></label>
+      </div>
+      <div class="editor-grid editor-two">
+        <label>Repetir<select id="editRecurrence"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></label>
+        <label>Prioridad<select id="editPriority"><option value="normal">Normal</option><option value="high">Alta</option><option value="low">Baja</option></select></label>
+      </div>
+      <div class="editor-inline">
+        <label id="doneRow" class="editor-switch"><input id="done" type="checkbox"><span class="editor-switch-track"></span><strong>Completada</strong></label>
+      </div>
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-bell"></use></svg>Recordatorios</div>
+      <div id="editorReminders" class="editor-option-pills" role="group" aria-label="Recordatorios">
+        <label><input type="checkbox" value="0"><span>A la hora</span></label>
+        <label><input type="checkbox" value="5"><span>5 min</span></label>
+        <label><input type="checkbox" value="10"><span>10 min</span></label>
+        <label><input type="checkbox" value="60"><span>1 hora</span></label>
+        <label><input type="checkbox" value="1440"><span>1 día</span></label>
+      </div>
+      <div class="editor-grid editor-two">
+        <label>Recordatorio adicional (minutos antes)<input type="number" min="1" max="525600" id="editExtraReminder" placeholder="Opcional"></label>
+        <label>Lugar<input id="editLocation" maxlength="200" placeholder="Opcional"></label>
+      </div>
+      <div id="editMeetingBox" class="editor-section hidden">
+        <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-users"></use></svg>Estado de reunión</div>
+        <label>Estado<select id="editMeetingStatus">
+          <option value="scheduled">Agendada</option><option value="deferred">Diferida</option>
+          <option value="realized">Realizada</option><option value="not_realized">No realizada</option>
+          <option value="cancelled">Cancelada</option>
+        </select></label>
+        <div id="editApprovalStatus" class="editor-approval" role="status"></div>
+        <label>Observación<textarea id="editMeetingNote" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
+      </div>
+    </div>
+    <div id="bodyRow" class="editor-section">
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg><span id="editorBlocksLabel">Contenido</span></div>
+      <div id="editBlocks" class="editor-block-list"></div>
+      <div class="editor-add-block">
+        <button type="button" id="addParagraphBtn" class="editor-add-action">+ Texto</button>
+        <button type="button" id="addChecklistBtn" class="editor-add-action">+ Casilla</button>
+        <button type="button" id="addBulletBtn" class="editor-add-action">+ Viñeta</button>
+      </div>
+      <textarea id="body" class="hidden" rows="1" aria-hidden="true" tabindex="-1"></textarea>
+    </div>
+    <div id="subtaskSection" class="editor-section hidden">
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>Subtareas <span id="editSubtaskCount" class="editor-count"></span></div>
+      <div id="editSubtasks" class="editor-subtask-list"></div>
+      <button type="button" id="addSubtaskBtn" class="editor-add-action">+ Añadir subtarea</button>
+    </div>
+    <p id="editInfo" class="notice"></p>
+    <div id="editError" class="status" role="alert" aria-live="polite"></div>
+    <div class="actions editor-actions">
+      <button type="button" id="remove" class="secondary danger">Mover a papelera</button>
+      <button type="button" id="cancel" class="secondary">Cancelar</button>
+      <button id="save" class="primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
@@ -321,9 +390,9 @@ async function connect(ev){
     if(e.message==="unauthorized"){clearSavedSession();state.api="";state.token=""}
   }
 }
-function openEditor(item=null){if(!state.token||state.busy)return;state.current=item;const isNew=!item;const type=item?.entityType||"note";$("type").value=type;$("type").disabled=!isNew;$("editHeading").textContent=isNew?"Crear elemento":"Editar elemento";$("title").value=type==="note"?String(item?.payload.title||""):String(item?.payload.text||"");$("body").value=item?getBody(item):"";$("done").value=String(!!item?.payload.done);$("remove").disabled=isNew||!!item?.payload.deletedAt;configureEditor();$("editError").textContent="";$("editor").showModal()}
-function configureEditor(){const type=$("type").value;const item=state.current;const rich=type==="note"&&!!item&&!editablePlainNote(item.payload);show($("doneRow"),type==="task");show($("bodyRow"),type==="note");$("body").disabled=rich||!!item?.payload.deletedAt;$("title").disabled=!!item?.payload.deletedAt;const info=rich?"Esta nota contiene bloques enriquecidos: puedes editar el título, pero el contenido se conserva intacto hasta que el editor enriquecido esté disponible.":type==="task"?"Se conservan subtareas, fechas, recordatorios, estados compartidos y demás metadatos existentes.":"Notas nuevas se guardan como texto simple."; $("editInfo").textContent=item?.payload.deletedAt?"Elemento en la papelera. Edición desactivada.":info;$("save").disabled=!!item?.payload.deletedAt}
-async function save(ev){ev.preventDefault();if(state.busy)return;const original=state.current;const type=$("type").value;const ts=Date.now();const id=original?.entityId||crypto.randomUUID();const payload=original?{...original.payload}:{id,workspaceId:state.workspaceId,createdAt:ts,rev:1};if(type==="note"){payload.title=$("title").value;if(!original||payload.title!==original.payload.title)payload.titleHtml=escapeHtml(payload.title);if(!original){payload.category="inbox";payload.tags=[];payload.pinned=false}if(!original||editablePlainNote(original.payload)){payload.body=$("body").value;payload.blocks=payload.body?[{id:original?.payload.blocks?.[0]?.id||crypto.randomUUID(),type:"paragraph",html:escapeHtml(payload.body).replace(/\\n/g,"<br>"),checked:false,children:[]}]:[];}}else{payload.text=$("title").value;payload.done=$("done").value==="true";if(!original){payload.items=[];payload.category="inbox";payload.dueDate="";payload.dueTime="";payload.reminders=[];}}
+function openEditor(item=null){if(window.NottasEditor)return window.NottasEditor.open(item);if(!state.token||state.busy)return;state.current=item;const isNew=!item;const type=item?.entityType||"note";$("type").value=type;$("type").disabled=!isNew;$("editHeading").textContent=isNew?"Crear elemento":"Editar elemento";$("title").value=type==="note"?String(item?.payload.title||""):String(item?.payload.text||"");$("body").value=item?getBody(item):"";$("done").value=String(!!item?.payload.done);$("remove").disabled=isNew||!!item?.payload.deletedAt;configureEditor();$("editError").textContent="";$("editor").showModal()}
+function configureEditor(){if(window.NottasEditor)return window.NottasEditor.configure();const type=$("type").value;const item=state.current;const rich=type==="note"&&!!item&&!editablePlainNote(item.payload);show($("doneRow"),type==="task");show($("bodyRow"),type==="note");$("body").disabled=rich||!!item?.payload.deletedAt;$("title").disabled=!!item?.payload.deletedAt;const info=rich?"Esta nota contiene bloques enriquecidos: puedes editar el título, pero el contenido se conserva intacto hasta que el editor enriquecido esté disponible.":type==="task"?"Se conservan subtareas, fechas, recordatorios, estados compartidos y demás metadatos existentes.":"Notas nuevas se guardan como texto simple."; $("editInfo").textContent=item?.payload.deletedAt?"Elemento en la papelera. Edición desactivada.":info;$("save").disabled=!!item?.payload.deletedAt}
+async function save(ev){if(window.NottasEditor)return window.NottasEditor.save(ev);ev.preventDefault();if(state.busy)return;const original=state.current;const type=$("type").value;const ts=Date.now();const id=original?.entityId||crypto.randomUUID();const payload=original?{...original.payload}:{id,workspaceId:state.workspaceId,createdAt:ts,rev:1};if(type==="note"){payload.title=$("title").value;if(!original||payload.title!==original.payload.title)payload.titleHtml=escapeHtml(payload.title);if(!original){payload.category="inbox";payload.tags=[];payload.pinned=false}if(!original||editablePlainNote(original.payload)){payload.body=$("body").value;payload.blocks=payload.body?[{id:original?.payload.blocks?.[0]?.id||crypto.randomUUID(),type:"paragraph",html:escapeHtml(payload.body).replace(/\\n/g,"<br>"),checked:false,children:[]}]:[];}}else{payload.text=$("title").value;payload.done=$("done").value==="true";if(!original){payload.items=[];payload.category="inbox";payload.dueDate="";payload.dueTime="";payload.reminders=[];}}
 payload.updatedAt=ts;const change={workspaceId:state.workspaceId,entityType:type,entityId:id,payload,rev:Number(payload.rev||1)+ (original?1:0),updatedAt:ts};await push(change)}
 async function push(change){state.busy=true;$("save").disabled=true;$("editError").textContent="Guardando…";try{const result=await request("/v1/sync","POST",{changes:[change]});if(result.conflicts?.length){$("editError").textContent="Hay cambios más recientes en otro dispositivo. No se sobrescribió el contenido. Cierra este editor y actualiza.";return}if(!result.accepted?.length){$("editError").textContent="El servidor no aceptó el cambio.";return}$("editor").close();state.busy=false;await refresh()}catch(e){$("editError").textContent=e.message}finally{state.busy=false;if($("editor").open)configureEditor()}}
 async function remove(){if(!state.current||state.busy||!confirm("¿Mover este elemento a la papelera?"))return;const x=state.current,ts=Date.now(),payload={...x.payload,deletedAt:ts,updatedAt:ts};await push({workspaceId:x.workspaceId,entityType:x.entityType,entityId:x.entityId,payload,rev:Number(payload.rev||1)+1,updatedAt:ts,deletedAt:ts})}
@@ -353,4 +422,4 @@ window.addEventListener("storage",event=>{
 });
 window.NottasBrowserSession={get remembered(){return rememberThisBrowser},setRemember:setRememberSession};
 restoreAccount();
-</script><script src="/assets/nottas-ui.js" defer></script></body></html>
+</script><script src="/assets/nottas-editor.js" defer></script><script src="/assets/nottas-ui.js" defer></script></body></html>
