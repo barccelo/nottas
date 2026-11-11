@@ -449,6 +449,13 @@
   $("settingsLogout").addEventListener("click",()=>$("logout").click());
   $("newTask").addEventListener("click",()=>{openEditor();$("type").value="task";configureEditor()});
   $("calendarToday").addEventListener("click",()=>{cursor=new Date();calendarSelection=new Date();renderCalendar()});
+  $("calendarCreate").addEventListener("click",()=>{
+    if(!state.token)return;
+    openEditor();$("type").value="task";configureEditor();
+    $("editDueDate").value=stamp(calendarSelection);
+    $("editEndDate").value="";
+    $("title").focus();
+  });
   $("calendarPrevious").addEventListener("click",()=>{cursor=calendarMode==="month"?new Date(cursor.getFullYear(),cursor.getMonth()-1,1):plusDays(cursor,calendarMode==="week"?-7:-1);renderCalendar()});
   $("calendarNext").addEventListener("click",()=>{cursor=calendarMode==="month"?new Date(cursor.getFullYear(),cursor.getMonth()+1,1):plusDays(cursor,calendarMode==="week"?7:1);renderCalendar()});
   document.querySelectorAll("[data-calendar-mode]").forEach(b=>b.addEventListener("click",()=>{calendarMode=b.dataset.calendarMode;renderCalendar()}));
