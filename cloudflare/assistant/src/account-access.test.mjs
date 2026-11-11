@@ -53,6 +53,10 @@ function fixture() {
                 if(sql.startsWith("INSERT INTO sessions")){
                   rows.set(args[0],{user_id:args[1],device_id:args[2],created_at:args[3]});
                 }
+                if(sql.startsWith("DELETE FROM sessions WHERE token_hash=? AND user_id=? AND device_id=?")){
+                  const existing=rows.get(args[0]);
+                  if(existing?.user_id===args[1]&&existing.device_id===args[2])rows.delete(args[0]);
+                }
                 if(sql.startsWith("DELETE FROM sessions WHERE user_id")){
                   for(const [key,v] of rows)if(v.user_id===args[0]&&v.device_id===(sql.includes("'nottas-recovery'")?"nottas-recovery":"nottas-link"))rows.delete(key);
                 }
@@ -123,4 +127,30 @@ test("ordinary invitation cannot grant director role; explicit owner confirmatio
   assert.equal((await confirm.json()).directorUserId,"staff");
   assert.equal(m.actions.filter(x=>x.sql.startsWith("UPDATE workspace_members SET role")).length,2);
   assert.ok(m.actions.some(x=>x.sql.includes("UPDATE workspaces SET owner_user_id")));
+});
+
+test("web browser session survives token reuse, but logout revokes only that browser",async()=>{
+  const m=fixture();
+  const owner="existing-android-token";
+  m.rows.set(await digest(owner),{user_id:"boss",device_id:"android-owner",created_at:Date.now()});
+  const keyResponse=await worker.fetch(request("/v1/auth/issue-key",{kind:"link"},owner),m.env);
+  const {key}=await keyResponse.json();
+  const redeemed=await worker.fetch(request("/v1/auth/redeem",{
+    key,deviceId:"web-"+"1".repeat(36),deviceLabel:"Nottas Web"
+  }),m.env);
+  assert.equal(redeemed.status,200);
+  const {sessionToken}=await redeemed.json();
+  const webDevice=m.actions.find(x=>x.sql.startsWith("INSERT INTO devices"));
+  assert.equal(webDevice.args[3],"web");
+  const getMe=(token)=>worker.fetch(new Request("https://example.invalid/v1/me",{
+    headers:{Authorization:"Bearer "+token}
+  }),m.env);
+  assert.equal((await getMe(sessionToken)).status,200);
+  assert.equal((await getMe(sessionToken)).status,200);
+  const logout=await worker.fetch(request("/v1/auth/logout",{},sessionToken),m.env);
+  assert.equal(logout.status,200);
+  assert.equal((await logout.json()).ok,true);
+  assert.equal((await getMe(sessionToken)).status,401);
+  assert.equal((await getMe(owner)).status,200);
+  assert.ok(m.actions.some(x=>x.sql.startsWith("DELETE FROM sessions WHERE token_hash=? AND user_id=? AND device_id=?")));
 });
