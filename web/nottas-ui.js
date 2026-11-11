@@ -193,6 +193,12 @@
     const meta=elt("div","meta");
     const badge=(kind,label)=>{const el=elt("span","card-badge");el.append(icon(kind,"tiny"),elt("span","",label));meta.append(el)};
     if(task&&p.dueDate)badge("ns-calendar",p.dueDate+(p.dueTime?" · "+p.dueTime:"")+(p.endTime?"–"+p.endTime:""));
+    if(p.category&&p.category!=="inbox"){
+      const c=[...state.categories.values()].find(x=>x.payload.id===p.category)?.payload;
+      const id=c?.icon;
+      const validIcon=["council","meeting","one-on-one","interview","appointment","visit","phone","followup","activity","inperson","training"].includes(id);
+      badge(validIcon?"ns-event-"+id:"ns-folder",c?.name||"Categoría");
+    }
     if(task&&p.priority==="high")badge("ns-nav-pinned","Prioridad alta");
     if(p.pinned)badge("ns-nav-pinned","Destacada");
     if(items.length)badge("ns-nav-done",items.filter(a=>a.done).length+"/"+items.length);
@@ -201,6 +207,7 @@
     if(!task&&!items.length)badge("ns-nav-notes","Nota");
     if(task&&p.recurrence&&p.recurrence!=="none")badge("ns-nav-refresh","Repetir");
     if(task&&Array.isArray(p.reminders)&&p.reminders.length)badge("ns-bell",p.reminders.length+" avisos");
+    if(Array.isArray(p.tags)&&p.tags.length)badge("ns-folder",p.tags.map(t=>"#"+t).join(" · ").slice(0,85));
     const meeting={scheduled:"Agendada",deferred:"Diferida",realized:"Realizada",not_realized:"No realizada",cancelled:"Cancelada"};
     const approval={proposed:"Propuesta",changes_requested:"Cambios solicitados",rejected:"Rechazada",cancelled:"Cancelada"};
     if(task){
