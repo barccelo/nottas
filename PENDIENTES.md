@@ -4,6 +4,20 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Nottas Web — validar editor y casillas reales (10/11/2026)
+
+- [x] Reemplazar menú Personal/Oficina con UI propia de Nottas; eliminar franja blanca del navegador.
+- [x] Hacer clicables los checks de tareas y subelementos de tarjetas y dar acceso al editor completo de subtareas.
+- [x] Integrar editor por bloques (incluye checklist, citas, viñetas, números y formato), subtareas recursivas y programación de fechas/horas, recordatorios múltiples, recurrencia, prioridad, categorías y etiquetas usando esquema Android.
+- [x] Mostrar estado de propuesta/reunión en tarjetas y editor, permitir agendar la propuesta desde rol dueño; atajo Agendar desde Calendario.
+- [x] Mantener WSS/FCM y sesión persistente, sin polling, guardado backend no modificado; desplegar con respaldo en `/stable`.
+- [ ] **Prueba manual en navegador:** editar una tarea con muchas subtareas y varios niveles, marcar y desmarcar desde tarjeta/editor y comprobar que se refleje en Android sin pérdidas de formato.
+- [ ] **Prueba funcional:** crear/editar fecha/hora, cierre, diferidas, estados de propuesta/agendada, repetición y alarmas Android reales; revisar rol dueño/asistente y reprogramación de propuesta.
+- [ ] **Prueba notas:** editar bloques múltiples con énfasis, viñetas, numeración, checklist y etiquetas; comprobar restauración tras recargar.
+- [ ] **Prueba de regresión:** sesión persistente F5, FCM Web→Android y WSS Android→Web, altas/bajas sin «Actualizar».
+- [ ] Paridad aún pendiente: Google Calendar en web, chat en tiempo real, llamadas, ajustes nativos Android, categorías administrables en web y gestión avanzada de eventos; no simular funciones no implementadas.
+- **Recuperación:** `/stable` conserva la interfaz anterior con WSS/sesión propia, sin quedar afectada por los nuevos assets del editor.
+
 ## Sesión persistente web — revisión de uso (10/11/2026)
 
 - [x] Conservar token de sesión de vinculación por navegador (con opción «Mantener sesión iniciada» predeterminada y conmutador de Ajustes), sin clave nueva ni polling.

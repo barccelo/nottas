@@ -4,6 +4,14 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — editor y navegación de espacios mejorados (10/11/2026)
+
+- En `nottas-web-preview` se reemplazó el selector Personal/Oficina de apariencia defectuosa por menú personalizado; se conservan el espacio y la sesión en almacenamiento local.
+- Tarjetas ahora permiten completar tareas y marcar casillas/subtareas; muestran prioridad, categoría, estado, horarios y recordatorios. Editor nuevo en `web/nottas-editor.js` maneja bloques ricos y checklist de notas/tareas, subtareas recursivas editables y sus completados, fechas/horas, recurrencia, múltiples recordatorios, categorías/etiquetas, prioridad y estado de reuniones/propuestas. Desde Calendario se puede «Agendar» una tarea con fecha preseleccionada.
+- Se reutilizan exactamente los esquemas de entidades Android; campos no tocados preservados mediante copia del `payload`. No se actualizó el código Android, no se modificó backend ni D1, ni se creó APK.
+- Se preservan sin variación WSS, FCM, token y sesión; `refresh` incluye `category` en el mismo snapshot; sin polling. Respaldo operativo `/stable` (con assets previos), además de `/classic`.
+- Verificación: sintaxis y referencias DOM/SVG, preservación textual del canal WSS y peticiones, despliegue e inspección de Cloudflare realizados. Pendiente validación end-to-end y visual real, especialmente edición de subtareas, hora de cierre, etiquetas/categorías y permisos de jefe/asistente.
+
 ## Sesión de Nottas Web que se conserva al recargar — 10/11/2026
 
 - Publicada la persistencia opcional de la sesión previamente vinculada: `localStorage` para «Mantener sesión iniciada» (predeterminado) o `sessionStorage` si se desactiva; validación `/v1/me` y reanudación del WebSocket al abrir. El control se encuentra también en Ajustes → Datos y respaldo.

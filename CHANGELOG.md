@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — mejoras del editor y selector de espacios — 10 de noviembre de 2026
+
+- Sustituido selector nativo Personal/Oficina que mostraba una franja blanca por menú propio accesible, con roles, iconos y selección.
+- Editor por bloques y formato de texto; casillas clicables en tarjetas, checklist de notas, subtareas y subtareas anidadas editables, botones para añadir/quitar/reordenar y mostrar progreso.
+- Campos para fecha/hora inicial y final, recurrencia, recordatorios múltiples, prioridad, lugar, etiquetas/categorías, estados de reunión y aprobación de propuestas para dueño del espacio; opción Agendar en calendario desde fecha seleccionada.
+- Se consumen categorías existentes en el mismo snapshot de sincronización, sin peticiones extra. Preservado el modelo Android; mismo WebSocket/FCM y sesión persistente; sin polling ni cambios Android/API/D1.
+- Publicado Worker web en Cloudflare, con versiones respaldadas `/stable` y `/classic`. Verificados estáticamente JS/DOM/SVG y archivos publicados; falta test en dispositivos reales de cambios, horarios y permisos.
+
 ## Nottas Web — sesión recordada en el navegador — 10 de noviembre de 2026
 
 - Nottas Web deja de perder la sesión por recargar: reutiliza el token ya emitido y recupera los espacios autorizados, manteniendo la sincronización FCM/WSS sin sondeo.

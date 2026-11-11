@@ -6,6 +6,15 @@
 **Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
 **Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
+## Componentes funcionales de la web (10/11/2026)
+
+- Selector de espacios Personal/Oficina: botón 43–44 px, icono `ns-users`, nombre activo, chevrón simétrico y menú contextual personalizado con iniciales, roles y selección; no usar la flecha nativa de `<select>` visible que causaba una franja blanca.
+- Editor web: bloques `paragraph`, `heading`, `subheading`, `quote`, `bullet`, `number`, `checklist` y formato inline; checks redondos azules Nottas, subtareas anidadas y acciones de reordenar. Usar los tipos de bloque originales de Android y conservar HTML no editado.
+- Formularios: fecha/hora de inicio y fin, recurrencia, recordatorios múltiples y estado de reunión con la misma terminología de Android. Categorías y etiquetas se obtienen de D1 vía el snapshot `/v1/sync` ya existente.
+- Tarjetas: checks accionables (completar, subtarea, checklist), metadatos secundarios y estados `Propuesta/Agendada/Diferida/Realizada` con contraste en tema claro/oscuro.
+- Interacción del calendario: «Agendar» crea una tarea con la fecha seleccionada. Mantener estructura visual responsive de escritorio.
+- **Límite:** es una adaptación funcional progresiva, no todo Nottas Android; mantener WSS + FCM, sesión persistente, ausencia de polling y fallback `/stable`. Sin pruebas manuales de permisos o flujos completos de reuniones todavía.
+
 ## Adaptación de escritorio — Nottas Web (10 de noviembre de 2026)
 
 La web usa la **identidad existente**, no un diseño alternativo. El origen autoritativo sigue siendo `app/src/main/assets/design-system.css`, `nottas.html`, `nottas_wordmark.svg` y el presente documento.
