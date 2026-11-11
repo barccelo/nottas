@@ -4,7 +4,7 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
-## Editor y selector de espacios funcionales — 11/11/2026
+## Editor y selector de espacios funcionales — 10/11/2026 (fecha local)
 
 **Publicado en la web de previsualización:** `https://nottas-web-preview.losrobles.workers.dev/`. La versión visual anterior con sesión persistente y WSS permanece en `/stable` (assets CSS/JS propios), y la edición web básica histórica continúa en `/classic`.
 
