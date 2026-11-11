@@ -153,12 +153,13 @@ function clearSavedSession(){
   try{sessionStorage.removeItem(WEB_SESSION_KEY)}catch{}
 }
 function readSavedSession(){
-  for(const store of [localStorage,sessionStorage]){
+  for(const kind of ["persistent","tab"]){
     try{
+      const store=kind==="persistent"?localStorage:sessionStorage;
       const raw=store.getItem(WEB_SESSION_KEY);if(!raw)continue;
       const entry=JSON.parse(raw);
       if(entry.api===TRUSTED_API&&/^[A-Za-z0-9_-]{43}$/.test(entry.token)){
-        return {...entry,remember:store===localStorage};
+        return {...entry,remember:kind==="persistent"};
       }
       store.removeItem(WEB_SESSION_KEY);
     }catch{}
@@ -176,7 +177,7 @@ function storeSession(persistent=rememberThisBrowser){
     return true;
   }catch{return false}
 }
-function setRememberSession(on){return storeSession(!!on)}
+function setRememberSession(on){const ok=storeSession(!!on);if(ok)$("rememberSession").checked=!!on;return ok}
 function loadAccount(me,preferredWorkspace=""){
   state.workspaces=Array.isArray(me.workspaces)?me.workspaces:[];
   const selection=$("workspace");selection.replaceChildren();
@@ -341,6 +342,15 @@ $("loginForm").addEventListener("submit",connect);$("editForm").addEventListener
 }
 $("logout").addEventListener("click",logoutBrowser);document.addEventListener("visibilitychange",()=>{if(document.hidden)stopRealtime();else if(state.token){startRealtime();refresh(true)}});
 window.addEventListener("online",()=>{if(state.token){if(!state.workspaces.length)restoreAccount();else{stopRealtime();startRealtime();refresh(true)}}});
+window.addEventListener("storage",event=>{
+  if(event.key===WEB_SESSION_KEY&&!event.newValue&&state.token&&rememberThisBrowser){
+    stopRealtime();state.token="";state.api="";state.items.clear();state.workspaces=[];state.workspaceId="";
+    ["search","workspace","refresh","create","logout"].forEach(id=>$(id).disabled=true);
+    render();setStatus("Sesión cerrada");
+    $("loginError").textContent="La sesión se cerró en otra pestaña.";
+    if(!$("login").open)$("login").showModal();
+  }
+});
 window.NottasBrowserSession={get remembered(){return rememberThisBrowser},setRemember:setRememberSession};
 restoreAccount();
 </script><script src="/assets/nottas-ui.js" defer></script></body></html>
