@@ -1,8 +1,18 @@
-# Nottas Web — versión base restaurada
+# Nottas Web — previsualización con identidad Android
 
-**Estado vigente:** previsualización experimental basada en el cliente de `0305339`, con una **única adición**: WebSocket autenticado para recibir avisos de sincronización desde Android. El resto del editor y la navegación siguen en la base original. Publicada el 10 de noviembre de 2026.
+**Estado vigente:** interfaz experimental derivada del cliente `0305339`, con identidad gráfica Android, sincronización bidireccional FCM/WSS sin polling y sesión de navegador persistente opcional. El editor y la lógica de guardado mantienen el alcance básico original.
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
+
+## Sesión de navegador que sobrevive a recargas — 10/11/2026
+
+- **Problema resuelto:** la versión anterior almacenaba `sessionToken` solo en la variable `state.token`; cualquier actualización de la página lo perdía y exigía otra clave temporal de vinculación.
+- **Implementación web:** `web/index.html` valida la sesión existente con `GET /v1/me` al abrir, reconstruye los espacios autorizados y reestablece el WebSocket anterior sin crear un token nuevo. La clave de vinculación de 10 minutos sigue siendo de **un solo uso** para el primer acceso.
+- **Opciones:** casilla `Mantener sesión iniciada en este navegador` en la vinculación (activada por defecto) y conmutador en **Ajustes → Datos y respaldo → Sesión web**. Con la casilla activa, token en `localStorage` de ese origen; desactivada, `sessionStorage` de pestaña. Si un navegador bloquea el almacenamiento, la sesión solo funciona hasta cerrar y se informa del límite.
+- **Seguridad:** el token es un secreto de sesión, no una clave extra permanente; permanece bajo el mismo origen HTTPS y nunca se añade a las URLs ni a mensajes WebSocket. No activar persistencia en equipos compartidos. El servidor permite `POST /v1/auth/logout` para invalidar **solo** el token de esa sesión (PR #12, backend en `main`); Android conserva su sesión. La web elimina el token de ambos almacenamientos al cerrar. Las sesiones web nuevas se registran con plataforma `web`.
+- **Fallo de red:** una interrupción al restaurar **no borra** el token guardado; solamente un `401 unauthorized` produce limpieza y exige volver a vincular. No se añadieron solicitudes periódicas ni nuevos timers; la restauración ocurre únicamente al abrir la página.
+- **Regresión protegida:** las funciones `stopRealtime`, `startRealtime`, `request`, `refresh`, `save`, `push` y `remove` se compararon con el cliente anterior sin cambios. Se comprobaron sintaxis JS, IDs y publicación en Cloudflare. **Falta una prueba real** de recargar/cerrar/reabrir el navegador y de cerrar sesión en los dispositivos; no se afirma prueba de navegador que no se haya realizado.
+- **Despliegue:** PR #12 fusionado; backend Actions `42930298365` y `42930374923` correctos; Worker web actualizado y verificado. No hay APK nueva ni cambio de D1.
 
 ## Adaptación de identidad Android a escritorio — 10/11/2026
 
@@ -22,7 +32,7 @@ La interfaz visual de la previsualización `https://nottas-web-preview.losrobles
 - Pantalla Inicio, navegación de Tareas/Notas, filtros Hoy/Pendientes/Destacadas/Completadas, Papelera, búsqueda, editor existente, tema claro/oscuro local en el navegador y navegación adaptada a escritorio/tablet/móvil.
 - Calendario Día/Semana/Mes/Agenda **basado en tareas con fecha ya sincronizadas**. No sustituye el calendario Android completo, ni carga Google Calendar de manera independiente, ni ofrece programación enriquecida desde ese panel.
 - «Equipo de trabajo» muestra espacios autorizados, roles y cantidades. Los mensajes/llamadas/permisos avanzados siguen en Android.
-- Ajustes conserva las mismas familias de secciones; **solo el tema web es editable**. Notificaciones, recordatorios, horario, mensajes rápidos, respaldos y otros ajustes nativos se indican como controles de Android, no botones web falsos. Preferencia de tema guardada en `localStorage` **solo para este navegador**, nunca en D1.
+- Ajustes conserva las mismas familias de secciones; **el tema web y la preferencia «Mantener sesión iniciada» son editables**. Notificaciones, recordatorios, horario, mensajes rápidos, respaldos y otros ajustes nativos se indican como controles de Android, no botones web falsos. Preferencia de tema guardada en `localStorage` **solo para este navegador**, nunca en D1.
 - No se han modificado datos, esquemas, Android, el backend FCM ni el Durable Object. El cliente WebSocket anterior sigue sin polling; la capa estética no añade llamadas a API.
 
 **Verificación de esta integración:** se contrastaron clases y símbolos con archivos Android; se validaron sintaxis JavaScript, IDs duplicados/referencias, iconos y rutas; todas las funciones críticas del cliente original se compararon literalmente con el commit `53093c9` y resultaron idénticas. Cloudflare confirmó la publicación y el contenido de los assets, CSP WSS y ruta de respaldo. **Pendiente:** revisión visual y funcional desde navegador real, sobre todo dimensiones, tema oscuro, menús, editor y sincronización tras este cambio de presentación. La sincronización previa sí fue confirmada por el usuario.
@@ -47,7 +57,7 @@ Las secciones de reversiones antiguas más abajo son historial; **no son el esta
 - Vinculación mediante **Acceder desde otro teléfono** en Android y clave temporal de un solo uso. No usar clave de recuperación.
 - Menú de vistas Todo/Notas/Tareas/Papelera, selección de espacio mediante menú desplegable, búsqueda, modo claro/oscuro.
 - Consulta y edición controlada de notas de párrafo simple y tareas; creación, completar tarea y envío a papelera. Preserva estructuras de datos enriquecidos, subtareas, fechas, aprobaciones y recordatorios originales, pero **no ofrece edición completa de esos campos**.
-- Sesión **solo en memoria**. Tras recargar o cerrar la página hay que vincular nuevamente.
+- Sesión de navegador opcionalmente persistente: con «Mantener sesión iniciada en este navegador» (activado por defecto) el token de sesión se almacena en `localStorage` y se valida mediante `/v1/me` al iniciar la web. Si se desactiva, se conserva solo en `sessionStorage` de la pestaña (resiste recargas, no necesariamente el cierre). No se guarda la clave temporal de Android. La opción también está disponible en Ajustes → Datos y respaldo → Sesión web.
 - **Tiene avisos en tiempo real por WebSocket (sin sondeo periódico).** Tras vincular, el navegador establece una conexión WSS autenticada con `/v1/realtime`. Una escritura del móvil o de otro cliente emite una señal `sync` sin contenido; la web consulta el snapshot únicamente entonces, al reconectar, cuando la pestaña vuelve a estar visible, al pulsar Actualizar o después de guardar. La conexión usa un Durable Object con hibernación (SQLite); los avisos no llevan texto de notas ni tareas.
 - La API de Cloudflare sigue en `nottas-assistant-api.losrobles.workers.dev`. El backend vigente incluye los PR #10 y #11: FCM para Android (incluido el autor) y avisos WebSocket para el navegador. La recepción automática en ambos sentidos fue confirmada por el usuario.
 
