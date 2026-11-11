@@ -278,7 +278,7 @@ dialog label input,dialog label select,dialog label textarea{color:var(--fg);fon
 #editor .type-subheading .editor-rich-input{font-weight:680;font-size:16px}
 #editor .type-quote .editor-rich-input{border-left:3px solid var(--blue);padding-left:10px;font-style:italic}
 #editor .type-bullet .editor-rich-input:before{content:"•";color:var(--muted);margin-right:6px}
-#editor .type-number .editor-rich-input:before{content:"1.";color:var(--muted);margin-right:6px}
+#editor .type-number .editor-rich-input:before{content:attr(data-number);color:var(--muted);margin-right:6px}
 #editor .editor-row-tools{display:flex;gap:4px;align-items:center;flex-shrink:0}
 #editor .editor-block-type{border:1px solid var(--line);border-radius:8px;padding:4px 5px;width:89px;height:31px;font-size:11px;background:var(--surface);color:var(--fg)}
 #editor .editor-delete-mini{border:0;background:transparent;color:var(--muted);width:26px;height:30px;border-radius:8px;font-size:20px;padding:0}
@@ -325,4 +325,16 @@ html[data-theme="dark"] .item-card .status-realized{background:#1d4330;color:#8d
 #editor .editor-row-tools{flex-direction:column}#editor .editor-block-type{width:71px;font-size:10px}
 #editor .editor-item-action{width:25px;height:28px;flex-basis:25px}
 #editor .editor-actions{flex-wrap:wrap}#editor .editor-actions #remove{margin-right:0}
+}
+
+#editor .editor-format-toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0}
+#editor .editor-format-toolbar button{height:34px;min-width:36px;display:grid;place-items:center;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:14px;font-weight:650;cursor:pointer}
+#editor .editor-format-toolbar button:hover{border-color:var(--blue);color:var(--blue)}
+#editor .editor-rich-input:focus-visible{outline:2px solid var(--blue);outline-offset:4px;border-radius:4px}
+.calendar-top-actions{display:flex;gap:8px;align-items:center}
+@media(max-width:650px){
+ .filter-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:5px}
+ .filter-chips::-webkit-scrollbar{display:none}
+ .filter-chips button{flex:0 0 auto;white-space:nowrap}
+ .calendar-top-actions .primary{min-width:0;padding:9px 11px}
 }
