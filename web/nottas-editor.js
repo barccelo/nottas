@@ -175,15 +175,64 @@
     if(editable){const btn=el("button","editor-add-action","Agendar propuesta");
       btn.type="button";btn.onclick=()=>{draft.approvalStatus="scheduled";holder.replaceChildren(el("span","editor-approval-label","Aprobación: Agendada"))};holder.append(btn)}
   }
+  function renderMetaChips(){
+    const row=$("editorMetaChips");
+    if(!row||!draft||draft.type!=="task"){row?.replaceChildren();return}
+    row.replaceChildren();
+    const p=draft.original?.payload||{},sch=window.NottasSchedule,cats=window.NottasCategories;
+    function chip(iconName,label,field,selected=false){
+      const b=el("button","nottas-editor-chip"+(selected?" selected":""));
+      b.type="button";b.title="Editar "+label;b.setAttribute("aria-label",label);
+      b.append(icon(iconName),el("span","",label));
+      b.addEventListener("click",()=>{
+        if(!showDraftPicker(field,b)){
+          draft.advancedExpanded=true;configureAdvanced();
+          const id={date:"editDueDate",time:"editDueTime",endDate:"editEndDate",endTime:"editEndTime",reminders:"editorReminders",category:"editCategoryTrigger",status:"editMeetingStatus",priority:"editPriority",recurrence:"editRecurrence"}[field];
+          $(id)?.scrollIntoView({block:"center"});$(id)?.focus();
+        }
+      });
+      row.append(b);return b;
+    }
+    const date=$("editDueDate").value,time=$("editDueTime").value,endTime=$("editEndTime").value;
+    chip("ns-calendar",date?sch.displayDate(date):"Fecha","date",!!date);
+    chip("ns-clock",time||"Hora","time",!!time);
+    if($("editEndDate").value)chip("ns-calendar","Hasta "+sch.displayDate($("editEndDate").value),"endDate",true);
+    if(endTime)chip("ns-clock","Cierre "+endTime,"endTime",true);
+    let reminders=[];
+    try{reminders=collectReminders()}catch{}
+    chip("ns-bell",reminders.length?reminders.length+(reminders.length===1?" aviso":" avisos"):"Recordatorio","reminders",!!reminders.length);
+    const category=cats?.find($("editCategory").value,draft.original?.workspaceId||state.workspaceId);
+    const catButton=chip("ns-folder",category?.name&&category.id!=="inbox"?category.name:"Categoría","category",category?.id!=="inbox");
+    if(category?.id&&category.id!=="inbox"&&cats?.element)catButton.replaceChild(cats.element(category),catButton.firstChild);
+    if($("editRecurrence").value!=="none")chip("ns-nav-refresh","Repetir","recurrence",true);
+    if($("editPriority").value==="high")chip("ns-nav-pinned","Prioridad alta","priority",true);
+    const space=state.workspaces.find(w=>w.id===(draft.original?.workspaceId||state.workspaceId));
+    if(space?.kind==="assistant"){
+      const labels={scheduled:"Agendada",deferred:"Diferida",realized:"Realizada",not_realized:"No realizada",cancelled:"Cancelada"};
+      chip("ns-users",labels[$("editMeetingStatus").value]||"Estado","status",true);
+    }
+    const more=el("button","nottas-editor-chip nottas-editor-more"+(draft.advancedExpanded?" selected":""));
+    more.type="button";more.append(icon("ns-plus"),el("span","","Más opciones"));
+    more.setAttribute("aria-expanded",String(!!draft.advancedExpanded));
+    more.addEventListener("click",()=>{draft.advancedExpanded=!draft.advancedExpanded;configureAdvanced();renderMetaChips()});
+    row.append(more);
+  }
+  function configureAdvanced(){
+    const task=draft?.type==="task";
+    $("taskFields").classList.toggle("hidden",!task||!draft.advancedExpanded);
+    $("editorOrgSection").classList.toggle("hidden",task&&!draft.advancedExpanded);
+    $("editorAdvancedLabel").classList.toggle("hidden",!task||!draft.advancedExpanded);
+    $("editorMetaChips").classList.toggle("hidden",!task);
+  }
   function configure(){
     if(!draft)return;
     const type=$("type").value;
     if(type!==draft.type){
       draft.type=type;
-      draft.blocks=[];draft.items=[];draft.pinned=false;draft.subtasksExpanded=true;draft.completedExpanded=false;
+      draft.blocks=[];draft.items=[];draft.pinned=false;draft.subtasksExpanded=true;draft.completedExpanded=false;draft.advancedExpanded=false;
     }
     $("editor").classList.toggle("nottas-task-editor",type==="task");
-    $("taskFields").classList.toggle("hidden",type!=="task");
+    configureAdvanced();
     $("subtaskSection").classList.toggle("hidden",type!=="task");
     $("bodyRow").classList.remove("hidden");
     $("editorBlocksLabel").textContent=type==="task"?"Notas / descripción":"Contenido";
@@ -193,7 +242,7 @@
     const disabled=!!draft.original?.payload.deletedAt;
     $("title").disabled=disabled;$("title").required=type==="task";$("save").disabled=disabled;
     ["addParagraphBtn","addChecklistBtn","addBulletBtn","addSubtaskBtn"].forEach(id=>$(id).disabled=disabled);
-    drawBlocks();drawSubtasks();syncPin();renderApproval();
+    drawBlocks();drawSubtasks();syncPin();renderApproval();renderMetaChips();
   }
   function hideCategoryMenu(){
     $("editCategoryMenu").classList.add("hidden");
@@ -237,7 +286,7 @@
     hideCategoryMenu();
     state.current=item;
     const type=item?.entityType||"note",p=item?.payload||{};
-    draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null,subtasksExpanded:!item||!((p.items||p.subtasks||[]).length),completedExpanded:false};
+    draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null,subtasksExpanded:!item||!((p.items||p.subtasks||[]).length),completedExpanded:false,advancedExpanded:false};
     $("type").value=type;$("type").disabled=!!item;
     $("title").value=type==="task"?String(p.text||""):String(p.title||"");
     fillCategories(item?.workspaceId||state.workspaceId,p.category);
@@ -553,7 +602,7 @@
     if(payload.recurrence!==undefined)$("editRecurrence").value=payload.recurrence;
     if(payload.meetingStatus!==undefined)$("editMeetingStatus").value=payload.meetingStatus;
     if(Array.isArray(payload.tags))$("editTags").value=payload.tags.join(", ");
-    updateReminderSummary();updateDateShortcuts();
+    updateReminderSummary();updateDateShortcuts();renderMetaChips();
   }
   function showDraftPicker(kind,anchor){
     if(!draft||draft.type!=="task"||draft.original?.payload.deletedAt)return false;
@@ -593,6 +642,12 @@
     $("editExtraReminder").value="";
     updateReminderSummary();
   });
+  for(const field of ["editDueDate","editEndDate","editDueTime","editEndTime","editRecurrence","editPriority","editCategory","editMeetingStatus","editExtraReminder","editTags"]){
+    $(field).addEventListener("change",()=>{if(draft?.type==="task")renderMetaChips()});
+  }
+  document.querySelectorAll("#editorReminders input").forEach(c=>c.addEventListener("change",()=>{
+    if(draft?.type==="task")renderMetaChips();
+  }));
   $("editPinnedBtn").addEventListener("click",()=>{if(!draft)return;draft.pinned=!draft.pinned;syncPin()});
   document.querySelectorAll("#editor [data-format]").forEach(button=>{
     button.addEventListener("mousedown",e=>e.preventDefault());
