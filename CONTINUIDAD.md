@@ -1,5 +1,13 @@
 # Continuidad operativa de Nottas
 
+## Corrección preventiva de pérdida de datos y mejoras del editor — 12/11/2026
+
+- **Android 0.27.118 (versionCode 199):** `assistantApplyRemoteChange` conserva siempre notas/tareas/categorías `syncState=pending` ante snapshots remotos y conflictos, eleva revisión para reintentar cuando el servidor rechaza el cambio; `assistantMarkAccepted` solo confirma una versión que coincida con la revisión efectivamente enviada. Esto evita sobrescribir ediciones offline o recientes con respuestas antiguas. El guardado local y backup nativo continúan independientes de la red. La causa reportada no está reproducida físicamente: verificar con modo avión, edición, reconexión y versiones concurrentes.
+- **Android editor:** «+ Añadir subtarea» ancho total; botón contextual «Ir al final ↓» visible al desplegar lista existente; nuevas tareas/notas sin enfoque inicial automático, salvo nota existente sin título. La captura rápida conserva su enfoque cuando el usuario la abre expresamente.
+- **Web experimental:** equivalentes de botón ancho, «Ir al final» dentro de la lista desplazable y apertura del editor sin foco automático (nota existente sin título sigue enfocada). Publicado en Worker `nottas-web-preview`, con `/stable` y `/classic` preservados; no se tocó backend FCM/WSS.
+- **Entrega:** cambios y versión registrados en `main`; GitHub Actions publica por push tras firma. Comprobar ejecución y APK de Release antes de declarar Obtainium actualizado.
+
+
 ## Ajustes web de edición — 12/11/2026
 
 - En `feature/nottas-web-initial`: scroll contenido en `#editSubtaskContent` (overscroll contain), indicador activo del formato B/I/U/S según selección, chevrón del tipo de bloque integrado al botón y editor de texto sin superficie de tarjeta. Commits `af63c52` y `b79959b`.
