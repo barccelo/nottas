@@ -4,6 +4,13 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — paridad visual y de interacción (12/11/2026)
+
+- **Publicación web confirmada:** Worker `nottas-web-preview` actualizado 12/11/2026 13:45 UTC. El backend y la APK no cambiaron; `/stable` mantiene respaldo funcional.
+- Tarjetas y editor usan tarjeta fija de subtareas desplegable con un clic, contador de avance y «Elementos marcados» al final con su propia flecha; jerarquía de subtareas original preservada.
+- Editor reorganizado en título, chips compactos, notas, subtareas y ajustes secundarios colapsados en «Más opciones». Se añade `web/nottas-float.js` para calendario propio, rueda de hora/minutos, recordatorios múltiples, categoría, estado, prioridad, recurrencia y etiquetas desde tarjeta o borrador del editor.
+- Sincronización por FCM/WSS y sesión persistente preservadas; sin polling. Verificación realizada: código JS válido, DOM/SVG íntegros, publicación inspeccionada; pendientes pruebas de UI real y Android bidireccional de estas acciones.
+
 ## Nottas Web — categorías nativas y controles de toque (12/11/2026)
 
 - Se publicó en `nottas-web-preview` una mejora de frontend: íconos `ns-event-*`, colores y emoji de categorías idénticos a Android en tarjetas y selector del editor; sin iconos genéricos si existe recurso de categoría.

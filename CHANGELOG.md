@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — tarjetas y formularios al estilo Android — 12 de noviembre de 2026
+
+- Tarjeta de subtareas plegable siempre visible con contador, tanto en la lista como en el editor; «Elementos marcados» al final, ocultables por su chevrón. Se conserva el árbol de subtareas.
+- Editor rediseñado: título, chips de metadatos, descripción/bloques y subtareas primero, «Más opciones» para el formulario completo.
+- Nuevo módulo `web/nottas-float.js`: selector de fecha propio, ruedas de hora y minutos, selección de alertas múltiples, categorías, estado, prioridad, repetición y etiquetas. Guardado directo desde tarjeta; editor actualiza borrador sin servidor hasta Guardar.
+- CSS ajustado a tokens, espacios, radios, iconos y botones de Android. Tarjetas de escritorio más legibles. Web desplegada con backups `/stable` y `/classic`.
+- Sin modificaciones en FCM, WebSocket, autenticación, D1, backend ni APK; sin polling. QA estático y despliegue confirmados, pruebas reales de navegador/dispositivo pendientes.
+
 ## Nottas Web — iconografía real y captura de fechas/horas — 12 de noviembre de 2026
 
 - Restaurados íconos/colores/emojis de categorías conforme a `categorySymbolHtml()` de Android y selector visual de categorías; nuevos módulos `nottas-categories.js` y `nottas-schedule.js`.

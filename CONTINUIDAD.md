@@ -1,7 +1,19 @@
 # Continuidad operativa de Nottas
 
-**Actualizado:** 12 de noviembre de 2026 (captura de fecha/hora y toques web; sincronización FCM + WSS preservada).  
+**Actualizado:** 12 de noviembre de 2026 (interfaz web de subtareas/paneles flotantes publicada; FCM + WSS sin cambios).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
+
+## Nottas Web — experiencia de Android en escritorio (12/11/2026)
+
+**Actualización web publicada en Cloudflare** (13:45:32 UTC del 12/11/2026): `https://nottas-web-preview.losrobles.workers.dev/`. Rama del frontend `feature/nottas-web-initial`; respaldo de interfaz/sincronización `/stable` y cliente antiguo `/classic`. **No se modificó Android ni el backend**, ni se publicó APK nueva.
+
+- **Problema de diseño reconocido:** antes la web aún se parecía a un formulario HTML, no al flujo de Android. Referencia autoritativa `main:app/src/main/assets/nottas.html`: `taskSubtasksSummaryCard`, `taskCheckedSectionToggle`, paneles `taskInline*`, ruedas `timeWheel`, chips `taskMetaChip`, plus `DESIGN_SYSTEM.md`.
+- **Tarjetas:** vista web con tarjeta fija «Subtareas» y contador, visible aunque plegada; clic abre/cierra. «Elementos marcados» queda al final con chevrón y plegado independiente, solo agrupa completadas de nivel raíz (los hijos mantienen su jerarquía). Los checks guardan por `POST /v1/sync`.
+- **Editor:** orden título → chips compactos de fecha/hora/recordatorio/categoría/estado → notas → tarjeta de subtareas plegable → `Más opciones` (campos extensos). El editor sigue guardando todos los datos Android originales y no borra campos ocultos.
+- **Paneles flotantes:** nuevo `web/nottas-float.js` con calendario mensual propio, controles Hoy/Mañana/Pasado mañana, rueda de 24 horas y 60 minutos, recordatorios múltiples, categoría, prioridad, estado, recurrencia y etiquetas. En la tarjeta guardan por `NottasEditor.quick`; dentro del editor mutan solo el borrador hasta Guardar. Cerrar fuera/Escape, clic repetido cierra.
+- **Archivos web:** `web/index.html`, `web/nottas-ui.js`, `web/nottas-ui.css`, `web/nottas-editor.js`, `web/nottas-float.js` (más categorías, calendario y sprite existentes). No añadir polling ni modificar FCM/WSS por una mejora de UI.
+- **QA estático realizado:** seis módulos JS válidos, 104 IDs DOM sin duplicados ni referencias faltantes, símbolos SVG disponibles, orden visual de secciones, ausencia de `setInterval`, Worker web publicado/inspeccionado, `/stable` y `/classic` conservados. **QA real pendiente:** navegar y guardar en navegador/dispositivo, ruedas, desplegables, permisos de Oficina y sincronización de todos los campos en Android; no declarar paridad completa ni funcionalidad que no se haya probado.
+- **Siguiente prioridad:** confirmar interacción real (abrir subtareas, ocultar marcadas, configurar fecha/hora/recordatorio con panel desde tarjeta y desde editor, completar y recibir cambios instantáneos en teléfono). Funciones Android aún no espejadas: todas las píldoras de captura rápida dentro del texto, eventos Google Calendar, comunicaciones de equipo y ajustes específicos de OS. Registrar incidencias sin romper FCM + WebSocket.
 
 ## Nottas Web — categorías, captura rápida y toques (12/11/2026)
 

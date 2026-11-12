@@ -6,6 +6,14 @@
 **Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
 **Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
+## Espejo visual de Android — componentes web 12/11/2026
+
+- **Tarjeta de subtareas:** mantener siempre visible el encabezado con `Subtareas`, icono nativo, contador y chevrón; solo el contenido se muestra/oculta con clic. No sustituir por un campo HTML permanente.
+- **Elementos marcados:** agrupar elementos raíz completados al final de la tarjeta; chevrón independiente y estado plegado. Los hijos marcados de una subtarea pendiente se quedan dentro de su jerarquía original. Ítems desactivados con check azul circular y texto atenuado.
+- **Editor:** priorizar título, chips `taskMetaChip`, contenido enriquecido y la tarjeta de subtareas, dejando ajustes extensos detrás de `Más opciones`; preservar los valores guardados aunque el usuario no abra esos ajustes. Formularios extensos solo bajo demanda.
+- **Selectores:** usar paneles flotantes propios en clic de chips o tarjeta: calendario mensual con navegación y día seleccionado, rueda de hora/minuto con scroll-snap, alertas múltiples y categorías/estados. Desde editor se actualiza borrador, desde tarjeta se confirma en `/v1/sync`. Cerrar al tocar fuera/Escape. No inventar otro sistema gráfico: tokens v1.3 y símbolos SVG existentes.
+- **Regresiones:** nunca acoplar UI con la capa de señales FCM/WebSocket ni agregar polling. Mantener `/stable` y probar visual y funcionalmente contra Android antes de afirmar espejo completo.
+
 ## Componentes web interactivos — 12/11/2026
 
 - **Categorías:** usar la función de diseño Android `categorySymbolHtml` como contrato: emoji si existe; de lo contrario SVG `ns-event-<icon>` del sprite oficial cuando el identificador es válido; en otro caso punto del color almacenado. No sustituir por icono genérico si el icono real existe. Selector web accesible con lista, nombre y color.

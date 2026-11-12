@@ -4,6 +4,18 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Nottas Web — verificar nueva interfaz espejo (12/11/2026)
+
+- [x] Tarjeta fija desplegable de subtareas en cards y editor, visible aunque esté cerrada, con contador y sin aplanar los hijos.
+- [x] Elementos marcados al final de la lista, con flecha independiente para mostrar/ocultar (nivel principal).
+- [x] Editor con chips Nottas y contenido primero; campos HTML secundarios bajo «Más opciones».
+- [x] Paneles propios de calendario, rueda hora/minuto, recordatorios, categoría, prioridad, estado, repetición y tags, abiertos desde tarjeta (guardado directo) o desde editor (borrador).
+- [x] Web publicada en Cloudflare con fallback `/stable` y `/classic`. Sesión, API, backend, WSS y FCM sin cambios. Verificación estática y de despliegue.
+- [ ] **Prueba con navegador real:** interacción táctil y mouse, foco/cierre en formularios flotantes, rueda y calendario en Android/Windows, tarjetas en tema claro/oscuro y responsive.
+- [ ] **Prueba cruzada:** guardado de una fecha/hora, varios recordatorios, completado y marcado de subtareas, jerarquía con hijos marcados, eliminar/crear desde ambos dispositivos sin actualización manual.
+- [ ] **Validar permisos Oficina:** eventos propuestas/agendadas/diferidas y confirmaciones del director/asistente; no presumir paridad completa de estados compartidos.
+- [ ] **Pendiente de paridad total:** píldoras in situ de captura rápida, formularios específicos avanzados de Android, Google Calendar y otros módulos colaborativos/nativos. Evitar sustituir controles probados por HTML genérico o introducir sondeos de cuota.
+
 ## Nottas Web — validar categorías y captura táctil (12/11/2026)
 
 - [x] Renderizar categorías con iconos SVG `ns-event-*` oficiales, color y emoji, en tarjetas y selector personalizado, a partir de los registros sincronizados.
