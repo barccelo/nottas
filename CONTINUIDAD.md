@@ -3,7 +3,7 @@
 ## Ajustes web de edición — 12/11/2026
 
 - En `feature/nottas-web-initial`: scroll contenido en `#editSubtaskContent` (overscroll contain), indicador activo del formato B/I/U/S según selección, chevrón del tipo de bloque integrado al botón y editor de texto sin superficie de tarjeta. Commits `af63c52` y `b79959b`.
-- Solo GitHub actualizado; **despliegue Cloudflare y prueba en navegador pendientes**. No tocar FCM/WSS, Android ni backend por estos cambios.
+- **Publicado en Cloudflare**: Worker `nottas-web-preview` actualizado mediante API y verificado por lectura del script desplegado (15 rutas, assets nuevos y respaldos `/stable` y `/classic`). Prueba real en navegador pendiente. No tocar FCM/WSS, Android ni backend por estos cambios.
 
 
 **Actualizado:** 12 de noviembre de 2026 (interfaz web de subtareas/paneles flotantes publicada; FCM + WSS sin cambios).  
