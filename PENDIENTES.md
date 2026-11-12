@@ -8,7 +8,8 @@
 - [ ] **Prueba crítica en Android:** activar modo avión, modificar una nota existente varias veces, salir, cerrar y reabrir Nottas, reconectar y revisar íntegra la nota en Android y web.
 - [ ] Reproducir cambios concurrentes desde web/Android para verificar retención de edición offline y eventual aceptación del servidor (sin pérdida silenciosa ni sobrescritura).
 - [ ] Validar teclado (nuevo/antiguo sin título), botón ancho y «Ir al final» en listas largas Android y web.
-- [ ] Verificar CI Android 0.27.118, firma de APK, Release y Obtainium; no declarar publicada hasta comprobarla.
+- [x] CI Android 0.27.118: compilación, firma y publicación confirmadas en Actions `43272639018`, APK presente en Release `v0.27.118` para Obtainium.
+- [ ] Verificar instalación/actualización real desde Obtainium y retención de datos locales.
 
 
 ## Verificación del editor web (12/11/2026)
