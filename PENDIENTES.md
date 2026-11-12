@@ -5,6 +5,17 @@
 - [x] Sustituir flecha tipográfica por SVG Nottas en web y Android.
 - [x] Separar scroll de subtareas del botón de agregar en web y publicar Worker conservando respaldos.
 - [x] En Android, abrir tareas y notas sin teclado solo si tienen título; con título vacío solicitar teclado.
+- [x] Android 0.27.119 publicada, firmada y comprobada en Release para Obtainium (Actions `43275668042`).
+- [ ] Probar tarea «Mejoras» de 69 subtareas: botón visible, salto al final, marcadas plegables y temas claro/oscuro, en distintos tamaños.
+- [ ] Probar teclado Android con tareas y notas nuevas, existentes con título y sin título; verificar que no hay reapertura imprevista.
+- [ ] Verificar actualización real de Obtainium y conservación de datos locales, además de prueba offline de la versión anterior.
+
+
+## Verificar correcciones v0.27.119 (12/11/2026)
+
+- [x] Sustituir flecha tipográfica por SVG Nottas en web y Android.
+- [x] Separar scroll de subtareas del botón de agregar en web y publicar Worker conservando respaldos.
+- [x] En Android, abrir tareas y notas sin teclado solo si tienen título; con título vacío solicitar teclado.
 - [ ] Probar tarea «Mejoras» de 69 subtareas, comprobar botón visible, salto al final, marcadas plegables y tema claro/oscuro, en tamaños pequeño/grande.
 - [ ] Probar teclado Android con tarea y nota nuevas, existentes con título y sin título; verificar que no hay reapertura imprevista al navegar.
 - [ ] Verificar firma, Release v0.27.119 y descarga de Obtainium; luego comprobar actualización en dispositivo físico.
