@@ -5,7 +5,7 @@
 - Corregida flecha «Ir al final» en Android/Web con SVG de trazo Nottas.
 - Web: solo la lista de pendientes tiene scroll limitado a 30vh/300px; el botón «+ Añadir subtarea» ya no pertenece al área con overflow. Se mantiene scroll independiente de marcadas.
 - Android: con título no hay autofoco; sin título (tarea o nota, nueva o existente), enfoca título salvo llamada especializada `autoFocus:false`. La web sigue criterio equivalente.
-- Publicado Worker web, preservando `/stable`, `/classic` y sincronización; APK Android 0.27.119 / 200 pendiente de verificar publicación y pruebas en dispositivo.
+- Publicado Worker web, preservando `/stable`, `/classic` y sincronización; APK Android 0.27.119 / 200 compilada, firmada y publicada en GitHub Releases mediante Actions `43275668042`; pruebas en dispositivo pendientes.
 
 
 ## Seguridad de datos Android y navegación de subtareas (12/11/2026)
