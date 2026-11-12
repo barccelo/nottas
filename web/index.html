@@ -243,10 +243,24 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
       </div>
       <textarea id="body" class="hidden" rows="1" aria-hidden="true" tabindex="-1"></textarea>
     </div>
-    <div id="subtaskSection" class="editor-section hidden">
-      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>Subtareas <span id="editSubtaskCount" class="editor-count"></span></div>
-      <div id="editSubtasks" class="editor-subtask-list"></div>
-      <button type="button" id="addSubtaskBtn" class="editor-add-action">+ Añadir subtarea</button>
+    <div id="subtaskSection" class="editor-section hidden nottas-editor-subtasks">
+      <button type="button" id="editSubtasksToggle" class="nottas-subtask-summary" aria-expanded="false" aria-controls="editSubtaskContent">
+        <svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>
+        <span class="nottas-subtask-summary-title">Subtareas</span>
+        <span id="editSubtaskCount" class="editor-count"></span>
+        <svg class="ns-icon nottas-subtask-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
+      </button>
+      <div id="editSubtaskContent" class="nottas-subtask-content hidden">
+        <div id="editSubtasks" class="editor-subtask-list"></div>
+        <button type="button" id="addSubtaskBtn" class="editor-add-action">+ Añadir subtarea</button>
+        <section id="editCompletedSection" class="nottas-completed-section hidden">
+          <button type="button" id="editCompletedToggle" class="nottas-completed-toggle" aria-expanded="false" aria-controls="editCompletedList">
+            <svg class="ns-icon nottas-completed-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
+            <span id="editCompletedCount">Elementos marcados</span>
+          </button>
+          <div id="editCompletedList" class="editor-subtask-list nottas-completed-list hidden"></div>
+        </section>
+      </div>
     </div>
     <p id="editInfo" class="notice"></p>
     <div id="editError" class="status" role="alert" aria-live="polite"></div>
@@ -470,4 +484,4 @@ window.addEventListener("storage",event=>{
 });
 window.NottasBrowserSession={get remembered(){return rememberThisBrowser},setRemember:setRememberSession};
 restoreAccount();
-</script><script src="/assets/nottas-schedule.js" defer></script><script src="/assets/nottas-categories.js" defer></script><script src="/assets/nottas-editor.js" defer></script><script src="/assets/nottas-ui.js" defer></script></body></html>
+</script><script src="/assets/nottas-schedule.js" defer></script><script src="/assets/nottas-categories.js" defer></script><script src="/assets/nottas-editor.js" defer></script><script src="/assets/nottas-ui.js" defer></script><script src="/assets/nottas-float.js" defer></script></body></html>
