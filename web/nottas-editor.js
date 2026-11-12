@@ -52,7 +52,7 @@
     return result.filter(Boolean).join("\n");
   }
   function sourceItems(p){const nodes=Array.isArray(p.items)&&p.items.length?p.items:(Array.isArray(p.subtasks)?p.subtasks:[]);return clone(nodes).map(node=>normItem(node))}
-  function normItem(n){return {id:n.id||crypto.randomUUID(),text:String(n.text||""),html:String(n.html||escape(n.text||"")),done:!!n.done,children:Array.isArray(n.children)?n.children.map(normItem):[]}}
+  function normItem(n){return {...n,id:n.id||crypto.randomUUID(),text:String(n.text||""),html:String(n.html||escape(n.text||"")),done:!!n.done,children:Array.isArray(n.children)?n.children.map(normItem):[]}}
   function progress(nodes){let total=0,done=0;function walk(items){for(const n of items){total++;if(n.done)done++;walk(n.children||[])}}walk(nodes);return {total,done}}
   function setAll(n,done){n.done=done;(n.children||[]).forEach(x=>setAll(x,done))}
   function syncParents(nodes){(nodes||[]).forEach(n=>{syncParents(n.children);if(n.children?.length)n.done=n.children.every(x=>x.done)})}
@@ -60,7 +60,7 @@
   function removeFrom(nodes,id){const at=nodes.findIndex(x=>x.id===id);if(at>=0){nodes.splice(at,1);return true}return nodes.some(n=>removeFrom(n.children||[],id))}
   function moveIn(nodes,id,dir){const pos=nodes.findIndex(n=>n.id===id);if(pos>=0){const target=pos+dir;if(target<0||target>=nodes.length)return;[nodes[pos],nodes[target]]=[nodes[target],nodes[pos]];return}for(const n of nodes)moveIn(n.children||[],id,dir)}
   function rowsForBlocks(container,blocks,depth=0,disabled=false){
-    if(depth>12)return;
+    if(depth>500)return; // Never silently truncate normal nested content.
     let ordinal=0;
     for(const block of blocks){
       ordinal=block.type==="number"?ordinal+1:0;
@@ -87,11 +87,35 @@
       });
       row.append(editor);
       const actions=el("div","editor-row-tools");
-      const kind=el("select","editor-block-type");kind.title="Tipo de bloque";kind.setAttribute("aria-label","Tipo de bloque");
-      [["paragraph","Texto"],["heading","Título"],["subheading","Subtítulo"],["checklist","Casilla"],["bullet","Viñeta"],["number","Número"],["quote","Cita"]].forEach(([val,name])=>{const opt=el("option","",name);opt.value=val;kind.append(opt)});
-      kind.value=block.type;kind.disabled=disabled;
-      kind.addEventListener("change",()=>{block.type=kind.value;if(block.type!=="checklist")block.checked=false;drawBlocks()});
-      actions.append(kind);
+      const selector=el("div","editor-block-selector");
+      const labels=[["paragraph","Texto"],["heading","Título"],["subheading","Subtítulo"],["checklist","Casilla"],["bullet","Viñeta"],["number","Número"],["quote","Cita"]];
+      const kind=el("button","editor-block-trigger",labels.find(pair=>pair[0]===block.type)?.[1]||"Texto");
+      kind.type="button";kind.title="Cambiar tipo de bloque";kind.setAttribute("aria-label","Cambiar tipo de bloque");
+      kind.setAttribute("aria-expanded","false");kind.disabled=disabled;
+      const options=el("div","editor-block-menu hidden");options.setAttribute("role","listbox");options.setAttribute("aria-label","Tipos de bloque");
+      for(const [value,label]of labels){
+        const b=el("button","editor-block-choice"+(value===block.type?" selected":""));
+        b.type="button";b.textContent=label;b.setAttribute("role","option");
+        b.setAttribute("aria-selected",String(value===block.type));
+        b.addEventListener("click",event=>{
+          event.stopPropagation();block.type=value;
+          if(value!=="checklist")block.checked=false;
+          drawBlocks();
+          const current=document.querySelector('#editBlocks .editor-rich-input[data-block-id="'+block.id+'"]');
+          current?.focus();
+        });
+        options.append(b);
+      }
+      kind.addEventListener("click",event=>{
+        event.stopPropagation();
+        document.querySelectorAll("#editBlocks .editor-block-menu").forEach(m=>{
+          if(m!==options){m.classList.add("hidden");m.parentElement?.querySelector(".editor-block-trigger")?.setAttribute("aria-expanded","false")}
+        });
+        const opening=options.classList.toggle("hidden")===false;
+        kind.setAttribute("aria-expanded",String(opening));
+        if(opening)options.querySelector(".editor-block-choice.selected")?.focus();
+      });
+      selector.append(kind,options);actions.append(selector);
       const del=el("button","editor-delete-mini");del.type="button";del.textContent="×";del.title="Eliminar bloque";del.setAttribute("aria-label","Eliminar bloque");del.disabled=disabled;
       del.onclick=()=>{if(removeFrom(draft.blocks,block.id))drawBlocks()};
       actions.append(del);row.append(actions);container.append(row);
@@ -110,7 +134,7 @@
     if(!draft)return;
     const disabled=!!draft.original?.payload.deletedAt;
     function paint(task,container,siblings,depth=0){
-      if(depth>12)return;
+      if(depth>500)return;
       const row=el("div","editor-item-row"+(task.done?" is-checked":""));
       row.style.setProperty("--indent",(Math.min(6,depth)*17)+"px");
       const check=el("input","editor-circle-check");
@@ -150,9 +174,12 @@
     }
     // Move completed top-level items into their own disclosure visually only.
     // Underlying nested tree/order remains intact for Android synchronization.
-    for(const n of draft.items.filter(n=>!n.done))paint(n,holder,draft.items);
-    for(const n of draft.items.filter(n=>n.done))paint(n,doneHolder,draft.items);
-    const status=progress(draft.items),completed=draft.items.filter(n=>n.done).length;
+    const completelyDone=n=>!!n.done&&(n.children||[]).every(completelyDone);
+    const pendingRoots=draft.items.filter(n=>!completelyDone(n));
+    const finishedRoots=draft.items.filter(completelyDone);
+    for(const n of pendingRoots)paint(n,holder,draft.items);
+    for(const n of finishedRoots)paint(n,doneHolder,draft.items);
+    const status=progress(draft.items),completed=finishedRoots.length;
     $("editSubtaskCount").textContent=status.total?status.done+"/"+status.total:"Añadir";
     $("editCompletedSection").classList.toggle("hidden",!completed);
     $("editCompletedCount").textContent=completed===1?"1 elemento marcado":completed+" elementos marcados";
@@ -648,6 +675,21 @@
   document.querySelectorAll("#editorReminders input").forEach(c=>c.addEventListener("change",()=>{
     if(draft?.type==="task")renderMetaChips();
   }));
+  document.addEventListener("pointerdown",event=>{
+    if(event.target.closest(".editor-block-selector"))return;
+    document.querySelectorAll("#editBlocks .editor-block-menu").forEach(m=>{
+      m.classList.add("hidden");m.parentElement?.querySelector(".editor-block-trigger")?.setAttribute("aria-expanded","false");
+    });
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key!=="Escape")return;
+    const opened=document.querySelector("#editBlocks .editor-block-menu:not(.hidden)");
+    if(!opened)return;
+    event.stopPropagation();event.preventDefault();
+    opened.classList.add("hidden");
+    const trigger=opened.parentElement?.querySelector(".editor-block-trigger");
+    trigger?.setAttribute("aria-expanded","false");trigger?.focus();
+  });
   $("editPinnedBtn").addEventListener("click",()=>{if(!draft)return;draft.pinned=!draft.pinned;syncPin()});
   document.querySelectorAll("#editor [data-format]").forEach(button=>{
     button.addEventListener("mousedown",e=>e.preventDefault());
