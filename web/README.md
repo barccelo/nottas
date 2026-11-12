@@ -4,6 +4,34 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
+## Categorías, captura de fecha/hora y toques directos — 12/11/2026
+
+**Publicado:** la web de previsualización `https://nottas-web-preview.losrobles.workers.dev/`. Se conservan `/stable` (interfaz anterior con FCM/WSS y sesión persistente) y `/classic`. No requiere APK nueva ni cambios del backend.
+
+**Categorías**
+- Nuevo `web/nottas-categories.js` reutiliza el contrato de `categorySymbolHtml()` y la lista `EVENT_CATEGORY_DEFAULTS` en `app/src/main/assets/nottas.html`: íconos `ns-event-*` del sprite Android, color `#RRGGBB`, emoji cuando existe o punto de color como respaldo.
+- El selector `Categoría` del editor dejó de ser un select solo de texto: contiene nombres e iconos, conserva el `select#editCategory` oculto para compatibilidad y envía el ID Android exacto. Las tarjetas también muestran la representación gráfica, no un símbolo de carpeta genérico.
+- Se leen las categorías del snapshot `/v1/sync?full=1` ya existente; sin sondeo ni consulta adicional.
+
+**Captura de fecha y hora**
+- Nuevo `web/nottas-schedule.js` adapta la función Android `parseQuickSchedule()` a un analizador puro: `hoy`, `mañana`, `pasado mañana`, días de semana, fechas `dd/mm` y `día de mes`; horas `2p`, `2a`, `430p`, `14:30`, `2 pm`, `a las 14`. El cálculo de fecha usa hora local, no ISO UTC.
+- En tareas nuevas, cuando el título contiene una fecha/hora válida, se muestra la sugerencia **«Usar fecha y hora»**. Aplicarla pone los valores en el editor y retira los tokens del título de manera consciente. **No es todavía la misma experiencia de píldoras dentro del texto enriquecido que tiene Android.**
+- Atajos de Hoy, Mañana, Pasado mañana y Sin fecha; horas rápidas 9:00/12:00/15:00/18:00 y Sin hora. Botones de calendario/reloj llaman a `showPicker()` donde el navegador lo permite; si no, queda el input nativo accesible.
+- Las opciones de recordatorio hacen visible la selección, indican la cantidad activa y permiten quitar todos. Elegir una hora/recordatorio sin fecha asigna hoy para evitar una hora huérfana. La escritura utiliza los campos Android originales `dueDate`, `dueTime`, `endDate`, `endTime` y `reminders` (minutos antes).
+
+**Interacciones y checks**
+- Las tarjetas tienen chips pulsables de fecha, hora, cierre, recordatorios, categoría, prioridad, etiquetas y estado; abren el campo correspondiente en el editor, con selector nativo cuando es posible.
+- `web/nottas-editor.js` ahora hace **guardado optimista** para marcar tarea completa y elementos de checklist/subtareas: el check cambia de inmediato y, tras `POST /v1/sync`, utiliza el payload aceptado del servidor. Si hay conflicto, error HTTP o rechazo, restaura la copia anterior y muestra un error explícito. Se mantiene reconciliación por snapshot después de la acción y avisos FCM/WSS para otros dispositivos.
+- Se preserva el editor de bloques, estados y subtareas. No se modifica el módulo `startRealtime()`, la lógica de `request()` ni el token persistente.
+
+**Verificación y límites**
+- Probados sintácticamente `index`, `ui`, `editor`, `schedule` y `categories`; sin IDs DOM duplicados ni referencias a elementos o iconos inexistentes.
+- Casos del analizador ejecutados en un entorno aislado: `mañana 2p` → fecha del día siguiente, 14:00; `430p` → 16:30; `pasado mañana`, día de semana y fechas numeradas correctos. Pruebas simuladas de servidor: completar tarea/subtarea exitoso, y conflicto con restauración correcta del check.
+- Comparadas con la publicación anterior las funciones `stopRealtime`, `request`, `restoreAccount`, `push` y `remove`: idénticas. Cloudflare confirmó el despliegue del Worker web y se inspeccionó la presencia de los dos módulos nuevos, WSS, sesión y respaldo; sin `setInterval` ni polling.
+- **No probado aún:** interacción en Chrome/Opera real, rendimiento de los selectores según SO, sincronización efectiva de esas ediciones con Android ni alarmas disparadas por el teléfono. Tampoco se sustituyó la rueda propia Android por una implementación web idéntica: la web usa controles accesibles del navegador.
+
+**Siguiente prueba de aceptación:** en una tarea Personal marcar/desmarcar desde la tarjeta; escribir `Reunión mañana 2p`, pulsar «Usar...», guardar y comprobar en Android la fecha/hora; en Oficina abrir categoría con icono y los chips de recordatorio/estado; confirmar que Android ↔ Web sigue automático sin «Actualizar».
+
 ## Editor y selector de espacios funcionales — 10/11/2026 (fecha local)
 
 **Publicado en la web de previsualización:** `https://nottas-web-preview.losrobles.workers.dev/`. La versión visual anterior con sesión persistente y WSS permanece en `/stable` (assets CSS/JS propios), y la edición web básica histórica continúa en `/classic`.
