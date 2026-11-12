@@ -527,3 +527,12 @@ html[data-theme="dark"] .item-card .status-realized{background:#1d4330;color:#8d
 @media(prefers-reduced-motion:reduce){
  .nottas-subtask-chevron,.nottas-completed-chevron,.nottas-subtask-arrow{transition:none}
 }
+
+/* Correct display precedence between Android-style summary card and hidden note sections. */
+#editor .nottas-editor-subtasks.hidden{display:none!important}
+#editor .nottas-editor-subtasks:not(.hidden){display:block!important}
+#editor.nottas-picker-visible{overflow:visible!important}
+#editor .nottas-summary-action{padding:5px 8px;border:0;background:transparent;border-radius:8px;cursor:pointer}
+#editor .nottas-summary-action:hover{background:var(--hover);color:var(--blue)}
+#editor.nottas-picker-visible .nottas-float{z-index:9999}
+@media(max-width:650px){#editor.nottas-picker-visible .nottas-float{max-height:62vh}}
