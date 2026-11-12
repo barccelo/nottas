@@ -23,6 +23,7 @@
     document.addEventListener("keydown",e=>{
       if(context&&e.key==="Escape"){e.preventDefault();e.stopPropagation();close(true)}
     });
+    $("editor")?.addEventListener("close",()=>{if(context?.draft)close()});
     window.addEventListener("resize",()=>{if(context)position()});
     window.addEventListener("scroll",()=>{if(context)position()},{passive:true,capture:true});
     return panel;
@@ -199,7 +200,7 @@
     const scroll=node("div","nottas-time-scroll");
     scroll.setAttribute("role","listbox");scroll.setAttribute("aria-label",label);
     for(let n=0;n<length;n++){
-      const b=addButton(String(n).padStart(2,"0"),()=>select(n),"nottas-time-item");
+      const b=addButton(String(n).padStart(2,"0"),()=>{select(n);b.scrollIntoView({block:"center",behavior:"smooth"})},"nottas-time-item");
       b.dataset.value=String(n);b.setAttribute("role","option");
       b.setAttribute("aria-selected",String(n===current()));
       scroll.append(b);
@@ -209,8 +210,9 @@
       if(raf)cancelAnimationFrame(raf);
       raf=requestAnimationFrame(()=>{
         raf=0;
-        const elements=Array.from(scroll.children),center=scroll.scrollTop+scroll.clientHeight/2;
-        const closest=elements.reduce((best,n)=>Math.abs(n.offsetTop+n.offsetHeight/2-center)<Math.abs(best.offsetTop+best.offsetHeight/2-center)?n:best,elements[0]);
+        const elements=Array.from(scroll.children),r=scroll.getBoundingClientRect(),center=r.top+r.height/2;
+        const dist=n=>Math.abs(n.getBoundingClientRect().top+n.offsetHeight/2-center);
+        const closest=elements.reduce((best,n)=>dist(n)<dist(best)?n:best,elements[0]);
         if(closest)select(+closest.dataset.value);
       });
     },{passive:true});
