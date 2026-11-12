@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — desplazamiento y editor enriquecido (12/11/2026)
+
+- Subtareas del editor con área de desplazamiento propia y límite que no propaga el gesto al formulario principal.
+- Controles B/I/U/S con estado activo según la selección del contenido, `aria-pressed` y tratamiento azul.
+- Flecha del selector de bloques redibujada y alineada; superficie editable sin bordes ni tarjeta artificial.
+- Commit en rama experimental; pendiente despliegue Cloudflare y prueba funcional con navegador. Sin cambios Android/API/D1.
+
+
 ## Nottas Web — selector, subtareas completas y superficies planas — 12 de noviembre de 2026
 
 - El selector deshabilitado «Tipo/Tarea» deja de aparecer al editar; tipos nuevos siguen definidos por los botones de creación.
