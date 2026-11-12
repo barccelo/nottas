@@ -191,30 +191,53 @@
       card.append(list);
     }
     const meta=elt("div","meta");
-    const badge=(kind,label)=>{const el=elt("span","card-badge");el.append(icon(kind,"tiny"),elt("span","",label));meta.append(el)};
-    if(task&&p.dueDate)badge("ns-calendar",p.dueDate+(p.dueTime?" · "+p.dueTime:"")+(p.endTime?"–"+p.endTime:""));
-    if(p.category&&p.category!=="inbox"){
-      const c=[...state.categories.values()].find(x=>x.payload.id===p.category)?.payload;
-      const id=c?.icon;
-      const validIcon=["council","meeting","one-on-one","interview","appointment","visit","phone","followup","activity","inperson","training"].includes(id);
-      badge(validIcon?"ns-event-"+id:"ns-folder",c?.name||"Categoría");
+    // Metadata actions mirror tapping the corresponding chip in Android.
+    function badge(kind,label,field=null){
+      const target=elt(field?"button":"span","card-badge"+(field?" card-action":""));
+      if(field){target.type="button";target.title="Editar "+label;target.setAttribute("aria-label","Editar "+label)}
+      target.append(icon(kind,"tiny"),elt("span","",label));
+      if(field)target.addEventListener("click",event=>{
+        event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,field);
+      });
+      meta.append(target);
     }
-    if(task&&p.priority==="high")badge("ns-nav-pinned","Prioridad alta");
+    if(task&&p.dueDate)badge("ns-calendar",window.NottasSchedule?.displayDate(p.dueDate)||p.dueDate,"date");
+    if(task&&p.dueTime)badge("ns-clock",p.dueTime,"time");
+    if(task&&p.endDate&&p.endDate>p.dueDate)badge("ns-calendar","Hasta "+p.endDate,"endDate");
+    if(task&&p.endTime)badge("ns-clock","Fin "+p.endTime,"endTime");
+    if(p.category&&p.category!=="inbox"){
+      const category=window.NottasCategories?.find(p.category,x.workspaceId);
+      if(category){
+        const button=elt("button","card-badge card-action category-badge");
+        button.type="button";button.title="Cambiar categoría";button.setAttribute("aria-label","Cambiar categoría: "+category.name);
+        button.append(window.NottasCategories.label(category));
+        button.addEventListener("click",event=>{
+          event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,"category");
+        });
+        meta.append(button);
+      }
+    }
+    if(task&&p.priority==="high")badge("ns-nav-pinned","Prioridad alta","priority");
     if(p.pinned)badge("ns-nav-pinned","Destacada");
     if(items.length)badge("ns-nav-done",items.filter(a=>a.done).length+"/"+items.length);
-    if(task&&!p.done&&!p.dueDate)badge("ns-clock","Sin fecha");
+    if(task&&!p.done&&!p.dueDate)badge("ns-calendar","Sin fecha","date");
     if(task&&p.done)badge("ns-nav-done","Completada");
     if(!task&&!items.length)badge("ns-nav-notes","Nota");
-    if(task&&p.recurrence&&p.recurrence!=="none")badge("ns-nav-refresh","Repetir");
-    if(task&&Array.isArray(p.reminders)&&p.reminders.length)badge("ns-bell",p.reminders.length+" avisos");
-    if(Array.isArray(p.tags)&&p.tags.length)badge("ns-folder",p.tags.map(t=>"#"+t).join(" · ").slice(0,85));
+    if(task&&p.recurrence&&p.recurrence!=="none")badge("ns-nav-refresh","Repetición","recurrence");
+    if(task&&Array.isArray(p.reminders)&&p.reminders.length)badge("ns-bell",p.reminders.length+" avisos","reminders");
+    if(task&&!Array.isArray(p.reminders)&&p.reminder&&p.reminder!=="none")badge("ns-bell","Recordatorio","reminders");
+    if(Array.isArray(p.tags)&&p.tags.length)badge("ns-folder",p.tags.map(t=>"#"+t).join(" · ").slice(0,85),"tags");
     const meeting={scheduled:"Agendada",deferred:"Diferida",realized:"Realizada",not_realized:"No realizada",cancelled:"Cancelada"};
     const approval={proposed:"Propuesta",changes_requested:"Cambios solicitados",rejected:"Rechazada",cancelled:"Cancelada"};
     if(task){
       const statusLabel=approval[p.approvalStatus]|| (p.meetingTracked?meeting[p.meetingStatus||"scheduled"]:null);
       const statusKind=approval[p.approvalStatus]?p.approvalStatus:p.meetingStatus||"scheduled";
       if(statusLabel){
-        const status=elt("span","item-status status-"+statusKind,statusLabel);
+        const status=elt("button","item-status status-"+statusKind,statusLabel);
+        status.type="button";status.title="Ver estado del evento";status.setAttribute("aria-label","Ver estado: "+statusLabel);
+        status.addEventListener("click",event=>{
+          event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,"status");
+        });
         meta.append(status);
       }
     }
