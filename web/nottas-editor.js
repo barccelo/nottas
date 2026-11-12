@@ -372,9 +372,9 @@
     configure();
     $("editor").showModal();
     if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-    if(item?.entityType==="note"&&!String(p.title||"").trim()){
-      $("title").focus({preventScroll:true});
-    }
+    // A saved title means reading mode; an empty title starts in edit mode.
+    const titleValue=type==="task"?String(p.text||""):String(p.title||"");
+    if(!titleValue.trim())$("title").focus({preventScroll:true});
     if(!item)updateQuickScheduleHint();
   }
   function updateQuickScheduleHint(){
@@ -735,7 +735,8 @@
   });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
   $("editSubtasksJumpEnd").addEventListener("click",()=>{
-    const scroll=$("editSubtaskContent");
+    // Only the list scrolls. Its action/footer stays visible and accessible.
+    const scroll=$("editSubtasks");
     scroll.scrollTo({top:scroll.scrollHeight,behavior:"smooth"});
   });
   $("editSubtasksToggle").addEventListener("click",()=>{
