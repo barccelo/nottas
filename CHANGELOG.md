@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Android v0.27.119 / Web — subtareas y teclado (12/11/2026)
+
+- Flecha SVG de trazo Nottas para «Ir al final» en ambas plataformas.
+- Web: lista de pendientes con scroll propio limitado a 30vh/300px; botón «Añadir subtarea» fuera del scroll, accesible bajo la lista; destino del salto corregido; publicado en Cloudflare conservando respaldos.
+- Android: tarea o nota con título abre sin teclado; título vacío recibe foco al abrir, tanto en nuevos elementos como existentes (conservando llamadas especiales sin autofoco).
+- `versionName 0.27.119`, `versionCode 200`; CI `43275668042`, APK firmada disponible en Release `v0.27.119` para Obtainium. Prueba física pendiente.
+
+
 ## Android v0.27.118 / Web — protección offline y editor (12/11/2026)
 
 - Guardado sincronizado: el contenido local marcado como pendiente prevalece sobre snapshots remotos hasta obtener confirmación de la revisión enviada; los conflictos incrementan la revisión y mantienen el contenido para reintento, sin borrar por un fallo de red.
