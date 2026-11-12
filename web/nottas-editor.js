@@ -142,10 +142,16 @@
       check.setAttribute("aria-label","Marcar subtarea "+task.text);
       check.onchange=()=>{setAll(task,check.checked);syncParents(draft.items);drawSubtasks()};
       row.append(check);
-      const input=el("input","editor-subtask-input");
-      input.type="text";input.value=task.text;input.placeholder=depth?"Elemento interno":"Subtarea";
-      input.maxLength=500;input.disabled=disabled;
-      input.addEventListener("input",()=>{task.text=input.value;task.html=escape(input.value)});
+      const input=el("textarea","editor-subtask-input");
+      input.rows=1;input.value=task.text;input.placeholder=depth?"Elemento interno":"Subtarea";
+      input.maxLength=500;input.disabled=disabled;input.setAttribute("aria-label","Texto de subtarea");
+      const resize=()=>{
+        input.style.height="auto";
+        input.style.height=Math.max(37,input.scrollHeight)+"px";
+      };
+      input.addEventListener("input",()=>{task.text=input.value;task.html=escape(input.value).replace(/\\n/g,"<br>");resize()});
+      input.addEventListener("focus",resize);
+      requestAnimationFrame(resize);
       input.addEventListener("keydown",ev=>{
         if(ev.key==="Enter"&&!ev.shiftKey){
           ev.preventDefault();
