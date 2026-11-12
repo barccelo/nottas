@@ -5,7 +5,7 @@
 - **AW:** «Ir al final» conserva el gesto y usa flecha vectorial con trazo Nottas, no carácter tipográfico; Android `nottas.html` y web `index.html` + `nottas-ui.css`.
 - **Web:** `#editSubtasks` desplaza solamente las filas (máximo 30vh/300px); `#editSubtaskContent` no recorta el pie, y el botón de agregar permanece después de la lista visible. El salto apunta al scroll del listado, no al contenedor exterior. Se conservan los «Elementos marcados» independientes.
 - **Android:** títulos vacíos de tarea o nota (nuevas o existentes) reciben foco; con título abren sin teclado; las llamadas especializadas que pasan `autoFocus:false` conservan esa excepción. Web replica foco según título.
-- **Entrega:** frontend publicado en Worker `nottas-web-preview` (15 rutas y `/stable`/`/classic` conservados). Android subió a `0.27.119`, `versionCode 200`, a la espera de validar APK firmada de GitHub Actions y prueba física de teclado. Sin cambios FCM/WSS/backend.
+- **Entrega:** frontend publicado en Worker `nottas-web-preview` (15 rutas y `/stable`/`/classic` conservados). Android subió a `0.27.119`, `versionCode 200`, **APK firmada confirmada** en Release `v0.27.119` mediante Actions `43275668042` (compilación, firma y publicación correctas). Prueba física de teclado pendiente. Sin cambios FCM/WSS/backend.
 
 
 ## Corrección preventiva de pérdida de datos y mejoras del editor — 12/11/2026
