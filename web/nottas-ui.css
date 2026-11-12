@@ -646,3 +646,69 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
   #editor .editor-block-menu{min-width:142px}
   #editor .editor-item-row textarea.editor-subtask-input{font-size:13px}
 }
+
+/* Editor web · gestos y controles de formato (12 nov. 2026). */
+#editor #editSubtaskContent:not(.hidden){
+  max-height:min(54vh,540px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden;
+  overscroll-behavior-y:contain;
+  scrollbar-width:thin;
+  touch-action:pan-y;
+}
+#editor #editSubtaskContent .editor-subtask-list{
+  overflow:visible!important;
+  max-height:none!important;
+}
+#editor .editor-format-toolbar button.is-active,
+#editor .editor-format-toolbar button[aria-pressed="true"]{
+  color:var(--blue);
+  border-color:var(--blue);
+  background:color-mix(in srgb,var(--blue) 13%,var(--surface));
+}
+#editor .editor-block-row{
+  background:transparent!important;
+  border:0;
+  border-bottom:1px solid var(--line);
+  border-radius:0!important;
+  padding:6px 0 7px calc(1px + var(--indent,0px))!important;
+  align-items:center;
+}
+#editor .editor-rich-input{
+  min-height:32px;
+  padding:6px 2px;
+  border:0!important;
+  background:transparent!important;
+  outline:none!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+#editor .editor-rich-input:focus-visible{
+  outline:none!important;
+  box-shadow:none!important;
+}
+#editor .editor-block-row:focus-within{
+  border-bottom-color:var(--blue);
+}
+#editor .editor-row-tools{align-self:center;align-items:center!important}
+#editor .editor-block-trigger{
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-width:83px;
+  max-width:112px;
+  height:36px;
+  padding:7px 10px;
+  overflow:visible;
+}
+#editor .editor-block-trigger::after{
+  content:"";
+  flex:0 0 6px;
+  width:6px;height:6px;
+  border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor;
+  transform:translateY(-2px) rotate(45deg);
+  padding:0;
+}
+#editor .editor-delete-mini{align-self:center}
