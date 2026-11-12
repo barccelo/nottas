@@ -476,6 +476,7 @@
     if(!state.token)return;
     openEditor();$("type").value="task";configureEditor();
     $("editDueDate").value=stamp(calendarSelection);
+    $("editDueDate").dispatchEvent(new Event("change",{bubbles:true}));
     $("editEndDate").value="";
     $("title").focus();
   });
