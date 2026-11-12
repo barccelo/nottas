@@ -211,6 +211,7 @@
     $("editCompletedList").classList.toggle("hidden",!draft.completedExpanded);
     $("editCompletedToggle").setAttribute("aria-expanded",String(!!draft.completedExpanded));
     $("editSubtaskContent").classList.toggle("hidden",!draft.subtasksExpanded);
+    $("editSubtasksJumpEnd").classList.toggle("hidden",!draft.subtasksExpanded||!status.total);
     $("editSubtasksToggle").setAttribute("aria-expanded",String(!!draft.subtasksExpanded));
   }
   function syncPin(){const b=$("editPinnedBtn");b.setAttribute("aria-pressed",String(draft?.pinned));b.title=draft?.pinned?"Quitar destacado":"Destacar";b.disabled=!!draft?.original?.payload.deletedAt}
@@ -370,6 +371,10 @@
     $("editError").textContent="";
     configure();
     $("editor").showModal();
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    if(item?.entityType==="note"&&!String(p.title||"").trim()){
+      $("title").focus({preventScroll:true});
+    }
     if(!item)updateQuickScheduleHint();
   }
   function updateQuickScheduleHint(){
@@ -729,6 +734,10 @@
     });
   });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
+  $("editSubtasksJumpEnd").addEventListener("click",()=>{
+    const scroll=$("editSubtaskContent");
+    scroll.scrollTo({top:scroll.scrollHeight,behavior:"smooth"});
+  });
   $("editSubtasksToggle").addEventListener("click",()=>{
     if(!draft)return;draft.subtasksExpanded=!draft.subtasksExpanded;drawSubtasks();
   });
