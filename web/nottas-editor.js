@@ -59,6 +59,22 @@
   function locate(nodes,id){for(const node of nodes){if(node.id===id)return node;const inside=locate(node.children||[],id);if(inside)return inside}return null}
   function removeFrom(nodes,id){const at=nodes.findIndex(x=>x.id===id);if(at>=0){nodes.splice(at,1);return true}return nodes.some(n=>removeFrom(n.children||[],id))}
   function moveIn(nodes,id,dir){const pos=nodes.findIndex(n=>n.id===id);if(pos>=0){const target=pos+dir;if(target<0||target>=nodes.length)return;[nodes[pos],nodes[target]]=[nodes[target],nodes[pos]];return}for(const n of nodes)moveIn(n.children||[],id,dir)}
+  function updateFormatButtons(){
+    const selection=window.getSelection();
+    const anchor=selection?.anchorNode;
+    const activeEditor=anchor?.parentElement?.closest?.("#editBlocks .editor-rich-input");
+    if(activeEditor)richFocus=activeEditor;
+    const within=!!(richFocus&&richFocus.isConnected&&anchor&&richFocus.contains(anchor));
+    const editable=within&&!draft?.original?.payload.deletedAt;
+    document.querySelectorAll("#editor [data-format]").forEach(button=>{
+      let active=false;
+      if(editable){
+        try{active=document.queryCommandState(button.dataset.format)}catch(_){}
+      }
+      button.classList.toggle("is-active",!!active);
+      button.setAttribute("aria-pressed",String(!!active));
+    });
+  }
   function rowsForBlocks(container,blocks,depth=0,disabled=false){
     if(depth>500)return; // Never silently truncate normal nested content.
     let ordinal=0;
@@ -79,8 +95,10 @@
       editor.innerHTML=safeHtml(block.html);
       editor.dataset.blockId=block.id;
       if(block.type==="number")editor.dataset.number=ordinal+".";
-      editor.addEventListener("focus",()=>{richFocus=editor});
-      editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML)});
+      editor.addEventListener("focus",()=>{richFocus=editor;updateFormatButtons()});
+      editor.addEventListener("keyup",updateFormatButtons);
+      editor.addEventListener("mouseup",updateFormatButtons);
+      editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML);updateFormatButtons()});
       editor.addEventListener("paste",event=>{
         event.preventDefault();
         document.execCommand("insertText",false,event.clipboardData?.getData("text/plain")||"");
@@ -127,6 +145,7 @@
     if(!draft)return;
     rowsForBlocks(holder,draft.blocks,0,!!draft.original?.payload.deletedAt);
     if(!draft.blocks.length)holder.append(el("div","editor-blank","Añade texto, viñetas o casillas para empezar."));
+    updateFormatButtons();
   }
   function drawSubtasks(){
     const holder=$("editSubtasks"),doneHolder=$("editCompletedList");
@@ -696,6 +715,7 @@
     const trigger=opened.parentElement?.querySelector(".editor-block-trigger");
     trigger?.setAttribute("aria-expanded","false");trigger?.focus();
   });
+  document.addEventListener("selectionchange",()=>{if($("editor").open)updateFormatButtons()});
   $("editPinnedBtn").addEventListener("click",()=>{if(!draft)return;draft.pinned=!draft.pinned;syncPin()});
   document.querySelectorAll("#editor [data-format]").forEach(button=>{
     button.addEventListener("mousedown",e=>e.preventDefault());
@@ -705,6 +725,7 @@
       document.execCommand(button.dataset.format,false,null);
       const node=locate(draft.blocks,richFocus.dataset.blockId);
       if(node)node.html=safeHtml(richFocus.innerHTML);
+      updateFormatButtons();
     });
   });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
