@@ -29,7 +29,8 @@
   }
   function close(restore=false){
     if(!context)return;
-    const anchor=context.anchor;panel?.classList.add("hidden");context=null;
+    const anchor=context.anchor;panel?.classList.add("hidden");
+    $("editor")?.classList.remove("nottas-picker-visible");context=null;
     if(restore&&anchor?.isConnected)anchor.focus({preventScroll:true});
   }
   function position(){
@@ -52,9 +53,19 @@
     if(context&&context.item.entityId===item.entityId&&context.field===field){close();return true}
     createPanel();
     context={item:target,field,anchor:anchor||document.activeElement};
+    document.body.append(panel);
     panel.classList.remove("hidden");
     render();
     return true;
+  }
+  function showDraft(field,anchor,read,apply){
+    if(!fields.has(field)||!$("editor")?.open||typeof read!=="function"||typeof apply!=="function")return false;
+    createPanel();
+    let payload;
+    try{payload=read()}catch(e){return false}
+    const host=$("editor");host.append(panel);host.classList.add("nottas-picker-visible");
+    context={item:{workspaceId:state.workspaceId,entityType:"task",entityId:"draft",payload},field,anchor,draft:true,apply};
+    panel.classList.remove("hidden");render();return true;
   }
   function header(title,icon){
     panel.replaceChildren();
@@ -78,6 +89,13 @@
     const button=panel.querySelector(".nottas-float-save");
     panel.dataset.saving="true";if(button){button.disabled=true;button.textContent="Guardando…"}
     try{
+      if(active.draft){
+        const next=JSON.parse(JSON.stringify(active.item.payload));
+        mutator(next);
+        active.apply(next);
+        close();
+        return;
+      }
       const okay=await window.NottasEditor?.quick(active.item,mutator);
       if(okay)close();
       else if(context===active){panel.querySelector(".nottas-float-error").textContent="No se pudo guardar. Comprueba el estado del elemento."}
@@ -274,5 +292,5 @@
     else choicePanel();
     position();
   }
-  window.NottasFloat=Object.freeze({open:show,close});
+  window.NottasFloat=Object.freeze({open:show,openDraft:showDraft,close});
 })();
