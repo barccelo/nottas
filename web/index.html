@@ -161,6 +161,43 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
       <button id="quickScheduleApply" type="button" class="editor-quick-apply">Aplicar fecha y hora</button>
       <button id="quickScheduleDismiss" type="button" class="editor-quick-dismiss" aria-label="Descartar sugerencia">×</button>
     </div>
+    <div id="editorMetaChips" class="nottas-editor-meta hidden" aria-label="Herramientas rápidas de la tarea"></div>
+    <div id="bodyRow" class="editor-section">
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg><span id="editorBlocksLabel">Contenido</span></div>
+      <div class="editor-format-toolbar" role="toolbar" aria-label="Formato del texto">
+        <button type="button" data-format="bold" title="Negrita"><strong>B</strong></button>
+        <button type="button" data-format="italic" title="Cursiva"><em>I</em></button>
+        <button type="button" data-format="underline" title="Subrayar"><u>U</u></button>
+        <button type="button" data-format="strikeThrough" title="Tachado"><s>S</s></button>
+      </div>
+      <div id="editBlocks" class="editor-block-list"></div>
+      <div class="editor-add-block">
+        <button type="button" id="addParagraphBtn" class="editor-add-action">+ Texto</button>
+        <button type="button" id="addChecklistBtn" class="editor-add-action">+ Casilla</button>
+        <button type="button" id="addBulletBtn" class="editor-add-action">+ Viñeta</button>
+      </div>
+      <textarea id="body" class="hidden" rows="1" aria-hidden="true" tabindex="-1"></textarea>
+    </div>
+    <div id="subtaskSection" class="editor-section hidden nottas-editor-subtasks">
+      <button type="button" id="editSubtasksToggle" class="nottas-subtask-summary" aria-expanded="false" aria-controls="editSubtaskContent">
+        <svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>
+        <span class="nottas-subtask-summary-title">Subtareas</span>
+        <span id="editSubtaskCount" class="editor-count"></span>
+        <svg class="ns-icon nottas-subtask-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
+      </button>
+      <div id="editSubtaskContent" class="nottas-subtask-content hidden">
+        <div id="editSubtasks" class="editor-subtask-list"></div>
+        <button type="button" id="addSubtaskBtn" class="editor-add-action">+ Añadir subtarea</button>
+        <section id="editCompletedSection" class="nottas-completed-section hidden">
+          <button type="button" id="editCompletedToggle" class="nottas-completed-toggle" aria-expanded="false" aria-controls="editCompletedList">
+            <svg class="ns-icon nottas-completed-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
+            <span id="editCompletedCount">Elementos marcados</span>
+          </button>
+          <div id="editCompletedList" class="editor-subtask-list nottas-completed-list hidden"></div>
+        </section>
+      </div>
+    </div>
+    <div id="editorAdvancedLabel" class="nottas-advanced-label hidden">Detalles y configuración</div>
     <div id="taskFields" class="editor-section hidden">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg>Fecha y horario</div>
       <div class="editor-date-shortcuts" aria-label="Fechas rápidas">
@@ -216,7 +253,7 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
         <label>Observación<textarea id="editMeetingNote" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
       </div>
     </div>
-    <div class="editor-section">
+    <div id="editorOrgSection" class="editor-section">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-folder"></use></svg>Organización</div>
       <div class="editor-grid">
         <div class="editor-category-control"><span class="editor-category-label">Categoría</span>
@@ -225,41 +262,6 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
           <div id="editCategoryMenu" class="editor-category-menu hidden" role="listbox" aria-label="Categorías"></div>
         </div>
         <label>Etiquetas<input id="editTags" maxlength="240" placeholder="trabajo, urgente"></label>
-      </div>
-    </div>
-    <div id="bodyRow" class="editor-section">
-      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-notes"></use></svg><span id="editorBlocksLabel">Contenido</span></div>
-      <div class="editor-format-toolbar" role="toolbar" aria-label="Formato del texto">
-        <button type="button" data-format="bold" title="Negrita"><strong>B</strong></button>
-        <button type="button" data-format="italic" title="Cursiva"><em>I</em></button>
-        <button type="button" data-format="underline" title="Subrayar"><u>U</u></button>
-        <button type="button" data-format="strikeThrough" title="Tachado"><s>S</s></button>
-      </div>
-      <div id="editBlocks" class="editor-block-list"></div>
-      <div class="editor-add-block">
-        <button type="button" id="addParagraphBtn" class="editor-add-action">+ Texto</button>
-        <button type="button" id="addChecklistBtn" class="editor-add-action">+ Casilla</button>
-        <button type="button" id="addBulletBtn" class="editor-add-action">+ Viñeta</button>
-      </div>
-      <textarea id="body" class="hidden" rows="1" aria-hidden="true" tabindex="-1"></textarea>
-    </div>
-    <div id="subtaskSection" class="editor-section hidden nottas-editor-subtasks">
-      <button type="button" id="editSubtasksToggle" class="nottas-subtask-summary" aria-expanded="false" aria-controls="editSubtaskContent">
-        <svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-nav-all"></use></svg>
-        <span class="nottas-subtask-summary-title">Subtareas</span>
-        <span id="editSubtaskCount" class="editor-count"></span>
-        <svg class="ns-icon nottas-subtask-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
-      </button>
-      <div id="editSubtaskContent" class="nottas-subtask-content hidden">
-        <div id="editSubtasks" class="editor-subtask-list"></div>
-        <button type="button" id="addSubtaskBtn" class="editor-add-action">+ Añadir subtarea</button>
-        <section id="editCompletedSection" class="nottas-completed-section hidden">
-          <button type="button" id="editCompletedToggle" class="nottas-completed-toggle" aria-expanded="false" aria-controls="editCompletedList">
-            <svg class="ns-icon nottas-completed-arrow" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg>
-            <span id="editCompletedCount">Elementos marcados</span>
-          </button>
-          <div id="editCompletedList" class="editor-subtask-list nottas-completed-list hidden"></div>
-        </section>
       </div>
     </div>
     <p id="editInfo" class="notice"></p>
