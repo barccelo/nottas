@@ -155,14 +155,33 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
     <label id="typeRow" class="editor-compact-type">Tipo
       <select id="type"><option value="note">Nota</option><option value="task">Tarea</option></select>
     </label>
-    <label id="titleRow" class="editor-title-label">Título<input id="title" maxlength="300" placeholder="Título" required></label>
+    <label id="titleRow" class="editor-title-label">Título<input id="title" maxlength="300" placeholder="Título" required autocomplete="off"></label>
+    <div id="quickScheduleHint" class="editor-quick-hint hidden" role="status" aria-live="polite">
+      <span id="quickScheduleText"></span>
+      <button id="quickScheduleApply" type="button" class="editor-quick-apply">Aplicar fecha y hora</button>
+      <button id="quickScheduleDismiss" type="button" class="editor-quick-dismiss" aria-label="Descartar sugerencia">×</button>
+    </div>
     <div id="taskFields" class="editor-section hidden">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg>Fecha y horario</div>
+      <div class="editor-date-shortcuts" aria-label="Fechas rápidas">
+        <button type="button" data-date-shortcut="today">Hoy</button>
+        <button type="button" data-date-shortcut="tomorrow">Mañana</button>
+        <button type="button" data-date-shortcut="aftertomorrow">Pasado mañana</button>
+        <button type="button" data-date-shortcut="clear">Sin fecha</button>
+      </div>
       <div class="editor-grid">
-        <label>Comienza<input id="editDueDate" type="date"></label>
-        <label>Termina (día)<input id="editEndDate" type="date"></label>
-        <label>Hora de inicio<input id="editDueTime" type="time"></label>
-        <label>Hora de cierre<input id="editEndTime" type="time"></label>
+        <label>Comienza <span class="editor-field-wrap"><input id="editDueDate" type="date"><button type="button" data-pick="editDueDate" aria-label="Abrir calendario de inicio" title="Abrir calendario"><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg></button></span></label>
+        <label>Termina (día) <span class="editor-field-wrap"><input id="editEndDate" type="date"><button type="button" data-pick="editEndDate" aria-label="Abrir calendario de finalización" title="Abrir calendario"><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-calendar"></use></svg></button></span></label>
+        <label>Hora de inicio <span class="editor-field-wrap"><input id="editDueTime" type="time"><button type="button" data-pick="editDueTime" aria-label="Abrir selector de hora de inicio" title="Elegir hora"><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-clock"></use></svg></button></span></label>
+        <label>Hora de cierre <span class="editor-field-wrap"><input id="editEndTime" type="time"><button type="button" data-pick="editEndTime" aria-label="Abrir selector de hora de cierre" title="Elegir hora"><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-clock"></use></svg></button></span></label>
+      </div>
+      <div class="editor-time-shortcuts" aria-label="Horas rápidas">
+        <span>Hora rápida:</span>
+        <button type="button" data-time-shortcut="09:00">9:00</button>
+        <button type="button" data-time-shortcut="12:00">12:00</button>
+        <button type="button" data-time-shortcut="15:00">15:00</button>
+        <button type="button" data-time-shortcut="18:00">18:00</button>
+        <button type="button" data-time-shortcut="clear">Sin hora</button>
       </div>
       <div class="editor-grid editor-two">
         <label>Repetir<select id="editRecurrence"><option value="none">No repetir</option><option value="daily">Cada día</option><option value="weekdays">Lunes a viernes</option><option value="weekly">Cada semana</option><option value="monthly">Cada mes</option></select></label>
@@ -171,7 +190,10 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
       <div class="editor-inline">
         <label id="doneRow" class="editor-switch"><input id="done" type="checkbox"><span class="editor-switch-track"></span><strong>Completada</strong></label>
       </div>
-      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-bell"></use></svg>Recordatorios</div>
+      <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-bell"></use></svg>Recordatorios
+        <span id="editReminderSummary" class="editor-section-summary">Sin recordatorios</span>
+        <button id="editClearReminders" class="editor-text-action" type="button">Quitar</button>
+      </div>
       <div id="editorReminders" class="editor-option-pills" role="group" aria-label="Recordatorios">
         <label><input type="checkbox" value="0"><span>A la hora</span></label>
         <label><input type="checkbox" value="5"><span>5 min</span></label>
@@ -197,7 +219,11 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
     <div class="editor-section">
       <div class="editor-section-title"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-folder"></use></svg>Organización</div>
       <div class="editor-grid">
-        <label>Categoría<select id="editCategory"><option value="inbox">Sin categoría</option></select></label>
+        <div class="editor-category-control"><span class="editor-category-label">Categoría</span>
+          <select id="editCategory" class="hidden" aria-label="Categoría"><option value="inbox">Sin categoría</option></select>
+          <button type="button" id="editCategoryTrigger" class="editor-category-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="editCategoryMenu"><span id="editCategoryPreview" class="editor-category-preview">Sin categoría</span><svg class="ns-icon tiny" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-chevron"></use></svg></button>
+          <div id="editCategoryMenu" class="editor-category-menu hidden" role="listbox" aria-label="Categorías"></div>
+        </div>
         <label>Etiquetas<input id="editTags" maxlength="240" placeholder="trabajo, urgente"></label>
       </div>
     </div>
@@ -444,4 +470,4 @@ window.addEventListener("storage",event=>{
 });
 window.NottasBrowserSession={get remembered(){return rememberThisBrowser},setRemember:setRememberSession};
 restoreAccount();
-</script><script src="/assets/nottas-editor.js" defer></script><script src="/assets/nottas-ui.js" defer></script></body></html>
+</script><script src="/assets/nottas-schedule.js" defer></script><script src="/assets/nottas-editor.js" defer></script><script src="/assets/nottas-ui.js" defer></script></body></html>
