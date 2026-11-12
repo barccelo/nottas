@@ -738,7 +738,7 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
   display:flex;
   flex-direction:column;
   min-height:0;
-  max-height:min(44vh,460px)!important;
+  max-height:min(30vh,300px)!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
   overscroll-behavior-y:contain;
