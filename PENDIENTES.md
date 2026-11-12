@@ -6,7 +6,7 @@
 - [x] Indicador azul de B/I/U/S según selección en contenido editable; alinear chevrón selector y simplificar superficie del texto.
 - [ ] Verificar scroll sobre subtareas con rueda/trackpad/táctil, incluyendo límite superior e inferior y móvil.
 - [ ] Probar indicador de formato en selección parcial, texto mixto y después de guardar/reabrir; probar menú de tipo de bloque.
-- [ ] Desplegar frontend actualizado a Cloudflare y comprobar archivos publicados sin romper `/stable` ni sincronización.
+- [x] Desplegar frontend actualizado a Cloudflare y comprobar assets publicados y respaldos `/stable` y `/classic` por lectura de Worker. Pruebas de sincronización en dispositivos pendientes.
 
 
 Última revisión: 10 de noviembre de 2026 · sincronización Android ↔ Web confirmada por el usuario; faltan pruebas complementarias.
