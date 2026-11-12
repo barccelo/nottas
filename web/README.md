@@ -4,6 +4,24 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
+## Paridad de interacción Android → Web — 12/11/2026
+
+**Publicado:** `https://nottas-web-preview.losrobles.workers.dev/`; última revisión confirmada en Cloudflare a las 13:45:32 UTC del 12/11/2026. El respaldo `/stable` conserva íntegro el código anterior con sesión persistente y WSS/FCM; `/classic` sigue disponible.
+
+**Objetivo:** dejar de usar un formulario HTML genérico y trasladar los patrones de uso reales de Android a escritorio, sin duplicar backend ni inventar la lógica de datos.
+
+- **Tarjeta fija desplegable de subtareas:** `web/nottas-ui.js` muestra `Subtareas`, el contador `marcadas/total` y un chevrón aunque esté plegada, con expansión al pulsar el encabezado. Estado de la presentación guardado en memoria local por elemento, no enviado a D1. En la tarjeta abierta se conservan controles individuales de completado.
+- **«Elementos marcados» al final:** agrupación independiente con flecha, plegada por defecto. Separar solo elementos **principales** completos; los hijos completados de una tarea pendiente permanecen bajo su padre. El editor replica la misma tarjeta `editSubtasksToggle`, `editCompletedToggle`, `editCompletedList`; no elimina ni aplana las subtareas anidadas.
+- **Editor content-first:** orden visible título → píldoras de metadatos (`editorMetaChips`) → contenido/bloques → subtareas → opciones extensas. `Más opciones` muestra fecha/hora/recordatorios/repetición/prioridad/estado y organización; los datos cargan aunque el bloque esté oculto.
+- **Formularios flotantes:** `web/nottas-float.js` implementa calendario propio por mes, días rápidos, ruedas de horas/minutos, recordatorios múltiples y selector de categoría/estado/prioridad/repetición/etiquetas. En tarjetas, guardan mediante `NottasEditor.quick`, la misma petición `POST /v1/sync` con reconciliación; en editor, usan `openDraft` y solo mutan el borrador hasta pulsar **Guardar** en la tarea. Los toques en chips de tarjeta y píldoras del editor abren el panel correspondiente sin abrir el formulario entero. Click exterior y Escape cierran los paneles.
+- **Identidad:** paleta y tokens existentes `web/nottas-ui.css`, SVGs `ns-*` copiados de Android, radios 16 px, checks redondos, subelementos indentados y chevrón de elementos marcados. Se amplió la anchura útil de las tarjetas en escritorio y se compactaron los campos secundarios.
+
+**Protección de sincronización:** no se cambió `cloudflare/assistant/src/index.js`, la APK, `/v1/sync`, FCM/WSS, `restoreAccount`, ni se introdujeron consultas recurrentes. El frontend conserva sesión persistente y los esquemas `items`, `subtasks`, `blocks`, `reminders` de Android. Las operaciones de los paneles flotantes usan los mismos identificadores y revisiones que las tarjetas.
+
+**Pruebas realizadas:** sintaxis de seis módulos JS, IDs DOM y símbolos SVG únicos/disponibles, orden de las secciones, ausencia de polling, disponibilidad de `/stable` y publicación e inspección del script en Cloudflare. **Aún faltan pruebas reales** de interacción visual en navegadores y de consistencia con Android, cambios en Oficina con aprobación y horarios/recordatorios, foco y ruedas en teléfono. No afirmar espejo completo: fuera de esta implementación siguen la captura rica con píldoras *in situ*, calendarios externos, chat/collaboración completa y configuraciones exclusivas del SO.
+
+**Regresión obligatoria:** en Personal y Oficina crear, marcar, borrar tarea y nota, abrir panel de fecha/hora, marcar subtareas y mostrar/ocultar completadas; comprobar automáticamente Android → Web (WSS) y Web → Android (FCM), sin actualización manual. Si falla la nueva UI usar `/stable` y revisar esta capa sin tocar FCM/WebSocket.
+
 ## Categorías, captura de fecha/hora y toques directos — 12/11/2026
 
 **Publicado:** la web de previsualización `https://nottas-web-preview.losrobles.workers.dev/`. Se conservan `/stable` (interfaz anterior con FCM/WSS y sesión persistente) y `/classic`. No requiere APK nueva ni cambios del backend.
