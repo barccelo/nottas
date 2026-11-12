@@ -328,11 +328,12 @@
     if(!item||!state.token)return;
     open(item);
     if(!$("editor").open)return;
-    const map={date:"editDueDate",endDate:"editEndDate",time:"editDueTime",endTime:"editEndTime",
+    const map={subtasks:"editSubtasksToggle",date:"editDueDate",endDate:"editEndDate",time:"editDueTime",endTime:"editEndTime",
       reminders:"editorReminders",category:"editCategoryTrigger",status:"editMeetingStatus",priority:"editPriority",recurrence:"editRecurrence",tags:"editTags"};
     const field=$(map[target]||"title");
     field?.scrollIntoView({block:"center",behavior:"instant"});
     field?.focus({preventScroll:true});
+    if(target==="subtasks"){draft.subtasksExpanded=true;drawSubtasks();}
     if(["date","endDate","time","endTime"].includes(target)){
       try{field.showPicker?.()}catch{} // Browsers without showPicker use the native focusable input.
     }else if(target==="category"){
@@ -519,12 +520,61 @@
       updateDateShortcuts();
     });
   }
+  function floatingDraftPayload(){
+    return {
+      dueDate:$("editDueDate").value,endDate:$("editEndDate").value,
+      dueTime:$("editDueTime").value,endTime:$("editEndTime").value,
+      reminders:collectReminders(),
+      reminder:"none",
+      category:$("editCategory").value,
+      priority:$("editPriority").value,
+      recurrence:$("editRecurrence").value,
+      meetingStatus:$("editMeetingStatus").value,
+      tags:$("editTags").value.split(",").map(x=>x.trim()).filter(Boolean)
+    };
+  }
+  function applyFloatingDraft(payload){
+    for(const [name,id] of [["dueDate","editDueDate"],["endDate","editEndDate"],["dueTime","editDueTime"],["endTime","editEndTime"]]){
+      if(Object.hasOwn(payload,name))$(id).value=payload[name]||"";
+    }
+    if(Array.isArray(payload.reminders)){
+      reminderChanged=true;
+      draft.reminders=payload.reminders.slice();
+      const presets=[0,5,10,60,1440];
+      for(const c of document.querySelectorAll("#editorReminders input"))c.checked=payload.reminders.includes(+c.value);
+      const extra=payload.reminders.filter(n=>!presets.includes(n));
+      draft.initialExtraReminder=extra[0];
+      $("editExtraReminder").value=extra[0]??"";
+    }
+    if(payload.category!==undefined&&Array.from($("editCategory").options).some(o=>o.value===payload.category)){
+      $("editCategory").value=payload.category;renderCategoryValue();
+    }
+    if(payload.priority!==undefined)$("editPriority").value=payload.priority;
+    if(payload.recurrence!==undefined)$("editRecurrence").value=payload.recurrence;
+    if(payload.meetingStatus!==undefined)$("editMeetingStatus").value=payload.meetingStatus;
+    if(Array.isArray(payload.tags))$("editTags").value=payload.tags.join(", ");
+    updateReminderSummary();updateDateShortcuts();
+  }
+  function showDraftPicker(kind,anchor){
+    if(!draft||draft.type!=="task"||draft.original?.payload.deletedAt)return false;
+    return !!window.NottasFloat?.openDraft(kind,anchor,floatingDraftPayload,applyFloatingDraft);
+  }
+  const fieldKinds={editDueDate:"date",editEndDate:"endDate",editDueTime:"time",editEndTime:"endTime"};
   document.querySelectorAll("[data-pick]").forEach(btn=>btn.addEventListener("click",()=>{
     const target=$(btn.dataset.pick);
     if(!target||target.disabled)return;
-    target.focus();
-    try{target.showPicker?.()}catch{}
+    if(!showDraftPicker(fieldKinds[target.id],btn)){
+      target.focus();try{target.showPicker?.()}catch{}
+    }
   }));
+  Object.entries(fieldKinds).forEach(([id,kind])=>{
+    $(id).addEventListener("click",event=>{
+      if(showDraftPicker(kind,$(id))){event.preventDefault();event.stopPropagation()}
+    });
+  });
+  $("editReminderSummary").addEventListener("click",event=>{
+    showDraftPicker("reminders",event.currentTarget);
+  });
   const reminderInputs=[...document.querySelectorAll("#editorReminders input")];
   reminderInputs.forEach(c=>c.addEventListener("change",()=>{
     reminderChanged=true;
