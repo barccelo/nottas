@@ -1,5 +1,13 @@
 # Continuidad operativa de Nottas
 
+## Ajustes de subtareas y foco — 12/11/2026 (v0.27.119)
+
+- **AW:** «Ir al final» conserva el gesto y usa flecha vectorial con trazo Nottas, no carácter tipográfico; Android `nottas.html` y web `index.html` + `nottas-ui.css`.
+- **Web:** `#editSubtasks` desplaza solamente las filas (máximo 30vh/300px); `#editSubtaskContent` no recorta el pie, y el botón de agregar permanece después de la lista visible. El salto apunta al scroll del listado, no al contenedor exterior. Se conservan los «Elementos marcados» independientes.
+- **Android:** títulos vacíos de tarea o nota (nuevas o existentes) reciben foco; con título abren sin teclado; las llamadas especializadas que pasan `autoFocus:false` conservan esa excepción. Web replica foco según título.
+- **Entrega:** frontend publicado en Worker `nottas-web-preview` (15 rutas y `/stable`/`/classic` conservados). Android subió a `0.27.119`, `versionCode 200`, a la espera de validar APK firmada de GitHub Actions y prueba física de teclado. Sin cambios FCM/WSS/backend.
+
+
 ## Corrección preventiva de pérdida de datos y mejoras del editor — 12/11/2026
 
 - **Android 0.27.118 (versionCode 199):** `assistantApplyRemoteChange` conserva siempre notas/tareas/categorías `syncState=pending` ante snapshots remotos y conflictos, eleva revisión para reintentar cuando el servidor rechaza el cambio; `assistantMarkAccepted` solo confirma una versión que coincida con la revisión efectivamente enviada. Esto evita sobrescribir ediciones offline o recientes con respuestas antiguas. El guardado local y backup nativo continúan independientes de la red. La causa reportada no está reproducida físicamente: verificar con modo avión, edición, reconexión y versiones concurrentes.
