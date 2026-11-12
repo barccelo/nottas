@@ -1,5 +1,14 @@
 # Pendientes de Nottas
 
+## Verificación del editor web (12/11/2026)
+
+- [x] Aplicar CSS de scroll interno a subtareas y contención de overscroll.
+- [x] Indicador azul de B/I/U/S según selección en contenido editable; alinear chevrón selector y simplificar superficie del texto.
+- [ ] Verificar scroll sobre subtareas con rueda/trackpad/táctil, incluyendo límite superior e inferior y móvil.
+- [ ] Probar indicador de formato en selección parcial, texto mixto y después de guardar/reabrir; probar menú de tipo de bloque.
+- [ ] Desplegar frontend actualizado a Cloudflare y comprobar archivos publicados sin romper `/stable` ni sincronización.
+
+
 Última revisión: 10 de noviembre de 2026 · sincronización Android ↔ Web confirmada por el usuario; faltan pruebas complementarias.
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
