@@ -398,22 +398,42 @@
     }catch(error){$("editError").textContent=error.message}
   }
   async function quick(item,mutator){
-    if(!state.token||state.busy||$("editor").open)return;
-    const existing=state.items.get(item.workspaceId+":"+item.entityType+":"+item.entityId);
-    if(!existing||existing.payload.deletedAt)return;
-    const payload=clone(existing.payload),ts=Date.now();
+    if(!state.token||state.busy||$("editor").open)return false;
+    const key=item.workspaceId+":"+item.entityType+":"+item.entityId;
+    const existing=state.items.get(key);
+    if(!existing||existing.payload.deletedAt)return false;
+    const previous=clone(existing.payload),payload=clone(previous),ts=Date.now();
+    try{mutator(payload)}catch(error){alert(error.message);return false}
+    if(JSON.stringify(previous)===JSON.stringify(payload))return false;
+    payload.updatedAt=ts;
+    // Optimistic feedback: the check must visibly respond to a real click.
+    // The authoritative returned payload from D1 is applied on acceptance.
+    state.busy=true;
+    state.items.set(key,{...existing,payload});
+    render();setStatus("Guardando cambio…");
+    let accepted=false;
     try{
-      mutator(payload);
-      payload.updatedAt=ts;
-      state.busy=true;
       const res=await request("/v1/sync","POST",{changes:[{
         workspaceId:item.workspaceId,entityType:item.entityType,entityId:item.entityId,
-        payload,rev:Number(payload.rev||1)+1,updatedAt:ts
+        payload,rev:Number(previous.rev||1)+1,updatedAt:ts
       }]});
-      if(res.conflicts?.length)throw Error("Otro dispositivo modificó el elemento. Se actualizarán los cambios.");
-      if(!res.accepted?.length)throw Error("No se pudo guardar.");
-    }catch(err){alert(err.message)}
-    finally{state.busy=false;await refresh(true)}
+      if(res.conflicts?.length)throw Error("Este elemento se modificó en otro dispositivo.");
+      const saved=(res.accepted||[]).find(c=>c.workspaceId===item.workspaceId&&c.entityType===item.entityType&&c.entityId===item.entityId);
+      if(!saved)throw Error("El servidor no aceptó la modificación.");
+      accepted=true;
+      state.items.set(key,{...existing,payload:saved.payload||payload});
+      render();setStatus("Guardado");
+    }catch(error){
+      // Revert on any server failure. Never leave a false completed check.
+      state.items.set(key,{...existing,payload:previous});
+      render();
+      setStatus("Error al guardar");
+      alert("No se pudo aplicar el cambio: "+error.message);
+    }finally{
+      state.busy=false;
+      await refresh(true); // FCM/WSS already handle the other device; no polling.
+    }
+    return accepted;
   }
   function toggleTask(id){return quick(id,p=>{p.done=!p.done;if(p.meetingTracked&&["scheduled","realized"].includes(p.meetingStatus))p.meetingStatus=p.done?"realized":"scheduled"})}
   function toggleItem(item,nodeId){return quick(item,p=>{
@@ -425,6 +445,80 @@
     const blocks=sourceBlocks(p),n=locate(blocks,blockId);if(!n||n.type!=="checklist")return;
     n.checked=!n.checked;p.blocks=blocks;p.body=blocksText(blocks);
   })}
+  $("editCategoryTrigger").addEventListener("click",()=>{
+    const menu=$("editCategoryMenu");
+    const open=menu.classList.toggle("hidden")===false;
+    $("editCategoryTrigger").setAttribute("aria-expanded",String(open));
+    if(open)menu.querySelector(".editor-category-choice.selected")?.focus();
+  });
+  $("editCategory").addEventListener("change",renderCategoryValue);
+  document.addEventListener("click",event=>{
+    if(!event.target.closest(".editor-category-control"))hideCategoryMenu();
+  });
+  $("editCategoryTrigger").addEventListener("keydown",event=>{
+    if(event.key==="Escape"){hideCategoryMenu();event.preventDefault()}
+  });
+  $("quickScheduleApply").addEventListener("click",applyQuickSchedule);
+  $("quickScheduleDismiss").addEventListener("click",()=>{
+    $("quickScheduleHint").classList.add("hidden");draft.quickSchedule=null;
+  });
+  $("title").addEventListener("input",()=>{
+    if(draft?.type==="task"&&!draft.original)updateQuickScheduleHint();
+  });
+  const schedule=window.NottasSchedule;
+  document.querySelectorAll("[data-date-shortcut]").forEach(btn=>btn.addEventListener("click",()=>{
+    if(!draft||draft.original?.payload.deletedAt)return;
+    const choice=btn.dataset.dateShortcut;
+    const value=choice==="today"?schedule.isoDate(new Date()):
+      choice==="tomorrow"?schedule.isoDate(schedule.addDays(new Date(),1)):
+      choice==="aftertomorrow"?schedule.isoDate(schedule.addDays(new Date(),2)):"";
+    $("editDueDate").value=value;
+    if(!value){$("editEndDate").value="";$("editDueTime").value="";$("editEndTime").value=""}
+    $("editDueDate").dispatchEvent(new Event("change",{bubbles:true}));
+  }));
+  document.querySelectorAll("[data-time-shortcut]").forEach(btn=>btn.addEventListener("click",()=>{
+    if(!draft||draft.original?.payload.deletedAt)return;
+    const value=btn.dataset.timeShortcut==="clear"?"":btn.dataset.timeShortcut;
+    $("editDueTime").value=value;
+    if(value&&!$("editDueDate").value)$("editDueDate").value=schedule.isoDate(new Date());
+    if(!value)$("editEndTime").value="";
+    $("editDueTime").dispatchEvent(new Event("change",{bubbles:true}));
+  }));
+  for(const id of ["editDueDate","editEndDate","editDueTime","editEndTime"]){
+    $(id).addEventListener("change",()=>{
+      if(id==="editDueDate"&&!$("editDueDate").value){
+        $("editEndDate").value="";$("editDueTime").value="";$("editEndTime").value="";
+      }
+      if(id==="editDueTime"&&$("editDueTime").value&&!$("editDueDate").value){
+        $("editDueDate").value=schedule.isoDate(new Date());
+      }
+      updateDateShortcuts();
+    });
+  }
+  document.querySelectorAll("[data-pick]").forEach(btn=>btn.addEventListener("click",()=>{
+    const target=$(btn.dataset.pick);
+    if(!target||target.disabled)return;
+    target.focus();
+    try{target.showPicker?.()}catch{}
+  }));
+  const reminderInputs=[...document.querySelectorAll("#editorReminders input")];
+  reminderInputs.forEach(c=>c.addEventListener("change",()=>{
+    reminderChanged=true;
+    if(c.checked&&!$("editDueDate").value)$("editDueDate").value=schedule.isoDate(new Date());
+    updateReminderSummary();updateDateShortcuts();
+  }));
+  $("editExtraReminder").addEventListener("input",()=>{
+    reminderChanged=true;
+    if($("editExtraReminder").value&&!$("editDueDate").value)$("editDueDate").value=schedule.isoDate(new Date());
+    updateReminderSummary();updateDateShortcuts();
+  });
+  $("editClearReminders").addEventListener("click",()=>{
+    if(!draft)return;
+    reminderChanged=true;draft.reminders=[];draft.initialExtraReminder=undefined;
+    reminderInputs.forEach(c=>{c.checked=false});
+    $("editExtraReminder").value="";
+    updateReminderSummary();
+  });
   $("editPinnedBtn").addEventListener("click",()=>{if(!draft)return;draft.pinned=!draft.pinned;syncPin()});
   document.querySelectorAll("#editor [data-format]").forEach(button=>{
     button.addEventListener("mousedown",e=>e.preventDefault());
@@ -441,9 +535,8 @@
   [["addParagraphBtn","paragraph"],["addChecklistBtn","checklist"],["addBulletBtn","bullet"]].forEach(([id,type])=>{
     $(id).addEventListener("click",()=>{if(!draft)return;draft.blocks.push({id:crypto.randomUUID(),type,html:"",checked:false,children:[]});drawBlocks()});
   });
-  document.querySelectorAll("#editorReminders input").forEach(c=>c.addEventListener("change",()=>{reminderChanged=true}));
-  $("editExtraReminder").addEventListener("input",()=>{reminderChanged=true});
+
   // Editing toolbar uses the native browser selection; the saved HTML is
   // strictly sanitized and no remote code or attributes are inserted.
-  window.NottasEditor={open,configure,save,quick,toggleTask,toggleItem,toggleNoteCheck,sourceItems,sourceBlocks,plain,progress};
+  window.NottasEditor={open,openAt,configure,save,quick,toggleTask,toggleItem,toggleNoteCheck,sourceItems,sourceBlocks,plain,progress};
 })();
