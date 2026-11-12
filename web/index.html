@@ -152,9 +152,7 @@ dialog::backdrop{background:#10101290}form{display:grid;gap:14px}label{display:g
         <button type="button" id="editCloseBtn" class="editor-flag" aria-label="Cerrar" title="Cerrar"><svg class="ns-icon" viewBox="0 0 24 24"><use href="/assets/nottas-icons.svg#ns-close"></use></svg></button>
       </div>
     </div>
-    <label id="typeRow" class="editor-compact-type">Tipo
-      <select id="type"><option value="note">Nota</option><option value="task">Tarea</option></select>
-    </label>
+    <select id="type" class="hidden" aria-label="Tipo de elemento" tabindex="-1"><option value="note">Nota</option><option value="task">Tarea</option></select>
     <label id="titleRow" class="editor-title-label">Título<input id="title" maxlength="300" placeholder="Título" required autocomplete="off"></label>
     <div id="quickScheduleHint" class="editor-quick-hint hidden" role="status" aria-live="polite">
       <span id="quickScheduleText"></span>
