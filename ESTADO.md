@@ -1,5 +1,11 @@
 # Estado actual de Nottas
 
+## Ajustes visuales y desplazamiento del editor web (12/11/2026)
+
+- Cambios en rama `feature/nottas-web-initial`: subtareas con scroll interno contenido; barra de formato con selección activa visible; flecha del menú de bloques alineada; área de texto sin aspecto de tarjeta.
+- Código subido a GitHub; pendiente publicación Cloudflare y verificación real de mouse, selección de texto y scroll táctil. Android, D1 y WebSocket sin modificar.
+
+
 Última actualización: 10 de noviembre de 2026 · sincronización bidireccional Android ↔ Web confirmada por el usuario; Android v0.27.117.
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
