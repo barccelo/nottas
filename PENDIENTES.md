@@ -4,6 +4,18 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Nottas Web — validar categorías y captura táctil (12/11/2026)
+
+- [x] Renderizar categorías con iconos SVG `ns-event-*` oficiales, color y emoji, en tarjetas y selector personalizado, a partir de los registros sincronizados.
+- [x] Adaptar reconocimiento de fecha/hora de Android (`hoy`, `mañana`, `pasado mañana`, días, `dd/mm`, `2p`, `430p`, horas normales), en forma de sugerencia aplicable en tareas nuevas.
+- [x] Accesos rápidos Hoy/Mañana/Pasado mañana/sin fecha, horas 9/12/15/18, abrir selectores nativos por toque y recordatorios con resumen/quitar.
+- [x] Chips de tarjeta clicables para fecha/hora, fin, alerta, categoría, estado, prioridad y etiquetas. Completar tarea/subtarea/casilla con cambio optimista y reversión cuando falla D1. Sin nuevos sondeos.
+- [x] Probar parser de fecha con reloj controlado, check de tarea/subtarea exitoso y error/conflicto simulado, sintaxis JS/refs DOM/iconos y despliegue Worker; respaldo `/stable` disponible.
+- [ ] **Prueba real en navegador:** check de completar desde tarjeta, nueva tarea `mañana 2p`, toques de fecha/hora/cierre, recordatorios y categorías con SVG; verificar envío y recepción Android.
+- [ ] **Prueba de regresión:** sesión persistente, colaboración Personal/Oficina, sincronización automática Web↔Android, y que la alarma Android se programa con el array de minutos.
+- [ ] Paridad futura aún no implementada: píldoras *in situ* editables dentro del título como Android, rueda circular propia de hora, categorías con creación y edición desde web, reglas completas de diferidas/propuestas, recordatorios avanzados nativos y Google Calendar. No describir estas funciones como terminadas.
+- [ ] Inspección táctil responsive en Chrome/Opera/Android, tema oscuro y enfoque de campos con `showPicker`.
+
 ## Nottas Web — validar editor y casillas reales (10/11/2026)
 
 - [x] Reemplazar menú Personal/Oficina con UI propia de Nottas; eliminar franja blanca del navegador.

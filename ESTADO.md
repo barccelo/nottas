@@ -4,6 +4,14 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — categorías nativas y controles de toque (12/11/2026)
+
+- Se publicó en `nottas-web-preview` una mejora de frontend: íconos `ns-event-*`, colores y emoji de categorías idénticos a Android en tarjetas y selector del editor; sin iconos genéricos si existe recurso de categoría.
+- Captura rápida en tareas nuevas: sugerencia de fecha/hora escrita en título (`mañana 2p`, `430p`, días y fechas concretas), al aplicar rellena horario y quita las palabras interpretadas. Atajos Hoy/Mañana/Pasado mañana, cuatro horas, botones `showPicker` con fallback del sistema, y resumen interactivo de recordatorios.
+- Los chips de fecha/hora, categoría, prioridad, estado, etiquetas y alertas abren el campo de edición. Los checks ahora reflejan inmediatamente el cambio aceptado por `/v1/sync` y revierten el cambio al recibir error/conflicto, informándolo.
+- La publicación está en `feature/nottas-web-initial`, con `web/nottas-schedule.js` y `web/nottas-categories.js`, conservando `/stable` y `/classic`. Ninguna modificación en APK, API, D1, FCM ni WSS; sesión persistente intacta y sin polling.
+- QA sintaxis/DOM/iconografía, análisis de fechas/horas y simulación de completar/rollback correctos; verificación de archivos publicados en Cloudflare. **Pendiente prueba humana**: clicks reales, sincronización hacia Android, alarmas y hora de cierre según navegador.
+
 ## Nottas Web — editor y navegación de espacios mejorados (10/11/2026)
 
 - En `nottas-web-preview` se reemplazó el selector Personal/Oficina de apariencia defectuosa por menú personalizado; se conservan el espacio y la sesión en almacenamiento local.

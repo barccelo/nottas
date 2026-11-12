@@ -6,6 +6,14 @@
 **Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
 **Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
+## Componentes web interactivos — 12/11/2026
+
+- **Categorías:** usar la función de diseño Android `categorySymbolHtml` como contrato: emoji si existe; de lo contrario SVG `ns-event-<icon>` del sprite oficial cuando el identificador es válido; en otro caso punto del color almacenado. No sustituir por icono genérico si el icono real existe. Selector web accesible con lista, nombre y color.
+- **Fecha/hora:** atajos Hoy/Mañana/Pasado mañana/Sin fecha y 9:00,12:00,15:00,18:00/Sin hora; botones de selección llaman a `showPicker` si está disponible y mantienen inputs HTML accesibles como respaldo. El reconocedor usa el parser Android `parseQuickSchedule` y fechas locales, con sugerencias no destructivas hasta pulsar Aplicar.
+- **Toques:** los metadatos secundarios de tarjetas pueden ser botones funcionales: chips de fecha, cierre, horario, recordatorio, categoría, prioridad, estado y etiquetas abren su sección; los checks circulares muestran inmediatamente el cambio y revierten al fallar guardado remoto. Foco visible y tamaños táctiles responsive.
+- **Sincronización:** señales FCM y WSS siguen sin cambios ni polling; nuevas acciones usan `/v1/sync` ya existente y no inventan modelos de estado. Diferenciar los controles web implementados de las funciones exclusivas de Android (rueda de hora, píldoras dentro de captura, alarmas de SO).
+- **Estado QA:** recursos/JS/acciones simuladas y Worker Cloudflare verificados; falta prueba visual y de uso en navegadores reales y Android.
+
 ## Componentes funcionales de la web (10/11/2026)
 
 - Selector de espacios Personal/Oficina: botón 43–44 px, icono `ns-users`, nombre activo, chevrón simétrico y menú contextual personalizado con iniciales, roles y selección; no usar la flecha nativa de `<select>` visible que causaba una franja blanca.

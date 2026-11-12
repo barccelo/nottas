@@ -1,5 +1,12 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — iconografía real y captura de fechas/horas — 12 de noviembre de 2026
+
+- Restaurados íconos/colores/emojis de categorías conforme a `categorySymbolHtml()` de Android y selector visual de categorías; nuevos módulos `nottas-categories.js` y `nottas-schedule.js`.
+- Reconocimiento de fecha y hora en título nuevo (`mañana 2p`, `430p`, fechas y días), con sugerencia de aplicación, accesos rápidos y selectores de fecha/hora nativos activables por botones.
+- Interacción directa en chips de tarjetas (fecha, hora, recordatorios, categoría, estado, prioridad, etiquetas); resumen y limpiar alertas. Checks de tarea/subtareas con respuesta optimista, rollback y aviso cuando el servidor rechaza o existe conflicto.
+- Web publicada en Cloudflare, conservando versiones de respaldo `/stable` y `/classic`, sin cambios backend, D1, APK ni FCM/WSS y sin polling. Sintaxis, referencias y pruebas aisladas correctas; interacción real con cuenta/Android pendiente de verificar.
+
 ## Nottas Web — mejoras del editor y selector de espacios — 10 de noviembre de 2026
 
 - Sustituido selector nativo Personal/Oficina que mostraba una franja blanca por menú propio accesible, con roles, iconos y selección.

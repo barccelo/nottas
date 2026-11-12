@@ -1,7 +1,16 @@
 # Continuidad operativa de Nottas
 
-**Actualizado:** 10 de noviembre de 2026 (sincronización Android ↔ Web confirmada por el usuario; FCM + WebSocket sin polling).  
+**Actualizado:** 12 de noviembre de 2026 (captura de fecha/hora y toques web; sincronización FCM + WSS preservada).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
+
+## Nottas Web — categorías, captura rápida y toques (12/11/2026)
+
+- **Publicación vigente:** `https://nottas-web-preview.losrobles.workers.dev/`, Worker estático Cloudflare actualizado el 12/11/2026 (12:33 UTC), sin cambios en Android, API/D1, FCM ni WSS. Fallbacks: `/stable` conserva la web anterior con sesión persistente y sync automático, y `/classic` la básica.
+- **Nuevos archivos de frontend (rama `feature/nottas-web-initial`):** `web/nottas-categories.js` renderiza las categorías usando exactamente el contrato Android `categorySymbolHtml()` (`ns-event-*`, emoji, color y punto de respaldo) a partir del mismo snapshot; `web/nottas-schedule.js` adapta `parseQuickSchedule()` a fechas y horas locales, sin polling.
+- **Editor y tarjetas:** categoría con menú ilustrado real (no `select` de texto), chips accionables de fecha/hora inicio-fin, recordatorios, categorías, etiquetas, prioridad y estado; botón para abrir el selector nativo (cuando `showPicker` esté disponible); días y horas rápidos; resumen y botón Quitar recordatorios. En tareas **nuevas** escribir `mañana 2p`, `430p`, días de semana o fecha concreta genera sugerencia pulsable «Usar fecha y hora», que completa los campos y limpia el título. Aún no son las mismas píldoras internas de texto de Android.
+- **Corrección del check:** los checks de tareas/subtareas/notas realizan `POST /v1/sync`, muestran cambio optimista inmediato, aplican payload aceptado o revierten explícitamente ante conflicto/error; después concilian snapshot. No manipulan FCM/WSS, ni introducen `setInterval`.
+- **QA realizado:** parser de fecha/hora evaluado con casos locales; pruebas simuladas de guardado de tarea y subtarea, y restauración del check al rechazar el servidor; sintaxis de 5 JS, sin IDs DOM ni iconos faltantes. El Worker publicado fue leído desde Cloudflare y contiene assets, respaldos, WSS y persistencia. **Falta** prueba navegador real con cuenta y Android, de recordatorios/horarios/clicks/íconos e interacción táctil; no declarar validación end-to-end.
+- **Regla de continuidad:** mantener la arquitectura FCM (Web→Android) + WSS Durable Object (Android→Web), sesión recordada y los datos Android originales. Antes de modificar sincronización volver a probar crear/borrar nota/tarea en ambos sentidos sin actualizar manualmente. Detalles en `web/README.md` de la rama web.
 
 ## Nottas Web — editor operativo y espacios nativos (10/11/2026)
 
