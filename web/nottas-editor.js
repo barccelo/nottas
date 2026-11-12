@@ -105,38 +105,71 @@
     if(!draft.blocks.length)holder.append(el("div","editor-blank","Añade texto, viñetas o casillas para empezar."));
   }
   function drawSubtasks(){
-    const holder=$("editSubtasks");holder.replaceChildren();if(!draft)return;
+    const holder=$("editSubtasks"),doneHolder=$("editCompletedList");
+    holder.replaceChildren();doneHolder.replaceChildren();
+    if(!draft)return;
     const disabled=!!draft.original?.payload.deletedAt;
-    function paint(nodes,depth=0){
+    function paint(nodes,parent,depth=0){
       if(depth>12)return;
-      for(const node of nodes){
-        const row=el("div","editor-item-row"+(node.done?" is-checked":""));
+      for(const task of nodes){
+        const row=el("div","editor-item-row"+(task.done?" is-checked":""));
         row.style.setProperty("--indent",(Math.min(6,depth)*17)+"px");
         const check=el("input","editor-circle-check");
-        check.type="checkbox";check.checked=node.done;check.disabled=disabled;
-        check.setAttribute("aria-label","Marcar subtarea "+node.text);
-        check.onchange=()=>{setAll(node,check.checked);syncParents(draft.items);drawSubtasks()};
+        check.type="checkbox";check.checked=task.done;check.disabled=disabled;
+        check.setAttribute("aria-label","Marcar subtarea "+task.text);
+        check.onchange=()=>{setAll(task,check.checked);syncParents(draft.items);drawSubtasks()};
         row.append(check);
         const input=el("input","editor-subtask-input");
-        input.type="text";input.value=node.text;input.placeholder="Subtarea";
+        input.type="text";input.value=task.text;input.placeholder=depth?"Elemento interno":"Subtarea";
         input.maxLength=500;input.disabled=disabled;
-        input.addEventListener("input",()=>{node.text=input.value;node.html=escape(input.value);row.classList.toggle("is-empty",!node.text.trim())});
+        input.addEventListener("input",()=>{task.text=input.value;task.html=escape(input.value)});
+        input.addEventListener("keydown",ev=>{
+          if(ev.key==="Enter"&&!ev.shiftKey){
+            ev.preventDefault();
+            const place=parent.indexOf(task);
+            parent.splice(place+1,0,{id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});
+            drawSubtasks();
+            const all=document.querySelectorAll("#editSubtaskContent .editor-subtask-input");
+            [...all].find(x=>!x.value)?.focus();
+          }
+        });
         row.append(input);
-        function small(name,iconName,callback){
-          const b=el("button","editor-item-action");b.type="button";b.title=name;b.setAttribute("aria-label",name);b.disabled=disabled;
-          b.append(icon(iconName));b.onclick=callback;return b;
+        function tool(name,iconName,callback){
+          const b=el("button","editor-item-action");
+          b.type="button";b.title=name;b.setAttribute("aria-label",name);b.disabled=disabled;
+          b.append(icon(iconName));b.addEventListener("click",callback);return b;
         }
-        row.append(small("Añadir subtarea hija","ns-plus",()=>{node.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks()}));
-        row.append(small("Subir","ns-back",()=>{moveIn(draft.items,node.id,-1);drawSubtasks()}));
-        row.append(small("Bajar","ns-chevron",()=>{moveIn(draft.items,node.id,1);drawSubtasks()}));
-        row.append(small("Eliminar","ns-trash",()=>{removeFrom(draft.items,node.id);syncParents(draft.items);drawSubtasks()}));
-        holder.append(row);
-        paint(node.children||[],depth+1);
+        row.append(tool("Añadir subtarea hija","ns-plus",()=>{
+          task.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks();
+        }));
+        row.append(tool("Subir","ns-back",()=>{moveIn(draft.items,task.id,-1);drawSubtasks()}));
+        row.append(tool("Bajar","ns-chevron",()=>{moveIn(draft.items,task.id,1);drawSubtasks()}));
+        row.append(tool("Eliminar","ns-trash",()=>{removeFrom(draft.items,task.id);syncParents(draft.items);drawSubtasks()}));
+        parent&&row.setAttribute("data-subtask-id",task.id);
+        // Native hierarchy is shown indented, with completed children included.
+        parent===draft.items?row.classList.add("top-level"):"";
+        (parent===draft.items?row:row).dataset.depth=String(depth);
+        const into=(parent===draft.items?task.done?doneHolder:holder:parent.targetContainer||holder);
+        into.append(row);
+        if(task.children?.length){
+          const kids=task.children;
+          const childContainer=into;
+          for(const child of kids)paint([child],{...kids,targetContainer:childContainer},depth+1);
+        }
       }
     }
-    paint(draft.items);
-    const p=progress(draft.items);
-    $("editSubtaskCount").textContent=p.total?p.done+"/"+p.total:"";
+    // Preserve the underlying tree and Android sync fields, change only presentation order.
+    const topIncomplete=draft.items.filter(n=>!n.done),topDone=draft.items.filter(n=>n.done);
+    for(const n of topIncomplete)paint([n],draft.items,0);
+    for(const n of topDone)paint([n],draft.items,0);
+    const progressInfo=progress(draft.items);
+    $("editSubtaskCount").textContent=progressInfo.total?progressInfo.done+"/"+progressInfo.total:"Añadir";
+    $("editCompletedSection").classList.toggle("hidden",!topDone.length);
+    $("editCompletedCount").textContent=topDone.length===1?"1 elemento marcado":topDone.length+" elementos marcados";
+    $("editCompletedList").classList.toggle("hidden",!draft.completedExpanded);
+    $("editCompletedToggle").setAttribute("aria-expanded",String(!!draft.completedExpanded));
+    $("editSubtaskContent").classList.toggle("hidden",!draft.subtasksExpanded);
+    $("editSubtasksToggle").setAttribute("aria-expanded",String(!!draft.subtasksExpanded));
   }
   function syncPin(){const b=$("editPinnedBtn");b.setAttribute("aria-pressed",String(draft?.pinned));b.title=draft?.pinned?"Quitar destacado":"Destacar";b.disabled=!!draft?.original?.payload.deletedAt}
   function renderApproval(){
@@ -157,8 +190,9 @@
     const type=$("type").value;
     if(type!==draft.type){
       draft.type=type;
-      draft.blocks=[];draft.items=[];draft.pinned=false;
+      draft.blocks=[];draft.items=[];draft.pinned=false;draft.subtasksExpanded=true;draft.completedExpanded=false;
     }
+    $("editor").classList.toggle("nottas-task-editor",type==="task");
     $("taskFields").classList.toggle("hidden",type!=="task");
     $("subtaskSection").classList.toggle("hidden",type!=="task");
     $("bodyRow").classList.remove("hidden");
@@ -213,7 +247,7 @@
     hideCategoryMenu();
     state.current=item;
     const type=item?.entityType||"note",p=item?.payload||{};
-    draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null};
+    draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null,subtasksExpanded:!item||!((p.items||p.subtasks||[]).length),completedExpanded:false};
     $("type").value=type;$("type").disabled=!!item;
     $("title").value=type==="task"?String(p.text||""):String(p.title||"");
     fillCategories(item?.workspaceId||state.workspaceId,p.category);
@@ -531,7 +565,19 @@
     });
   });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
-  $("addSubtaskBtn").addEventListener("click",()=>{if(!draft)return;draft.items.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks()});
+  $("editSubtasksToggle").addEventListener("click",()=>{
+    if(!draft)return;draft.subtasksExpanded=!draft.subtasksExpanded;drawSubtasks();
+  });
+  $("editCompletedToggle").addEventListener("click",()=>{
+    if(!draft)return;draft.completedExpanded=!draft.completedExpanded;drawSubtasks();
+  });
+  $("addSubtaskBtn").addEventListener("click",()=>{
+    if(!draft)return;
+    draft.subtasksExpanded=true;
+    draft.items.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});
+    drawSubtasks();
+    [...document.querySelectorAll("#editSubtasks .editor-subtask-input")].find(x=>!x.value)?.focus();
+  });
   [["addParagraphBtn","paragraph"],["addChecklistBtn","checklist"],["addBulletBtn","bullet"]].forEach(([id,type])=>{
     $(id).addEventListener("click",()=>{if(!draft)return;draft.blocks.push({id:crypto.randomUUID(),type,html:"",checked:false,children:[]});drawBlocks()});
   });
