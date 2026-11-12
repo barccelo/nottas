@@ -536,3 +536,37 @@ html[data-theme="dark"] .item-card .status-realized{background:#1d4330;color:#8d
 #editor .nottas-summary-action:hover{background:var(--hover);color:var(--blue)}
 #editor.nottas-picker-visible .nottas-float{z-index:9999}
 @media(max-width:650px){#editor.nottas-picker-visible .nottas-float{max-height:62vh}}
+
+/* Native task edit flow: title → organic chips → content → subtasks → optional details. */
+#cards{columns:390px;column-gap:15px}
+#editor .nottas-editor-meta{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:2px 0 17px;min-height:38px}
+#editor .nottas-editor-meta.hidden{display:none!important}
+#editor .nottas-editor-chip{display:inline-flex;align-items:center;gap:7px;border:0;border-radius:99px;padding:9px 12px;min-height:36px;background:var(--surface-2);color:var(--muted);font-size:12px;font-weight:610;white-space:nowrap;max-width:100%}
+#editor .nottas-editor-chip:hover{background:color-mix(in srgb,var(--blue) 10%,var(--surface-2));color:var(--fg)}
+#editor .nottas-editor-chip.selected{background:color-mix(in srgb,var(--blue) 13%,var(--surface));color:var(--blue)}
+#editor .nottas-editor-chip .ns-icon{height:16px;width:16px}
+#editor .nottas-editor-chip .ns-category-icon{height:19px;width:19px;flex:0 0 19px}
+#editor .nottas-editor-chip .ns-category-icon .ns-icon{width:17px;height:17px}
+#editor .nottas-editor-more{background:transparent;border:1px solid var(--line)}
+#editor .nottas-editor-more.selected{border-color:var(--blue)}
+#editor .nottas-advanced-label{padding:15px 0 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px;letter-spacing:.035em;text-transform:uppercase;font-weight:650}
+#editor .nottas-advanced-label.hidden{display:none!important}
+#editor.nottas-task-editor #bodyRow{border-top:0;padding-top:8px;padding-bottom:12px}
+#editor.nottas-task-editor #bodyRow .editor-section-title{font-size:12px;font-weight:640;color:var(--muted)}
+#editor.nottas-task-editor #bodyRow .editor-rich-input{font-size:15px;line-height:1.5}
+#editor.nottas-task-editor #bodyRow .editor-add-block .editor-add-action{font-size:12px;background:transparent;border:1px solid var(--line)}
+#editor.nottas-task-editor #bodyRow .editor-block-row{padding-left:0;padding-right:0}
+#editor.nottas-task-editor #editorOrgSection{border-top:1px solid var(--line)}
+#editor.nottas-task-editor #taskFields{border-top:0}
+#editor.nottas-task-editor .editor-heading{padding-bottom:7px}
+#editor.nottas-task-editor .editor-heading h2{font-size:17px;font-weight:675}
+#editor.nottas-task-editor #titleRow{margin-bottom:4px}
+#editor.nottas-task-editor #titleRow #title{margin:0}
+@media(min-width:1440px){#cards{columns:430px}}
+@media(max-width:950px){#cards{columns:360px}}
+@media(max-width:710px){#cards{columns:auto}}
+@media(max-width:580px){
+ #editor .nottas-editor-meta{gap:5px;margin-bottom:12px}
+ #editor .nottas-editor-chip{font-size:11px;padding:8px 10px;min-height:34px}
+ #editor.nottas-task-editor #title{font-size:21px}
+}
