@@ -2186,6 +2186,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode #addSubtaskBtn{
   color:#1677ff;font-size:12px;font-weight:650;
 }
 #editorOverlay.taskEditorMode .taskSubtasksJumpEnd.hidden{display:none}
+#editorOverlay.taskEditorMode .taskSubtasksJumpEnd svg{
+  width:16px;height:16px;flex:0 0 16px;fill:none;stroke:currentColor;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
 html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
   background:rgba(80,158,255,.14);color:#76b6ff;
 }
@@ -2668,7 +2672,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
           <span class="taskSubtasksSummaryTitle">Subtareas</span>
           <span id="taskSubtasksSummaryCount" class="taskSubtasksSummaryCount"></span>
         </button>
-        <button id="taskSubtasksJumpEnd" class="taskSubtasksJumpEnd hidden" type="button" aria-label="Ir al final de las subtareas">Ir al final <span aria-hidden="true">↓</span></button>
+        <button id="taskSubtasksJumpEnd" class="taskSubtasksJumpEnd hidden" type="button" aria-label="Ir al final de las subtareas"><span>Ir al final</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m-6-6 6 6 6-6"/></svg></button>
         <div class="taskContentArea">
           <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
@@ -9096,7 +9100,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=false;deferredDateAwaitingTime=false;taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");
-    if(options.autoFocus===true)setTimeout(()=>{
+    // With a title the editor opens for reading; an empty title is ready for typing.
+    const shouldFocusTask=options.autoFocus===true||(!$("taskText").textContent.trim()&&options.autoFocus!==false);
+    if(shouldFocusTask)setTimeout(()=>{
       if($("editorOverlay").classList.contains("show")&&editingTaskId===(t?.id||null))$("taskText").focus();
     },80);
     else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
@@ -9121,9 +9127,9 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
     openOverlay("editorOverlay");
-    // Open without the software keyboard by default. Only genuinely untitled
-    // existing notes request title entry; tapping a field always opens it.
-    const shouldFocusNote=!!n&&!$("noteTitle").textContent.trim();
+    // Both new and existing untitled notes request title entry. Titled notes
+    // open without the software keyboard until the user taps an editable field.
+    const shouldFocusNote=!$("noteTitle").textContent.trim();
     if(shouldFocusNote)setTimeout(()=>{
       if($("editorOverlay").classList.contains("show")&&editingNoteId===(n?.id||null)){
         $("noteTitle")?.focus({preventScroll:true});
