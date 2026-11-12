@@ -6,6 +6,14 @@
 **Archivos:** `app/src/main/assets/design-system.css` (estándares activos), `nottas.html` (estructura/comportamiento) y `componentes.html` (catálogo).  
 **Principio:** componentes comunes usan tokens compartidos; los cambios no deben alterar gestos, datos, notificaciones, recordatorios ni sincronización.
 
+## Refinamiento visual web sin controles HTML ajenos a Nottas (12/11/2026)
+
+- **Selector de tipo de elemento:** la decisión entre Nota y Tarea se toma en las acciones de creación. Al editar un tipo existente, no mostrar un `select` deshabilitado/inútil. Conservar el estado interno `#type` solo como control oculto.
+- **Tipo de bloque:** menú flotante propio, compacto, tonos, bordes y foco del Design System; siete tipos Android, sin lista desplegable nativa con contraste ajeno.
+- **Subtareas:** renderizar todas las de la jerarquía; no ocultar descendientes pendientes al agrupar completados. Textos multilínea visibles y ajuste automático de altura. No descartar metadatos de nodos al pasarlos a la representación web.
+- **Superficies:** evitar `box-shadow` clásico de HTML en tarjetas, diálogos y menús; preferir separación por tonalidad, bordes sutiles, jerarquía tipográfica y espacios Nottas. El estado hover/focus debe seguir reconocible sin depender de elevaciones ni sombras.
+- QA de estructura/sintaxis/despliegue realizado; inspección visual humana de 69 subtareas y sincronización al teléfono siguen pendientes.
+
 ## Espejo visual de Android — componentes web 12/11/2026
 
 - **Tarjeta de subtareas:** mantener siempre visible el encabezado con `Subtareas`, icono nativo, contador y chevrón; solo el contenido se muestra/oculta con clic. No sustituir por un campo HTML permanente.

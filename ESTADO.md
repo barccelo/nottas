@@ -4,6 +4,14 @@
 
 **Reanudación entre chats:** comenzar por [CONTINUIDAD.md](CONTINUIDAD.md), que resume el estado operativo y el próximo paso. Este archivo conserva el detalle técnico e histórico.
 
+## Nottas Web — correcciones de editor y jerarquías (12/11/2026)
+
+- Web publicada 14:16 UTC en `nottas-web-preview`: eliminado el selector de tipo inerte durante edición; el `select#type` sigue oculto para distinguir el flujo de creación.
+- Menú Nottas propio de siete formatos reemplaza `select` nativo; sombras HTML de tarjetas, diálogos y menús retiradas conforme al Design System.
+- Subtareas: sin truncamiento visual a profundidad 12, conservación de campos `{...n}` al normalizar nodos, agrupación de marcadas sin esconder hijos pendientes, textos multilínea de altura automática.
+- Test simulado pasó con lista de 69 (31 marcadas y 38 pendientes) y árbol profundo 69/69. Se verificaron sintaxis, DOM, SVG, despliegue y presencia de WSS/sesión sin polling. **Pendiente** confirmación visual en navegador y consistencia con Android.
+- No se modificaron API, backend, D1 ni APK; sigue `/stable` como respaldo.
+
 ## Nottas Web — paridad visual y de interacción (12/11/2026)
 
 - **Publicación web confirmada:** Worker `nottas-web-preview` actualizado 12/11/2026 13:45 UTC. El backend y la APK no cambiaron; `/stable` mantiene respaldo funcional.

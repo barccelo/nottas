@@ -3,6 +3,14 @@
 **Actualizado:** 12 de noviembre de 2026 (interfaz web de subtareas/paneles flotantes publicada; FCM + WSS sin cambios).  
 **Objetivo:** retomar el desarrollo en un chat nuevo sin depender del historial de conversaciones. Este archivo es una ficha de entrada, **no** reemplaza al código, las pruebas ni a los documentos de detalle.
 
+## Correcciones de editor web — 12/11/2026
+
+- **Vigente en Cloudflare:** `https://nottas-web-preview.losrobles.workers.dev/`, actualización 12/11/2026 14:16:16 UTC. Web en rama `feature/nottas-web-initial`, respaldo visual anterior en `/stable`; Android/backend no modificados, no APK nueva.
+- **Bugs reportados con capturas:** «Tipo → Tarea» era un `select` inutilizable porque edición deshabilita el cambio de tipo; solo se veían parte de 69 subtareas («Mejoras», 31/69); selector de bloques nativo con franja clara; sombras HTML impropias del Design System.
+- **Solución aplicada:** `#type` permanece oculto para la lógica de creación (botones «Nueva nota» y «Tarea»); `web/nottas-editor.js` usa menú de formato propio con las siete opciones Android, cierre clic fuera/Escape. La visualización del árbol elimina el límite `depth>12` (500 como protección excepcional), conserva `{...n}` en la normalización de nodos y no agrupa como completa una subtarea raíz con hijos pendientes. `textarea` de altura automática muestra textos largos. `web/nottas-ui.css` elimina sombras convencionales de tarjetas/diálogos/menús/paneles; mantiene paleta, contornos y radios nativos.
+- **Pruebas realizadas:** sintaxis JS, IDs y SVG correctos; **test sintético** del renderizado con 69 nodos: plano con 31 marcados → 38 pendientes y 31 marcados; cadena anidada de 69 → 69 representados. Worker Cloudflare actualizado e inspeccionado, WebSocket y sesión persistente siguen, sin polling. **No se ha probado** en el navegador del usuario que «Mejoras» visualice 69 ni la sincronización real tras editar.
+- **Regresión:** no tocar FCM, WSS, D1 ni Android para cambios visuales; conservar `/stable`. Ver `web/README.md` de la rama web para detalles, y evaluar la lista real antes de afirmar paridad completa.
+
 ## Nottas Web — experiencia de Android en escritorio (12/11/2026)
 
 **Actualización web publicada en Cloudflare** (13:45:32 UTC del 12/11/2026): `https://nottas-web-preview.losrobles.workers.dev/`. Rama del frontend `feature/nottas-web-initial`; respaldo de interfaz/sincronización `/stable` y cliente antiguo `/classic`. **No se modificó Android ni el backend**, ni se publicó APK nueva.

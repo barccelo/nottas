@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — selector, subtareas completas y superficies planas — 12 de noviembre de 2026
+
+- El selector deshabilitado «Tipo/Tarea» deja de aparecer al editar; tipos nuevos siguen definidos por los botones de creación.
+- El editor de bloques usa menú propio de Nottas para Texto, Título, Subtítulo, Casilla, Viñeta, Número y Cita, sin `select` nativo.
+- Eliminado truncamiento a 12 niveles de subtareas, con validación simulada de 69 nodos; los elementos marcados se agrupan únicamente si sus hijos también lo están. Se conservan metadatos originales y se muestran textos completos multilínea.
+- Diseño de tarjetas, diálogos, paneles y menús sin las sombras HTML tradicionales. FCM/WSS, sesión, backend y APK intactos.
+- Actualizado Worker de Cloudflare con copia anterior `/stable`; pendiente revisión visual/funcional real.
+
 ## Nottas Web — tarjetas y formularios al estilo Android — 12 de noviembre de 2026
 
 - Tarjeta de subtareas plegable siempre visible con contador, tanto en la lista como en el editor; «Elementos marcados» al final, ocultables por su chevrón. Se conserva el árbol de subtareas.

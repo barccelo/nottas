@@ -4,6 +4,18 @@
 
 **Resumen para chats nuevos:** [CONTINUIDAD.md](CONTINUIDAD.md) reúne la prioridad vigente. Leer primero los pendientes de la versión actual; los bloques históricos pueden representar verificaciones antiguas y no necesariamente errores aún activos.
 
+## Verificaciones de correcciones de editor web (12/11/2026)
+
+- [x] Ocultar selector inerte «Tipo/Tarea» al editar, sin perder los botones «Nueva nota» y «Tarea».
+- [x] Sustituir selector de formato nativo por menú Nottas propio (Texto, Título, Subtítulo, Casilla, Viñeta, Número, Cita).
+- [x] Mostrar todas las subtareas anidadas, sin límite de profundidad 12; 69 nodos probados con 31 marcados y árbol profundo 69.
+- [x] Preservar metadatos originales de los nodos al normalizar y evitar agrupar como finalizados los padres con hijos pendientes.
+- [x] Textos largos de subtareas con textarea de altura automática y superficies sin sombras HTML.
+- [x] Publicado frontend en Cloudflare; `/stable`, FCM/WSS y sesión persistente preservados, sin polling ni cambio APK.
+- [ ] **Prueba real:** abrir «Mejoras» en navegador, verificar visibles todos los 38 pendientes y posibilidad de expandir los 31 marcados; revisar distribución y scroll con textos largos.
+- [ ] Verificar selección de tipos de bloque, formato de texto, teclado móvil, saltos de línea y guardado Android↔Web en tarea real. Verificar que campos ricos y jerarquías se conserven.
+- [ ] Revisión estética final de otras pantallas web para detectar sombras nativas remanentes, espacios y menús HTML no personalizados.
+
 ## Nottas Web — verificar nueva interfaz espejo (12/11/2026)
 
 - [x] Tarjeta fija desplegable de subtareas en cards y editor, visible aunque esté cerrada, con contador y sin aplanar los hijos.
