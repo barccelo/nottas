@@ -1,5 +1,13 @@
 # Estado actual de Nottas
 
+## Seguridad de datos Android y navegación de subtareas (12/11/2026)
+
+- Código Android en `main` con versión 0.27.118 / 199: cambios locales pendientes no son sustituidos por snapshots ni respuestas remotas; en conflicto la revisión local se eleva y se reintenta. Confirmación de subida coteja revisión y `updatedAt` enviados.
+- Botón subtareas de ancho total, atajo «Ir al final» tras desplegar; no levantar teclado de tarea/nota al abrir, excepto nota existente sin título.
+- Web de previsualización en Cloudflare actualizada con controles equivalentes, archivos principales y respaldos conservados. Pendientes pruebas de navegador y reconexión de datos real.
+- GitHub Actions tras commit de versión pendiente de verificación de APK firmada en Releases.
+
+
 ## Ajustes visuales y desplazamiento del editor web (12/11/2026)
 
 - Cambios en rama `feature/nottas-web-initial`: subtareas con scroll interno contenido; barra de formato con selección activa visible; flecha del menú de bloques alineada; área de texto sin aspecto de tarjeta.
