@@ -7,6 +7,7 @@
   let screen="home", smartFilter="all", settingsPage="appearance";
   let calendarMode="month", cursor=new Date(), calendarSelection=new Date();
   let selectedWorkspace="";
+  const taskCardDisclosure=new Map(); // local UI state only; never synchronized or written to D1
   const icon=(name,extra="")=>{
     const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
     svg.setAttribute("class","ns-icon"+(extra?" "+extra:""));
@@ -36,7 +37,7 @@
     function visit(list,depth=0){
       if(depth>12)return;
       for(const x of list||[]){
-        result.push({id:String(x.id||""),label:String(x.text||x.title||""),done:!!(x.done||x.checked)});
+        result.push({id:String(x.id||""),label:String(x.text||x.title||""),done:!!(x.done||x.checked),depth});
         if(Array.isArray(x.children))visit(x.children,depth+1);
       }
     }
@@ -149,6 +150,22 @@
       .filter(x=>(titleOf(x)+" "+bodyOf(x)+" "+taskItems(x.payload).map(y=>y.label).join(" ")).toLocaleLowerCase().includes(q))
       .sort((a,b)=>Number(!!b.payload.pinned)-Number(!!a.payload.pinned)||Number(b.payload.updatedAt||0)-Number(a.payload.updatedAt||0));
   }
+  function nodeCompletedToggle(count,ui,lines){
+    const section=elt("section","nottas-card-completed");
+    const header=elt("button","nottas-card-completed-toggle");header.type="button";
+    const arrow=icon("ns-chevron","nottas-completed-chevron");
+    header.append(arrow,elt("span","",count===1?"1 elemento marcado":count+" elementos marcados"));
+    header.setAttribute("aria-expanded",String(ui.completed));
+    const list=elt("div","nottas-card-completed-list subtask-list");
+    list.classList.toggle("hidden",!ui.completed);
+    for(const row of lines)list.append(row);
+    header.addEventListener("click",event=>{
+      event.stopPropagation();ui.completed=!ui.completed;
+      list.classList.toggle("hidden",!ui.completed);
+      header.setAttribute("aria-expanded",String(ui.completed));
+    });
+    section.append(header,list);return section;
+  }
   function itemCard(x){
     const p=x.payload,task=x.entityType==="task",card=elt("article","item-card"+(task&&p.done?" done":""));
     card.setAttribute("role","button");card.tabIndex=0;
@@ -171,24 +188,64 @@
     top.append(content);card.append(top);
     const items=task?taskItems(p):noteBlocks(p).check;
     if(items.length){
-      const list=elt("div","subtask-list");
-      items.slice(0,5).forEach(row=>{
-        const rowEl=elt("div","subtask-preview"+(row.done?" done":""));
+      const cacheKey=x.workspaceId+":"+x.entityType+":"+x.entityId;
+      const ui=taskCardDisclosure.get(cacheKey)||{expanded:!task,completed:false};
+      taskCardDisclosure.set(cacheKey,ui);
+      const container=elt("div",task?"nottas-card-subtasks":"nottas-card-note-checklist");
+      const makeRow=row=>{
+        const line=elt("div","subtask-preview"+(row.done?" done":""));
+        line.style.setProperty("--depth",Math.min(row.depth||0,5)*16+"px");
         const check=elt("button","quick-check"+(row.done?" checked":""));
         check.type="button";check.title=row.done?"Desmarcar elemento":"Marcar elemento";
         check.setAttribute("aria-label",check.title+": "+row.label);
         if(row.done)check.append(icon("ns-check","tiny"));
-        if(!row.id){check.disabled=true}
+        if(!row.id)check.disabled=true;
         else check.addEventListener("click",event=>{
           event.stopPropagation();
           if(task)window.NottasEditor?.toggleItem(x,row.id);
           else window.NottasEditor?.toggleNoteCheck(x,row.id);
         });
-        rowEl.append(check,elt("span","",row.label||"Elemento"));
-        list.append(rowEl);
-      });
-      if(items.length>5)list.append(elt("span","section-caption","+"+(items.length-5)+" más"));
-      card.append(list);
+        const label=elt("button","nottas-subtask-label",row.label||"Elemento");
+        label.type="button";label.title="Editar elemento";
+        label.addEventListener("click",event=>{
+          event.stopPropagation();window.NottasEditor?.openAt(x,task?"subtasks":"title");
+        });
+        line.append(check,label);
+        return line;
+      };
+      if(task){
+        const title=elt("button","nottas-card-subtasks-toggle");
+        title.type="button";
+        title.append(icon("ns-nav-all"),elt("span","nottas-card-subtasks-title","Subtareas"));
+        title.append(elt("small","nottas-card-progress",items.filter(n=>n.done).length+"/"+items.length));
+        const arrow=icon("ns-chevron","nottas-subtask-chevron");title.append(arrow);
+        const content=elt("div","nottas-card-subtasks-body");
+        content.classList.toggle("hidden",!ui.expanded);
+        title.setAttribute("aria-expanded",String(ui.expanded));
+        title.setAttribute("aria-label",(ui.expanded?"Ocultar":"Mostrar")+" subtareas");
+        title.addEventListener("click",event=>{
+          event.stopPropagation();ui.expanded=!ui.expanded;
+          content.classList.toggle("hidden",!ui.expanded);
+          title.setAttribute("aria-expanded",String(ui.expanded));
+          title.setAttribute("aria-label",(ui.expanded?"Ocultar":"Mostrar")+" subtareas");
+        });
+        container.append(title,content);
+        const active=items.filter(n=>!n.done),completed=items.filter(n=>n.done);
+        const unmarked=elt("div","subtask-list");
+        for(const row of active)unmarked.append(makeRow(row));
+        content.append(unmarked);
+        if(completed.length){
+          const complete=nodeCompletedToggle(completed.length,ui,completed.map(makeRow));
+          content.append(complete);
+        }
+      }else{
+        const list=elt("div","subtask-list");
+        for(const row of items.slice(0,10))list.append(makeRow(row));
+        if(items.length>10)list.append(elt("small","section-caption","+"+(items.length-10)+" más"));
+        container.append(list);
+      }
+      container.addEventListener("click",event=>event.stopPropagation());
+      card.append(container);
     }
     const meta=elt("div","meta");
     // Metadata actions mirror tapping the corresponding chip in Android.
@@ -197,7 +254,8 @@
       if(field){target.type="button";target.title="Editar "+label;target.setAttribute("aria-label","Editar "+label)}
       target.append(icon(kind,"tiny"),elt("span","",label));
       if(field)target.addEventListener("click",event=>{
-        event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,field);
+        event.preventDefault();event.stopPropagation();
+        if(!window.NottasFloat?.open(x,field,event.currentTarget))window.NottasEditor?.openAt(x,field);
       });
       meta.append(target);
     }
@@ -212,7 +270,8 @@
         button.type="button";button.title="Cambiar categoría";button.setAttribute("aria-label","Cambiar categoría: "+category.name);
         button.append(window.NottasCategories.label(category));
         button.addEventListener("click",event=>{
-          event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,"category");
+          event.preventDefault();event.stopPropagation();
+          if(!window.NottasFloat?.open(x,"category",event.currentTarget))window.NottasEditor?.openAt(x,"category");
         });
         meta.append(button);
       }
@@ -236,7 +295,8 @@
         const status=elt("button","item-status status-"+statusKind,statusLabel);
         status.type="button";status.title="Ver estado del evento";status.setAttribute("aria-label","Ver estado: "+statusLabel);
         status.addEventListener("click",event=>{
-          event.preventDefault();event.stopPropagation();window.NottasEditor?.openAt(x,"status");
+          event.preventDefault();event.stopPropagation();
+          if(!window.NottasFloat?.open(x,"status",event.currentTarget))window.NottasEditor?.openAt(x,"status");
         });
         meta.append(status);
       }
