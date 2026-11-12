@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Android v0.27.118 / Web — protección offline y editor (12/11/2026)
+
+- Guardado sincronizado: el contenido local marcado como pendiente prevalece sobre snapshots remotos hasta obtener confirmación de la revisión enviada; los conflictos incrementan la revisión y mantienen el contenido para reintento, sin borrar por un fallo de red.
+- Android: añadir subtarea a ancho completo; botón contextual para saltar al final; teclado cerrado al abrir editor nuevo, salvo nota existente sin título.
+- Web: botón ancho y salto al final en subtareas; apertura sin enfoque automático; Worker publicado conservando `/stable` y `/classic`.
+- Gradle 0.27.118 (`versionCode 199`); firma, Release y prueba offline real pendientes de comprobación tras GitHub Actions.
+
+
 ## Nottas Web — desplazamiento y editor enriquecido (12/11/2026)
 
 - Subtareas del editor con área de desplazamiento propia y límite que no propaga el gesto al formulario principal.
