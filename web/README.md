@@ -4,6 +4,20 @@
 
 **URL:** https://nottas-web-preview.losrobles.workers.dev/
 
+## Corrección de editor: lista completa, tipos y diseño sin sombras — 12/11/2026
+
+**Incidencias reportadas con capturas del editor de «Mejoras»:** el selector `Tipo / Tarea` aparecía al editar aunque estaba deshabilitado; la tarea contabilizaba 31/69 subtareas y mostraba solo parte de la jerarquía; el selector de formato de bloques era un `<select>` nativo con franja clara y menús de apariencia HTML; exceso de sombras.
+
+**Implementado y publicado:** en `web/index.html` se mantiene el `select#type` **oculto** solo para compatibilidad; el usuario utiliza los controles independientes «Nueva nota» y «Tarea» ya existentes. Al editar, no se puede cambiar el tipo ni se muestra el control sin efecto. El editor construye menú de tipos de bloque accesible, sin `select` nativo, con las siete opciones Android y cierre por clic exterior o Escape.
+
+**Integridad de subtareas:** en `web/nottas-editor.js` se eliminó el límite visual anterior `depth>12` para árboles normales; se permite hasta 500 niveles como protección contra estructuras aberrantes. Se conserva `{...n}` al normalizar cada nodo para no perder metadatos ajenos a los campos editados. La agrupación de marcados exige que también estén completos los hijos, evitando esconder descendientes pendientes dentro de una sección plegada. Los campos pasan a `textarea` de altura automática para mostrar textos largos sin truncamiento, con salto de línea preservado en el HTML al editar. No se cambia el esquema de Android, el árbol `items` ni la vía de sincronización.
+
+**Diseño:** `web/nottas-ui.css` elimina sombras HTML de tarjetas, formularios, menú de espacios, categoría, paneles y desplegables. Se conservan los tokens, radios, bordes y colores de Nottas, con control de formatos emergente en la paleta del tema y sin el desplegable nativo.
+
+**Pruebas realizadas:** sintaxis válida de JS del núcleo, editor, vistas, formularios flotantes, calendario y categorías; sin IDs DOM duplicados, referencias ausentes o iconos inexistentes; prueba de renderizado del editor con 69 subtareas planas (31 marcadas: 38 pendientes + 31 marcadas) y árbol de 69 niveles (69 visibles); despliegue Cloudflare aceptado y código publicado inspeccionado. `/stable` y `/classic` conservadas, WSS y sesión persistente intactos, sin `setInterval` ni polling.
+
+**Pendiente:** revisión visual real en navegador (texto largo, edición de subtareas con formato, comportamiento de menú propio y scroll de lista); verificar que la tarea real «Mejoras» muestre los 69 elementos y que al guardarlos se reflejen en Android. Las pruebas sintéticas no son prueba end-to-end con el usuario.
+
 ## Paridad de interacción Android → Web — 12/11/2026
 
 **Publicado:** `https://nottas-web-preview.losrobles.workers.dev/`; última revisión confirmada en Cloudflare a las 13:45:32 UTC del 12/11/2026. El respaldo `/stable` conserva íntegro el código anterior con sesión persistente y WSS/FCM; `/classic` sigue disponible.
