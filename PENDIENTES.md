@@ -1,5 +1,15 @@
 # Pendientes de Nottas
 
+## Verificar correcciones v0.27.119 (12/11/2026)
+
+- [x] Sustituir flecha tipográfica por SVG Nottas en web y Android.
+- [x] Separar scroll de subtareas del botón de agregar en web y publicar Worker conservando respaldos.
+- [x] En Android, abrir tareas y notas sin teclado solo si tienen título; con título vacío solicitar teclado.
+- [ ] Probar tarea «Mejoras» de 69 subtareas, comprobar botón visible, salto al final, marcadas plegables y tema claro/oscuro, en tamaños pequeño/grande.
+- [ ] Probar teclado Android con tarea y nota nuevas, existentes con título y sin título; verificar que no hay reapertura imprevista al navegar.
+- [ ] Verificar firma, Release v0.27.119 y descarga de Obtainium; luego comprobar actualización en dispositivo físico.
+
+
 ## Validación urgente de guardado offline y editor (12/11/2026)
 
 - [x] Evitar que snapshots/conflictos sustituyan ediciones Android pendientes, y reconocer solo la revisión exacta enviada.
