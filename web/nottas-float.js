@@ -61,6 +61,7 @@
   }
   function showDraft(field,anchor,read,apply){
     if(!fields.has(field)||!$("editor")?.open||typeof read!=="function"||typeof apply!=="function")return false;
+    if(context?.draft&&context.field===field&&context.anchor===anchor){close();return true}
     createPanel();
     let payload;
     try{payload=read()}catch(e){return false}
