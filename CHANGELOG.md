@@ -5,7 +5,7 @@
 - Guardado sincronizado: el contenido local marcado como pendiente prevalece sobre snapshots remotos hasta obtener confirmación de la revisión enviada; los conflictos incrementan la revisión y mantienen el contenido para reintento, sin borrar por un fallo de red.
 - Android: añadir subtarea a ancho completo; botón contextual para saltar al final; teclado cerrado al abrir editor nuevo, salvo nota existente sin título.
 - Web: botón ancho y salto al final en subtareas; apertura sin enfoque automático; Worker publicado conservando `/stable` y `/classic`.
-- Gradle 0.27.118 (`versionCode 199`); firma, Release y prueba offline real pendientes de comprobación tras GitHub Actions.
+- Gradle 0.27.118 (`versionCode 199`); APK firmada publicada y verificada en GitHub Release `v0.27.118` mediante Actions `43272639018`; prueba offline real pendiente.
 
 
 ## Nottas Web — desplazamiento y editor enriquecido (12/11/2026)
