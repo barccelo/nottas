@@ -171,22 +171,46 @@
     ["addParagraphBtn","addChecklistBtn","addBulletBtn","addSubtaskBtn"].forEach(id=>$(id).disabled=disabled);
     drawBlocks();drawSubtasks();syncPin();renderApproval();
   }
+  function hideCategoryMenu(){
+    $("editCategoryMenu").classList.add("hidden");
+    $("editCategoryTrigger").setAttribute("aria-expanded","false");
+  }
   function fillCategories(workspaceId,selected){
-    const select=$("editCategory");select.replaceChildren();
-    const option=(id,name)=>{
-      const node=el("option","",name);node.value=id;select.append(node);
-    };
-    option("inbox","Sin categoría");
-    const categories=[...state.categories.values()].filter(x=>{
-      const c=x.payload;
-      return !c.deletedAt&&(!c.workspaceId||c.workspaceId===workspaceId);
-    }).sort((a,b)=>String(a.payload.name||"").localeCompare(String(b.payload.name||""),"es"));
-    for(const c of categories){if(c.payload.id==="inbox")continue;option(c.payload.id,String(c.payload.name||"Categoría"))}
-    if(selected&&!Array.from(select.options).some(o=>o.value===selected))option(selected,"Categoría anterior");
+    const select=$("editCategory"),menu=$("editCategoryMenu");
+    select.replaceChildren();menu.replaceChildren();
+    const cats=window.NottasCategories;
+    const list=cats.choices(workspaceId);
+    if(selected&&!list.some(c=>c.id===selected))list.push(cats.find(selected,workspaceId));
+    for(const c of list){
+      const opt=el("option","",c.name);opt.value=c.id;select.append(opt);
+      const choice=el("button","editor-category-choice");
+      choice.type="button";choice.setAttribute("role","option");choice.dataset.categoryId=c.id;
+      choice.append(cats.label(c));
+      choice.addEventListener("click",()=>{
+        select.value=c.id;
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+        hideCategoryMenu();
+        $("editCategoryTrigger").focus();
+      });
+      menu.append(choice);
+    }
     select.value=selected||"inbox";
+    if(!select.value)select.value="inbox";
+    renderCategoryValue();
+  }
+  function renderCategoryValue(){
+    const cats=window.NottasCategories,select=$("editCategory");
+    const selected=cats.find(select.value,draft?.original?.workspaceId||state.workspaceId);
+    $("editCategoryPreview").replaceChildren(cats.label(selected));
+    const menu=$("editCategoryMenu");
+    for(const btn of menu.children){
+      const active=btn.dataset.categoryId===select.value;
+      btn.classList.toggle("selected",active);btn.setAttribute("aria-selected",String(active));
+    }
   }
   function open(item=null){
     if(!state.token||state.busy)return;
+    hideCategoryMenu();
     state.current=item;
     const type=item?.entityType||"note",p=item?.payload||{};
     draft={original:item,type,blocks:sourceBlocks(p),items:type==="task"?sourceItems(p):[],pinned:!!p.pinned,approvalStatus:null};
@@ -215,9 +239,81 @@
     draft.initialExtraReminder=additional[0];
     $("editExtraReminder").value=additional[0]??"";
     $("editExtraReminder").title=additional.length>1?"Los demás recordatorios personalizados se conservarán.":"";
+    updateReminderSummary();
+    updateDateShortcuts();
+    $("quickScheduleHint").classList.add("hidden");
     $("editError").textContent="";
     configure();
     $("editor").showModal();
+    if(!item)updateQuickScheduleHint();
+  }
+  function updateQuickScheduleHint(){
+    const box=$("quickScheduleHint");
+    if(!draft||draft.type!=="task"||draft.original){box.classList.add("hidden");return}
+    const candidate=window.NottasSchedule?.parse($("title").value);
+    draft.quickSchedule=candidate?.found?candidate:null;
+    box.classList.toggle("hidden",!draft.quickSchedule);
+    if(!draft.quickSchedule)return;
+    const date=window.NottasSchedule.displayDate(draft.quickSchedule.date);
+    const time=draft.quickSchedule.time;
+    $("quickScheduleText").textContent="Detectado: "+(date||"")+(time?" · "+time:"")+".";
+    $("quickScheduleApply").textContent="Usar "+date+(time?" · "+time:"");
+  }
+  function applyQuickSchedule(){
+    const suggestion=draft?.quickSchedule;
+    if(!suggestion?.found)return;
+    if(suggestion.date)$("editDueDate").value=suggestion.date;
+    if(suggestion.time)$("editDueTime").value=suggestion.time;
+    if(suggestion.clean&&suggestion.clean!==$("title").value.trim())$("title").value=suggestion.clean;
+    $("quickScheduleHint").classList.add("hidden");
+    draft.quickSchedule=null;
+    updateDateShortcuts();
+    updateReminderSummary();
+    $("editDueDate").dispatchEvent(new Event("change",{bubbles:true}));
+    $("title").focus();
+  }
+  function updateDateShortcuts(){
+    if(!draft)return;
+    const sch=window.NottasSchedule;
+    if(!sch)return;
+    const today=sch.isoDate(new Date()),tomorrow=sch.isoDate(sch.addDays(new Date(),1));
+    const after=sch.isoDate(sch.addDays(new Date(),2)),value=$("editDueDate").value;
+    for(const b of document.querySelectorAll("[data-date-shortcut]")){
+      const chosen=b.dataset.dateShortcut;
+      const active=chosen==="today"?value===today:chosen==="tomorrow"?value===tomorrow:chosen==="aftertomorrow"?value===after:!value;
+      b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
+    }
+    for(const b of document.querySelectorAll("[data-time-shortcut]")){
+      const selected=b.dataset.timeShortcut;
+      const active=selected==="clear"?!$("editDueTime").value:$("editDueTime").value===selected;
+      b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active));
+    }
+  }
+  function updateReminderSummary(){
+    if(!draft)return;
+    const selected=[...document.querySelectorAll("#editorReminders input:checked")].map(x=>Number(x.value));
+    const custom=+$("editExtraReminder").value;
+    if($("editExtraReminder").value!==""&&Number.isInteger(custom)&&custom>0)selected.push(custom);
+    // Show retained custom alerts not exposed by the single custom input.
+    const presets=[0,5,10,60,1440];
+    const extras=(draft.reminders||[]).filter(n=>!presets.includes(n)&&n!==draft.initialExtraReminder);
+    const count=new Set([...selected,...extras]).size;
+    $("editReminderSummary").textContent=count?count+(count===1?" aviso":" avisos"):"Sin recordatorios";
+  }
+  function openAt(item,target=""){
+    if(!item||!state.token)return;
+    open(item);
+    if(!$("editor").open)return;
+    const map={date:"editDueDate",endDate:"editEndDate",time:"editDueTime",endTime:"editEndTime",
+      reminders:"editorReminders",category:"editCategoryTrigger",status:"editMeetingStatus",priority:"editPriority",recurrence:"editRecurrence",tags:"editTags"};
+    const field=$(map[target]||"title");
+    field?.scrollIntoView({block:"center",behavior:"instant"});
+    field?.focus({preventScroll:true});
+    if(["date","endDate","time","endTime"].includes(target)){
+      try{field.showPicker?.()}catch{} // Browsers without showPicker use the native focusable input.
+    }else if(target==="category"){
+      $("editCategoryMenu").classList.remove("hidden");$("editCategoryTrigger").setAttribute("aria-expanded","true");
+    }
   }
   function collectReminders(){
     const old=Array.isArray(draft.reminders)?draft.reminders:[];
@@ -258,7 +354,7 @@
       if(draft.type==="note"){
         payload.title=$("title").value.trim();
         if(!original||payload.title!==original.payload.title)payload.titleHtml=escape(payload.title);
-        if(!original){payload.category="inbox";payload.tags=[]}
+        // Keep the category and tags selected in the web editor.
       }else{
         payload.text=$("title").value.trim();
         if(!original||payload.text!==original.payload.text)payload.textHtml=escape(payload.text);
@@ -278,7 +374,6 @@
         payload.reminders=collectReminders();
         payload.reminder=payload.reminders.length===0?"none":payload.reminders[0]===0?"at":({5:"5m",10:"10m",15:"15m",30:"30m",60:"1h",1440:"1d"}[payload.reminders[0]]||"at");
         if(!original){
-          payload.category="inbox";payload.tags=[];
           payload.meetingTracked=state.workspaces.find(w=>w.id===state.workspaceId)?.kind==="assistant";
           payload.meetingStatus="scheduled";
           payload.approvalStatus=state.workspaces.find(w=>w.id===state.workspaceId)?.role==="assistant"?"proposed":"confirmed";
