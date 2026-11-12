@@ -230,12 +230,27 @@
           title.setAttribute("aria-label",(ui.expanded?"Ocultar":"Mostrar")+" subtareas");
         });
         container.append(title,content);
-        const active=items.filter(n=>!n.done),completed=items.filter(n=>n.done);
+        const roots=Array.isArray(p.items)&&p.items.length?p.items:(Array.isArray(p.subtasks)?p.subtasks:[]);
+        const flatten=nodes=>{
+          const out=[];
+          const visit=(list,depth=0)=>{
+            if(depth>12)return;
+            for(const n of list||[]){
+              out.push({id:String(n.id||""),label:String(n.text||n.title||""),done:!!(n.done||n.checked),depth});
+              if(n.children?.length)visit(n.children,depth+1);
+            }
+          };visit(nodes);return out;
+        };
+        // Android groups only completed top-level items at the end:
+        // completed children stay beneath their unfinished parent.
+        const active=flatten(roots.filter(n=>!(n.done||n.checked)));
+        const completed=flatten(roots.filter(n=>!!(n.done||n.checked)));
+        const completedRoots=roots.filter(n=>!!(n.done||n.checked)).length;
         const unmarked=elt("div","subtask-list");
         for(const row of active)unmarked.append(makeRow(row));
         content.append(unmarked);
         if(completed.length){
-          const complete=nodeCompletedToggle(completed.length,ui,completed.map(makeRow));
+          const complete=nodeCompletedToggle(completedRoots,ui,completed.map(makeRow));
           content.append(complete);
         }
       }else{
