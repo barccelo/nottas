@@ -1,5 +1,16 @@
 # Pendientes de Nottas
 
+## Validación urgente de guardado offline y editor (12/11/2026)
+
+- [x] Evitar que snapshots/conflictos sustituyan ediciones Android pendientes, y reconocer solo la revisión exacta enviada.
+- [x] Añadir subtarea de ancho total, acceso al final de lista al expandir, abrir editores sin teclado automático según tipo de nota.
+- [x] Replicar controles aplicables en web y publicar Worker conservando respaldos.
+- [ ] **Prueba crítica en Android:** activar modo avión, modificar una nota existente varias veces, salir, cerrar y reabrir Nottas, reconectar y revisar íntegra la nota en Android y web.
+- [ ] Reproducir cambios concurrentes desde web/Android para verificar retención de edición offline y eventual aceptación del servidor (sin pérdida silenciosa ni sobrescritura).
+- [ ] Validar teclado (nuevo/antiguo sin título), botón ancho y «Ir al final» en listas largas Android y web.
+- [ ] Verificar CI Android 0.27.118, firma de APK, Release y Obtainium; no declarar publicada hasta comprobarla.
+
+
 ## Verificación del editor web (12/11/2026)
 
 - [x] Aplicar CSS de scroll interno a subtareas y contención de overscroll.
