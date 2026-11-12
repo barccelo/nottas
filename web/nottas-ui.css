@@ -712,3 +712,18 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
   padding:0;
 }
 #editor .editor-delete-mini{align-self:center}
+
+/* Android editor parity: wide action, contextual jump, no keyboard on opening a blank draft. */
+#editor .nottas-subtask-content #addSubtaskBtn{
+  display:flex;width:100%;min-height:44px;
+  justify-content:center;align-items:center;
+  border:1px solid var(--line);border-radius:12px;
+  background:var(--surface-2);text-align:center;
+}
+#editor .nottas-subtasks-jump{
+  display:flex;width:100%;align-items:center;justify-content:center;
+  min-height:37px;margin:1px 0 6px;border:0;
+  border-radius:10px;background:color-mix(in srgb,var(--blue) 9%,var(--surface));
+  color:var(--blue);font-size:12px;font-weight:630;
+}
+#editor .nottas-subtasks-jump.hidden{display:none!important}
