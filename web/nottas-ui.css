@@ -570,3 +570,79 @@ html[data-theme="dark"] .item-card .status-realized{background:#1d4330;color:#8d
  #editor .nottas-editor-chip{font-size:11px;padding:8px 10px;min-height:34px}
  #editor.nottas-task-editor #title{font-size:21px}
 }
+
+/* Correcciones del espejo Android · 12 nov. 2026
+   Superficies planas, sin sombras HTML; controles propios de Nottas. */
+html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
+.item-card,.item-card:hover,.panel-card,
+#editor,#login,dialog,
+.workspace-menu,#editor .editor-category-menu,
+.nottas-float,#editor .editor-block-menu,
+.status-chip,.settings-group,.settings-card{
+  box-shadow:none!important;
+}
+.item-card:hover{border-color:color-mix(in srgb,var(--blue) 27%,var(--line))}
+#editor{border-radius:20px;background:var(--surface);box-shadow:none}
+#editor::backdrop{background:rgba(0,0,0,.46);backdrop-filter:blur(5px)}
+#editor #type{display:none!important}
+#editor .editor-subtask-list{display:flex;flex-direction:column;gap:3px;max-height:none!important;overflow:visible!important;min-width:0}
+#editor .editor-item-row{align-items:flex-start;min-width:0;height:auto;flex-shrink:0}
+#editor .editor-item-row textarea.editor-subtask-input{
+  flex:1 1 auto;width:100%;min-width:0;min-height:37px;
+  height:auto;max-height:none;overflow:hidden;resize:none;
+  white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.42;
+  font-family:inherit;font-size:13px;font-weight:480;padding:8px 5px;
+}
+#editor .editor-item-row.is-checked textarea.editor-subtask-input{
+  color:var(--muted);text-decoration:line-through
+}
+#editor .nottas-subtask-content .editor-item-row textarea.editor-subtask-input{min-height:37px;height:auto}
+#editor .nottas-subtask-content{overflow:visible!important;max-height:none!important}
+#editor .nottas-completed-section{display:block}
+#editor .nottas-completed-section.hidden{display:none!important}
+/* Formato: eliminar el selector <select> del navegador. */
+#editor .editor-row-tools{display:flex;flex:0 0 auto;align-items:flex-start;gap:4px}
+#editor .editor-block-selector{position:relative;flex:0 0 auto}
+#editor .editor-block-trigger{
+  border:1px solid var(--line);border-radius:10px;background:var(--surface);
+  color:var(--muted);height:34px;min-width:67px;max-width:93px;
+  padding:6px 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:11px;font-weight:630;text-align:left
+}
+#editor .editor-block-trigger::after{
+  content:"⌄";color:var(--muted);padding-left:6px;font-size:13px
+}
+#editor .editor-block-trigger:hover,#editor .editor-block-trigger[aria-expanded="true"]{
+  background:var(--surface-2);color:var(--fg);border-color:var(--blue)
+}
+#editor .editor-block-menu{
+  position:absolute;right:0;top:calc(100% + 5px);z-index:30;
+  min-width:152px;max-height:265px;overflow-y:auto;
+  padding:6px;border:1px solid var(--line);border-radius:13px;
+  background:var(--surface);box-shadow:none
+}
+#editor .editor-block-menu.hidden{display:none!important}
+#editor .editor-block-choice{
+  width:100%;min-height:37px;padding:8px 10px;text-align:left;
+  border:0;border-radius:9px;background:transparent;color:var(--fg);
+  font-size:12px;font-weight:550
+}
+#editor .editor-block-choice:hover{background:var(--surface-2)}
+#editor .editor-block-choice.selected{
+  color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,var(--surface))
+}
+#editor .editor-delete-mini{border-radius:9px}
+#editor .editor-block-row{position:relative;min-width:0}
+#editor .editor-block-row .editor-rich-input{min-width:0}
+#editor .editor-block-row .editor-row-tools{position:relative}
+#editor .editor-grid select,#editor #editMeetingStatus{
+  appearance:none;-webkit-appearance:none;
+  border:1px solid var(--line);background:var(--surface-2);
+  color:var(--fg);border-radius:11px;box-shadow:none;
+}
+#editor .editor-actions,#editor .editor-actions button{box-shadow:none}
+@media(max-width:650px){
+  #editor .editor-row-tools{flex-direction:row;gap:3px}
+  #editor .editor-block-menu{min-width:142px}
+  #editor .editor-item-row textarea.editor-subtask-input{font-size:13px}
+}
