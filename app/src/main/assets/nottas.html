@@ -2167,6 +2167,28 @@ html[data-theme="dark"] .taskInlineDetailDone button{background:#303035;color:#f
 #settingsOverlay .dsCatalogScreen{padding:0;overflow:hidden;min-height:0}
 #settingsOverlay .dsCatalogScreen iframe{display:block;width:100%;height:100%;min-height:0;border:0;background:#f5f5f7;border-radius:13px}
 html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101012}
+
+/* 0.27.118: full-width subtask action and contextual jump to the list end. */
+#editorOverlay.taskEditorMode #addSubtaskBtn{
+  display:flex;width:100%;min-height:44px;align-items:center;justify-content:center;
+  border:1px solid rgba(118,118,128,.18);border-radius:12px;
+  background:rgba(118,118,128,.07);color:#1677ff;
+  font-size:14px;font-weight:640;text-align:center;padding:10px 14px;
+}
+#editorOverlay.taskEditorMode #addSubtaskBtn:active{background:rgba(22,119,255,.11)}
+html[data-theme="dark"] #editorOverlay.taskEditorMode #addSubtaskBtn{
+  background:#29292d;color:#76b6ff;border-color:#39393e;
+}
+#editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
+  width:100%;min-height:38px;margin:4px 0 6px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:0;border-radius:10px;background:rgba(22,119,255,.08);
+  color:#1677ff;font-size:12px;font-weight:650;
+}
+#editorOverlay.taskEditorMode .taskSubtasksJumpEnd.hidden{display:none}
+html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
+  background:rgba(80,158,255,.14);color:#76b6ff;
+}
 </style>
 <link rel="stylesheet" href="design-system.css">
 </head>
@@ -2646,6 +2668,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
           <span class="taskSubtasksSummaryTitle">Subtareas</span>
           <span id="taskSubtasksSummaryCount" class="taskSubtasksSummaryCount"></span>
         </button>
+        <button id="taskSubtasksJumpEnd" class="taskSubtasksJumpEnd hidden" type="button" aria-label="Ir al final de las subtareas">Ir al final <span aria-hidden="true">↓</span></button>
         <div class="taskContentArea">
           <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
@@ -3965,9 +3988,18 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
         }
         return;
       }
-      // Cloud tombstones win over a stale local copy even if that copy was
-      // edited on an older phone after it missed the deletion.
-      if(!payload.deletedAt&&existing.syncState==="pending"&&syncTimestamp(existing.updatedAt)>syncTimestamp(payload.updatedAt))return;
+      // Offline edits are authoritative locally until acknowledged. Never replace an
+      // unsent note/task with a stale snapshot, a tombstone or a conflict payload.
+      // Keep the same entity ID and retry above the server revision on conflicts.
+      if(existing.syncState==="pending"){
+        if(change.forceConflict){
+          existing.rev=Math.max(Number(existing.rev)||1,Number(payload.rev)||1)+1;
+          existing.updatedAt=now();
+          scheduleSave();
+          scheduleAssistantSync(300);
+        }
+        return;
+      }
       Object.keys(existing).forEach(k=>{if(!(k in payload)&&k!=="syncState")delete existing[k]});
       const purgedAt=existing.deletedAt&&existing.purgedAt?existing.purgedAt:null;
       Object.assign(existing,payload,{syncState:"synced"});
@@ -3975,11 +4007,19 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       if(purgedAt&&existing.deletedAt)existing.purgedAt=purgedAt;
     }else arr.push(payload);
   }
-  function assistantMarkAccepted(rows){
+  function assistantMarkAccepted(rows,sentRevisions=new Map()){
     (Array.isArray(rows)?rows:[]).forEach(a=>{
       const arr=a.entityType==="note"?state.notes:a.entityType==="category"?state.categories:state.tasks;
       const item=arr.find(x=>x.id===a.entityId&&String(x.workspaceId||personalWorkspaceId())===String(a.workspaceId||""));
-      if(item&&syncTimestamp(item.updatedAt)<=syncTimestamp(a.updatedAt)){if(a.payload&&typeof a.payload==="object")Object.assign(item,a.payload);item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);item.syncState="synced"}
+      const key=a.entityType+":"+a.workspaceId+":"+a.entityId;
+      const submitted=sentRevisions.get(key);
+      // Response may arrive while the editor has already made a newer change.
+      // Never copy accepted server data over newer in-memory text.
+      if(item&&submitted&&item.syncState==="pending"&&
+         Number(item.rev)===submitted.rev&&String(item.updatedAt)===submitted.updatedAt){
+        item.rev=Math.max(Number(item.rev)||1,Number(a.rev)||1);
+        item.syncState="synced";
+      }
     });
   }
   async function assistantSync(full=false,silent=false){
@@ -4006,7 +4046,10 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
       state.categories.filter(c=>c.id!=="inbox"&&c.syncState==="pending"&&assistantAuthorizedIds.has(c.workspaceId||personalWorkspaceId())).forEach(c=>pending.push({workspaceId:c.workspaceId||personalWorkspaceId(),entityType:"category",entityId:c.id,payload:c,rev:c.rev,updatedAt:c.updatedAt,deletedAt:c.deletedAt||null}));
       if(pending.length){
         const pushed=await assistantRequest("/v1/sync",{method:"POST",body:{changes:pending}});
-        assistantMarkAccepted(pushed.accepted);
+        const sentRevisions=new Map(pending.map(c=>[c.entityType+":"+c.workspaceId+":"+c.entityId,{
+          rev:Number(c.rev)||1,updatedAt:String(c.updatedAt||"")
+        }]));
+        assistantMarkAccepted(pushed.accepted,sentRevisions);
         (pushed.conflicts||[]).forEach(c=>assistantApplyRemoteChange({entityType:c.entityType,workspaceId:c.workspaceId,payload:c.payload,forceConflict:true}));
         const deliveries=Array.isArray(pushed.pushDelivery)?pushed.pushDelivery:[];
         const undelivered=deliveries.some(d=>d.recipients>0&&d.accepted===0);
@@ -8715,6 +8758,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     preview.classList.toggle("hidden",!count);
     preview.setAttribute("aria-expanded",String(taskSubtasksExpanded));
     preview.setAttribute("aria-label",taskSubtasksExpanded?"Ocultar subtareas":"Mostrar subtareas");
+    $("taskSubtasksJumpEnd").classList.toggle("hidden",!count||!taskSubtasksExpanded);
     $("taskSubtasksBox").classList.toggle("inlineCollapsed",!taskSubtasksExpanded);if(taskInlineOpenPanel==="date")renderTaskInlineCalendar();syncNottasSelectTriggers();syncTaskToolsLayout();
   }
   function meetingIsTracked(t){
@@ -9052,7 +9096,7 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     editorTaskBlocks=t?cloneNoteBlocks(t.blocks||normalizeNoteBlocks([],t.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderTaskBlocks();$("taskBody").value=t?t.body||"":"";
     taskCopyMode=false;taskCopySelection.clear();taskCompletedItemsExpanded=false;taskSubtasksExpanded=false;deferredDateAwaitingTime=false;taskActiveTool="";taskInlineOpenPanel="";taskInlineTimeTarget="start";taskInlineDateTarget="start";$("taskInlineDatePanel").classList.add("hidden");$("taskInlineTimePanel").classList.add("hidden");finishInlineWheelEdit(false);editorSubtasks=cloneTaskItems(t?.items||[],false);renderEditorSubtasks();syncTaskTimeButton();$("deleteTaskLabel").textContent=t?"Borrar":"Descartar borrador";updateTaskEditedHint(t);syncTaskEditorMeta();syncAssistantTaskStrip();renderMeetingFollowup();taskInlineMonth=t?.dueDate?dateFromISO(t.dueDate):new Date();syncTaskInlineForm();$("taskCompletedAtEndToggle").checked=completedSubtasksAtEnd();
     resetTaskHistory();openOverlay("editorOverlay");
-    if(options.autoFocus!==false)setTimeout(()=>{
+    if(options.autoFocus===true)setTimeout(()=>{
       if($("editorOverlay").classList.contains("show")&&editingTaskId===(t?.id||null))$("taskText").focus();
     },80);
     else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
@@ -9077,12 +9121,12 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
     openOverlay("editorOverlay");
-    // Existing titled notes open in reading mode, without raising the Android keyboard.
-    // New notes and untitled notes remain ready for immediate entry.
-    const shouldFocusNote=!n||!$("noteTitle").textContent.trim();
+    // Open without the software keyboard by default. Only genuinely untitled
+    // existing notes request title entry; tapping a field always opens it.
+    const shouldFocusNote=!!n&&!$("noteTitle").textContent.trim();
     if(shouldFocusNote)setTimeout(()=>{
       if($("editorOverlay").classList.contains("show")&&editingNoteId===(n?.id||null)){
-        (n?$("noteTitle"):$("noteBlocksEditor").querySelector(".richText"))?.focus({preventScroll:true});
+        $("noteTitle")?.focus({preventScroll:true});
       }
     },80);
     else if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
@@ -10361,6 +10405,11 @@ html[data-theme="dark"] #settingsOverlay .dsCatalogScreen iframe{background:#101
   $("taskLocation").addEventListener("input",scheduleTaskHistory);
   $("taskLocation").addEventListener("change",commitTaskHistory);
   $("taskInlineSubtasksToggle").addEventListener("click",()=>{taskSubtasksExpanded=!taskSubtasksExpanded;syncTaskInlineForm();if(taskSubtasksExpanded&&!editorSubtasks.length)addEditorSubtask()});
+  $("taskSubtasksJumpEnd").addEventListener("click",()=>{
+    if(!taskSubtasksExpanded)return;
+    const target=$("taskCompletedSection").children.length?$("taskCompletedSection"):$("addSubtaskBtn");
+    target.scrollIntoView({block:"end",behavior:"smooth"});
+  });
   $("taskSubtasksSummaryCard").addEventListener("click",()=>{
     taskSubtasksExpanded=!taskSubtasksExpanded;
     taskToolsExpanded=false;
