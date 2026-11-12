@@ -109,63 +109,53 @@
     holder.replaceChildren();doneHolder.replaceChildren();
     if(!draft)return;
     const disabled=!!draft.original?.payload.deletedAt;
-    function paint(nodes,parent,depth=0){
+    function paint(task,container,siblings,depth=0){
       if(depth>12)return;
-      for(const task of nodes){
-        const row=el("div","editor-item-row"+(task.done?" is-checked":""));
-        row.style.setProperty("--indent",(Math.min(6,depth)*17)+"px");
-        const check=el("input","editor-circle-check");
-        check.type="checkbox";check.checked=task.done;check.disabled=disabled;
-        check.setAttribute("aria-label","Marcar subtarea "+task.text);
-        check.onchange=()=>{setAll(task,check.checked);syncParents(draft.items);drawSubtasks()};
-        row.append(check);
-        const input=el("input","editor-subtask-input");
-        input.type="text";input.value=task.text;input.placeholder=depth?"Elemento interno":"Subtarea";
-        input.maxLength=500;input.disabled=disabled;
-        input.addEventListener("input",()=>{task.text=input.value;task.html=escape(input.value)});
-        input.addEventListener("keydown",ev=>{
-          if(ev.key==="Enter"&&!ev.shiftKey){
-            ev.preventDefault();
-            const place=parent.indexOf(task);
-            parent.splice(place+1,0,{id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});
-            drawSubtasks();
-            const all=document.querySelectorAll("#editSubtaskContent .editor-subtask-input");
-            [...all].find(x=>!x.value)?.focus();
-          }
-        });
-        row.append(input);
-        function tool(name,iconName,callback){
-          const b=el("button","editor-item-action");
-          b.type="button";b.title=name;b.setAttribute("aria-label",name);b.disabled=disabled;
-          b.append(icon(iconName));b.addEventListener("click",callback);return b;
+      const row=el("div","editor-item-row"+(task.done?" is-checked":""));
+      row.style.setProperty("--indent",(Math.min(6,depth)*17)+"px");
+      const check=el("input","editor-circle-check");
+      check.type="checkbox";check.checked=task.done;check.disabled=disabled;
+      check.setAttribute("aria-label","Marcar subtarea "+task.text);
+      check.onchange=()=>{setAll(task,check.checked);syncParents(draft.items);drawSubtasks()};
+      row.append(check);
+      const input=el("input","editor-subtask-input");
+      input.type="text";input.value=task.text;input.placeholder=depth?"Elemento interno":"Subtarea";
+      input.maxLength=500;input.disabled=disabled;
+      input.addEventListener("input",()=>{task.text=input.value;task.html=escape(input.value)});
+      input.addEventListener("keydown",ev=>{
+        if(ev.key==="Enter"&&!ev.shiftKey){
+          ev.preventDefault();
+          const at=siblings.indexOf(task);
+          if(at<0)return;
+          siblings.splice(at+1,0,{id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});
+          drawSubtasks();
+          [...document.querySelectorAll("#editSubtaskContent .editor-subtask-input")].find(x=>!x.value)?.focus();
         }
-        row.append(tool("Añadir subtarea hija","ns-plus",()=>{
-          task.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});drawSubtasks();
-        }));
-        row.append(tool("Subir","ns-back",()=>{moveIn(draft.items,task.id,-1);drawSubtasks()}));
-        row.append(tool("Bajar","ns-chevron",()=>{moveIn(draft.items,task.id,1);drawSubtasks()}));
-        row.append(tool("Eliminar","ns-trash",()=>{removeFrom(draft.items,task.id);syncParents(draft.items);drawSubtasks()}));
-        parent&&row.setAttribute("data-subtask-id",task.id);
-        // Native hierarchy is shown indented, with completed children included.
-        parent===draft.items?row.classList.add("top-level"):"";
-        (parent===draft.items?row:row).dataset.depth=String(depth);
-        const into=(parent===draft.items?task.done?doneHolder:holder:parent.targetContainer||holder);
-        into.append(row);
-        if(task.children?.length){
-          const kids=task.children;
-          const childContainer=into;
-          for(const child of kids)paint([child],{...kids,targetContainer:childContainer},depth+1);
-        }
+      });
+      row.append(input);
+      function tool(name,iconName,callback){
+        const b=el("button","editor-item-action");
+        b.type="button";b.title=name;b.setAttribute("aria-label",name);b.disabled=disabled;
+        b.append(icon(iconName));b.addEventListener("click",callback);return b;
       }
+      row.append(tool("Añadir elemento interno","ns-plus",()=>{
+        task.children.push({id:crypto.randomUUID(),text:"",html:"",done:false,children:[]});
+        drawSubtasks();
+      }));
+      row.append(tool("Subir","ns-back",()=>{moveIn(draft.items,task.id,-1);drawSubtasks()}));
+      row.append(tool("Bajar","ns-chevron",()=>{moveIn(draft.items,task.id,1);drawSubtasks()}));
+      row.append(tool("Eliminar","ns-trash",()=>{removeFrom(draft.items,task.id);syncParents(draft.items);drawSubtasks()}));
+      container.append(row);
+      for(const child of task.children||[])paint(child,container,task.children,depth+1);
     }
-    // Preserve the underlying tree and Android sync fields, change only presentation order.
-    const topIncomplete=draft.items.filter(n=>!n.done),topDone=draft.items.filter(n=>n.done);
-    for(const n of topIncomplete)paint([n],draft.items,0);
-    for(const n of topDone)paint([n],draft.items,0);
-    const progressInfo=progress(draft.items);
-    $("editSubtaskCount").textContent=progressInfo.total?progressInfo.done+"/"+progressInfo.total:"Añadir";
-    $("editCompletedSection").classList.toggle("hidden",!topDone.length);
-    $("editCompletedCount").textContent=topDone.length===1?"1 elemento marcado":topDone.length+" elementos marcados";
+    // Move completed top-level items into their own disclosure visually only.
+    // Underlying nested tree/order remains intact for Android synchronization.
+    for(const n of draft.items.filter(n=>!n.done))paint(n,holder,draft.items);
+    for(const n of draft.items.filter(n=>n.done))paint(n,doneHolder,draft.items);
+    const status=progress(draft.items),completed=draft.items.filter(n=>n.done).length;
+    $("editSubtaskCount").textContent=status.total?status.done+"/"+status.total:"Añadir";
+    $("editCompletedSection").classList.toggle("hidden",!completed);
+    $("editCompletedCount").textContent=completed===1?"1 elemento marcado":completed+" elementos marcados";
     $("editCompletedList").classList.toggle("hidden",!draft.completedExpanded);
     $("editCompletedToggle").setAttribute("aria-expanded",String(!!draft.completedExpanded));
     $("editSubtaskContent").classList.toggle("hidden",!draft.subtasksExpanded);
