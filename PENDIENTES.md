@@ -1,5 +1,17 @@
 # Pendientes de Nottas
 
+## Verificación del actualizador interno — 0.27.123 (20/11/2026)
+
+- [x] Comprobación única de Release oficial al iniciar y comparación semántica con appVersion instalada.
+- [x] Descarga optativa validada por URL/version, estado DownloadManager e instalación confirmada por Android.
+- [x] Buscar actualizaciones en Acerca de Nottas y estilos planos Nottas; falla de red no bloquea arranque.
+- [x] Mantener FCM, WebSocket, D1 y esquema de notas/tareas sin modificaciones.
+- [ ] Verificar workflow CI, firma y APK de versión 0.27.123 en Releases para Obtainium.
+- [ ] Probar físicamente detección 0.27.122 → 0.27.123, descarga interrumpida/reanudada, permiso para instalar desde esta fuente y confirmar/cancelar instalador.
+- [ ] Asegurar que notas y tareas locales permanecen tras instalar actualización y que sincronización bidireccional continúa normalmente.
+- [ ] Evaluar prioridad visual del aviso si coincide con panel de atrasadas o bandeja de director, sin bloquear interacción.
+
+
 ## QA del Centro de atrasadas — Android 0.27.122 (20/11/2026)
 
 - [x] Crear UI local sin ampliar campos de tarea ni cambiar sincronización FCM/WSS/D1.
