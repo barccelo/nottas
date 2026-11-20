@@ -6,7 +6,7 @@
 - Nuevo aviso con descarga voluntaria de APK firmada y botón Instalar que solicita confirmación en Android; validación estricta de URL/tag en el puente nativo.
 - «Buscar actualizaciones» disponible en Ajustes → Acerca de Nottas; estados de descarga y error de conexión.
 - Integración aislada de `nottas-updates.js/.css`, `NottasWeb.kt` y manifest. Sin cambios de sincronización, datos, FCM/WSS ni funcionamiento de Obtainium.
-- Versión `0.27.123`, `versionCode 204`; firma y publicación por CI pendientes de verificar.
+- Versión `0.27.123`, `versionCode 204`; firma y publicación verificadas en GitHub Actions `44773567260` y Release `v0.27.123`; instalación real pendiente.
 
 
 ## Nottas Android 0.27.122 — Centro de tareas atrasadas (20/11/2026)
