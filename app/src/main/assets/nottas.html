@@ -2200,6 +2200,31 @@ html[data-theme="dark"] .richText a,html[data-theme="dark"] .subtaskEditorInput 
 .headerActions .globalUndoBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .headerActions .globalUndoBtn:disabled{opacity:.32}
 html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36px;min-height:36px;padding:8px;border-radius:11px;border:0;background:transparent;color:inherit}
+
+/* Local-only overdue attention. Separate from director FCM proposals. */
+.overdueAttentionBtn{position:relative;color:#ca4555!important}
+.overdueAttentionBtn svg{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.overdueAttentionCount{position:absolute;top:0;right:-2px;min-width:16px;height:16px;padding:1px 3px;border-radius:9px;background:#d44956;color:#fff;display:grid;place-items:center;font-size:10px;font-weight:750;line-height:1}
+.overdueAttentionSheet{width:min(510px,100%);max-height:min(78vh,calc(var(--vv-height,100vh) - 16px));display:flex;flex-direction:column;overflow:hidden;padding:13px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:none}
+.overdueAttentionIntro{font-size:13px;line-height:1.45;color:#707078;margin:4px 0 12px}
+.overdueAttentionItems{overflow:auto;min-height:0;overscroll-behavior:contain;display:flex;flex-direction:column;gap:7px;padding:2px 1px 10px}
+.overdueAttentionRow{display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:13px;border:1px solid #e7e1e3;background:#fff}
+.overdueAttentionRowText{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.overdueAttentionRowText strong{font-size:14px;font-weight:630;overflow-wrap:anywhere}
+.overdueAttentionRowText small{font-size:11px;color:#bf4250}
+.overdueAttentionAction{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:10px;border:1px solid #e0dadd;background:transparent;color:#626269}
+.overdueAttentionAction svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.overdueAttentionAction.complete{color:#1677ff}
+.overdueAttentionActions{display:flex;gap:9px;padding-top:10px}
+.overdueAttentionActions button{flex:1;min-height:43px;border-radius:12px;border:1px solid #d9d9df;background:transparent;color:inherit;font-weight:650}
+.overdueAttentionActions .overdueAttentionReview{background:#1677ff;border-color:#1677ff;color:#fff}
+.overdueAttentionAgenda{margin-top:8px;padding:9px;border:0;background:transparent;color:#1677ff;font-weight:620}
+html[data-theme="dark"] .overdueAttentionSheet{background:#1c1c1e}
+html[data-theme="dark"] .overdueAttentionIntro{color:#a0a0a8}
+html[data-theme="dark"] .overdueAttentionRow{background:#29292d;border-color:#39393d}
+html[data-theme="dark"] .overdueAttentionRowText small{color:#ef8d96}
+html[data-theme="dark"] .overdueAttentionAction,html[data-theme="dark"] .overdueAttentionActions button{border-color:#45454a}
+html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-color:#1677ff}
 </style>
 <link rel="stylesheet" href="design-system.css">
 </head>
@@ -2221,6 +2246,10 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
       <button id="assistantNoticeQuickBtn" class="iconBtn assistantNoticeQuick hidden" type="button" aria-label="Mensajes con asistente o jefe">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-8.5 8 9 9 0 0 1-3.4-.8L3 20l1.4-4.5A8.2 8.2 0 0 1 4 11.5a8 8 0 0 1 8-8c4.4 0 8 3.6 8 8Z"/><path d="M8 11.5h8M8 14.5h5"/></svg>
         <span id="assistantMessageBadge" class="assistantMessageBadge hidden" aria-hidden="true"></span>
+      </button>
+      <button id="overdueAttentionBtn" class="iconBtn overdueAttentionBtn hidden" type="button" aria-label="Tareas atrasadas" title="Tareas atrasadas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
+        <span id="overdueAttentionCount" class="overdueAttentionCount" aria-hidden="true"></span>
       </button>
       <button id="directorBellBtn" class="iconBtn directorBell hidden" type="button" aria-label="Propuestas por agendar" title="Propuestas por agendar">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 8-3 8-3 10h18c0-2-3-2-3-10Z"></path><path d="M10 21h4"></path></svg>
@@ -3283,6 +3312,21 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
       <button id="directorDismissNotice" type="button"><strong>Solo la notificación</strong><small>Oculta el aviso en este dispositivo. El evento sigue pendiente.</small></button>
       <button id="directorRejectProposal" type="button"><strong>Rechazar el evento</strong><small>Lo retira de pendientes y de la agenda activa de ambos teléfonos, conservando su historial.</small></button>
     </div>
+  </div>
+</div>
+<div id="overdueAttentionOverlay" class="overlay" aria-hidden="true">
+  <div class="sheet overdueAttentionSheet" role="dialog" aria-modal="true" aria-labelledby="overdueAttentionHeading">
+    <div class="sheetHandle" aria-hidden="true"></div>
+    <div class="sheetHeader"><h2 id="overdueAttentionHeading">Tareas atrasadas</h2>
+      <button id="overdueAttentionClose" class="closeBtn" type="button" aria-label="Cerrar aviso"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"/></svg></button>
+    </div>
+    <p id="overdueAttentionIntro" class="overdueAttentionIntro"></p>
+    <div id="overdueAttentionItems" class="overdueAttentionItems"></div>
+    <div class="overdueAttentionActions">
+      <button type="button" id="overdueAttentionLater" class="overdueAttentionLater">Recordar en 1 hora</button>
+      <button type="button" id="overdueAttentionReview" class="overdueAttentionReview">Cerrar</button>
+    </div>
+    <button type="button" id="overdueAttentionAgenda" class="overdueAttentionAgenda hidden">Ver propuestas por agendar</button>
   </div>
 </div>
 <div id="directorInboxOverlay" class="overlay" aria-hidden="true">
@@ -7226,6 +7270,7 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
       if(!tagStillExists)activeTag="";
     }
     updateCounts();
+    syncOverdueAttention();
     document.body.classList.toggle("trashMode",trash);
     const bottomDock=$("bottomDock"),backbar=$("backbar"),mainApp=document.querySelector(".app");
     if(trash){if(bottomDock.previousElementSibling!==backbar)backbar.after(bottomDock)}
@@ -10862,10 +10907,128 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
   $("importFile").addEventListener("change",async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{await window.NottasImportData(await file.text())}finally{e.target.value=""}});
   $("exportBtn").addEventListener("click",()=>{try{const payload=JSON.stringify(state,null,2);if(window.NottasNative&&NottasNative.exportJson){NottasNative.exportJson(payload);return}const blob=new Blob([payload],{type:"application/json"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download="NottasData.json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);showToast("Copia preparada")}catch(_){showToast("No pude exportar")}});
 
-  // Update overdue styling on minute boundaries without disrupting scroll or swipe.
+
+  // The attention center never writes overdue state into tasks or D1.
+  // The only task mutations below delegate to the already established UI paths.
+  const OVERDUE_NOTICE_KEY="nottas_overdue_attention_v1";
+  let overdueNotice={until:0,signature:""},overdueReady=false;
+  try{
+    const stored=JSON.parse(localStorage.getItem(OVERDUE_NOTICE_KEY)||"{}");
+    if(stored&&typeof stored==="object")overdueNotice={until:Number(stored.until)||0,signature:String(stored.signature||"")};
+  }catch(_){}
+  function persistOverdueNotice(){
+    try{localStorage.setItem(OVERDUE_NOTICE_KEY,JSON.stringify(overdueNotice))}catch(_){}
+  }
+  function overdueTaskRows(){
+    if(!state?.tasks)return [];
+    const nowTime=Date.now(),today=localDateISO();
+    return state.tasks.filter(t=>{
+      if(!t||t.deletedAt||t.purgedAt||t.done||meetingOutcomeClosed(t)||proposalInactive(t)||!t.dueDate)return false;
+      // Do not call unapproved collaboration proposals late; they have no agreed deadline.
+      if(meetingIsTracked(t)&&["proposed","changes_requested"].includes(t.approvalStatus))return false;
+      const lastDay=taskRangeEnd(t);
+      if(lastDay>today)return false;
+      if(taskMultiDay(t)&&taskDays(t).every(day=>taskDayDone(t,day)))return false;
+      if(lastDay<today)return true;
+      const clock=taskMultiDay(t)?String(t.endTime||""):String(t.endTime||t.dueTime||"");
+      // Date-only tasks do not become overdue until the following day.
+      if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(clock))return false;
+      const h=Number(clock.slice(0,2)),m=Number(clock.slice(3));
+      const [y,mon,d]=lastDay.split("-").map(Number);
+      return new Date(y,mon-1,d,h,m).getTime()<nowTime;
+    }).sort((a,b)=>{
+      const ad=taskRangeEnd(a)+"T"+(a.endTime||a.dueTime||"23:59");
+      const bd=taskRangeEnd(b)+"T"+(b.endTime||b.dueTime||"23:59");
+      return bd.localeCompare(ad);
+    });
+  }
+  function overdueSignature(rows){
+    // Stable across renders, including the clock ticking from one minute to the next.
+    return rows.map(t=>t.id+":"+t.dueDate+":"+taskRangeEnd(t)+":"+(t.endTime||t.dueTime||"")).sort().join("|");
+  }
+  function syncOverdueAttention(){
+    const rows=overdueTaskRows(),button=$("overdueAttentionBtn"),count=$("overdueAttentionCount");
+    if(!button||!count)return rows;
+    button.classList.toggle("hidden",rows.length===0);
+    count.textContent=rows.length>99?"99+":String(rows.length);
+    button.setAttribute("aria-label",rows.length+" tareas atrasadas");
+    if($("overdueAttentionOverlay")?.classList.contains("show"))renderOverdueAttention(rows);
+    return rows;
+  }
+  function overdueTimeLabel(t){
+    const date=taskRangeEnd(t),d=dateFromISO(date);
+    const dateText=d.toLocaleDateString("es",{day:"numeric",month:"short"});
+    const clock=taskMultiDay(t)?t.endTime:(t.endTime||t.dueTime);
+    return "Venció "+dateText+(clock?" · "+clock:"");
+  }
+  function renderOverdueAttention(rows=overdueTaskRows()){
+    const host=$("overdueAttentionItems");if(!host)return;
+    host.replaceChildren();
+    $("overdueAttentionHeading").textContent=rows.length===1?"1 tarea atrasada":rows.length+" tareas atrasadas";
+    $("overdueAttentionIntro").textContent="Actividades cuyo plazo terminó y siguen pendientes. Puedes completarlas o reprogramarlas.";
+    $("overdueAttentionAgenda").classList.toggle("hidden",!directorOwnedSpaces().length);
+    for(const t of rows){
+      const card=document.createElement("div");card.className="overdueAttentionRow";
+      const copy=document.createElement("div");copy.className="overdueAttentionRowText";
+      const title=document.createElement("strong");title.textContent=t.text||"Tarea sin título";
+      const time=document.createElement("small");time.textContent=overdueTimeLabel(t);
+      copy.append(title,time);
+      const complete=document.createElement("button");complete.type="button";complete.className="overdueAttentionAction complete";complete.title="Completar";complete.setAttribute("aria-label","Completar "+(t.text||"tarea"));
+      complete.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.7 2.8 5.4-5.5"/></svg>';
+      complete.addEventListener("click",()=>{
+        if(taskMultiDay(t)){
+          // Existing multi-day completion is per day; open editor for correct handling.
+          closeOverlay("overdueAttentionOverlay");openTask(t,null,{autoFocus:false});return;
+        }
+        completeTask(t,true);const left=syncOverdueAttention();
+        if(!left.length)closeOverlay("overdueAttentionOverlay");
+      });
+      const edit=document.createElement("button");edit.type="button";edit.className="overdueAttentionAction";edit.title="Abrir y reprogramar";edit.setAttribute("aria-label","Reprogramar "+(t.text||"tarea"));
+      edit.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg>';
+      edit.addEventListener("click",()=>{
+        closeOverlay("overdueAttentionOverlay");
+        if(t.workspaceId!==currentWorkspaceId()){activeWorkspaceId=t.workspaceId;activeCategory="all";activeTag="";trash=false;mode="tasks";saveUI();render()}
+        openTask(t,null,{autoFocus:false});
+      });
+      card.append(copy,complete,edit);host.append(card);
+    }
+    if(!rows.length){const empty=document.createElement("p");empty.className="overdueAttentionIntro";empty.textContent="No tienes tareas atrasadas.";host.append(empty)}
+  }
+  function openOverdueAttention(manual=false){
+    const rows=syncOverdueAttention();
+    if(!rows.length)return;
+    if(!manual&&document.querySelector(".overlay.show"))return;
+    openOverlay("overdueAttentionOverlay");renderOverdueAttention(rows);
+  }
+  function dismissOverdueAttention(minutes=60){
+    overdueNotice={until:Date.now()+minutes*60000,signature:overdueSignature(overdueTaskRows())};
+    persistOverdueNotice();closeOverlay("overdueAttentionOverlay");
+  }
+  function maybeAutoOpenOverdue(){
+    if(!overdueReady||document.hidden||!state)return;
+    const rows=syncOverdueAttention(),signature=overdueSignature(rows);
+    if(!rows.length||!signature)return;
+    if(overdueNotice.signature===signature&&Date.now()<overdueNotice.until)return;
+    // Never compete with the director's proposal inbox, an editor, or the keyboard.
+    if(document.querySelector(".overlay.show")||nativeImeHeightCss>1)return;
+    overdueNotice={signature,until:Date.now()+60*60000};
+    persistOverdueNotice();openOverdueAttention();
+  }
+  $("overdueAttentionBtn").addEventListener("click",()=>openOverdueAttention(true));
+  $("overdueAttentionClose").addEventListener("click",()=>dismissOverdueAttention());
+  $("overdueAttentionReview").addEventListener("click",()=>dismissOverdueAttention());
+  $("overdueAttentionLater").addEventListener("click",()=>dismissOverdueAttention(60));
+  $("overdueAttentionAgenda").addEventListener("click",()=>{
+    dismissOverdueAttention();if(directorOwnedSpaces().length)openDirectorInbox();
+  });
+  $("overdueAttentionOverlay").addEventListener("click",e=>{
+    if(e.target===$("overdueAttentionOverlay"))dismissOverdueAttention();
+  });
+\n  // Update overdue styling on minute boundaries without disrupting scroll or swipe.
   let taskDeadlineClockDay=localDateISO();
   function refreshTaskDeadlineIndicators(){
     if(!state||document.hidden)return;
+    syncOverdueAttention();
     const today=localDateISO();
     if(today!==taskDeadlineClockDay){
       taskDeadlineClockDay=today;
@@ -10884,7 +11047,7 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
   }
   function scheduleTaskDeadlineRefresh(){
     const msToNextMinute=60000-Date.now()%60000+100;
-    setTimeout(()=>{refreshTaskDeadlineIndicators();scheduleTaskDeadlineRefresh()},msToNextMinute);
+    setTimeout(()=>{refreshTaskDeadlineIndicators();maybeAutoOpenOverdue();scheduleTaskDeadlineRefresh()},msToNextMinute);
   }
   scheduleTaskDeadlineRefresh();
 
@@ -10911,8 +11074,8 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
   },ASSISTANT_FOREGROUND_RECONCILE_MS);
   // Inbox content is refreshed separately, less frequently.
   setInterval(()=>{if(!document.hidden&&assistantConfigured()&&directorOwnedSpaces().length)refreshDirectorProposals(true)},120000);
-  window.addEventListener("focus",()=>{refreshTaskDeadlineIndicators();consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration();scheduleAssistantSync(200)}});
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden){refreshTaskDeadlineIndicators();consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}}});
+  window.addEventListener("focus",()=>{refreshTaskDeadlineIndicators();setTimeout(maybeAutoOpenOverdue,750);consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration();scheduleAssistantSync(200)}});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden){refreshTaskDeadlineIndicators();setTimeout(maybeAutoOpenOverdue,850);consumeNativeReminderActions();refreshWakeControlUI();refreshWorkHoursNativeStatus();consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}}});
 
   // Close the uppermost calendar layer before leaving its date and view.
   // This is also used by Android's native Back dispatcher.
@@ -10953,6 +11116,7 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
       closeTimePicker();
       return true;
     }
+    if($("overdueAttentionOverlay").classList.contains("show")){dismissOverdueAttention();return true}
     if($("taskSortOverlay").classList.contains("show")){
       closeTaskSort();
       return true;
@@ -11114,6 +11278,7 @@ html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36
   initializeTeamControls();
   load();
   initTaskTools();
+  setTimeout(()=>{overdueReady=true;maybeAutoOpenOverdue()},1600);
   setTimeout(()=>{consumeAssistantNativeEvents();if(assistantConfigured()){assistantEnsurePushRegistration(true);scheduleAssistantSync(200)}},350);
 })();
 </script>
