@@ -9,7 +9,8 @@
 - [ ] Probar enlaces pegados y toques externos en Android y web, incluidas subtareas y puntuación final.
 - [ ] Probar orden con tareas vencidas, futuras, sin fecha, destacadas, vista agrupada y filtros.
 - [ ] Probar deshacer después de sincronización y recurrencias, y ampliar a edición de notas/subtareas.
-- [ ] Confirmar APK 0.27.120 firmada y publicada en Releases para Obtainium; probar actualización real.
+- [x] APK 0.27.120 firmada y publicada para Obtainium en Release `v0.27.120` (Actions `44731883933` con pasos de firma/publicación exitosos).
+- [ ] Probar actualización real de Obtainium en dispositivo.
 
 
 ## Verificar correcciones v0.27.119 (12/11/2026)
