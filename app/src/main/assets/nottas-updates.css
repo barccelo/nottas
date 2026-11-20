@@ -1,0 +1,24 @@
+/* In-app update notice, using the existing Nottas flat surfaces. */
+.nottas-update-notice{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);width:min(calc(100% - 28px),480px);
+  z-index:350;background:#f5f5f7;color:#1c1c1e;
+  border:1px solid #dedee3;border-radius:18px;padding:16px;
+  box-sizing:border-box;box-shadow:none;
+}
+.nottas-update-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nottas-update-head strong{font-size:15px;font-weight:670;letter-spacing:-.01em}
+.nottas-update-close{background:transparent;border:0;color:#88888f;
+  width:30px;height:30px;font-size:23px;line-height:1;cursor:pointer}
+.nottas-update-notice p{font-size:13px;line-height:1.5;color:#71717b;margin:7px 0 14px}
+.nottas-update-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.nottas-update-actions button{min-height:39px;border:1px solid #dbdbe0;border-radius:11px;
+  padding:9px 13px;background:#fff;color:#303035;font-weight:640;font-size:13px}
+.nottas-update-actions button.primary{background:#1677ff;border-color:#1677ff;color:#fff}
+.nottas-update-actions button:disabled{opacity:.56}
+#nottasCheckUpdatesBtn small{display:block;margin-top:3px;color:#8e8e93;
+  font-size:11px;font-weight:400;line-height:1.4}
+html[data-theme="dark"] .nottas-update-notice{background:#262629;color:#f5f5f7;border-color:#414146}
+html[data-theme="dark"] .nottas-update-notice p{color:#b2b2b8}
+html[data-theme="dark"] .nottas-update-actions button{background:#38383d;color:#eeeef1;border-color:#515157}
+html[data-theme="dark"] .nottas-update-actions button.primary{background:#1677ff;border-color:#1677ff;color:#fff}
