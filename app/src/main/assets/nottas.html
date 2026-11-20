@@ -2196,10 +2196,10 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
 /* Native Nottas links and compact bottom-bar undo. */
 .richText a,.subtaskEditorInput a,.richEditable a,.taskTitle a,.noteTitle a{color:#1677ff;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
 html[data-theme="dark"] .richText a,html[data-theme="dark"] .subtaskEditorInput a,html[data-theme="dark"] .richEditable a{color:#80bbff}
-.globalUndoBtn{width:40px;min-width:40px;height:40px;display:grid;place-items:center;flex:0 0 40px;border:1px solid rgba(118,118,128,.2);border-radius:12px;background:rgba(118,118,128,.08);color:#1677ff;padding:9px}
-.globalUndoBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.globalUndoBtn:disabled{opacity:.35}
-html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;color:#8ebeff}
+.headerActions .globalUndoBtn{flex:0 0 auto;min-width:36px;min-height:36px;padding:8px;border-radius:11px;border:0;background:transparent;color:inherit}
+.headerActions .globalUndoBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.headerActions .globalUndoBtn:disabled{opacity:.32}
+html[data-theme="dark"] .headerActions .globalUndoBtn{flex:0 0 auto;min-width:36px;min-height:36px;padding:8px;border-radius:11px;border:0;background:transparent;color:inherit}
 </style>
 <link rel="stylesheet" href="design-system.css">
 </head>
@@ -2228,6 +2228,9 @@ html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;c
       </button>
       <button id="assistantCallQuickBtn" class="iconBtn assistantCallQuick hidden" type="button" aria-label="Llamar al asistente">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h3l1.2 4-2 1.5a15 15 0 0 0 5.3 5.3l1.5-2L20 14v3c0 1.7-1.3 3-3 3C10 20 4 14 4 7c0-1.7 1.3-3 3-3z"></path></svg>
+      </button>
+      <button id="globalUndoBtn" class="iconBtn globalUndoBtn" type="button" aria-label="Deshacer última acción" title="Deshacer" disabled>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9 4 13l5 4"/><path d="M4 13h11a5 5 0 0 1 0 10"/></svg>
       </button>
       <button id="settingsBtn" class="iconBtn" type="button" aria-label="Ajustes">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09a1.7 1.7 0 0 0-.4-1.1 1.7 1.7 0 0 0-1-.6 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09a1.7 1.7 0 0 0 1.1-.4 1.7 1.7 0 0 0 .6-1 1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09a1.7 1.7 0 0 0 .4 1.1 1.7 1.7 0 0 0 1 .6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.12.36.34.7.6 1 .28.28.66.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.1.4c-.28.28-.5.62-.6 1z"></path></svg>
@@ -2281,7 +2284,6 @@ html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;c
      Decorative only: never receives input or blurs the controls themselves. -->
 <div id="bottomFrost" class="bottomFrost" aria-hidden="true"></div>
 <div class="bottomDock" id="bottomDock">
-  <button id="globalUndoBtn" class="globalUndoBtn" type="button" aria-label="Deshacer última acción" title="Deshacer" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8 4 12l5 4"/><path d="M4 12h10a6 6 0 0 1 0 12" transform="translate(0 -5)"/></svg></button>
   <div class="searchWrap">
     <svg class="searchIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
     <input id="search" class="search" type="text" placeholder="Buscar" autocomplete="off">
@@ -5766,25 +5768,38 @@ html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;c
   function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt&&taskSearchMatches(t);if(t.deletedAt||proposalInactive(t))return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskTodayOnly&&taskFilter==="pending"&&taskDayDone(t,localDateISO()))return false;if(taskFilter==="pending"&&(t.done||meetingOutcomeClosed(t)))return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return taskSearchMatches(t)}
   function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt&&noteSearchMatches(n);if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return noteSearchMatches(n)}
   function taskSortTime(value){const n=Number(value);return Number.isFinite(n)&&n>0?n:(Date.parse(String(value||""))||0)}
+  // Chronological sorting is relative to now, not simply ascending historical dates.
+  // Future/today first, overdue after, unscheduled last. Reverse only the future section.
+  function taskChronologyKey(t){
+    const date=String(taskGroupDate(t)||"");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return {bucket:2,stamp:0};
+    const time=String(t.dueTime||"");
+    const valid=/^([01]\d|2[0-3]):[0-5]\d$/.test(time);
+    const [year,month,day]=date.split("-").map(Number);
+    const when=new Date(year,month-1,day,valid?Number(time.slice(0,2)):23,valid?Number(time.slice(3)):59,valid?0:59).getTime();
+    if(!Number.isFinite(when))return {bucket:2,stamp:0};
+    return {bucket:when<Date.now()?1:0,stamp:when};
+  }
+  function compareTaskChronology(a,b){
+    const ka=taskChronologyKey(a),kb=taskChronologyKey(b);
+    if(ka.bucket!==kb.bucket)return ka.bucket-kb.bucket;
+    if(ka.bucket===2)return 0;
+    // Overdue tasks are always most recently due first; 'lejanas' reverses
+    // the *upcoming* section only, rather than promoting October over tomorrow.
+    const descending=ka.bucket===1||taskSortMode==="recent";
+    return descending?kb.stamp-ka.stamp:ka.stamp-kb.stamp;
+  }
   function sortTasks(a,b){
-    // Explicit sort order is authoritative; pinning is a separate filter.
-    if(taskSortMode==="pinned"&&a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
-    const recent=taskSortMode==="recent",soon=taskSortMode==="soon";
-    if(recent||soon){
-      const ad=a.dueDate||"",bd=b.dueDate||"";
-      if(!!ad!==!!bd)return ad?-1:1;
-      if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
-      const at=a.dueTime||"",bt=b.dueTime||"";
-      if(at!==bt)return recent?bt.localeCompare(at):at.localeCompare(bt);
+    const chronological=["recent","soon"].includes(taskSortMode);
+    if(chronological){
+      const diff=compareTaskChronology(a,b);if(diff)return diff;
     }else if(taskSortMode==="created"){
-      const created=taskSortTime(b.createdAt)-taskSortTime(a.createdAt);
-      if(created)return created;
+      const diff=taskSortTime(b.createdAt)-taskSortTime(a.createdAt);if(diff)return diff;
     }else if(taskSortMode==="updated"){
-      const changed=taskSortTime(b.updatedAt)-taskSortTime(a.updatedAt);
-      if(changed)return changed;
+      const diff=taskSortTime(b.updatedAt)-taskSortTime(a.updatedAt);if(diff)return diff;
     }else if(taskSortMode==="priority"){
-      const rank={high:0,normal:1,low:2};
-      const diff=(rank[a.priority]??1)-(rank[b.priority]??1);if(diff)return diff;
+      const rank={high:0,normal:1,low:2},diff=(rank[a.priority]??1)-(rank[b.priority]??1);
+      if(diff)return diff;
     }else if(taskSortMode==="title"){
       const diff=String(a.text||"").localeCompare(String(b.text||""),"es",{sensitivity:"base"});
       if(diff)return diff;
@@ -6768,14 +6783,7 @@ html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;c
   function taskGroupDate(t){return taskTodayOnly&&t.dueDate?localDateISO():(t.dueDate||"")}
   function taskGroupHour(t){const time=String(t.dueTime||"");return /^[0-2][0-9]:[0-5][0-9]$/.test(time)?time:""}
   function sortTasksByDateTime(a,b){
-    const recent=taskSortMode==="recent";
-    const ad=taskGroupDate(a),bd=taskGroupDate(b);
-    // Without a date there is no chronological position: put these last.
-    if(!!ad!==!!bd)return ad?-1:1;
-    if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
-    const at=taskGroupHour(a),bt=taskGroupHour(b);
-    if(!!at!==!!bt)return at?-1:1;
-    if(at!==bt)return recent?bt.localeCompare(at):at.localeCompare(bt);
+    // Grouping changes the presentation only, never the selected chronology.
     return sortTasks(a,b);
   }
   function taskGroupDateLabel(date){
@@ -10219,8 +10227,8 @@ html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;c
         b.replaceChildren();
         b.insertAdjacentHTML("beforeend",'<span class="sortGlyph">'+taskSortIcon(b.dataset.taskSort)+'</span>');
         b.appendChild(copy);
-        const hintText={soon:"De la fecha más cercana a la más lejana; sin fecha al final",
-          recent:"De la fecha más lejana a la más cercana; sin fecha al final",
+        const hintText={soon:"Próximas: hoy y futuras, primero las más cercanas; vencidas al final",
+          recent:"Próximas: primero las más lejanas; vencidas al final",
           created:"Últimas creadas primero",updated:"Últimas modificaciones primero",
           priority:"Alta, normal y baja",title:"Orden alfabético ascendente"}[b.dataset.taskSort];
         if(hintText){const subtitle=document.createElement("small");subtitle.textContent=hintText;copy.append(subtitle)}
