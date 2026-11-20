@@ -771,3 +771,176 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
   overflow-wrap:anywhere;
 }
 .nottas-subtask-open-link{font-size:11px;font-weight:610;flex:0 0 auto;padding:4px 6px}
+
+/* 2026-11-20 · Continuous document editor (web only).
+   One scroll context, no nested subtask viewport or clipped final row.
+   UI-only: preserves contenteditable, data model, controls, and save logic. */
+#editor form{
+  scroll-behavior:smooth;
+  overscroll-behavior-y:contain;
+  gap:0;
+}
+#editor .editor-heading{padding-bottom:7px}
+#editor .editor-title-label{margin-bottom:14px}
+#editor #bodyRow{
+  background:transparent!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  padding:13px 0 12px!important;
+  margin:0!important;
+  gap:10px;
+}
+#editor #bodyRow .editor-section-title{
+  color:var(--muted);
+  font-weight:580;
+  font-size:12px;
+}
+#editor #bodyRow .editor-format-toolbar{
+  gap:5px;
+  padding:2px 0 7px;
+}
+#editor #bodyRow .editor-format-toolbar button{
+  width:32px;
+  height:32px;
+  min-width:32px;
+  border-radius:8px;
+  background:transparent;
+}
+#editor #editBlocks{display:block;min-height:32px}
+#editor #editBlocks .editor-block-row{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  padding:5px 0 5px calc(6px + var(--indent,0px))!important;
+  margin:0;
+  min-height:36px;
+  align-items:flex-start;
+  transition:background-color .12s ease;
+}
+#editor #editBlocks .editor-block-row:hover,
+#editor #editBlocks .editor-block-row:focus-within{
+  background:color-mix(in srgb,var(--fg) 3%,transparent)!important;
+}
+#editor #editBlocks .editor-rich-input{
+  padding:5px 0!important;
+  line-height:1.6;
+  min-height:29px;
+}
+#editor #editBlocks .editor-blank{
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  padding:7px 0 9px!important;
+}
+#editor #bodyRow .editor-add-block{margin-top:7px;gap:5px}
+#editor #bodyRow .editor-add-action{
+  background:transparent!important;
+  border:0!important;
+  border-radius:8px;
+  color:var(--muted);
+  padding:7px 10px;
+  font-weight:580;
+}
+#editor #bodyRow .editor-add-action:hover{
+  background:var(--hover)!important;
+  color:var(--blue);
+}
+/* Subtasks are a collapsible section of the document, not another card. */
+#editor #subtaskSection.nottas-editor-subtasks{
+  display:block!important;
+  border:0!important;
+  border-top:1px solid var(--line)!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  padding:4px 0 10px!important;
+  margin:12px 0 14px!important;
+  overflow:visible!important;
+  box-shadow:none!important;
+}
+#editor #subtaskSection .nottas-subtask-summary{
+  min-height:45px;
+  padding:8px 0;
+  background:transparent!important;
+}
+#editor #subtaskSection .nottas-subtask-summary:hover{
+  color:var(--blue);
+}
+#editor #subtaskSection .nottas-subtask-summary-title{
+  font-size:13px;
+  font-weight:650;
+}
+#editor #editSubtaskContent:not(.hidden){
+  display:block;
+  max-height:none!important;
+  overflow:visible!important;
+  touch-action:auto!important;
+  border:0!important;
+  padding:0 0 4px!important;
+}
+#editor #editSubtaskContent #editSubtasks,
+#editor #editSubtaskContent #editCompletedList{
+  display:block!important;
+  max-height:none!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:visible!important;
+  touch-action:auto!important;
+  overscroll-behavior:auto!important;
+  scrollbar-width:none!important;
+  padding:0!important;
+  margin:0!important;
+}
+/* Preserve the completed section's collapse state. */
+#editor #editSubtaskContent #editCompletedList.hidden{display:none!important}
+#editor #editSubtaskContent .editor-item-row{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  min-height:42px;
+  padding:5px 3px 5px calc(6px + var(--indent,0px))!important;
+  margin:0!important;
+  overflow:visible!important;
+}
+#editor #editSubtaskContent .editor-item-row:hover,
+#editor #editSubtaskContent .editor-item-row:focus-within{
+  background:color-mix(in srgb,var(--fg) 3%,transparent)!important;
+}
+#editor #editSubtaskContent .editor-subtask-input{
+  min-height:36px!important;
+  height:auto;
+  padding:6px 4px!important;
+  line-height:1.5;
+  overflow:hidden;
+  resize:none;
+}
+#editor #editSubtasksJumpEnd{
+  border:0!important;
+  border-radius:8px!important;
+  min-height:34px!important;
+  margin:0 0 8px!important;
+  background:transparent!important;
+  color:var(--muted)!important;
+}
+#editor #editSubtasksJumpEnd:hover{
+  background:var(--hover)!important;
+  color:var(--blue)!important;
+}
+#editor #editSubtaskContent #addSubtaskBtn{
+  display:flex!important;
+  width:100%!important;
+  min-height:40px!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
+  padding:9px 12px!important;
+  margin:8px 0!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:var(--blue)!important;
+}
+#editor #editSubtaskContent #addSubtaskBtn:hover{background:var(--hover)!important}
+#editor #editCompletedSection{border-top:1px solid var(--line);padding:4px 0;margin:10px 0 0}
+#editor .editor-actions{z-index:5}
+/* No phantom clipping caused by 30vh inner scrolling: only #editForm scrolls. */
