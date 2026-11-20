@@ -1,5 +1,13 @@
 # Continuidad operativa de Nottas
 
+## Android 0.27.121 — Deshacer en encabezado y cronología relativa (20/11/2026)
+
+- Se trasladó `#globalUndoBtn` desde `#bottomDock` a `.headerActions`, junto al botón de encender/apagar y Ajustes. Icono redibujado con flecha de retorno de trazo y proporciones equivalentes a otros SVG del encabezado, sin tarjeta ni fondo añadido. Se conserva el historial global de 12 acciones.
+- `sortTasks` y `sortTasksByDateTime` comparten comparador cronológico relativo al instante actual: futuras/hoy primero, vencidas después, sin fecha al final. **Próximas primero** ordena próximas ascendentes; **Lejanas primero** ordena próximas descendentes. Las vencidas se muestran de más recientes a más antiguas, nunca encabezan la lista por ser fechas pasadas. Sin cambio de persistencia ni esquema de tareas.
+- En vista agrupada se respeta el mismo comparador y las etiquetas/días pueden reaparecer al pasar de futuras a vencidas del mismo día (sigue siendo una cronología estricta). Se actualizaron explicaciones del panel.
+- `app/build.gradle.kts`: Android 0.27.121 / versionCode 202. Publicación vía workflow `bootstrap.yml` (firma y Release Obtenerium), pendiente confirmación a la hora de documentar. Pruebas de fechas límite y dispositivo físico pendientes; backend y web sin cambios.
+
+
 ## Enlaces, ordenamiento y deshacer — 20/11/2026 · Android 0.27.120
 
 - Android: URLs HTTP(S) convertidas en enlaces seguros en nota, descripción y subtareas; sin modificar esquema ni permitir protocolos peligrosos.
