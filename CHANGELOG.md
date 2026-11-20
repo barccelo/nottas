@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas 0.27.121 (20/11/2026)
+
+- Botón global Deshacer movido de la barra inferior a las acciones del encabezado, con icono de retorno lineal Nottas y conservando el historial reciente de acciones.
+- Orden por fecha relativo al instante actual: primero próximas fechas, luego vencidas, finalmente sin fecha. «Próximas primero» ascendente y «Lejanas primero» descendente dentro de futuras. Vencidas ordenadas por proximidad al presente; sin anteponer octubre cuando se piden las próximas de noviembre.
+- Vista agrupada reutiliza el comparador temporal, con descripciones aclaradas. Sin cambios de sincronización ni API.
+- Versión Android 0.27.121 / versionCode 202; APK firmada y publicación Obtainium por verificar.
+
+
 ## Nottas 0.27.120 / Web — enlaces, orden y deshacer (20/11/2026)
 
 - Enlaces HTTP(S) seguros en contenido enriquecido y subtareas, con previsualizaciones clicables en web.
