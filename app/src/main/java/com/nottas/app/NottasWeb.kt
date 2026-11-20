@@ -3,9 +3,11 @@ package com.nottas.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.DownloadManager
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.Context
+import android.database.Cursor
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -573,6 +575,93 @@ object NottasWeb {
                 true
             } catch (_: Throwable) {
                 false
+            }
+        }
+
+        // Update downloads are confined to a validated Nottas Release asset;
+        // no arbitrary URL from WebView may initiate a native download.
+        private val updatePrefs get() =
+            context.getSharedPreferences("nottas_apk_updates", Context.MODE_PRIVATE)
+        private fun updateManager(): DownloadManager? =
+            context.getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
+        private fun expectedUpdateUrl(version: String): String? {
+            if (!Regex("^v[0-9]+\\.[0-9]+\\.[0-9]+$").matches(version)) return null
+            return "https://github.com/barccelo/nottas/releases/download/" +
+                version + "/Nottas-" + version + ".apk"
+        }
+
+        @JavascriptInterface
+        fun downloadUpdate(url: String, version: String): Boolean {
+            if (url != expectedUpdateUrl(version)) return false
+            if (version == getDownloadedUpdateVersion()) {
+                when (getUpdateDownloadStatus()) {
+                    DownloadManager.STATUS_PENDING, DownloadManager.STATUS_RUNNING,
+                    DownloadManager.STATUS_PAUSED, DownloadManager.STATUS_SUCCESSFUL -> return true
+                }
+            }
+            return try {
+                val folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: return false
+                val file = File(folder, "Nottas-$version.apk")
+                if (file.exists() && !file.delete()) return false
+                val request = DownloadManager.Request(Uri.parse(url)).apply {
+                    setTitle("Nottas $version")
+                    setDescription("Descargando la actualización firmada")
+                    setMimeType("application/vnd.android.package-archive")
+                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    setDestinationInExternalFilesDir(
+                        context, Environment.DIRECTORY_DOWNLOADS, "Nottas-$version.apk"
+                    )
+                }
+                val id = updateManager()?.enqueue(request) ?: return false
+                updatePrefs.edit().putLong("download_id", id)
+                    .putString("download_tag", version).apply()
+                true
+            } catch (_: Throwable) { false }
+        }
+
+        @JavascriptInterface
+        fun getDownloadedUpdateVersion(): String =
+            updatePrefs.getString("download_tag", "") ?: ""
+
+        @JavascriptInterface
+        fun getUpdateDownloadStatus(): Int {
+            val id = updatePrefs.getLong("download_id", -1L)
+            if (id < 0L) return 0
+            return try {
+                updateManager()?.query(DownloadManager.Query().setFilterById(id))?.use { cursor ->
+                    if (cursor.moveToFirst()) cursor.getInt(
+                        cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)
+                    ) else 0
+                } ?: 0
+            } catch (_: Throwable) { 0 }
+        }
+
+        @JavascriptInterface
+        fun installDownloadedUpdate() {
+            mainHandler.post {
+                if (getUpdateDownloadStatus() != DownloadManager.STATUS_SUCCESSFUL) return@post
+                val version = getDownloadedUpdateVersion()
+                if (expectedUpdateUrl(version) == null) return@post
+                if (Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
+                    try {
+                        context.startActivity(
+                            Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:${context.packageName}")
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        )
+                    } catch (_: Throwable) {}
+                    return@post
+                }
+                try {
+                    val id = updatePrefs.getLong("download_id", -1L)
+                    val uri = updateManager()?.getUriForDownloadedFile(id) ?: return@post
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "application/vnd.android.package-archive")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(intent)
+                } catch (_: Throwable) {}
             }
         }
 
