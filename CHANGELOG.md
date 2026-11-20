@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## Nottas 0.27.120 / Web — enlaces, orden y deshacer (20/11/2026)
+
+- Enlaces HTTP(S) seguros en contenido enriquecido y subtareas, con previsualizaciones clicables en web.
+- Eliminado literal null del selector de orden; descripciones de opciones y corrección del orden cronológico, sin anteponer fijadas ni tareas sin fecha.
+- Barra inferior Android con Deshacer para completar, fijar/destacar y enviar a papelera (historial reciente, sin persistencia).
+- Web actualizada y publicada en Cloudflare, conservando respaldo y sync existente.
+- Android 0.27.120, versionCode 201; pruebas y publicación firmada por confirmar.
+
+
 ## Nottas Android v0.27.119 / Web — subtareas y teclado (12/11/2026)
 
 - Flecha SVG de trazo Nottas para «Ir al final» en ambas plataformas.
