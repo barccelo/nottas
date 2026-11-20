@@ -1,5 +1,14 @@
 # Continuidad operativa de Nottas
 
+## Android 0.27.122 — Centro local de tareas atrasadas (20/11/2026)
+
+- Se añadió exclusivamente a `app/src/main/assets/nottas.html` un aviso local de tareas vencidas. **No se modificaron FCM, WebSocket, D1, API, endpoints, contratos de entidades ni lógica de sincronización.** El centro de «Por agendar» del director permanece intacto; la nueva entrada con contador rojo y panel `overdueAttentionOverlay` es independiente.
+- Calcula los atrasos desde `state.tasks` en memoria, sin red y sin campos nuevos en las tareas. Excluye completadas, eliminadas, rechazadas/canceladas y propuestas sin confirmar. Tarea con día pero sin hora se considera atrasada desde el día siguiente; con hora, al exceder esa hora; tareas de varios días respetan su fecha de cierre y días completados.
+- Acciones: completar una tarea de un día mediante `completeTask()` existente; abrir editor en el espacio correspondiente para reprogramar, sin cambio automático de fecha; acceder a «Por agendar» cuando existe rol director. Tareas de varios días se abren en editor, sin completar toda la serie accidentalmente.
+- Badge persistente mientras haya atrasadas; popup al entrar o reanudar si no hay ningún otro modal/teclado; cierre pospone aviso 4 h, «Recordar en 1 hora» 1 h. Preferencia de aviso aislada en `localStorage` bajo `nottas_overdue_attention_v1`, nunca en `state.preferences` ni en sincronización. La firma de la lista permite mostrar novedades sin esperar 4 h. Actualización en renders y cambio de minuto.
+- Publicación Android 0.27.122 / code 203, rama main; confirmar ejecución Actions, firma y APK en Release para Obtainium. QA pendiente: desbloqueo real, cierres y snooze, fecha sin hora, franja multidiaria, offline y no solapamiento con bandeja del director. **Sin modificación web** (el gesto de desbloqueo es nativo).
+
+
 ## Android 0.27.121 — Deshacer en encabezado y cronología relativa (20/11/2026)
 
 - Se trasladó `#globalUndoBtn` desde `#bottomDock` a `.headerActions`, junto al botón de encender/apagar y Ajustes. Icono redibujado con flecha de retorno de trazo y proporciones equivalentes a otros SVG del encabezado, sin tarjeta ni fondo añadido. Se conserva el historial global de 12 acciones.
