@@ -1,5 +1,14 @@
 # Pendientes de Nottas
 
+## Validación 0.27.121 — orden y ubicación de Deshacer (20/11/2026)
+
+- [x] Trasladar Deshacer a la cabecera, a la altura de encendido/apagado y Ajustes, con SVG Nottas.
+- [x] Corregir orden temporal futuro/vencido/sin fecha y mantener el mismo criterio en vista agrupada.
+- [ ] Validar en Android con fechas de octubre pasado, hoy (horas próximas/anteriores), mañana, semanas futuras y sin fecha, para modos Próximas/Lejanas con filtro Todas/Pendientes.
+- [ ] Probar tareas recurrentes y varias con el mismo día, comprobar encabezados en vista agrupada.
+- [ ] Verificar APK v0.27.121 firmada en Actions y Release Obtainium, instalación y comportamiento real.
+
+
 ## Validación 20/11/2026 · enlaces, orden y deshacer
 
 - [x] Quitar «null» y mostrar explicación en los criterios de orden.
