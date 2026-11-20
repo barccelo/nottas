@@ -847,7 +847,7 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
   color:var(--blue);
 }
 /* Subtasks are a collapsible section of the document, not another card. */
-#editor #subtaskSection.nottas-editor-subtasks{
+#editor #subtaskSection.nottas-editor-subtasks:not(.hidden){
   display:block!important;
   border:0!important;
   border-top:1px solid var(--line)!important;
@@ -944,3 +944,5 @@ html[data-theme="light"],html[data-theme="dark"]{--shadow:none}
 #editor #editCompletedSection{border-top:1px solid var(--line);padding:4px 0;margin:10px 0 0}
 #editor .editor-actions{z-index:5}
 /* No phantom clipping caused by 30vh inner scrolling: only #editForm scrolls. */
+
+#editor #subtaskSection.nottas-editor-subtasks.hidden{display:none!important}
