@@ -1,5 +1,13 @@
 # Continuidad operativa de Nottas
 
+## Web: editor continuo y corrección del recorte de subtareas — 20/11/2026
+
+- Rama web `feature/nottas-web-initial`: commits `1b669bb`, `556b3bb`, `5e12ba3`. Intervención solo en `web/nottas-editor.js` y `web/nottas-ui.css`; `index.html`, esquemas, estado, sync, API/FCM/WSS, Android y Obtainium no cambian.
+- **Editor tipo documento:** los bloques de contenido y las subtareas comparten superficie, sin tarjetas anidadas, contornos gruesos ni fondos de cuadro. El título y los chips conservan su tratamiento Nottas; botones de formato, bloque, casilla, arrastre lógico y controles de subtareas siguen presentes. La sección de subtareas conserva cabecera plegable y contador, pero deja de ser tarjeta enmarcada.
+- **Bug de elemento parcialmente visible al final:** el listado `#editSubtasks` tenía `max-height:min(30vh,300px)` y `overflow-y:auto`, causando una fila recortada en la orilla inferior. Se eliminó el viewport interno: el desplazamiento ocurre en el formulario principal del editor; completadas y botón «Añadir subtarea» siguen en el flujo del documento. «Ir al final» usa `scrollIntoView()` del botón de añadir, no el scroll interno eliminado. Se conservó el ocultamiento de subtareas en notas con selector `.hidden` específico.
+- **Publicado:** Worker Cloudflare `nottas-web-preview` actualizado con JS y CSS; inspección posterior de 15 rutas confirma assets activos y respaldos `/stable` y `/classic` intactos. **QA real pendiente**: revisar tarea de 73 subtareas, llegar al final, añadir, reordenar, marcar/desmarcar, plegar completadas y guardar/reabrir. No afirmar pruebas visuales ni bidireccionales hasta ejecutarlas.
+
+
 ## Android 0.27.123 — Actualización integrada según Rosario (20/11/2026)
 
 - Implementado comprobador nativo opcional de actualizaciones. Fuente exclusiva: `GET https://api.github.com/repos/barccelo/nottas/releases/latest`; exige tag semántico oficial `vX.Y.Z`, Release no borrador ni prerelease, y asset publicado `Nottas-vX.Y.Z.apk` con URL exacta del repositorio. Compara con `NottasNative.appVersion()` y solo muestra oferta para versión superior.
