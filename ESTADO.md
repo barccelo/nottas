@@ -1,5 +1,12 @@
 # Estado actual de Nottas
 
+## Web — editor con lienzo continuo (20/11/2026)
+
+- Publicado en `nottas-web-preview`: superficies sin tarjetas anidadas en contenido y subtareas; controles existentes y cabecera plegable conservados. Sin cambios Android ni versión APK.
+- Subtareas y completadas sin scroll propio de altura 30vh; un solo scroll en editor. «Ir al final» lleva al botón de añadir, que permanece en el flujo del documento. Se preserva la clase `hidden` del grupo de subtareas al editar notas.
+- Verificación del Worker confirma nuevos assets, 15 rutas y respaldos `/stable`/`/classic`; QA navegador real y sincronización con Android pendientes.
+
+
 ## Android 0.27.123 — Actualizador integrado (20/11/2026)
 
 - Portado patrón de Rosario con aviso en Nottas, comprobación única al abrir contra GitHub Releases oficial y búsqueda manual en Acerca de Nottas.
