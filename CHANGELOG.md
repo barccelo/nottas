@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Android 0.27.122 — Centro de tareas atrasadas (20/11/2026)
+
+- Nuevo indicador rojo local para tareas vencidas y panel flotante discreto, distinto de la bandeja «Por agendar».
+- Aviso al entrar/desbloquear solo si no hay otro panel activo; recordatorio en 1 h, cierre temporal 4 h y resurgimiento por nuevas tareas vencidas. Configuración del aviso solo en `localStorage`.
+- Detección de vencimientos por fecha/hora y rango multidiario; acciones completar y abrir tarea existente para reprogramar.
+- No se modificaron datos ni sync FCM/WSS/API/D1 ni la web. Android 0.27.122 / versionCode 203; Release y pruebas reales por confirmar.
+
+
 ## Nottas 0.27.121 (20/11/2026)
 
 - Botón global Deshacer movido de la barra inferior a las acciones del encabezado, con icono de retorno lineal Nottas y conservando el historial reciente de acciones.
