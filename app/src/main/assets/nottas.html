@@ -2193,6 +2193,13 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode #addSubtaskBtn{
 html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
   background:rgba(80,158,255,.14);color:#76b6ff;
 }
+/* Native Nottas links and compact bottom-bar undo. */
+.richText a,.subtaskEditorInput a,.richEditable a,.taskTitle a,.noteTitle a{color:#1677ff;text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
+html[data-theme="dark"] .richText a,html[data-theme="dark"] .subtaskEditorInput a,html[data-theme="dark"] .richEditable a{color:#80bbff}
+.globalUndoBtn{width:40px;min-width:40px;height:40px;display:grid;place-items:center;flex:0 0 40px;border:1px solid rgba(118,118,128,.2);border-radius:12px;background:rgba(118,118,128,.08);color:#1677ff;padding:9px}
+.globalUndoBtn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.globalUndoBtn:disabled{opacity:.35}
+html[data-theme="dark"] .globalUndoBtn{background:#29292d;border-color:#414147;color:#8ebeff}
 </style>
 <link rel="stylesheet" href="design-system.css">
 </head>
@@ -2274,6 +2281,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
      Decorative only: never receives input or blurs the controls themselves. -->
 <div id="bottomFrost" class="bottomFrost" aria-hidden="true"></div>
 <div class="bottomDock" id="bottomDock">
+  <button id="globalUndoBtn" class="globalUndoBtn" type="button" aria-label="Deshacer última acción" title="Deshacer" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8 4 12l5 4"/><path d="M4 12h10a6 6 0 0 1 0 12" transform="translate(0 -5)"/></svg></button>
   <div class="searchWrap">
     <svg class="searchIcon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
     <input id="search" class="search" type="text" placeholder="Buscar" autocomplete="off">
@@ -3574,7 +3582,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
 
   function sanitizeInlineHtml(input){
     const holder=document.createElement("div");holder.innerHTML=String(input||"");
-    const allowed=new Set(["B","STRONG","I","EM","U","S","STRIKE","BR"]);
+    const allowed=new Set(["B","STRONG","I","EM","U","S","STRIKE","BR","A"]);
     const walk=node=>{
       Array.from(node.childNodes).forEach(child=>{
         if(child.nodeType===1){
@@ -3582,12 +3590,38 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
             if(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED"].includes(child.tagName)){child.remove();return}
             const frag=document.createDocumentFragment();while(child.firstChild)frag.appendChild(child.firstChild);child.replaceWith(frag);walk(node);return;
           }
-          Array.from(child.attributes||[]).forEach(a=>child.removeAttribute(a.name));
+          if(child.tagName==="A"){
+            const href=String(child.getAttribute("href")||"").trim();
+            Array.from(child.attributes||[]).forEach(a=>child.removeAttribute(a.name));
+            if(/^https?:\/\/[^\s<>"']+$/i.test(href)){
+              child.setAttribute("href",href);child.setAttribute("target","_blank");
+              child.setAttribute("rel","noopener noreferrer");
+            }else {child.replaceWith(...Array.from(child.childNodes));return}
+          }else Array.from(child.attributes||[]).forEach(a=>child.removeAttribute(a.name));
           walk(child);
         }
       });
     };
     walk(holder);
+    const urlRe=/https?:\/\/[^\s<>"'\u00a0]+/gi;
+    const textWalker=document.createTreeWalker(holder,NodeFilter.SHOW_TEXT);
+    const nodes=[];while(textWalker.nextNode())nodes.push(textWalker.currentNode);
+    nodes.forEach(node=>{
+      if(node.parentElement?.closest("a"))return;
+      const value=node.nodeValue||"";urlRe.lastIndex=0;
+      if(!urlRe.test(value))return;urlRe.lastIndex=0;
+      const frag=document.createDocumentFragment();let start=0,match;
+      while((match=urlRe.exec(value))){
+        const raw=match[0],clean=raw.replace(/[.,;:!?)}\]]+$/,"");
+        if(!clean)continue;
+        frag.append(document.createTextNode(value.slice(start,match.index)));
+        const link=document.createElement("a");link.href=clean;
+        link.target="_blank";link.rel="noopener noreferrer";link.textContent=clean;
+        frag.append(link);start=match.index+clean.length;urlRe.lastIndex=start;
+      }
+      frag.append(document.createTextNode(value.slice(start)));
+      node.replaceWith(frag);
+    });
     return holder.innerHTML;
   }
   function plainToInlineHtml(text){return esc(String(text||"")).replace(/\r?\n/g,"<br>")}
@@ -5673,6 +5707,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
   }
   function completeTask(t,done,date=localDateISO()){
     if(!t)return;
+    rememberGlobalAction(t,"completar tarea");
     const wasDone=!!t.done;
     if(taskMultiDay(t)){if(!setTaskDayCompletion(t,date,done))return}
     else t.done=!!done;
@@ -5695,13 +5730,45 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
     touch(t);scheduleSave();render();
   }
 
+  const globalUndoStack=[];
+  function syncGlobalUndoButton(){
+    const button=$("globalUndoBtn");if(!button)return;
+    button.disabled=!globalUndoStack.length;
+    button.setAttribute("aria-label",globalUndoStack.length?"Deshacer "+globalUndoStack[globalUndoStack.length-1].label:"Nada que deshacer");
+  }
+  function rememberGlobalAction(item,label){
+    if(!item)return;
+    globalUndoStack.push({id:item.id,workspaceId:item.workspaceId||personalWorkspaceId(),
+      kind:state.tasks.includes(item)?"task":"note",snapshot:cloneSerializable(item),
+      taskIds:new Set(state.tasks.map(t=>t.id)),label});
+    if(globalUndoStack.length>12)globalUndoStack.shift();
+    syncGlobalUndoButton();
+  }
+  function undoGlobalAction(){
+    const action=globalUndoStack.pop();if(!action)return;
+    const list=action.kind==="task"?state.tasks:state.notes;
+    const target=list.find(x=>x.id===action.id&&String(x.workspaceId||personalWorkspaceId())===action.workspaceId);
+    if(target){
+      const fields=cloneSerializable(action.snapshot);
+      Object.keys(target).forEach(key=>{if(!(key in fields))delete target[key]});
+      Object.assign(target,fields);touch(target);
+    }
+    // Completing a repeating task may have created the next occurrence.
+    // Undo it with a tombstone, so other devices remove it too.
+    if(action.kind==="task")state.tasks.forEach(t=>{
+      if(t.recurrenceFrom===action.id&&!action.taskIds.has(t.id)&&!t.deletedAt){
+        t.deletedAt=now();touch(t);
+      }
+    });
+    scheduleSave();render();syncGlobalUndoButton();showToast("Acción deshecha");
+  }
   function proposalInactive(t){return ["rejected","cancelled"].includes(t?.approvalStatus||"")}
   function visibleTask(t){if(!itemInActiveWorkspace(t))return false;if(trash)return !!t.deletedAt&&!t.purgedAt&&taskSearchMatches(t);if(t.deletedAt||proposalInactive(t))return false;if(activeCategory!=="all"&&t.category!==activeCategory)return false;if(activeTag&&!normalizeTags(t.tags).includes(activeTag))return false;if(taskTodayOnly&&!taskOccursOn(t,localDateISO()))return false;if(taskTodayOnly&&taskFilter==="pending"&&taskDayDone(t,localDateISO()))return false;if(taskFilter==="pending"&&(t.done||meetingOutcomeClosed(t)))return false;if(taskFilter==="pinned"&&!t.pinned)return false;if(taskFilter==="done"&&!t.done)return false;return taskSearchMatches(t)}
   function visibleNote(n){if(!itemInActiveWorkspace(n))return false;if(trash)return !!n.deletedAt&&!n.purgedAt&&noteSearchMatches(n);if(n.deletedAt)return false;if(activeCategory!=="all"&&n.category!==activeCategory)return false;if(activeTag&&!normalizeTags(n.tags).includes(activeTag))return false;if(noteFilter==="pinned"&&!n.pinned)return false;return noteSearchMatches(n)}
   function taskSortTime(value){const n=Number(value);return Number.isFinite(n)&&n>0?n:(Date.parse(String(value||""))||0)}
   function sortTasks(a,b){
-    // Keep user-pinned items prominent, then honor the explicit sort.
-    if(a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
+    // Explicit sort order is authoritative; pinning is a separate filter.
+    if(taskSortMode==="pinned"&&a.pinned!==b.pinned)return Number(b.pinned)-Number(a.pinned);
     const recent=taskSortMode==="recent",soon=taskSortMode==="soon";
     if(recent||soon){
       const ad=a.dueDate||"",bd=b.dueDate||"";
@@ -6703,8 +6770,8 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
   function sortTasksByDateTime(a,b){
     const recent=taskSortMode==="recent";
     const ad=taskGroupDate(a),bd=taskGroupDate(b);
-    // Undated items always head the chronological view; dated items retain the chosen direction.
-    if(!!ad!==!!bd)return ad?1:-1;
+    // Without a date there is no chronological position: put these last.
+    if(!!ad!==!!bd)return ad?-1:1;
     if(ad!==bd)return recent?bd.localeCompare(ad):ad.localeCompare(bd);
     const at=taskGroupHour(a),bt=taskGroupHour(b);
     if(!!at!==!!bt)return at?-1:1;
@@ -7100,12 +7167,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
         e.preventDefault();e.stopPropagation();
         completeTask(t,!taskDayDone(t,button.dataset.taskDate),button.dataset.taskDate);
       }));
-      const pin=el.querySelector(".pinTask");if(pin)pin.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();t.pinned=!t.pinned;touch(t);scheduleSave();render()});
+      const pin=el.querySelector(".pinTask");if(pin)pin.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();rememberGlobalAction(t,"destacar tarea");t.pinned=!t.pinned;touch(t);scheduleSave();render()});
       const res=el.querySelector(".restoreTask");if(res)res.addEventListener("click",()=>{t.deletedAt=null;touch(t);scheduleSave();render();showToast("Tarea restaurada")});
     });
     list.querySelectorAll("[data-swipe-task]").forEach(row=>{
       const t=state.tasks.find(x=>x.id===row.dataset.swipeTask);if(!t)return;
-      bindSwipeCard(row,row.querySelector(".swipeCard"),()=>openTask(t),()=>{t.deletedAt=now();touch(t);scheduleSave();render();showToast("Tarea enviada a papelera")});
+      bindSwipeCard(row,row.querySelector(".swipeCard"),()=>openTask(t),()=>{rememberGlobalAction(t,"eliminar tarea");t.deletedAt=now();touch(t);scheduleSave();render();showToast("Tarea enviada a papelera")});
     });
   }
 
@@ -7135,12 +7202,12 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
     list.querySelectorAll("[data-note]").forEach(el=>{
       const n=state.notes.find(x=>x.id===el.dataset.note);if(!n)return;
       const open=el.querySelector(".noteOpen");if(open&&!trash)open.addEventListener("click",()=>openNote(n));
-      const pin=el.querySelector(".pinNote");if(pin)pin.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();n.pinned=!n.pinned;touch(n);scheduleSave();render()});
+      const pin=el.querySelector(".pinNote");if(pin)pin.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();rememberGlobalAction(n,"fijar nota");n.pinned=!n.pinned;touch(n);scheduleSave();render()});
       const res=el.querySelector(".restoreNote");if(res)res.addEventListener("click",()=>{n.deletedAt=null;touch(n);scheduleSave();render();showToast("Nota restaurada")});
     });
     list.querySelectorAll("[data-swipe-note]").forEach(row=>{
       const n=state.notes.find(x=>x.id===row.dataset.swipeNote);if(!n)return;
-      bindSwipeCard(row,row.querySelector(".swipeCard"),()=>openNote(n),()=>{n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")});
+      bindSwipeCard(row,row.querySelector(".swipeCard"),()=>openNote(n),()=>{rememberGlobalAction(n,"eliminar nota");n.deletedAt=now();touch(n);scheduleSave();render();showToast("Nota enviada a papelera")});
     });
   }
 
@@ -10147,10 +10214,16 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
       if(!b.querySelector(".sortGlyph")){
         const title=b.querySelector("span"),hint=b.querySelector("small");
         const copy=document.createElement("span");copy.className="sortCopy";
-        copy.append(title,hint);
+        copy.append(title);
+        if(hint)copy.append(hint);
         b.replaceChildren();
         b.insertAdjacentHTML("beforeend",'<span class="sortGlyph">'+taskSortIcon(b.dataset.taskSort)+'</span>');
         b.appendChild(copy);
+        const hintText={soon:"De la fecha más cercana a la más lejana; sin fecha al final",
+          recent:"De la fecha más lejana a la más cercana; sin fecha al final",
+          created:"Últimas creadas primero",updated:"Últimas modificaciones primero",
+          priority:"Alta, normal y baja",title:"Orden alfabético ascendente"}[b.dataset.taskSort];
+        if(hintText){const subtitle=document.createElement("small");subtitle.textContent=hintText;copy.append(subtitle)}
         b.insertAdjacentHTML("beforeend",'<span class="sortTick" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m3 8 3.4 3.4L13 4.6"/></svg></span>');
       }
       const active=b.dataset.taskSort===taskSortMode;
@@ -10176,6 +10249,7 @@ html[data-theme="dark"] #editorOverlay.taskEditorMode .taskSubtasksJumpEnd{
     saveUI();render();
     if($("taskSortOverlay").classList.contains("show"))renderTaskSortPanel();
   });
+  $("globalUndoBtn").addEventListener("click",undoGlobalAction);
   $("taskFilterSortBtn").addEventListener("click",openTaskSort);
   $("taskSortDone").addEventListener("click",closeTaskSort);
   $("taskSortClose").addEventListener("click",closeTaskSort);
