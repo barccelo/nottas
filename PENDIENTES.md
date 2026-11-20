@@ -1,5 +1,15 @@
 # Pendientes de Nottas
 
+## QA editor continuo web (20/11/2026)
+
+- [x] Eliminar tarjetas visuales redundantes y dar tratamiento de documento a bloques y subtareas.
+- [x] Eliminar scroll interno de 30vh/300px que recortaba una subtarea en el borde inferior, dejando botón de añadir y elementos marcados en flujo continuo.
+- [x] Conservar pestaña plegable, contador, atajo «Ir al final» y sección oculta cuando se edita una nota sin subtareas.
+- [x] Publicar JS y CSS en Cloudflare y verificar assets y respaldos.
+- [ ] Validación visual en navegador con tarea de más de 70 subtareas, tema oscuro/claro y distintos tamaños: no cortar filas ni solapar pie fijo.
+- [ ] Validar edición con texto enriquecido, selección de bloque, añadir/marcar/reordenar subtareas, navegación, Guardar/Cancelar y sincronización real con Android.
+
+
 ## Verificación del actualizador interno — 0.27.123 (20/11/2026)
 
 - [x] Comprobación única de Release oficial al iniciar y comparación semántica con appVersion instalada.
