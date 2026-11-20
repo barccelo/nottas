@@ -1,5 +1,13 @@
 # Historial de cambios de Nottas
 
+## Nottas Web — editor continuo tipo documento (20/11/2026)
+
+- Rediseño visual puntual del editor: bloques y subtareas integrados en una superficie sin tarjetas anidadas, conservando los controles Nottas y plegado.
+- Corregido el recorte visual de subtareas causado por el scroll interno con límite de altura; el formulario completo desplaza la lista y el botón de añadir queda en el flujo.
+- «Ir al final» desplaza hasta «Añadir subtarea». Corregido el selector de visibilidad para que notas sin subtareas mantengan la sección oculta.
+- Cambios publicados y verificados por lectura del Worker `nottas-web-preview`, respaldos `/stable` y `/classic` intactos. Android/Obtainium/FCM/WSS/D1 sin modificación. QA real pendiente.
+
+
 ## Nottas Android 0.27.123 — Actualizaciones dentro de la app (20/11/2026)
 
 - Nottas detecta nuevas versiones oficiales desde GitHub Releases al abrir; no consulta continuamente ni requiere conexión para utilizar la app.
