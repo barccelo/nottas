@@ -1,5 +1,14 @@
 # Continuidad operativa de Nottas
 
+## Android 0.27.123 — Actualización integrada según Rosario (20/11/2026)
+
+- Implementado comprobador nativo opcional de actualizaciones. Fuente exclusiva: `GET https://api.github.com/repos/barccelo/nottas/releases/latest`; exige tag semántico oficial `vX.Y.Z`, Release no borrador ni prerelease, y asset publicado `Nottas-vX.Y.Z.apk` con URL exacta del repositorio. Compara con `NottasNative.appVersion()` y solo muestra oferta para versión superior.
+- Nuevos archivos exclusivamente Android `app/src/main/assets/nottas-updates.js` y `.css`. Al abrir ejecuta una sola consulta HTTP con timeout (9 s), no sondeo de versiones continuo; ofrece «Más tarde», «Descargar actualización» e «Instalar». Consulta manual desde Ajustes → Acerca de Nottas → Buscar actualizaciones; comunica versión actual o fallo de red.
+- `NottasWeb.NativeBridge` ofrece `downloadUpdate`, `getDownloadedUpdateVersion`, `getUpdateDownloadStatus` e `installDownloadedUpdate`. El código nativo valida rigurosamente la URL oficial, utiliza DownloadManager en el almacenamiento propio de Nottas, reanuda el estado de descarga y abre únicamente el instalador del sistema tras permiso de fuentes desconocidas y confirmación del usuario. Se añadió permiso `REQUEST_INSTALL_PACKAGES` al manifest. No es actualización silenciosa.
+- **Límite de regresión:** no tocar `state`, tareas, notas, copias, FCM, WebSocket, D1, API ni el mecanismo de Obtainium. Nuevo código encapsulado en bridge y assets, la app funciona aunque GitHub no responda. Se conserva firma CI de Releases para actualizaciones sobre instalación existente.
+- Versión incrementada a 0.27.123 / versionCode 204. Publicación mediante GitHub Actions/Release; comprobar APK firmada antes de confirmar Obtainium. Pendiente prueba real de detección de versión, descarga, permiso de instalación y actualización sin pérdida de datos.
+
+
 ## Android 0.27.122 — Centro local de tareas atrasadas (20/11/2026)
 
 - Se añadió exclusivamente a `app/src/main/assets/nottas.html` un aviso local de tareas vencidas. **No se modificaron FCM, WebSocket, D1, API, endpoints, contratos de entidades ni lógica de sincronización.** El centro de «Por agendar» del director permanece intacto; la nueva entrada con contador rojo y panel `overdueAttentionOverlay` es independiente.
