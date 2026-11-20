@@ -1,5 +1,17 @@
 # Pendientes de Nottas
 
+## QA del Centro de atrasadas — Android 0.27.122 (20/11/2026)
+
+- [x] Crear UI local sin ampliar campos de tarea ni cambiar sincronización FCM/WSS/D1.
+- [x] Contador rojo y modal propio, vinculado a foco/visibilidad y cambio de minuto, con supresión por otros modales/teclado.
+- [x] Diferenciar vencimiento por fecha sin hora, hora específica y último día multidiario; excluir completadas y propuestas sin confirmar.
+- [x] Acciones completar, abrir editor, cerrar 4 h, recordar en 1 h y acceso separado a «Por agendar».
+- [ ] Probar Android real: desbloquear con tareas vencidas, abrir editor, completar y reprogramar con conexión y modo avión.
+- [ ] Probar vencimiento a medianoche, fecha sin hora, tarea multidiaria parcialmente completada, tareas en otros espacios y nuevas tareas durante snooze.
+- [ ] Verificar que bandeja «Por agendar» conserve prioridad, sin paneles solapados ni regresiones de FCM/WebSocket.
+- [ ] Verificar build firmado 0.27.122 / 203 y Release para Obtainium; instalación real.
+
+
 ## Validación 0.27.121 — orden y ubicación de Deshacer (20/11/2026)
 
 - [x] Trasladar Deshacer a la cabecera, a la altura de encendido/apagado y Ajustes, con SVG Nottas.
