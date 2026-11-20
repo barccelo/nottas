@@ -1,5 +1,13 @@
 # Estado actual de Nottas
 
+## Android 0.27.122 — Centro de atrasadas (20/11/2026)
+
+- Panel local de vencidas con contador rojo en encabezado; indicador independiente de campana «Por agendar», sin mezclas de estado.
+- Apertura opcional al iniciar/volver visible, solo sin otros modales ni teclado. Cierre 4 h, recordatorio en 1 h y novedades reactivan aviso; contador persiste. Acciones Completar y abrir tarea para reprogramarla, reutilizando funciones existentes. Lógica local-first sin conexión.
+- Filtros de fechas vencidas, excluyendo propuestas sin confirmar y completadas; fechas sin hora solo pasan al día siguiente; sin alterar backend/sync.
+- Código en main, Android 0.27.122 / 203. Pendientes verificar APK en GitHub Releases, comportamiento real de desbloqueo, solapamiento con director y estados offline.
+
+
 ## Android 0.27.121 · Corrección del orden cronológico y posición de Deshacer (20/11/2026)
 
 - Deshacer se ubica en las acciones del encabezado (encendido/apagado, notificaciones y Ajustes), no en barra de búsqueda inferior. Icono lineal coherente con la cabecera.
