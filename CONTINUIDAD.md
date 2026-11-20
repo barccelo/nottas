@@ -6,7 +6,7 @@
 - Corregido «null» en panel de orden (se anexaba un nodo nulo al título); criterios cronológicos cuentan con subtítulos explicativos y las tareas destacadas no adelantan a las demás cuando el usuario elige un orden específico. Sin fecha al final.
 - Botón Deshacer en barra inferior para completar, fijar/destacar y enviar a papelera; pila reciente de 12 acciones en memoria. El historial de edición de tarea sigue independiente. Pendientes pruebas reales y ampliar cobertura.
 - Web: enlaces clicables en editor, vista previa y subtareas. Publicado Worker de Cloudflare; /stable y /classic conservados, sin alterar FCM/WSS.
-- Android 0.27.120 / versionCode 201 en main; verificar GitHub Actions y Release firmado antes de confirmar Obtainium.
+- Android 0.27.120 / versionCode 201 publicada: Release `v0.27.120` con APK firmada (`Nottas-v0.27.120.apk`, 3.15 MB), generada por Actions `44731883933` (pasos de compilación, firma y publicación correctos; ejecución global posteriormente cancelada por un push documental). El tag apunta al commit de versión `128f384c` que ya incluye el cambio funcional. Instalación/prueba física pendientes.
 
 
 ## Ajustes de subtareas y foco — 12/11/2026 (v0.27.119)
