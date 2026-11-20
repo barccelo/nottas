@@ -10932,7 +10932,7 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
       if(lastDay<today)return true;
       const clock=taskMultiDay(t)?String(t.endTime||""):String(t.endTime||t.dueTime||"");
       // Date-only tasks do not become overdue until the following day.
-      if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(clock))return false;
+      if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(clock))return false;
       const h=Number(clock.slice(0,2)),m=Number(clock.slice(3));
       const [y,mon,d]=lastDay.split("-").map(Number);
       return new Date(y,mon-1,d,h,m).getTime()<nowTime;
@@ -11024,7 +11024,8 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
   $("overdueAttentionOverlay").addEventListener("click",e=>{
     if(e.target===$("overdueAttentionOverlay"))dismissOverdueAttention();
   });
-\n  // Update overdue styling on minute boundaries without disrupting scroll or swipe.
+
+  // Update overdue styling on minute boundaries without disrupting scroll or swipe.
   let taskDeadlineClockDay=localDateISO();
   function refreshTaskDeadlineIndicators(){
     if(!state||document.hidden)return;
