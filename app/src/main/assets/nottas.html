@@ -10925,7 +10925,7 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
     return state.tasks.filter(t=>{
       if(!t||t.deletedAt||t.purgedAt||t.done||meetingOutcomeClosed(t)||proposalInactive(t)||!t.dueDate)return false;
       // Do not call unapproved collaboration proposals late; they have no agreed deadline.
-      if(meetingIsTracked(t)&&["proposed","changes_requested"].includes(t.approvalStatus))return false;
+      if(meetingIsTracked(t)&&(["proposed","changes_requested"].includes(t.approvalStatus)||["deferred","realized"].includes(t.meetingStatus)))return false;
       const lastDay=taskRangeEnd(t);
       if(lastDay>today)return false;
       if(taskMultiDay(t)&&taskDays(t).every(day=>taskDayDone(t,day)))return false;
