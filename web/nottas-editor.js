@@ -765,9 +765,9 @@
   });
   $("editCloseBtn").addEventListener("click",()=>$("editor").close());
   $("editSubtasksJumpEnd").addEventListener("click",()=>{
-    // Only the list scrolls. Its action/footer stays visible and accessible.
-    const scroll=$("editSubtasks");
-    scroll.scrollTo({top:scroll.scrollHeight,behavior:"smooth"});
+    // Single document scroller: the final action belongs to the document flow.
+    // Avoid an inner scroll viewport that hides/clips the last subtask.
+    $("addSubtaskBtn").scrollIntoView({block:"end",behavior:"smooth"});
   });
   $("editSubtasksToggle").addEventListener("click",()=>{
     if(!draft)return;draft.subtasksExpanded=!draft.subtasksExpanded;drawSubtasks();
