@@ -6,7 +6,7 @@
 - Eliminado literal null del selector de orden; descripciones de opciones y corrección del orden cronológico, sin anteponer fijadas ni tareas sin fecha.
 - Barra inferior Android con Deshacer para completar, fijar/destacar y enviar a papelera (historial reciente, sin persistencia).
 - Web actualizada y publicada en Cloudflare, conservando respaldo y sync existente.
-- Android 0.27.120, versionCode 201; pruebas y publicación firmada por confirmar.
+- Android 0.27.120, versionCode 201; APK firmada y publicada en Release `v0.27.120` desde el commit de versión `128f384c`. Acciones firma/publicación exitosas en run `44731883933` (run cancelado posteriormente); pruebas físicas pendientes.
 
 
 ## Nottas Android v0.27.119 / Web — subtareas y teclado (12/11/2026)
