@@ -1,5 +1,13 @@
 # Estado actual de Nottas
 
+## 20/11/2026 · Nottas 0.27.120: enlaces, orden y deshacer
+
+- Android: enlaces HTTP(S) seguros en contenido enriquecido, «null» corregido y orden cronológico ajustado, sin fecha al final ni prioridad oculta de fijadas.
+- Deshacer en barra inferior disponible para tareas completadas, destacadas/fijadas y enviadas a papelera, con historial reciente en memoria.
+- Web: enlaces clicables en descripción, bloques ricos y filas de subtareas; Cloudflare actualizado, respaldos conservados.
+- APK 0.27.120 (201): por confirmar firma, Release y prueba real en dispositivos.
+
+
 ## v0.27.119 · Subtareas y foco (12/11/2026)
 
 - Corregida flecha «Ir al final» en Android/Web con SVG de trazo Nottas.
