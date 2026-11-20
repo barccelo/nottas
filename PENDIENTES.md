@@ -1,5 +1,17 @@
 # Pendientes de Nottas
 
+## Validación 20/11/2026 · enlaces, orden y deshacer
+
+- [x] Quitar «null» y mostrar explicación en los criterios de orden.
+- [x] Respetar próximo/lejano sin colocar destacadas por delante; tareas sin fecha al final.
+- [x] Enlaces HTTP(S) validados y clicables en contenido enriquecido Android y web; publicación web.
+- [x] Deshacer en barra inferior Android para acciones de lista frecuentes.
+- [ ] Probar enlaces pegados y toques externos en Android y web, incluidas subtareas y puntuación final.
+- [ ] Probar orden con tareas vencidas, futuras, sin fecha, destacadas, vista agrupada y filtros.
+- [ ] Probar deshacer después de sincronización y recurrencias, y ampliar a edición de notas/subtareas.
+- [ ] Confirmar APK 0.27.120 firmada y publicada en Releases para Obtainium; probar actualización real.
+
+
 ## Verificar correcciones v0.27.119 (12/11/2026)
 
 - [x] Sustituir flecha tipográfica por SVG Nottas en web y Android.
