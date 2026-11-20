@@ -21,7 +21,7 @@
   function safeHtml(html){
     const template=document.createElement("template");
     template.innerHTML=String(html||"");
-    const safe=new Set(["B","STRONG","I","EM","U","S","STRIKE","BR"]);
+    const safe=new Set(["B","STRONG","I","EM","U","S","STRIKE","BR","A"]);
     function convert(parent){
       let out="";
       for(const node of parent.childNodes){
@@ -30,12 +30,38 @@
         if(["SCRIPT","STYLE","IFRAME","SVG","MATH","OBJECT"].includes(node.tagName))continue;
         if(node.tagName==="BR"){out+="<br>";continue}
         const inner=convert(node);
+        if(node.tagName==="A"){
+          const href=String(node.getAttribute("href")||"").trim();
+          if(/^https?:\/\/[^\s<>"']+$/i.test(href))
+            out+='<a href="'+escape(href)+'" target="_blank" rel="noopener noreferrer">'+inner+'</a>';
+          else out+=inner;
+          continue;
+        }
         if(safe.has(node.tagName)){const tag={"STRONG":"b","EM":"i","STRIKE":"s"}[node.tagName]||node.tagName.toLowerCase();out+="<"+tag+">"+inner+"</"+tag+">"}
         else out+=inner+ (["DIV","P","LI"].includes(node.tagName)?"<br>":"");
       }
       return out;
     }
-    return convert(template.content).replace(/(<br>){3,}/g,"<br><br>");
+    const cleaned=convert(template.content).replace(/(<br>){3,}/g,"<br><br>");
+    const holder=document.createElement("div");holder.innerHTML=cleaned;
+    const re=/https?:\/\/[^\s<>"'\u00a0]+/gi;
+    const walker=document.createTreeWalker(holder,NodeFilter.SHOW_TEXT),nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    for(const node of nodes){
+      if(node.parentElement?.closest("a"))continue;
+      const value=node.nodeValue||"";re.lastIndex=0;
+      if(!re.test(value))continue;re.lastIndex=0;
+      const frag=document.createDocumentFragment();let last=0,match;
+      while((match=re.exec(value))){
+        const raw=match[0],url=raw.replace(/[.,;:!?)}\]]+$/,"");
+        if(!url)continue;
+        frag.append(document.createTextNode(value.slice(last,match.index)));
+        const a=document.createElement("a");a.textContent=url;a.href=url;a.target="_blank";a.rel="noopener noreferrer";frag.append(a);
+        last=match.index+url.length;re.lastIndex=last;
+      }
+      frag.append(document.createTextNode(value.slice(last)));node.replaceWith(frag);
+    }
+    return holder.innerHTML;
   }
   function plain(html){const area=document.createElement("div");area.innerHTML=safeHtml(html);area.querySelectorAll("br").forEach(br=>br.replaceWith("\n"));return area.textContent||""}
   function normalizedBlock(raw){return {...raw,id:raw.id||crypto.randomUUID(),type:allowedTypes.has(raw.type)?raw.type:"paragraph",html:String(raw.html??escape(raw.text||"")),checked:!!raw.checked,children:(raw.children||[]).map(normalizedBlock)}}
@@ -99,6 +125,10 @@
       editor.addEventListener("keyup",updateFormatButtons);
       editor.addEventListener("mouseup",updateFormatButtons);
       editor.addEventListener("input",()=>{block.html=safeHtml(editor.innerHTML);updateFormatButtons()});
+      editor.addEventListener("click",event=>{
+        const a=event.target.closest("a[href]");if(!a)return;
+        event.preventDefault();event.stopPropagation();window.open(a.href,"_blank","noopener,noreferrer");
+      });
       editor.addEventListener("paste",event=>{
         event.preventDefault();
         document.execCommand("insertText",false,event.clipboardData?.getData("text/plain")||"");
