@@ -6,7 +6,7 @@
 - [x] Descarga optativa validada por URL/version, estado DownloadManager e instalación confirmada por Android.
 - [x] Buscar actualizaciones en Acerca de Nottas y estilos planos Nottas; falla de red no bloquea arranque.
 - [x] Mantener FCM, WebSocket, D1 y esquema de notas/tareas sin modificaciones.
-- [ ] Verificar workflow CI, firma y APK de versión 0.27.123 en Releases para Obtainium.
+- [x] GitHub Actions `44773567260` completado con éxito; firma y APK `Nottas-v0.27.123.apk` verificadas en Release `v0.27.123` para Obtainium.
 - [ ] Probar físicamente detección 0.27.122 → 0.27.123, descarga interrumpida/reanudada, permiso para instalar desde esta fuente y confirmar/cancelar instalador.
 - [ ] Asegurar que notas y tareas locales permanecen tras instalar actualización y que sincronización bidireccional continúa normalmente.
 - [ ] Evaluar prioridad visual del aviso si coincide con panel de atrasadas o bandeja de director, sin bloquear interacción.
