@@ -23,6 +23,19 @@
     if(text!==undefined)el.textContent=String(text);
     return el;
   };
+  function linkifyLabel(element,value){
+    const text=String(value||""),re=/https?:\/\/[^\s<>"']+/gi;let pos=0,match;
+    while((match=re.exec(text))){
+      const url=match[0].replace(/[.,;:!?)}\]]+$/,"");
+      if(!url)continue;
+      element.append(document.createTextNode(text.slice(pos,match.index)));
+      const anchor=elt("a","nottas-link",url);anchor.href=url;anchor.target="_blank";
+      anchor.rel="noopener noreferrer";anchor.addEventListener("click",event=>event.stopPropagation());
+      element.append(anchor);pos=match.index+url.length;re.lastIndex=pos;
+    }
+    element.append(document.createTextNode(text.slice(pos)));
+    return element;
+  }
   const today=()=>{const d=new Date();return stamp(d)};
   function stamp(date){return date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0")}
   function fromStamp(text){const match=String(text||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);return match?new Date(+match[1],+match[2]-1,+match[3]):null}
@@ -184,7 +197,7 @@
     const content=elt("div","item-text");
     content.append(elt("strong","",titleOf(x)));
     const desc=bodyOf(x);
-    if(desc)content.append(elt("p","",desc.slice(0,1100)));
+    if(desc)content.append(linkifyLabel(elt("p",""),desc.slice(0,1100)));
     top.append(content);card.append(top);
     const items=task?taskItems(p):noteBlocks(p).check;
     if(items.length){
@@ -211,6 +224,12 @@
           event.stopPropagation();window.NottasEditor?.openAt(x,task?"subtasks":"title");
         });
         line.append(check,label);
+        const url=String(row.label||"").match(/https?:\/\/[^\s<>"']+/i)?.[0]?.replace(/[.,;:!?)}\]]+$/,"");
+        if(url){
+          const link=elt("a","nottas-subtask-open-link","Abrir enlace");
+          link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+          link.addEventListener("click",event=>event.stopPropagation());line.append(link);
+        }
         return line;
       };
       if(task){
