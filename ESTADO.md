@@ -1,5 +1,12 @@
 # Estado actual de Nottas
 
+## Android 0.27.121 · Corrección del orden cronológico y posición de Deshacer (20/11/2026)
+
+- Deshacer se ubica en las acciones del encabezado (encendido/apagado, notificaciones y Ajustes), no en barra de búsqueda inferior. Icono lineal coherente con la cabecera.
+- Orden temporal relativo al momento actual: futuras primero (ascendentes para Próximas; descendentes para Lejanas), vencidas a continuación (más recientes primero) y sin fecha al final. La vista agrupada usa el mismo comparador.
+- Versión 0.27.121 / code 202 en `main`. Pendiente verificar Actions y APK en Releases para Obtainium; pruebas físicas pendientes.
+
+
 ## 20/11/2026 · Nottas 0.27.120: enlaces, orden y deshacer
 
 - Android: enlaces HTTP(S) seguros en contenido enriquecido, «null» corregido y orden cronológico ajustado, sin fecha al final ni prioridad oculta de fijadas.
