@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## Nottas Android 0.27.123 — Actualizaciones dentro de la app (20/11/2026)
+
+- Nottas detecta nuevas versiones oficiales desde GitHub Releases al abrir; no consulta continuamente ni requiere conexión para utilizar la app.
+- Nuevo aviso con descarga voluntaria de APK firmada y botón Instalar que solicita confirmación en Android; validación estricta de URL/tag en el puente nativo.
+- «Buscar actualizaciones» disponible en Ajustes → Acerca de Nottas; estados de descarga y error de conexión.
+- Integración aislada de `nottas-updates.js/.css`, `NottasWeb.kt` y manifest. Sin cambios de sincronización, datos, FCM/WSS ni funcionamiento de Obtainium.
+- Versión `0.27.123`, `versionCode 204`; firma y publicación por CI pendientes de verificar.
+
+
 ## Nottas Android 0.27.122 — Centro de tareas atrasadas (20/11/2026)
 
 - Nuevo indicador rojo local para tareas vencidas y panel flotante discreto, distinto de la bandeja «Por agendar».
