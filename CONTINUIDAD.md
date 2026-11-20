@@ -1,5 +1,14 @@
 # Continuidad operativa de Nottas
 
+## Enlaces, ordenamiento y deshacer — 20/11/2026 · Android 0.27.120
+
+- Android: URLs HTTP(S) convertidas en enlaces seguros en nota, descripción y subtareas; sin modificar esquema ni permitir protocolos peligrosos.
+- Corregido «null» en panel de orden (se anexaba un nodo nulo al título); criterios cronológicos cuentan con subtítulos explicativos y las tareas destacadas no adelantan a las demás cuando el usuario elige un orden específico. Sin fecha al final.
+- Botón Deshacer en barra inferior para completar, fijar/destacar y enviar a papelera; pila reciente de 12 acciones en memoria. El historial de edición de tarea sigue independiente. Pendientes pruebas reales y ampliar cobertura.
+- Web: enlaces clicables en editor, vista previa y subtareas. Publicado Worker de Cloudflare; /stable y /classic conservados, sin alterar FCM/WSS.
+- Android 0.27.120 / versionCode 201 en main; verificar GitHub Actions y Release firmado antes de confirmar Obtainium.
+
+
 ## Ajustes de subtareas y foco — 12/11/2026 (v0.27.119)
 
 - **AW:** «Ir al final» conserva el gesto y usa flecha vectorial con trazo Nottas, no carácter tipográfico; Android `nottas.html` y web `index.html` + `nottas-ui.css`.
