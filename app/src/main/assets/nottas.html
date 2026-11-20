@@ -11021,14 +11021,14 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
     persistOverdueNotice();openOverdueAttention();
   }
   $("overdueAttentionBtn").addEventListener("click",()=>openOverdueAttention(true));
-  $("overdueAttentionClose").addEventListener("click",()=>dismissOverdueAttention());
-  $("overdueAttentionReview").addEventListener("click",()=>dismissOverdueAttention());
+  $("overdueAttentionClose").addEventListener("click",()=>dismissOverdueAttention(240));
+  $("overdueAttentionReview").addEventListener("click",()=>dismissOverdueAttention(240));
   $("overdueAttentionLater").addEventListener("click",()=>dismissOverdueAttention(60));
   $("overdueAttentionAgenda").addEventListener("click",()=>{
     dismissOverdueAttention();if(directorOwnedSpaces().length)openDirectorInbox();
   });
   $("overdueAttentionOverlay").addEventListener("click",e=>{
-    if(e.target===$("overdueAttentionOverlay"))dismissOverdueAttention();
+    if(e.target===$("overdueAttentionOverlay"))dismissOverdueAttention(240);
   });
 
   // Update overdue styling on minute boundaries without disrupting scroll or swipe.
@@ -11123,7 +11123,7 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
       closeTimePicker();
       return true;
     }
-    if($("overdueAttentionOverlay").classList.contains("show")){dismissOverdueAttention();return true}
+    if($("overdueAttentionOverlay").classList.contains("show")){dismissOverdueAttention(240);return true}
     if($("taskSortOverlay").classList.contains("show")){
       closeTaskSort();
       return true;
@@ -11271,6 +11271,7 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
     if(!target.classList?.contains("overlay")||!target.classList.contains("show"))return;
     e.preventDefault();e.stopImmediatePropagation();
     switch(target.id){
+      case "overdueAttentionOverlay":dismissOverdueAttention(240);break;
       case "editorOverlay":handleEditorBack();break;
       case "calendarOverlay":handleCalendarBack();break;
       case "timeOverlay":closeTimePicker();break;
