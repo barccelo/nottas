@@ -5,7 +5,7 @@
 - Portado patrón de Rosario con aviso en Nottas, comprobación única al abrir contra GitHub Releases oficial y búsqueda manual en Acerca de Nottas.
 - Descarga nativa restringida a `Nottas-vX.Y.Z.apk`, progreso mediante DownloadManager e instalación solicitada explícitamente al sistema, sin instalación silenciosa. Permiso de fuentes desconocidas según Android.
 - Nuevos assets JS/CSS, APIs de puente nativo y permiso Android. No modifica sincronización, datos locales ni servicios en segundo plano. Obtainium sigue funcionando.
-- Android v0.27.123 / code 204 en main. Verificar build/Release y prueba física de actualización de una versión antigua preservando datos.
+- Android v0.27.123 / code 204 en main. Build, firma y publicación confirmados en Actions `44773567260`: APK `Nottas-v0.27.123.apk` en Release `v0.27.123` para Obtainium. Prueba física de actualización preservando datos pendiente.
 
 
 ## Android 0.27.122 — Centro de atrasadas (20/11/2026)
