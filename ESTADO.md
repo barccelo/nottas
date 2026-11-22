@@ -5,7 +5,7 @@
 - Notas: barra inferior con SVG «Seleccionar texto», «Deshacer» y «Rehacer». El modo de selección ofrece documento temporal de lectura con selección nativa entre párrafos, viñetas, numeraciones y contenido de casillas; acciones Seleccionar todo, Copiar y Editar. Sin cambiar bloques persistidos.
 - Descripción de tareas: botón «Seleccionar texto» y misma vista temporal de selección/copia; historial existente de tareas no se altera.
 - Historial de notas independiente: hasta 80 snapshots en memoria, agrupación de tecleo a 420 ms, deshacer/rehacer formato, tipos, casillas, estructura y operaciones de jerarquía. Cierra y reabre sin guardar el historial.
-- No se alteraron sincronización, almacenamiento, backend ni web. Android 0.27.124 / code 205 preparado; validación real y publicación firmada por confirmar.
+- No se alteraron sincronización, almacenamiento, backend ni web. Android 0.27.124 / code 205 publicada y firmada: Actions `45053903156` completado con éxito y APK `Nottas-v0.27.124.apk` en Releases/Obtainium. Validación física pendiente.
 
 
 ## Web — editor con lienzo continuo (20/11/2026)
