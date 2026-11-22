@@ -3512,7 +3512,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="soon",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,noteUndoStack=[],noteRedoStack=[],noteHistoryTimer=null,noteHistoryApplying=false,noteSelectionMode=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false,assistantDeliveryWarningShown=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -7919,14 +7919,14 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
         return;
       }
     }
-    if(scope.startsWith("task-"))commitTaskHistory();
+    if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();
     if(action==="up"&&loc.index>0){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index-1,0,n)}
     else if(action==="down"&&loc.index<loc.arr.length-1){const n=loc.arr.splice(loc.index,1)[0];loc.arr.splice(loc.index+1,0,n)}
     else if(action==="indent"&&loc.index>0){const n=loc.arr.splice(loc.index,1)[0],parent=loc.arr[loc.index-1];parent.children=parent.children||[];parent.children.push(n)}
     else if(action==="outdent"){const info=hierarchyParentInfo(root,path);if(info){const n=info.parent.children.splice(info.childIndex,1)[0];info.parentArr.splice(info.parentIndex+1,0,n)}}
     else if(action==="child"){node.children=node.children||[];node.children.push(hierarchyBlank(scope))}
     else if(action==="delete"){loc.arr.splice(loc.index,1)}
-    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();closeHierarchyPanel();
+    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();closeHierarchyPanel();
   }
   function makeDragGhost(text){
     const g=document.createElement("div");g.className="dragGhost";g.textContent=String(text||"Elemento").trim()||"Elemento";document.body.appendChild(g);return g;
@@ -8209,11 +8209,11 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     box.querySelectorAll("[data-note-path]").forEach(row=>{
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
       const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),more=row.querySelector(":scope > .noteBlockRow .hierarchyMoreBtn");
-      type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory()});
+      type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory();else commitNoteHistory()});
       rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope;rememberRichSelection()});
       rich.addEventListener("keyup",rememberRichSelection);
       rich.addEventListener("pointerup",rememberRichSelection);
-      rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory()});
+      rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory();else scheduleNoteHistory()});
       rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML)});
       rich.addEventListener("keydown",e=>{
         const loc=treeArrayForPath(blocks,path);if(!loc)return;
@@ -8248,15 +8248,15 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
           }
         }
       });
-      if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory()});
-      child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory()});
+      if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory();else commitNoteHistory()});
+      child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory();else commitNoteHistory()});
       const hScope=scope==="task"?"task-blocks":"note-blocks";if(more){more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel(hScope,path)});installHierarchyDrag(more,hScope,b.id)};
     });
     if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
   }
   function renderNoteBlocks(focusPath=null){renderContentBlocks("note",focusPath)}
   function renderTaskBlocks(focusPath=null){renderContentBlocks("task",focusPath)}
-  function addNoteBlockOfType(type="paragraph"){const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1))}
+  function addNoteBlockOfType(type="paragraph"){commitNoteHistory();const safe=NOTE_BLOCK_TYPES.has(type)?type:"paragraph";editorNoteBlocks.push({id:makeId("b"),type:safe,html:"",checked:false,children:[]});renderNoteBlocks(String(editorNoteBlocks.length-1));commitNoteHistory()}
   function addNoteBlock(){addNoteBlockOfType("paragraph")}
   function addTaskBlock(){editorTaskBlocks.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderTaskBlocks(String(editorTaskBlocks.length-1))}
   function richTargetFromNode(node){
@@ -8327,13 +8327,135 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     if(!scope||!savedRichRange||savedRichScope!==scope){showToast("Coloca el cursor o selecciona texto");return}
     const target=richTargetFromNode(savedRichRange.commonAncestorContainer);
     if(!target||richScopeForTarget(target)!==scope){showToast("Coloca el cursor o selecciona texto");return}
-    if(scope==="task")commitTaskHistory();
+    if(scope==="task")commitTaskHistory();else commitNoteHistory();
     if(document.activeElement!==target)target.focus({preventScroll:true});
     if(!restoreRichSelection(scope,target)){showToast("Coloca el cursor o selecciona texto");return}
     try{document.execCommand(command,false,null)}catch(_){}
     syncRichTargetModel(target);
     rememberRichSelection();syncRichFormatIndicators();
-    if(scope==="task")commitTaskHistory();
+    if(scope==="task")commitTaskHistory();else commitNoteHistory();
+  }
+
+  // Note history is separate from task history and global list actions.
+  function captureNoteEditorState(){
+    return {
+      titleHtml:sanitizeInlineHtml($("noteTitle").innerHTML),
+      blocks:cloneSerializable(editorNoteBlocks),
+      category:getCategoryPickerValue("noteCategory"),
+      tags:$("noteTags").value||"",
+      pinned:!!editorPinned
+    };
+  }
+  function syncNoteHistoryButtons(){
+    const undo=$("noteUndoBtn"),redo=$("noteRedoBtn");
+    if(undo)undo.disabled=noteUndoStack.length<2;
+    if(redo)redo.disabled=noteRedoStack.length===0;
+  }
+  function resetNoteHistory(){
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;
+    noteUndoStack=[captureNoteEditorState()];noteRedoStack=[];
+    syncNoteHistoryButtons();
+  }
+  function commitNoteHistory(){
+    if(noteHistoryApplying||$("noteForm")?.classList.contains("hidden"))return;
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;
+    const snapshot=captureNoteEditorState();
+    const last=noteUndoStack[noteUndoStack.length-1];
+    if(!last||JSON.stringify(last)!==JSON.stringify(snapshot)){
+      noteUndoStack.push(snapshot);
+      if(noteUndoStack.length>80)noteUndoStack.shift();
+      noteRedoStack=[];
+    }
+    syncNoteHistoryButtons();
+  }
+  function scheduleNoteHistory(){
+    if(noteHistoryApplying||noteSelectionMode)return;
+    clearTimeout(noteHistoryTimer);
+    noteHistoryTimer=setTimeout(commitNoteHistory,420);
+  }
+  function applyNoteHistoryState(snapshot){
+    if(!snapshot)return;
+    noteHistoryApplying=true;
+    closeNoteDocumentSelection();
+    $("noteTitle").innerHTML=sanitizeInlineHtml(snapshot.titleHtml||"");
+    editorNoteBlocks=cloneNoteBlocks(snapshot.blocks||[]);
+    setCategoryPicker("noteCategory",snapshot.category||"inbox");
+    $("noteTags").value=snapshot.tags||"";
+    editorPinned=!!snapshot.pinned;
+    renderNoteBlocks();syncEditorPin();
+    noteHistoryApplying=false;
+  }
+  function undoNoteEditor(){
+    commitNoteHistory();
+    if(noteUndoStack.length<2)return;
+    noteRedoStack.push(noteUndoStack.pop());
+    applyNoteHistoryState(noteUndoStack[noteUndoStack.length-1]);
+    syncNoteHistoryButtons();
+  }
+  function redoNoteEditor(){
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;
+    if(!noteRedoStack.length)return;
+    const snapshot=noteRedoStack.pop();
+    noteUndoStack.push(cloneSerializable(snapshot));
+    applyNoteHistoryState(snapshot);
+    syncNoteHistoryButtons();
+  }
+  // Selection surface is read-only and independent of the persisted model.
+  // Unlike separate contenteditable blocks, one DOM document can be selected
+  // across bullet/number items using the standard Android selection handles.
+  function openNoteDocumentSelection(){
+    if($("noteForm").classList.contains("hidden"))return;
+    commitNoteHistory();
+    const view=$("noteSelectionText");view.replaceChildren();
+    function addRows(blocks,depth=0){
+      (blocks||[]).forEach((block,index)=>{
+        const p=document.createElement("p");
+        p.style.paddingLeft=(Math.min(depth,8)*18)+"px";
+        if(block.type==="checklist"&&block.checked)p.classList.add("noteSelectionChecked");
+        const marker=document.createElement("span");
+        marker.textContent=block.type==="bullet"?"•  ":
+          block.type==="number"?(index+1)+".  ":
+          block.type==="checklist"?(block.checked?"☑  ":"☐  "):"";
+        p.append(marker);
+        const content=document.createElement("span");
+        content.innerHTML=sanitizeInlineHtml(block.html||"");
+        p.append(content);view.append(p);
+        if(block.children?.length)addRows(block.children,depth+1);
+      });
+    }
+    addRows(editorNoteBlocks);
+    $("noteBlocksEditor").classList.add("hidden");
+    $("addNoteBlockBtn").classList.add("hidden");
+    $("noteDocumentSelection").classList.remove("hidden");
+    $("noteSelectTextBtn").classList.add("noteSelectionActive");
+    noteSelectionMode=true;
+  }
+  function closeNoteDocumentSelection(){
+    noteSelectionMode=false;
+    $("noteDocumentSelection").classList.add("hidden");
+    $("noteBlocksEditor").classList.remove("hidden");
+    $("addNoteBlockBtn").classList.remove("hidden");
+    $("noteSelectTextBtn").classList.remove("noteSelectionActive");
+  }
+  function selectWholeNoteDocument(){
+    const view=$("noteSelectionText"),range=document.createRange();
+    range.selectNodeContents(view);
+    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+  }
+  async function copyNoteDocumentSelection(){
+    const selected=window.getSelection()?.toString()||"";
+    const value=selected.trim()||$("noteSelectionText").innerText.trim();
+    if(!value){showToast("La nota está vacía");return}
+    try{
+      await navigator.clipboard.writeText(value);
+      showToast("Texto copiado");
+    }catch(_){
+      try{
+        if(!selected.trim())selectWholeNoteDocument();
+        if(document.execCommand("copy"))showToast("Texto copiado");
+        else showToast("No se pudo copiar");
+      }catch(__){showToast("No se pudo copiar")}
+    }
   }
 
   function captureTaskEditorState(){
@@ -9294,6 +9416,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
+    closeNoteDocumentSelection();resetNoteHistory();
     openOverlay("editorOverlay");
     // Both new and existing untitled notes request title entry. Titled notes
     // open without the software keyboard until the user taps an editable field.
@@ -9311,7 +9434,9 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     if(isNote&&options.save!==false)persistOpenNote(false);
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
-    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
+    clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;noteUndoStack=[];noteRedoStack=[];closeNoteDocumentSelection();syncNoteHistoryButtons();
+    taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
     if(directorProposalReturn)returnFromDirectorProposal();
   }
@@ -10514,9 +10639,9 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   $("hierarchyAddChild").addEventListener("click",()=>mutateHierarchy("child"));
   $("hierarchyDelete").addEventListener("click",()=>mutateHierarchy("delete"));
   $("editorActionBackdrop").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();closeOpenEditorPanel()});
-  $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory()});
+  $("editorPinBtn").addEventListener("click",()=>{const taskOpen=!$("taskForm").classList.contains("hidden");if(taskOpen)commitTaskHistory();else commitNoteHistory();editorPinned=!editorPinned;syncEditorPin();if(taskOpen)commitTaskHistory();else commitNoteHistory()});
   $("noteBackBtn").addEventListener("click",handleEditorBack);
-  ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
+  ["taskText","noteTitle"].forEach(id=>{const el=$(id);el.addEventListener("focus",rememberRichSelection);el.addEventListener("keyup",rememberRichSelection);el.addEventListener("pointerup",rememberRichSelection);el.addEventListener("input",()=>{rememberRichSelection();if(id==="taskText")scheduleTaskHistory();else scheduleNoteHistory()});el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const target=id==="taskText"?$("taskBlocksEditor").querySelector(".richText"):$("noteBlocksEditor").querySelector(".richText");target?.focus()}})});
   $("taskMeetingNote").addEventListener("change",()=>{commitTaskHistory();persistOpenTask(false)});
   $("taskMeetingNote").addEventListener("input",scheduleTaskHistory);
   $("taskInlineDateBtn").addEventListener("click",()=>{taskInlineDateTarget="start";if(taskInlineOpenPanel==="date"){syncTaskInlineForm();return}setTaskInlinePanel("date")});
@@ -10753,6 +10878,15 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   });
   $("taskUndoBtn").addEventListener("click",undoTaskEditor);
   $("taskRedoBtn").addEventListener("click",redoTaskEditor);
+  $("noteUndoBtn").addEventListener("click",undoNoteEditor);
+  $("noteRedoBtn").addEventListener("click",redoNoteEditor);
+  $("noteSelectTextBtn").addEventListener("click",()=>{
+    if(noteSelectionMode)closeNoteDocumentSelection();
+    else openNoteDocumentSelection();
+  });
+  $("noteSelectAllBtn").addEventListener("click",selectWholeNoteDocument);
+  $("noteCopySelectionBtn").addEventListener("click",copyNoteDocumentSelection);
+  $("noteExitSelectionBtn").addEventListener("click",closeNoteDocumentSelection);
   $("taskCategory").querySelector(".categoryPickerInput").addEventListener("input",scheduleTaskHistory);
   $("taskDate").addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()});
   $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
