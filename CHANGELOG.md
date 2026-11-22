@@ -5,7 +5,7 @@
 - Nuevos controles de deshacer y rehacer en editor de notas, con historial por nota durante la sesión, capturas de texto/formato/estructura, hasta 80 estados y agrupación de escritura.
 - Nuevo modo de documento seleccionable en notas y descripciones de tareas. Permite seleccionar entre bloques y copiar desde vista temporal de solo lectura, con «Seleccionar todo» y «Editar» para volver a los campos originales.
 - Conserva intactos elementos estructurados y checkboxes al salir del modo selección; no cambia el motor de datos ni la sincronización.
-- Android `0.27.124`, `versionCode 205`; build firmado y pruebas físicas pendientes de verificar.
+- Android `0.27.124`, `versionCode 205`; build y firma confirmados (Actions `45053903156`) y APK en Release `v0.27.124` para Obtainium; pruebas físicas pendientes.
 
 
 ## Nottas Web — editor continuo tipo documento (20/11/2026)
