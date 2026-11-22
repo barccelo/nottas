@@ -7949,11 +7949,11 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   function hierarchyDrop(scope,dragId,targetId,relation){
     const root=hierarchyRoot(scope);if(!root||!dragId||!targetId||dragId===targetId)return false;
     const draggedLoc=hierarchyFindLocation(root,dragId),targetBefore=hierarchyFindLocation(root,targetId);if(!draggedLoc||!targetBefore||hierarchyContainsId(draggedLoc.node,targetId))return false;
-    if(scope.startsWith("task-"))commitTaskHistory();
+    if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();
     const dragged=hierarchyDetachById(root,dragId),target=hierarchyFindLocation(root,targetId);if(!dragged||!target)return false;
     if(relation==="child"){target.node.children=target.node.children||[];target.node.children.push(dragged)}
     else target.arr.splice(target.index+(relation==="after"?1:0),0,dragged);
-    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();return true;
+    renderHierarchyScope(scope);if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();return true;
   }
   function hierarchyCanSwipe(scope,id,direction){
     const loc=hierarchyFindLocation(hierarchyRoot(scope),id);
@@ -7963,7 +7963,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     const root=hierarchyRoot(scope),loc=hierarchyFindLocation(root,id);
     if(!loc||!hierarchyCanSwipe(scope,id,direction))return false;
     const parentLoc=direction<0?hierarchyFindLocation(root,loc.parent.id):null;
-    if(scope.startsWith("task-"))commitTaskHistory();
+    if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();
     const node=loc.arr.splice(loc.index,1)[0];
     if(direction>0){
       const parent=loc.arr[loc.index-1];
@@ -7971,7 +7971,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
       parent.children.push(node);
     }else parentLoc.arr.splice(parentLoc.index+1,0,node);
     renderHierarchyScope(scope);
-    if(scope.startsWith("task-"))commitTaskHistory();
+    if(scope.startsWith("task-"))commitTaskHistory();else if(scope==="note-blocks")commitNoteHistory();
     showToast(direction>0?"Elemento subordinado":"Elemento al nivel anterior");
     return true;
   }
@@ -8219,7 +8219,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
         const loc=treeArrayForPath(blocks,path);if(!loc)return;
         const sel=window.getSelection(),range=sel&&sel.rangeCount?sel.getRangeAt(0):null;
         if(e.key==="Enter"&&!e.shiftKey){
-          e.preventDefault();if(scope==="task")commitTaskHistory();
+          e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();
           if(range&&!range.collapsed)range.deleteContents();
           const before=document.createElement("div"),after=document.createElement("div");
           if(range){
@@ -8229,22 +8229,22 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
           b.html=sanitizeInlineHtml(before.innerHTML);
           const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);
           loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:sanitizeInlineHtml(after.innerHTML),checked:false,children:[]});
-          renderContentBlocks(scope,nextPath);if(scope==="task")commitTaskHistory();return;
+          renderContentBlocks(scope,nextPath);if(scope==="task")commitTaskHistory();else commitNoteHistory();return;
         }
         if(e.key==="Backspace"&&range&&range.collapsed){
           const probe=document.createRange();probe.selectNodeContents(rich);probe.setEnd(range.startContainer,range.startOffset);
           if(probe.toString().length!==0)return;
           const plain=inlineHtmlToText(rich.innerHTML);
           if(loc.index>0){
-            e.preventDefault();if(scope==="task")commitTaskHistory();
+            e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();
             const prev=loc.arr[loc.index-1];prev.html=sanitizeInlineHtml((prev.html||"")+(b.html||""));loc.arr.splice(loc.index,1);
             const prevPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index-1);
             renderContentBlocks(scope,prevPath);
             setTimeout(()=>{const prevEl=box.querySelector('[data-note-path="'+prevPath+'"] .richText');if(!prevEl)return;const r=document.createRange();r.selectNodeContents(prevEl);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);rememberRichSelection()},25);
-            if(scope==="task")commitTaskHistory();return;
+            if(scope==="task")commitTaskHistory();else commitNoteHistory();return;
           }
           if(!plain&&loc.arr.length>1){
-            e.preventDefault();if(scope==="task")commitTaskHistory();loc.arr.splice(loc.index,1);renderContentBlocks(scope,"0");if(scope==="task")commitTaskHistory();
+            e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();loc.arr.splice(loc.index,1);renderContentBlocks(scope,"0");if(scope==="task")commitTaskHistory();else commitNoteHistory();
           }
         }
       });
@@ -9338,6 +9338,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     syncEditorActionBackdrop();
   }
   function handleEditorBack(){
+    if(noteSelectionMode){closeNoteDocumentSelection();return true}
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
     if(taskInlineDetailedOpen&&taskInlineOpenPanel==="date"){taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();return true}
     if(closeOpenEditorPanel())return true;
@@ -10933,7 +10934,8 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   $("noteForm").addEventListener("submit",e=>{e.preventDefault();persistOpenNote(true)});
   $("deleteNoteBtn").addEventListener("click",()=>{const n=state.notes.find(x=>x.id===editingNoteId);if(!n)return;n.deletedAt=now();touch(n);hideNotePanels();closeEditor({save:false});scheduleSave();render();showToast("Nota enviada a papelera")});
 
-  $("noteTags").addEventListener("change",()=>persistOpenNote(false));
+  $("noteTags").addEventListener("input",scheduleNoteHistory);
+  $("noteTags").addEventListener("change",()=>{commitNoteHistory();persistOpenNote(false)});
   ["taskPriority","taskRecurrence","taskTags"].forEach(id=>$(id).addEventListener("change",()=>{syncTaskEditorMeta();syncTaskInlineForm();commitTaskHistory()}));
   $("wakeQuickBtn").addEventListener("click",openWakeControl);
   $("wakeControlClose").addEventListener("click",()=>closeOverlay("wakeControlOverlay"));
