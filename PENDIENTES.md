@@ -1,5 +1,17 @@
 # Pendientes de Nottas
 
+## QA Android 0.27.124: selección y Undo/Redo de notas (22/11/2026)
+
+- [x] Modo de lectura seleccionable que permite selección nativa y copia de varias viñetas/números/párrafos de una nota, sin modificar los bloques guardados.
+- [x] «Seleccionar todo», «Copiar» y «Editar» en modo selección, también para la descripción de tareas.
+- [x] Controles Deshacer/Rehacer en notas, historial independiente de tareas y deshacer global, agrupación de escritura y captura de cambios de tipo/casillas/jerarquía.
+- [ ] Validación Android física: arrastrar tiradores de selección a través de varias viñetas, copiar texto parcial/todo y volver a editar sin cambiar el contenido.
+- [ ] Validar Undo/Redo en una nota: escribir, pegar, borrar, Enter, Backspace entre bloques, alternar tipos, marcar casillas, indentar/mover y fijar, con 3+ pasos y después de reapertura.
+- [ ] Probar escritura, guardar y restaurar notas sin internet y reconexión posterior, sin pérdida de contenido ni regresión de sincronización.
+- [ ] Evaluar a futuro motor de texto único para selección multibloque **durante edición** (el modo actual selecciona en vista de documento temporal de solo lectura).
+- [ ] Verificar Actions, APK firmada Release 0.27.124 y Obtainium; instalación real.
+
+
 ## QA editor continuo web (20/11/2026)
 
 - [x] Eliminar tarjetas visuales redundantes y dar tratamiento de documento a bloques y subtareas.
