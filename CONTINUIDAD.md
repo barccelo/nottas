@@ -1,5 +1,15 @@
 # Continuidad operativa de Nottas
 
+## Android 0.27.124 — selección de documento y deshacer/rehacer en notas (22/11/2026)
+
+- **Problema confirmado:** `noteBlocksHtml` representaba cada elemento (párrafo, viñeta, número, check) como su propio `.richText[contenteditable=true]`. Android WebView seleccionaba texto dentro de un bloque, sin poder prolongar la selección nativa entre varios campos de edición.
+- **Solución conservadora implementada:** modo **Seleccionar texto** en la barra inferior de notas y en la cabecera de «Notas / descripción» de las tareas. Renderiza una **vista temporal de documento continua, de solo lectura**, a partir de los `editorNoteBlocks` / `editorTaskBlocks` vigentes: viñetas, numeraciones, marcas de casillas, formato, jerarquía y saltos entre párrafos. Permite usar la selección nativa de Android entre líneas y botones «Seleccionar todo», «Copiar» y «Editar». Al salir, vuelve el editor original y NO altera nodos, estructura ni datos sincronizados. Deliberadamente NO convierte los campos `contenteditable` existentes en un host compartido porque eso rompería los controladores de entrada y selección específicos por bloque, cambios de tipo y estructura.
+- **Undo/redo de notas:** controles SVG propios de Nottas, análogos a los ya existentes para tareas; historial efímero por sesión con hasta 80 estados (`noteUndoStack`, `noteRedoStack`), capturando título enriquecido, bloques y casillas, jerarquía y tipo, categoría, etiquetas y fijado. Cambios de texto se agrupan con debounce 420 ms; operaciones de formato y estructura realizan commits antes/después. `openNote` reinicia y `closeEditor` limpia el historial. Historial aislado de tareas y del deshacer global.
+- **Compatibilidad:** No se cambia el esquema local, `state.notes`, normalización, guardado offline, FCM, WebSocket, API/D1, `NottasWeb.kt`, ni la web. Persistencia existente `persistOpenNote` y sincronización continúan iguales. Las vistas de selección solo reflejan contenido, nunca guardan.
+- **Alcance preciso:** selección continua **en modo de lectura**, no selección/edición multibloque simultánea directamente sobre campos originales; ese futuro cambio del motor debe abordarse con pruebas específicas de IME, cortar/pegar, casillas y jerarquías. Validar en dispositivo la copia, selección por arrastre y recuperación por undo/redo, conservando guardado en modo avión.
+- Versión Android preparada: **0.27.124**, `versionCode 205`. Firma, Release GitHub y Obtainium pendientes de confirmar tras workflow. No afirmar pruebas visuales ni físicas sin ejecutarlas.
+
+
 ## Web: editor continuo y corrección del recorte de subtareas — 20/11/2026
 
 - Rama web `feature/nottas-web-initial`: commits `1b669bb`, `556b3bb`, `5e12ba3`. Intervención solo en `web/nottas-editor.js` y `web/nottas-ui.css`; `index.html`, esquemas, estado, sync, API/FCM/WSS, Android y Obtainium no cambian.
