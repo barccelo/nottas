@@ -1,5 +1,13 @@
 # Estado actual de Nottas
 
+## Android 0.27.124 — selección continua y historial de notas (22/11/2026)
+
+- Notas: barra inferior con SVG «Seleccionar texto», «Deshacer» y «Rehacer». El modo de selección ofrece documento temporal de lectura con selección nativa entre párrafos, viñetas, numeraciones y contenido de casillas; acciones Seleccionar todo, Copiar y Editar. Sin cambiar bloques persistidos.
+- Descripción de tareas: botón «Seleccionar texto» y misma vista temporal de selección/copia; historial existente de tareas no se altera.
+- Historial de notas independiente: hasta 80 snapshots en memoria, agrupación de tecleo a 420 ms, deshacer/rehacer formato, tipos, casillas, estructura y operaciones de jerarquía. Cierra y reabre sin guardar el historial.
+- No se alteraron sincronización, almacenamiento, backend ni web. Android 0.27.124 / code 205 preparado; validación real y publicación firmada por confirmar.
+
+
 ## Web — editor con lienzo continuo (20/11/2026)
 
 - Publicado en `nottas-web-preview`: superficies sin tarjetas anidadas en contenido y subtareas; controles existentes y cabecera plegable conservados. Sin cambios Android ni versión APK.
