@@ -9,7 +9,8 @@
 - [ ] Validar Undo/Redo en una nota: escribir, pegar, borrar, Enter, Backspace entre bloques, alternar tipos, marcar casillas, indentar/mover y fijar, con 3+ pasos y después de reapertura.
 - [ ] Probar escritura, guardar y restaurar notas sin internet y reconexión posterior, sin pérdida de contenido ni regresión de sincronización.
 - [ ] Evaluar a futuro motor de texto único para selección multibloque **durante edición** (el modo actual selecciona en vista de documento temporal de solo lectura).
-- [ ] Verificar Actions, APK firmada Release 0.27.124 y Obtainium; instalación real.
+- [x] GitHub Actions `45053903156` completado con éxito; APK firmada `Nottas-v0.27.124.apk` confirmada en Release `v0.27.124` para Obtainium.
+- [ ] Probar instalación o actualización real desde Obtainium, selección entre bloques y Undo/Redo.
 
 
 ## QA editor continuo web (20/11/2026)
