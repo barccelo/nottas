@@ -2228,13 +2228,15 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
 
 /* Selectable document view: native Android text selection spans list items.
    Editing view and the persisted block model remain unchanged. */
-#editorOverlay.noteEditorMode .noteDocumentSelection{
+#editorOverlay.noteEditorMode .noteDocumentSelection,
+#editorOverlay.taskEditorMode .noteDocumentSelection{
   display:block;
   padding:4px 0 110px;
   user-select:text;
   -webkit-user-select:text;
 }
-#editorOverlay.noteEditorMode .noteDocumentSelection.hidden{display:none!important}
+#editorOverlay.noteEditorMode .noteDocumentSelection.hidden,
+#editorOverlay.taskEditorMode .noteDocumentSelection.hidden{display:none!important}
 .noteSelectionActions{position:sticky;top:0;z-index:9;display:flex;align-items:center;
   gap:6px;flex-wrap:wrap;background:var(--surface,#f5f5f7);padding:7px 0 10px}
 .noteSelectionActions span{font-size:12px;color:#8e8e93;margin-right:auto}
@@ -2244,7 +2246,8 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
   user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
 .noteSelectionText p{margin:0 0 8px;user-select:text;-webkit-user-select:text}
 .noteSelectionText .noteSelectionChecked{color:#8e8e93;text-decoration:line-through}
-#editorOverlay.noteEditorMode .noteToolBtn.noteSelectionActive{color:#1677ff}
+#editorOverlay.noteEditorMode .noteToolBtn.noteSelectionActive,
+#editorOverlay.taskEditorMode .taskSubtaskMoreBtn.noteSelectionActive{color:#1677ff}
 html[data-theme="dark"] .noteSelectionActions{background:#000}
 html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
 </style>
@@ -2736,8 +2739,16 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
         </button>
         <button id="taskSubtasksJumpEnd" class="taskSubtasksJumpEnd hidden" type="button" aria-label="Ir al final de las subtareas"><span>Ir al final</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m-6-6 6 6 6-6"/></svg></button>
         <div class="taskContentArea">
-          <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
+          <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionSelectBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Seleccionar texto de la descripción" title="Seleccionar texto">T</button><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
           <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
+          <div id="taskDocumentSelection" class="noteDocumentSelection hidden" aria-label="Texto seleccionable de la descripción">
+            <div class="noteSelectionActions"><span>Seleccionar texto</span>
+              <button id="taskSelectAllTextBtn" type="button">Seleccionar todo</button>
+              <button id="taskCopySelectedTextBtn" type="button">Copiar</button>
+              <button id="taskExitTextSelectionBtn" type="button">Editar</button>
+            </div>
+            <div id="taskSelectionText" class="noteSelectionText" role="document"></div>
+          </div>
           <button id="addTaskBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
@@ -3512,7 +3523,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="soon",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,noteUndoStack=[],noteRedoStack=[],noteHistoryTimer=null,noteHistoryApplying=false,noteSelectionMode=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,noteUndoStack=[],noteRedoStack=[],noteHistoryTimer=null,noteHistoryApplying=false,noteSelectionMode=false,taskSelectionMode=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false,assistantDeliveryWarningShown=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -8458,6 +8469,51 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     }
   }
 
+
+  function openTaskDocumentSelection(){
+    if($("taskForm").classList.contains("hidden"))return;
+    commitTaskHistory();
+    const view=$("taskSelectionText");view.replaceChildren();
+    function rows(blocks,depth=0){
+      (blocks||[]).forEach((block,index)=>{
+        const p=document.createElement("p");p.style.paddingLeft=(Math.min(depth,8)*18)+"px";
+        if(block.type==="checklist"&&block.checked)p.classList.add("noteSelectionChecked");
+        const prefix=document.createElement("span");prefix.textContent=block.type==="bullet"?"•  ":
+          block.type==="number"?(index+1)+".  ":
+          block.type==="checklist"?(block.checked?"☑  ":"☐  "):"";
+        p.append(prefix);
+        const txt=document.createElement("span");txt.innerHTML=sanitizeInlineHtml(block.html||"");
+        p.append(txt);view.append(p);
+        if(block.children?.length)rows(block.children,depth+1);
+      });
+    }
+    rows(editorTaskBlocks);
+    $("taskBlocksEditor").classList.add("hidden");
+    $("addTaskBlockBtn").classList.add("hidden");
+    $("taskDocumentSelection").classList.remove("hidden");
+    $("taskDescriptionSelectBtn").classList.add("noteSelectionActive");
+    taskSelectionMode=true;
+  }
+  function closeTaskDocumentSelection(){
+    taskSelectionMode=false;
+    $("taskDocumentSelection").classList.add("hidden");
+    $("taskBlocksEditor").classList.remove("hidden");
+    $("addTaskBlockBtn").classList.remove("hidden");
+    $("taskDescriptionSelectBtn").classList.remove("noteSelectionActive");
+  }
+  function selectAllTaskDocument(){
+    const r=document.createRange();r.selectNodeContents($("taskSelectionText"));
+    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(r);
+  }
+  async function copyTaskDocumentSelection(){
+    const selected=window.getSelection()?.toString()||"";
+    const value=selected.trim()||$("taskSelectionText").innerText.trim();
+    if(!value){showToast("La descripción está vacía");return}
+    try{await navigator.clipboard.writeText(value);showToast("Texto copiado")}
+    catch(_){try{if(!selected.trim())selectAllTaskDocument();
+      showToast(document.execCommand("copy")?"Texto copiado":"No se pudo copiar");
+    }catch(__){showToast("No se pudo copiar")}}
+  }
   function captureTaskEditorState(){
     return {
       text:inlineHtmlToText($("taskText")?.innerHTML||""),textHtml:sanitizeInlineHtml($("taskText")?.innerHTML||""),locationText:$("taskLocation")?.value||"",category:getCategoryPickerValue("taskCategory"),tags:$("taskTags")?.value||"",
@@ -9339,6 +9395,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   }
   function handleEditorBack(){
     if(noteSelectionMode){closeNoteDocumentSelection();return true}
+    if(taskSelectionMode){closeTaskDocumentSelection();return true}
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
     if(taskInlineDetailedOpen&&taskInlineOpenPanel==="date"){taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();return true}
     if(closeOpenEditorPanel())return true;
@@ -9377,6 +9434,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   }
   function openTask(t,selectedDate=null,options={}){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
+    closeTaskDocumentSelection();
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");arrangeEditorTop(true);hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
@@ -9436,7 +9494,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
     clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];
-    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;noteUndoStack=[];noteRedoStack=[];closeNoteDocumentSelection();syncNoteHistoryButtons();
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;noteUndoStack=[];noteRedoStack=[];closeNoteDocumentSelection();closeTaskDocumentSelection();syncNoteHistoryButtons();
     taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
     if(directorProposalReturn)returnFromDirectorProposal();
@@ -10834,6 +10892,13 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     state.tasks.push(copy);scheduleSave();render();hideTaskPanels();
     showToast("Copia creada");
   });
+  $("taskDescriptionSelectBtn").addEventListener("click",()=>{
+    if(taskSelectionMode)closeTaskDocumentSelection();
+    else openTaskDocumentSelection();
+  });
+  $("taskSelectAllTextBtn").addEventListener("click",selectAllTaskDocument);
+  $("taskCopySelectedTextBtn").addEventListener("click",copyTaskDocumentSelection);
+  $("taskExitTextSelectionBtn").addEventListener("click",closeTaskDocumentSelection);
   $("taskDescriptionToolsBtn").addEventListener("click",()=>{
     const box=$("taskBlocksEditor"),current=activeRichScope==="task"?[...box.querySelectorAll("[data-note-path]")].find(el=>el.dataset.hierarchyId===activeRichBlockId):null;
     const row=current||box.querySelector("[data-note-path]");
