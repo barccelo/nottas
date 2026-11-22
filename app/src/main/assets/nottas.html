@@ -2225,6 +2225,28 @@ html[data-theme="dark"] .overdueAttentionRow{background:#29292d;border-color:#39
 html[data-theme="dark"] .overdueAttentionRowText small{color:#ef8d96}
 html[data-theme="dark"] .overdueAttentionAction,html[data-theme="dark"] .overdueAttentionActions button{border-color:#45454a}
 html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-color:#1677ff}
+
+/* Selectable document view: native Android text selection spans list items.
+   Editing view and the persisted block model remain unchanged. */
+#editorOverlay.noteEditorMode .noteDocumentSelection{
+  display:block;
+  padding:4px 0 110px;
+  user-select:text;
+  -webkit-user-select:text;
+}
+#editorOverlay.noteEditorMode .noteDocumentSelection.hidden{display:none!important}
+.noteSelectionActions{position:sticky;top:0;z-index:9;display:flex;align-items:center;
+  gap:6px;flex-wrap:wrap;background:var(--surface,#f5f5f7);padding:7px 0 10px}
+.noteSelectionActions span{font-size:12px;color:#8e8e93;margin-right:auto}
+.noteSelectionActions button{border:0;background:transparent;color:#1677ff;
+  font-size:12px;font-weight:650;border-radius:8px;padding:8px 9px}
+.noteSelectionText{font-size:17px;line-height:1.55;white-space:pre-wrap;
+  user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
+.noteSelectionText p{margin:0 0 8px;user-select:text;-webkit-user-select:text}
+.noteSelectionText .noteSelectionChecked{color:#8e8e93;text-decoration:line-through}
+#editorOverlay.noteEditorMode .noteToolBtn.noteSelectionActive{color:#1677ff}
+html[data-theme="dark"] .noteSelectionActions{background:#000}
+html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
 </style>
 <link rel="stylesheet" href="design-system.css">
 <link rel="stylesheet" href="nottas-updates.css">
@@ -2845,6 +2867,15 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
         <div class="field"><div id="noteTitle" class="textInput richEditable" contenteditable="true" role="textbox" aria-label="Título" data-placeholder="Título" data-rich-kind="note-title"></div></div>
         <div class="field">
           <div id="noteBlocksEditor" class="noteBlocksEditor"></div>
+          <div id="noteDocumentSelection" class="noteDocumentSelection hidden" aria-label="Texto seleccionable de la nota">
+            <div class="noteSelectionActions">
+              <span>Seleccionar texto</span>
+              <button id="noteSelectAllBtn" type="button">Seleccionar todo</button>
+              <button id="noteCopySelectionBtn" type="button">Copiar</button>
+              <button id="noteExitSelectionBtn" type="button" aria-label="Volver al editor">Editar</button>
+            </div>
+            <div id="noteSelectionText" class="noteSelectionText" role="document"></div>
+          </div>
           <button id="addNoteBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="noteBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
@@ -2897,6 +2928,15 @@ html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-
         </button>
         <button id="noteFormatBtn" class="noteToolBtn format" type="button" aria-label="Formato">A</button>
         <div class="noteBottomSpacer"></div>
+        <button id="noteSelectTextBtn" class="noteToolBtn" type="button" aria-label="Seleccionar texto de la nota" title="Seleccionar texto">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v14M8 19h8M8 9h8" /></svg>
+        </button>
+        <button id="noteUndoBtn" class="noteToolBtn taskHistoryBtn" type="button" aria-label="Deshacer en la nota" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H4v-5M4.5 8.5A8 8 0 1 1 6 17"></path></svg>
+        </button>
+        <button id="noteRedoBtn" class="noteToolBtn taskHistoryBtn" type="button" aria-label="Rehacer en la nota" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 8h5v-5M19.5 8.5A8 8 0 1 0 18 17"></path></svg>
+        </button>
         <button id="noteMoreBtn" class="noteToolBtn" type="button" aria-label="Más opciones">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
         </button>
