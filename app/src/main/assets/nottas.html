@@ -8417,6 +8417,8 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   function openNoteDocumentSelection(){
     if($("noteForm").classList.contains("hidden"))return;
     commitNoteHistory();
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    window.getSelection()?.removeAllRanges();
     const view=$("noteSelectionText");view.replaceChildren();
     function addRows(blocks,depth=0){
       (blocks||[]).forEach((block,index)=>{
@@ -8473,6 +8475,8 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   function openTaskDocumentSelection(){
     if($("taskForm").classList.contains("hidden"))return;
     commitTaskHistory();
+    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+    window.getSelection()?.removeAllRanges();
     const view=$("taskSelectionText");view.replaceChildren();
     function rows(blocks,depth=0){
       (blocks||[]).forEach((block,index)=>{
