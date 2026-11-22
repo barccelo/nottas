@@ -1,5 +1,14 @@
 # Pendientes de Nottas
 
+## QA Android 0.27.125 (22/11/2026)
+
+- [x] Edición continua con selección nativa entre bloques; barra provisional eliminada.
+- [ ] Probar en Android selección total desde teclado y menú, tiradores, copiar, cortar y pegar listas mixtas.
+- [ ] Verificar Gboard/IME (Enter, Backspace, dictado, autocorrección, composición, selección inversa).
+- [ ] Validar notas jerárquicas, casillas, Undo/Redo, formato y guardado offline + sincronización.
+- [ ] Confirmar CI, firma y Release 0.27.125 para Obtainium; instalar conservando datos.
+
+
 ## QA Android 0.27.124: selección y Undo/Redo de notas (22/11/2026)
 
 - [x] Modo de lectura seleccionable que permite selección nativa y copia de varias viñetas/números/párrafos de una nota, sin modificar los bloques guardados.

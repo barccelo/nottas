@@ -1,5 +1,14 @@
 # Historial de cambios de Nottas
 
+## Android 0.27.125 — selección nativa en editor continuo (22/11/2026)
+
+- Editor de notas y descripción de tareas con **un único host contenteditable** por documento, sin campos editables independientes por bloque. Permite selección nativa de varios párrafos, viñetas, números y casillas con menú Android o teclado.
+- Eliminada la barra negra de «Seleccionar texto / Seleccionar todo / Copiar / Editar» y el modo temporal de lectura. Diseño, casillas, estructura, orden y Undo/Redo existentes conservados.
+- Manejo de selección multibloque, cortar, copiar, pegar, reemplazar, Enter y retroceso a través del modelo de bloques; formato multibloque limitado por seguridad.
+- Sin cambios en esquema, almacenamiento offline, sincronización, API, FCM, WSS, D1, web o alarmas. Android **0.27.125**, `versionCode 206`.
+- **Pruebas reales pendientes** con Gboard/IME, listas anidadas, historial y sincronización. **Publicación para Obtainium pendiente de comprobación**.
+
+
 ## Nottas Android 0.27.124 — Selección de documento y Undo/Redo de notas (22/11/2026)
 
 - Nuevos controles de deshacer y rehacer en editor de notas, con historial por nota durante la sesión, capturas de texto/formato/estructura, hasta 80 estados y agrupación de escritura.

@@ -2226,30 +2226,10 @@ html[data-theme="dark"] .overdueAttentionRowText small{color:#ef8d96}
 html[data-theme="dark"] .overdueAttentionAction,html[data-theme="dark"] .overdueAttentionActions button{border-color:#45454a}
 html[data-theme="dark"] .overdueAttentionActions .overdueAttentionReview{border-color:#1677ff}
 
-/* Selectable document view: native Android text selection spans list items.
-   Editing view and the persisted block model remain unchanged. */
-#editorOverlay.noteEditorMode .noteDocumentSelection,
-#editorOverlay.taskEditorMode .noteDocumentSelection{
-  display:block;
-  padding:4px 0 110px;
-  user-select:text;
-  -webkit-user-select:text;
-}
-#editorOverlay.noteEditorMode .noteDocumentSelection.hidden,
-#editorOverlay.taskEditorMode .noteDocumentSelection.hidden{display:none!important}
-.noteSelectionActions{position:sticky;top:0;z-index:9;display:flex;align-items:center;
-  gap:6px;flex-wrap:wrap;background:var(--surface,#f5f5f7);padding:7px 0 10px}
-.noteSelectionActions span{font-size:12px;color:#8e8e93;margin-right:auto}
-.noteSelectionActions button{border:0;background:transparent;color:#1677ff;
-  font-size:12px;font-weight:650;border-radius:8px;padding:8px 9px}
-.noteSelectionText{font-size:17px;line-height:1.55;white-space:pre-wrap;
-  user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
-.noteSelectionText p{margin:0 0 8px;user-select:text;-webkit-user-select:text}
-.noteSelectionText .noteSelectionChecked{color:#8e8e93;text-decoration:line-through}
-#editorOverlay.noteEditorMode .noteToolBtn.noteSelectionActive,
-#editorOverlay.taskEditorMode .taskSubtaskMoreBtn.noteSelectionActive{color:#1677ff}
-html[data-theme="dark"] .noteSelectionActions{background:#000}
-html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
+/* The editable document is one selection host; no artificial toolbar. */
+.noteBlocksEditor[contenteditable="true"]{outline:0;user-select:text;-webkit-user-select:text;overflow-wrap:anywhere}
+.noteBlocksEditor .richText{-webkit-user-select:text;user-select:text}
+.noteBlocksEditor .blockMarker,.noteBlocksEditor .noteBlockType,.noteBlocksEditor .noteBlockCheck,.noteBlocksEditor .noteBlockChild,.noteBlocksEditor .hierarchyMoreBtn{-webkit-user-select:none;user-select:none}
 </style>
 <link rel="stylesheet" href="design-system.css">
 <link rel="stylesheet" href="nottas-updates.css">
@@ -2739,16 +2719,8 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
         </button>
         <button id="taskSubtasksJumpEnd" class="taskSubtasksJumpEnd hidden" type="button" aria-label="Ir al final de las subtareas"><span>Ir al final</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15m-6-6 6 6 6-6"/></svg></button>
         <div class="taskContentArea">
-          <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionSelectBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Seleccionar texto de la descripción" title="Seleccionar texto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v14M8 19h8M8 9h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
-          <div id="taskBlocksEditor" class="noteBlocksEditor"></div>
-          <div id="taskDocumentSelection" class="noteDocumentSelection hidden" aria-label="Texto seleccionable de la descripción">
-            <div class="noteSelectionActions"><span>Seleccionar texto</span>
-              <button id="taskSelectAllTextBtn" type="button">Seleccionar todo</button>
-              <button id="taskCopySelectedTextBtn" type="button">Copiar</button>
-              <button id="taskExitTextSelectionBtn" type="button">Editar</button>
-            </div>
-            <div id="taskSelectionText" class="noteSelectionText" role="document"></div>
-          </div>
+          <div class="taskContentHeader"><div class="taskInlineSectionLabel">Notas / descripción</div><button id="taskDescriptionToolsBtn" class="taskSubtaskMoreBtn" type="button" aria-label="Opciones de la descripción">⋯</button></div>
+          <div id="taskBlocksEditor" class="noteBlocksEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Descripción continua" spellcheck="true"></div>
           <button id="addTaskBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="taskBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
@@ -2877,16 +2849,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
       <div class="card">
         <div class="field"><div id="noteTitle" class="textInput richEditable" contenteditable="true" role="textbox" aria-label="Título" data-placeholder="Título" data-rich-kind="note-title"></div></div>
         <div class="field">
-          <div id="noteBlocksEditor" class="noteBlocksEditor"></div>
-          <div id="noteDocumentSelection" class="noteDocumentSelection hidden" aria-label="Texto seleccionable de la nota">
-            <div class="noteSelectionActions">
-              <span>Seleccionar texto</span>
-              <button id="noteSelectAllBtn" type="button">Seleccionar todo</button>
-              <button id="noteCopySelectionBtn" type="button">Copiar</button>
-              <button id="noteExitSelectionBtn" type="button" aria-label="Volver al editor">Editar</button>
-            </div>
-            <div id="noteSelectionText" class="noteSelectionText" role="document"></div>
-          </div>
+          <div id="noteBlocksEditor" class="noteBlocksEditor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Contenido continuo de la nota" spellcheck="true"></div>
           <button id="addNoteBlockBtn" class="addBlockBtn" type="button">+ Añadir bloque</button>
           <textarea id="noteBody" class="hidden" aria-hidden="true" tabindex="-1"></textarea>
         </div>
@@ -2939,9 +2902,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
         </button>
         <button id="noteFormatBtn" class="noteToolBtn format" type="button" aria-label="Formato">A</button>
         <div class="noteBottomSpacer"></div>
-        <button id="noteSelectTextBtn" class="noteToolBtn" type="button" aria-label="Seleccionar texto de la nota" title="Seleccionar texto">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v14M8 19h8M8 9h8" /></svg>
-        </button>
         <button id="noteUndoBtn" class="noteToolBtn taskHistoryBtn" type="button" aria-label="Deshacer en la nota" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8H4v-5M4.5 8.5A8 8 0 1 1 6 17"></path></svg>
         </button>
@@ -3523,7 +3483,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   let mode="tasks",taskFilter="pending",taskTodayOnly=false,taskSelectedFilter="pending",taskPinnedFilters=new Set(),taskGroupedByTime=false,taskSortMode="soon",noteFilter="all",activeCategory="all",activeTag="",activeWorkspaceId="",trash=false,query="";
   let editorMeetingTracked=false,editorMeetingStatus="scheduled",editorMeetingHistory=[],editorMeetingStatusChanged=false,editorMeetingMenuOpen=false,calendarRescheduleEditor=false;
   let editorDaysExpanded=false,expandedTaskDaysId=null;
-  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,noteUndoStack=[],noteRedoStack=[],noteHistoryTimer=null,noteHistoryApplying=false,noteSelectionMode=false,taskSelectionMode=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
+  let editingTaskId=null,editingNoteId=null,editingCategoryId=null,editorPinned=false,editorTaskDone=false,editorCompletedDates=[],editorTaskDay="",editorTaskWorkspaceId="",editorTaskCreatedBy="",editorTaskApprovalStatus="confirmed",editorTaskRequiresApproval=false,editorTaskAssignedTo="",editorTaskProposalMessage="",editorSubtasks=[],editorTaskBlocks=[],editorNoteBlocks=[],activeRichBlockId=null,activeRichScope=null,timeDraftHour=0,timeDraftMinute=0,timeDraftReminder="none",timeWheelMute=false,quickMode="tasks",quickDueDate="",quickDueTime="",quickReminderOffsets=[0,10],quickReminderPanelOpen=false,quickExplicitDate=false,quickExplicitTime=false,quickDetected={found:false,date:"",time:"",clean:""},saveTimer=null,saving=false,toastTimer=null,uiTheme="light",calendarView="month",calendarDate=localDateISO(),calendarMoveTaskId=null,hierarchyDrag=null,calendarCardDrag=null,taskUndoStack=[],taskRedoStack=[],taskHistoryTimer=null,taskHistoryApplying=false,noteUndoStack=[],noteRedoStack=[],noteHistoryTimer=null,noteHistoryApplying=false,taskCopyMode=false,taskCopySelection=new Set(),taskCompletedItemsExpanded=false,hierarchyScope=null,hierarchyPath="",savedRichRange=null,savedRichScope=null,taskInlineMonth=new Date(),taskInlineDetailedOpen=false,taskInlineDetailDraft=new Date(),taskInlineOpenPanel="",taskInlineDateTarget="start",taskSubtasksExpanded=false,taskInlineTimeTarget="start",taskInlineWheelMute=false,editorTaskReminders=[],taskReminderPanelOpen=false,customReminderAmount=5,customReminderUnit=1,customReminderWheelMute=false;
   let suppressClickUntil=0,wakeRefreshTimer=null,assistantSyncTimer=null,assistantSyncing=false,assistantSyncQueued=false,assistantApplyingRemote=false,assistantSyncRetryAttempt=0,assistantSyncFailed=false,assistantDeliveryWarningShown=false;
   let assistantMemberRemoveConfirmation=null,assistantDeletionPrepared=null;
   const directorProposalsByWorkspace=new Map();
@@ -8208,62 +8168,212 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   function noteBlocksHtml(nodes,depth=0,prefix="",scope="note"){
     return (nodes||[]).map((b,i)=>{
       const path=prefix?prefix+"."+i:String(i),type=NOTE_BLOCK_TYPES.has(b.type)?b.type:"paragraph",checked=type==="checklist"&&b.checked,hScope=scope==="task"?"task-blocks":"note-blocks";
-      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}" data-hierarchy-scope="${hScope}" data-hierarchy-id="${esc(b.id)}"><select class="noteBlockType" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" contenteditable="true" role="textbox" aria-multiline="true" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" type="button" aria-label="Añadir bloque interno">+</button>${scope==="task"?"":'<button class="hierarchyMoreBtn" type="button" aria-label="Organizar bloque">⋯</button>'}</div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path,scope)}</div>`:""}</div>`;
+      return `<div class="noteBlockNode noteBlock-${type} ${checked?"checked":""}" style="--block-depth:${depth}" data-note-path="${path}" data-hierarchy-scope="${hScope}" data-hierarchy-id="${esc(b.id)}"><select class="noteBlockType" contenteditable="false" aria-label="Tipo de bloque">${noteBlockOptions(type)}</select><div class="noteBlockRow"><span class="blockMarker" contenteditable="false">${esc(noteBlockMarker(type,i))}</span><div class="noteBlockMain">${type==="checklist"?`<input class="noteBlockCheck" contenteditable="false" type="checkbox" ${checked?"checked":""} aria-label="Marcar casilla">`:""}<div class="richText" data-rich-block="${esc(b.id)}">${sanitizeInlineHtml(b.html||"")}</div></div><button class="noteBlockChild" contenteditable="false" type="button" aria-label="Añadir bloque interno">+</button>${scope==="task"?"":'<button class="hierarchyMoreBtn" contenteditable="false" type="button" aria-label="Organizar bloque">⋯</button>'}</div>${(b.children||[]).length?`<div class="noteBlockChildren">${noteBlocksHtml(b.children,depth+1,path,scope)}</div>`:""}</div>`;
     }).join("");
   }
   function findNoteBlockById(nodes,id){for(const b of nodes||[]){if(b.id===id)return b;const found=findNoteBlockById(b.children||[],id);if(found)return found}return null}
   function blocksForScope(scope){return scope==="task"?editorTaskBlocks:editorNoteBlocks}
   function setBlocksForScope(scope,value){if(scope==="task")editorTaskBlocks=value;else editorNoteBlocks=value}
   function blockEditorForScope(scope){return $(scope==="task"?"taskBlocksEditor":"noteBlocksEditor")}
+
+  // One native editing host per note/task description, multiple serializable blocks.
+  function richAt(node,host){
+    const el=node?.nodeType===1?node:node?.parentElement,r=el?.closest?.(".richText");
+    return r&&host.contains(r)?r:null;
+  }
+  function documentRangeRichTargets(range,host){
+    return [...host.querySelectorAll(".noteBlockRow .richText")].filter(el=>{
+      try{return range.intersectsNode(el)}catch(_){return false}
+    });
+  }
+  function syncDocumentModel(scope){
+    blockEditorForScope(scope).querySelectorAll(".richText[data-rich-block]").forEach(el=>{
+      const b=findNoteBlockById(blocksForScope(scope),el.dataset.richBlock);
+      if(b)b.html=sanitizeInlineHtml(el.innerHTML);
+    });
+  }
+  function focusDocumentBlock(host,rich,offset=null){
+    if(!rich)return;
+    host.focus({preventScroll:true});
+    const r=document.createRange();
+    if(offset===null){r.selectNodeContents(rich);r.collapse(false)}
+    else{
+      let left=Math.max(0,offset),node;
+      const iterator=document.createTreeWalker(rich,NodeFilter.SHOW_TEXT);
+      while((node=iterator.nextNode())){
+        if(left<=node.textContent.length){r.setStart(node,left);r.collapse(true);break}
+        left-=node.textContent.length;
+      }
+      if(!node){r.selectNodeContents(rich);r.collapse(false)}
+    }
+    const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);rememberRichSelection();
+  }
+  function blockFragment(rich,range,before){
+    const r=document.createRange();r.selectNodeContents(rich);
+    if(before){
+      if(rich.contains(range.startContainer))r.setEnd(range.startContainer,range.startOffset);
+      else r.collapse(true);
+    }else{
+      if(rich.contains(range.endContainer))r.setStart(range.endContainer,range.endOffset);
+      else r.collapse(false);
+    }
+    const d=document.createElement("div");d.append(r.cloneContents());
+    return sanitizeInlineHtml(d.innerHTML);
+  }
+  function selectedDocumentText(scope,range){
+    const hits=documentRangeRichTargets(range,blockEditorForScope(scope));
+    if(hits.length<2)return null;
+    return hits.map((el,i)=>{
+      const r=document.createRange();r.selectNodeContents(el);
+      if(el.contains(range.startContainer))r.setStart(range.startContainer,range.startOffset);
+      if(el.contains(range.endContainer))r.setEnd(range.endContainer,range.endOffset);
+      const b=findNoteBlockById(blocksForScope(scope),el.dataset.richBlock);
+      const row=el.closest(".noteBlockNode");
+      const siblings=[...(row?.parentElement?.children||[])].filter(x=>x.matches?.(".noteBlockNode"));
+      const num=siblings.indexOf(row)+1;
+      const prefix=b?.type==="bullet"?"• ":b?.type==="number"?num+". ":b?.type==="checklist"?(b.checked?"☑ ":"☐ "):"";
+      return (i===0&&el.contains(range.startContainer)&&r.toString().length<el.textContent.length?"":prefix)+r.toString();
+    }).join("\n");
+  }
+  function replaceDocumentSelection(scope,range,text){
+    const host=blockEditorForScope(scope),hits=documentRangeRichTargets(range,host);
+    if(hits.length<2)return false;
+    const first=hits[0],last=hits[hits.length-1],root=blocksForScope(scope);
+    const head=findNoteBlockById(root,first.dataset.richBlock),tail=findNoteBlockById(root,last.dataset.richBlock);
+    if(!head||!tail)return false;
+    const prefix=blockFragment(first,range,true),suffix=blockFragment(last,range,false);
+    const remove=new Set(hits.slice(1).map(x=>x.dataset.richBlock));
+    if(scope==="task")commitTaskHistory();else commitNoteHistory();
+    head.html=sanitizeInlineHtml(prefix+plainToInlineHtml(text)+suffix);
+    if(head!==tail&&tail.children?.length&&!tail.children.some(x=>remove.has(x.id))){
+      head.children=head.children||[];
+      head.children.push(...tail.children.filter(x=>!remove.has(x.id)));
+    }
+    function prune(nodes){
+      for(let i=nodes.length-1;i>=0;i--){
+        if(remove.has(nodes[i].id))nodes.splice(i,1);
+        else prune(nodes[i].children||[]);
+      }
+    }
+    prune(root);
+    renderContentBlocks(scope);
+    const rich=[...host.querySelectorAll(".richText")].find(x=>x.dataset.richBlock===head.id);
+    const pre=document.createElement("div");pre.innerHTML=prefix;
+    focusDocumentBlock(host,rich,(pre.textContent||"").length+text.length);
+    if(scope==="task")commitTaskHistory();else commitNoteHistory();
+    return true;
+  }
+  function structuralDocumentKey(scope,key,range){
+    const host=blockEditorForScope(scope),rich=richAt(range.startContainer,host);
+    if(!rich||!rich.contains(range.endContainer))return false;
+    const path=rich.closest(".noteBlockNode")?.dataset.notePath,root=blocksForScope(scope);
+    const block=treeNodeAtPath(root,path),loc=treeArrayForPath(root,path);
+    if(!block||!loc)return false;
+    if(key==="Enter"){
+      if(scope==="task")commitTaskHistory();else commitNoteHistory();
+      const before=blockFragment(rich,range,true),after=blockFragment(rich,range,false);
+      block.html=before;
+      const id=makeId("b");
+      loc.arr.splice(loc.index+1,0,{id,type:"paragraph",html:after,checked:false,children:[]});
+      renderContentBlocks(scope);
+      focusDocumentBlock(host,[...host.querySelectorAll(".richText")].find(x=>x.dataset.richBlock===id),0);
+      if(scope==="task")commitTaskHistory();else commitNoteHistory();
+      return true;
+    }
+    if(key==="Backspace"&&range.collapsed){
+      const probe=document.createRange();probe.selectNodeContents(rich);
+      probe.setEnd(range.startContainer,range.startOffset);
+      if(probe.toString().length)return false;
+      if(loc.index>0){
+        if(scope==="task")commitTaskHistory();else commitNoteHistory();
+        const prev=loc.arr[loc.index-1],offset=inlineHtmlToText(prev.html||"").length;
+        prev.html=sanitizeInlineHtml((prev.html||"")+(block.html||""));
+        prev.children=[...(prev.children||[]),...(block.children||[])];
+        loc.arr.splice(loc.index,1);renderContentBlocks(scope);
+        focusDocumentBlock(host,[...host.querySelectorAll(".richText")].find(x=>x.dataset.richBlock===prev.id),offset);
+        if(scope==="task")commitTaskHistory();else commitNoteHistory();
+        return true;
+      }
+      if(!inlineHtmlToText(block.html||"")&&loc.arr.length>1){
+        if(scope==="task")commitTaskHistory();else commitNoteHistory();
+        loc.arr.splice(loc.index,1);renderContentBlocks(scope);
+        focusDocumentBlock(host,host.querySelector(".richText"),0);
+        if(scope==="task")commitTaskHistory();else commitNoteHistory();
+        return true;
+      }
+    }
+    return false;
+  }
+  function installContinuousBlockHost(scope){
+    const host=blockEditorForScope(scope);
+    if(host.dataset.continuousHandlers==="1")return;
+    host.dataset.continuousHandlers="1";
+    host.addEventListener("input",()=>{
+      syncDocumentModel(scope);rememberRichSelection();
+      if(scope==="task")scheduleTaskHistory();else scheduleNoteHistory();
+    });
+    host.addEventListener("blur",()=>syncDocumentModel(scope));
+    host.addEventListener("pointerup",rememberRichSelection);
+    host.addEventListener("keyup",rememberRichSelection);
+    host.addEventListener("keydown",e=>{
+      if(e.isComposing)return;
+      const sel=window.getSelection(),r=sel?.rangeCount?sel.getRangeAt(0):null;
+      if(!r)return;
+      const key=e.key==="Enter"&&!e.shiftKey?"Enter":e.key==="Backspace"?"Backspace":"";
+      if(key&&structuralDocumentKey(scope,key,r))e.preventDefault();
+    });
+    host.addEventListener("beforeinput",e=>{
+      const sel=window.getSelection(),r=sel?.rangeCount?sel.getRangeAt(0):null;
+      if(!r)return;
+      const input=e.inputType||"";
+      if(documentRangeRichTargets(r,host).length>1){
+        if(input.startsWith("delete")){e.preventDefault();replaceDocumentSelection(scope,r,"");return}
+        if(["insertText","insertReplacementText","insertParagraph","insertLineBreak"].includes(input)){
+          e.preventDefault();replaceDocumentSelection(scope,r,input==="insertParagraph"?"\n":e.data||"");return;
+        }
+        if(input==="insertFromPaste"||input==="insertFromDrop"){
+          e.preventDefault();const value=e.dataTransfer?.getData("text/plain")??e.data;
+          if(value!==null&&value!==undefined)replaceDocumentSelection(scope,r,value);
+          return;
+        }
+        if(input.startsWith("insert"))e.preventDefault();
+        return;
+      }
+      if(input==="insertParagraph"&&structuralDocumentKey(scope,"Enter",r))e.preventDefault();
+      else if(input==="deleteContentBackward"&&structuralDocumentKey(scope,"Backspace",r))e.preventDefault();
+    });
+    host.addEventListener("paste",e=>{
+      const sel=window.getSelection(),r=sel?.rangeCount?sel.getRangeAt(0):null;
+      if(r&&documentRangeRichTargets(r,host).length>1){
+        e.preventDefault();replaceDocumentSelection(scope,r,e.clipboardData?.getData("text/plain")||"");
+      }
+    });
+    host.addEventListener("copy",e=>{
+      const sel=window.getSelection(),r=sel?.rangeCount?sel.getRangeAt(0):null;
+      const value=r&&selectedDocumentText(scope,r);
+      if(value!==null&&e.clipboardData){e.clipboardData.setData("text/plain",value);e.preventDefault()}
+    });
+    host.addEventListener("cut",e=>{
+      const sel=window.getSelection(),r=sel?.rangeCount?sel.getRangeAt(0):null;
+      const value=r&&selectedDocumentText(scope,r);
+      if(value!==null){e.preventDefault();
+        if(e.clipboardData){e.clipboardData.setData("text/plain",value);replaceDocumentSelection(scope,r,"")}
+      }
+    });
+  }
+
   function renderContentBlocks(scope,focusPath=null){
-    const box=blockEditorForScope(scope);if(!box)return;let blocks=blocksForScope(scope);if(!blocks.length){blocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];setBlocksForScope(scope,blocks)}box.innerHTML=noteBlocksHtml(blocks,0,"",scope);
+    const box=blockEditorForScope(scope);if(!box)return;let blocks=blocksForScope(scope);if(!blocks.length){blocks=[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];setBlocksForScope(scope,blocks)}box.innerHTML=noteBlocksHtml(blocks,0,"",scope);installContinuousBlockHost(scope);
     box.querySelectorAll("[data-note-path]").forEach(row=>{
       const path=row.dataset.notePath,b=treeNodeAtPath(blocks,path);if(!b)return;
       const type=row.querySelector(":scope > .noteBlockType"),rich=row.querySelector(":scope > .noteBlockRow .richText"),check=row.querySelector(":scope > .noteBlockRow .noteBlockCheck"),child=row.querySelector(":scope > .noteBlockRow .noteBlockChild"),more=row.querySelector(":scope > .noteBlockRow .hierarchyMoreBtn");
       type.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.type=NOTE_BLOCK_TYPES.has(type.value)?type.value:"paragraph";if(b.type!=="checklist")b.checked=false;renderContentBlocks(scope,path);if(scope==="task")commitTaskHistory();else commitNoteHistory()});
-      rich.addEventListener("focus",()=>{activeRichBlockId=b.id;activeRichScope=scope;rememberRichSelection()});
-      rich.addEventListener("keyup",rememberRichSelection);
       rich.addEventListener("pointerup",rememberRichSelection);
-      rich.addEventListener("input",()=>{b.html=rich.innerHTML;rememberRichSelection();if(scope==="task")scheduleTaskHistory();else scheduleNoteHistory()});
-      rich.addEventListener("blur",()=>{b.html=sanitizeInlineHtml(rich.innerHTML)});
-      rich.addEventListener("keydown",e=>{
-        const loc=treeArrayForPath(blocks,path);if(!loc)return;
-        const sel=window.getSelection(),range=sel&&sel.rangeCount?sel.getRangeAt(0):null;
-        if(e.key==="Enter"&&!e.shiftKey){
-          e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();
-          if(range&&!range.collapsed)range.deleteContents();
-          const before=document.createElement("div"),after=document.createElement("div");
-          if(range){
-            const r1=document.createRange();r1.selectNodeContents(rich);r1.setEnd(range.startContainer,range.startOffset);before.appendChild(r1.cloneContents());
-            const r2=document.createRange();r2.selectNodeContents(rich);r2.setStart(range.startContainer,range.startOffset);after.appendChild(r2.cloneContents());
-          }else before.innerHTML=rich.innerHTML;
-          b.html=sanitizeInlineHtml(before.innerHTML);
-          const nextPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index+1);
-          loc.arr.splice(loc.index+1,0,{id:makeId("b"),type:"paragraph",html:sanitizeInlineHtml(after.innerHTML),checked:false,children:[]});
-          renderContentBlocks(scope,nextPath);if(scope==="task")commitTaskHistory();else commitNoteHistory();return;
-        }
-        if(e.key==="Backspace"&&range&&range.collapsed){
-          const probe=document.createRange();probe.selectNodeContents(rich);probe.setEnd(range.startContainer,range.startOffset);
-          if(probe.toString().length!==0)return;
-          const plain=inlineHtmlToText(rich.innerHTML);
-          if(loc.index>0){
-            e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();
-            const prev=loc.arr[loc.index-1];prev.html=sanitizeInlineHtml((prev.html||"")+(b.html||""));loc.arr.splice(loc.index,1);
-            const prevPath=(path.includes(".")?path.slice(0,path.lastIndexOf(".")+1):"")+(loc.index-1);
-            renderContentBlocks(scope,prevPath);
-            setTimeout(()=>{const prevEl=box.querySelector('[data-note-path="'+prevPath+'"] .richText');if(!prevEl)return;const r=document.createRange();r.selectNodeContents(prevEl);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);rememberRichSelection()},25);
-            if(scope==="task")commitTaskHistory();else commitNoteHistory();return;
-          }
-          if(!plain&&loc.arr.length>1){
-            e.preventDefault();if(scope==="task")commitTaskHistory();else commitNoteHistory();loc.arr.splice(loc.index,1);renderContentBlocks(scope,"0");if(scope==="task")commitTaskHistory();else commitNoteHistory();
-          }
-        }
-      });
       if(check)check.addEventListener("change",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.checked=check.checked;row.classList.toggle("checked",b.checked);if(scope==="task")commitTaskHistory();else commitNoteHistory()});
       child.addEventListener("click",()=>{if(scope==="task")commitTaskHistory();else commitNoteHistory();b.children=b.children||[];b.children.push({id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]});renderContentBlocks(scope,path+"."+(b.children.length-1));if(scope==="task")commitTaskHistory();else commitNoteHistory()});
       const hScope=scope==="task"?"task-blocks":"note-blocks";if(more){more.addEventListener("click",()=>{if(Date.now()<suppressClickUntil)return;showHierarchyPanel(hScope,path)});installHierarchyDrag(more,hScope,b.id)};
     });
-    if(focusPath!==null)setTimeout(()=>box.querySelector('[data-note-path="'+focusPath+'"] .richText')?.focus(),20);
+    if(focusPath!==null)setTimeout(()=>focusDocumentBlock(box,box.querySelector('[data-note-path="'+focusPath+'"] .richText')),20);
   }
   function renderNoteBlocks(focusPath=null){renderContentBlocks("note",focusPath)}
   function renderTaskBlocks(focusPath=null){renderContentBlocks("task",focusPath)}
@@ -8293,7 +8403,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   }
   function syncRichFormatIndicators(){
     const selection=window.getSelection(),range=selection&&selection.rangeCount?selection.getRangeAt(0):null;
-    const target=range?richTargetFromNode(range.commonAncestorContainer):null;
+    const target=range?(richTargetFromNode(range.commonAncestorContainer)||richTargetFromNode(selection.anchorNode)||richTargetFromNode(range.startContainer)):null;
     const scope=target?richScopeForTarget(target):null;
     document.querySelectorAll("[data-rich-command]").forEach(button=>{
       const valid=!!scope&&button.dataset.richScope===scope;
@@ -8312,7 +8422,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   }
   function rememberRichSelection(){
     const sel=window.getSelection();if(!sel||!sel.rangeCount)return false;
-    const range=sel.getRangeAt(0),target=richTargetFromNode(range.commonAncestorContainer);
+    const range=sel.getRangeAt(0),target=richTargetFromNode(range.commonAncestorContainer)||richTargetFromNode(sel.anchorNode)||richTargetFromNode(range.startContainer);
     if(!target)return false;
     const scope=richScopeForTarget(target);if(!scope)return false;
     activeRichBlockId=target.dataset.richBlock||null;activeRichScope=scope;savedRichScope=scope;
@@ -8339,7 +8449,9 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     const target=richTargetFromNode(savedRichRange.commonAncestorContainer);
     if(!target||richScopeForTarget(target)!==scope){showToast("Coloca el cursor o selecciona texto");return}
     if(scope==="task")commitTaskHistory();else commitNoteHistory();
-    if(document.activeElement!==target)target.focus({preventScroll:true});
+    const sharedHost=target.closest(".noteBlocksEditor[contenteditable=true]");
+    if(sharedHost&&documentRangeRichTargets(savedRichRange,sharedHost).length>1){showToast("Aplica el formato por párrafo");return}
+    if(document.activeElement!==(sharedHost||target))(sharedHost||target).focus({preventScroll:true});
     if(!restoreRichSelection(scope,target)){showToast("Coloca el cursor o selecciona texto");return}
     try{document.execCommand(command,false,null)}catch(_){}
     syncRichTargetModel(target);
@@ -8380,14 +8492,13 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     syncNoteHistoryButtons();
   }
   function scheduleNoteHistory(){
-    if(noteHistoryApplying||noteSelectionMode)return;
+    if(noteHistoryApplying)return;
     clearTimeout(noteHistoryTimer);
     noteHistoryTimer=setTimeout(commitNoteHistory,420);
   }
   function applyNoteHistoryState(snapshot){
     if(!snapshot)return;
     noteHistoryApplying=true;
-    closeNoteDocumentSelection();
     $("noteTitle").innerHTML=sanitizeInlineHtml(snapshot.titleHtml||"");
     editorNoteBlocks=cloneNoteBlocks(snapshot.blocks||[]);
     setCategoryPicker("noteCategory",snapshot.category||"inbox");
@@ -8410,113 +8521,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     noteUndoStack.push(cloneSerializable(snapshot));
     applyNoteHistoryState(snapshot);
     syncNoteHistoryButtons();
-  }
-  // Selection surface is read-only and independent of the persisted model.
-  // Unlike separate contenteditable blocks, one DOM document can be selected
-  // across bullet/number items using the standard Android selection handles.
-  function openNoteDocumentSelection(){
-    if($("noteForm").classList.contains("hidden"))return;
-    commitNoteHistory();
-    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-    window.getSelection()?.removeAllRanges();
-    const view=$("noteSelectionText");view.replaceChildren();
-    function addRows(blocks,depth=0){
-      (blocks||[]).forEach((block,index)=>{
-        const p=document.createElement("p");
-        p.style.paddingLeft=(Math.min(depth,8)*18)+"px";
-        if(block.type==="checklist"&&block.checked)p.classList.add("noteSelectionChecked");
-        const marker=document.createElement("span");
-        marker.textContent=block.type==="bullet"?"•  ":
-          block.type==="number"?(index+1)+".  ":
-          block.type==="checklist"?(block.checked?"☑  ":"☐  "):"";
-        p.append(marker);
-        const content=document.createElement("span");
-        content.innerHTML=sanitizeInlineHtml(block.html||"");
-        p.append(content);view.append(p);
-        if(block.children?.length)addRows(block.children,depth+1);
-      });
-    }
-    addRows(editorNoteBlocks);
-    $("noteBlocksEditor").classList.add("hidden");
-    $("addNoteBlockBtn").classList.add("hidden");
-    $("noteDocumentSelection").classList.remove("hidden");
-    $("noteSelectTextBtn").classList.add("noteSelectionActive");
-    noteSelectionMode=true;
-  }
-  function closeNoteDocumentSelection(){
-    noteSelectionMode=false;
-    $("noteDocumentSelection").classList.add("hidden");
-    $("noteBlocksEditor").classList.remove("hidden");
-    $("addNoteBlockBtn").classList.remove("hidden");
-    $("noteSelectTextBtn").classList.remove("noteSelectionActive");
-  }
-  function selectWholeNoteDocument(){
-    const view=$("noteSelectionText"),range=document.createRange();
-    range.selectNodeContents(view);
-    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
-  }
-  async function copyNoteDocumentSelection(){
-    const selected=window.getSelection()?.toString()||"";
-    const value=selected.trim()||$("noteSelectionText").innerText.trim();
-    if(!value){showToast("La nota está vacía");return}
-    try{
-      await navigator.clipboard.writeText(value);
-      showToast("Texto copiado");
-    }catch(_){
-      try{
-        if(!selected.trim())selectWholeNoteDocument();
-        if(document.execCommand("copy"))showToast("Texto copiado");
-        else showToast("No se pudo copiar");
-      }catch(__){showToast("No se pudo copiar")}
-    }
-  }
-
-
-  function openTaskDocumentSelection(){
-    if($("taskForm").classList.contains("hidden"))return;
-    commitTaskHistory();
-    if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
-    window.getSelection()?.removeAllRanges();
-    const view=$("taskSelectionText");view.replaceChildren();
-    function rows(blocks,depth=0){
-      (blocks||[]).forEach((block,index)=>{
-        const p=document.createElement("p");p.style.paddingLeft=(Math.min(depth,8)*18)+"px";
-        if(block.type==="checklist"&&block.checked)p.classList.add("noteSelectionChecked");
-        const prefix=document.createElement("span");prefix.textContent=block.type==="bullet"?"•  ":
-          block.type==="number"?(index+1)+".  ":
-          block.type==="checklist"?(block.checked?"☑  ":"☐  "):"";
-        p.append(prefix);
-        const txt=document.createElement("span");txt.innerHTML=sanitizeInlineHtml(block.html||"");
-        p.append(txt);view.append(p);
-        if(block.children?.length)rows(block.children,depth+1);
-      });
-    }
-    rows(editorTaskBlocks);
-    $("taskBlocksEditor").classList.add("hidden");
-    $("addTaskBlockBtn").classList.add("hidden");
-    $("taskDocumentSelection").classList.remove("hidden");
-    $("taskDescriptionSelectBtn").classList.add("noteSelectionActive");
-    taskSelectionMode=true;
-  }
-  function closeTaskDocumentSelection(){
-    taskSelectionMode=false;
-    $("taskDocumentSelection").classList.add("hidden");
-    $("taskBlocksEditor").classList.remove("hidden");
-    $("addTaskBlockBtn").classList.remove("hidden");
-    $("taskDescriptionSelectBtn").classList.remove("noteSelectionActive");
-  }
-  function selectAllTaskDocument(){
-    const r=document.createRange();r.selectNodeContents($("taskSelectionText"));
-    const selection=window.getSelection();selection.removeAllRanges();selection.addRange(r);
-  }
-  async function copyTaskDocumentSelection(){
-    const selected=window.getSelection()?.toString()||"";
-    const value=selected.trim()||$("taskSelectionText").innerText.trim();
-    if(!value){showToast("La descripción está vacía");return}
-    try{await navigator.clipboard.writeText(value);showToast("Texto copiado")}
-    catch(_){try{if(!selected.trim())selectAllTaskDocument();
-      showToast(document.execCommand("copy")?"Texto copiado":"No se pudo copiar");
-    }catch(__){showToast("No se pudo copiar")}}
   }
   function captureTaskEditorState(){
     return {
@@ -9398,8 +9402,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     syncEditorActionBackdrop();
   }
   function handleEditorBack(){
-    if(noteSelectionMode){closeNoteDocumentSelection();return true}
-    if(taskSelectionMode){closeTaskDocumentSelection();return true}
     if(editorMeetingMenuOpen){closeTaskMeetingMenu();return true}
     if(taskInlineDetailedOpen&&taskInlineOpenPanel==="date"){taskInlineDetailedOpen=false;syncTaskInlineDetailVisibility();return true}
     if(closeOpenEditorPanel())return true;
@@ -9438,7 +9440,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   }
   function openTask(t,selectedDate=null,options={}){
     leaveSearchKeyboardMode();setNativeSearchKeyboardMode(false);
-    closeTaskDocumentSelection();
     $("editorOverlay").classList.remove("noteEditorMode");$("editorOverlay").classList.add("taskEditorMode");arrangeEditorTop(true);hideNotePanels();hideTaskPanels();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingTaskId=t?t.id:null;editingNoteId=null;editorDaysExpanded=false;editorPinned=t?!!t.pinned:false;editorTaskDone=t?!!t.done:false;editorCompletedDates=t?taskCompletedDates(t):[];editorTaskDay=t?taskRelevantDay(t,selectedDate||localDateISO()):"";
     const collab=t?{workspaceId:t.workspaceId||personalWorkspaceId(),createdBy:t.createdBy||"",approvalStatus:t.approvalStatus||"confirmed",requiresApproval:!!t.requiresApproval,assignedTo:t.assignedTo||"",proposalMessage:t.proposalMessage||""}:newItemWorkspaceFields("task");
@@ -9479,7 +9480,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     savedRichRange=null;savedRichScope=null;activeRichBlockId=null;activeRichScope=null;editingNoteId=n?n.id:null;editingTaskId=null;editorPinned=n?!!n.pinned:false;editorTaskDone=false;syncEditorPin();
     $("editorTitle").textContent=n?"Editar nota":"Nueva nota";$("taskForm").classList.add("hidden");$("noteForm").classList.remove("hidden");
     $("noteTitle").innerHTML=n?sanitizeInlineHtml(n.titleHtml||plainToInlineHtml(n.title)):"";editorNoteBlocks=n?cloneNoteBlocks(n.blocks||normalizeNoteBlocks([],n.body)):[{id:makeId("b"),type:"paragraph",html:"",checked:false,children:[]}];renderNoteBlocks();$("noteBody").value=n?n.body:"";setCategoryPicker("noteCategory",n?n.category:(activeCategory!=="all"?activeCategory:"inbox"));$("noteTags").value=n?normalizeTags(n.tags).join(", "):(activeTag||"");$("deleteNoteBtn").classList.toggle("hidden",!n);$("noteDuplicateBtn").classList.toggle("hidden",!n);updateNoteEditedHint(n);
-    closeNoteDocumentSelection();resetNoteHistory();
+    resetNoteHistory();
     openOverlay("editorOverlay");
     // Both new and existing untitled notes request title entry. Titled notes
     // open without the software keyboard until the user taps an editable field.
@@ -9498,7 +9499,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     if(isTask&&options.save!==false)persistOpenTask(false);
     hideTaskPanels();hideNotePanels();closeHierarchyPanel();$("richToolbar").classList.add("hidden");$("taskRichToolbar").classList.add("hidden");closeOverlay("editorOverlay");$("editorOverlay").classList.remove("noteEditorMode","taskEditorMode");
     clearTimeout(taskHistoryTimer);taskHistoryTimer=null;taskUndoStack=[];taskRedoStack=[];
-    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;noteUndoStack=[];noteRedoStack=[];closeNoteDocumentSelection();closeTaskDocumentSelection();syncNoteHistoryButtons();
+    clearTimeout(noteHistoryTimer);noteHistoryTimer=null;noteUndoStack=[];noteRedoStack=[];syncNoteHistoryButtons();
     taskCopyMode=false;taskCopySelection.clear();editingTaskId=null;editingNoteId=null;editorDaysExpanded=false;editorPinned=false;editorTaskDone=false;editorCompletedDates=[];editorTaskDay="";editorTaskWorkspaceId="";editorTaskCreatedBy="";editorTaskApprovalStatus="confirmed";editorTaskRequiresApproval=false;editorTaskAssignedTo="";editorTaskProposalMessage="";editorSubtasks=[];editorTaskBlocks=[];editorNoteBlocks=[];activeRichBlockId=null;activeRichScope=null;savedRichRange=null;savedRichScope=null;syncEditorPin();syncTaskHistoryButtons();setNativeSearchKeyboardMode(true);
     returnToCalendarFromEditor();
     if(directorProposalReturn)returnFromDirectorProposal();
@@ -9809,7 +9810,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     if(!raw)return false;
     openNote(null);
     editorNoteBlocks=[{id:makeId("b"),type:"paragraph",html:plainToInlineHtml(raw),checked:false,children:[]}];
-    $("noteBody").value=raw;renderNoteBlocks();setTimeout(()=>$("noteBlocksEditor").querySelector(".richText")?.focus(),80);
+    $("noteBody").value=raw;renderNoteBlocks();setTimeout(()=>focusDocumentBlock($("noteBlocksEditor"),$("noteBlocksEditor").querySelector(".richText")),80);
     return true;
   };
 
@@ -10896,13 +10897,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
     state.tasks.push(copy);scheduleSave();render();hideTaskPanels();
     showToast("Copia creada");
   });
-  $("taskDescriptionSelectBtn").addEventListener("click",()=>{
-    if(taskSelectionMode)closeTaskDocumentSelection();
-    else openTaskDocumentSelection();
-  });
-  $("taskSelectAllTextBtn").addEventListener("click",selectAllTaskDocument);
-  $("taskCopySelectedTextBtn").addEventListener("click",copyTaskDocumentSelection);
-  $("taskExitTextSelectionBtn").addEventListener("click",closeTaskDocumentSelection);
   $("taskDescriptionToolsBtn").addEventListener("click",()=>{
     const box=$("taskBlocksEditor"),current=activeRichScope==="task"?[...box.querySelectorAll("[data-note-path]")].find(el=>el.dataset.hierarchyId===activeRichBlockId):null;
     const row=current||box.querySelector("[data-note-path]");
@@ -10950,13 +10944,6 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
   $("taskRedoBtn").addEventListener("click",redoTaskEditor);
   $("noteUndoBtn").addEventListener("click",undoNoteEditor);
   $("noteRedoBtn").addEventListener("click",redoNoteEditor);
-  $("noteSelectTextBtn").addEventListener("click",()=>{
-    if(noteSelectionMode)closeNoteDocumentSelection();
-    else openNoteDocumentSelection();
-  });
-  $("noteSelectAllBtn").addEventListener("click",selectWholeNoteDocument);
-  $("noteCopySelectionBtn").addEventListener("click",copyNoteDocumentSelection);
-  $("noteExitSelectionBtn").addEventListener("click",closeNoteDocumentSelection);
   $("taskCategory").querySelector(".categoryPickerInput").addEventListener("input",scheduleTaskHistory);
   $("taskDate").addEventListener("change",()=>{syncTaskEditorMeta();commitTaskHistory()});
   $("noteInsertBtn").addEventListener("click",()=>{$("richToolbar").classList.add("hidden");showNotePanel("noteInsertPanel")});
@@ -11440,7 +11427,7 @@ html[data-theme="dark"] .noteSelectionText{color:#f5f5f7}
 
   document.addEventListener("selectionchange",()=>{
     const sel=window.getSelection();if(!sel||!sel.rangeCount)return;
-    const target=richTargetFromNode(sel.getRangeAt(0).commonAncestorContainer);
+    const target=richTargetFromNode(sel.getRangeAt(0).commonAncestorContainer)||richTargetFromNode(sel.anchorNode)||richTargetFromNode(sel.getRangeAt(0).startContainer);
     if(target&&(target.closest("#taskForm:not(.hidden)")||target.closest("#noteForm:not(.hidden)")))rememberRichSelection();
   });
 
